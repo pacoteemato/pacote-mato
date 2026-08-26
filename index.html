@@ -8,7 +8,7 @@
     
     <!-- Configurações PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000000" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -340,7 +340,7 @@
 
         <div class="sidebar-item">
             <label>🎨 Modo de Cor</label>
-            <select id="selTema" onchange="mudarTema(this.value)">
+            <select id="selTema" onchange="mudarTema(this.value, true)">
                 <option value="dark">Preto (Dark)</option>
                 <option value="light">Branco (Light)</option>
                 <option value="gray">Cinza (Gray)</option>
@@ -349,7 +349,7 @@
 
         <div class="sidebar-item">
             <label>🎙️ Estilo da Voz</label>
-            <select id="selVoz">
+            <select id="selVoz" onchange="salvarVoz(this.value)">
                 <option value="normal">Feminina / Normal</option>
                 <option value="grave">Masculina / Grave</option>
                 <option value="rapida">Rápida / Ágil</option>
@@ -462,8 +462,9 @@
             gray: { bg_app:"#1C1C1E", text_app:"#F2F2F7", card_bg:"#2C2C2E", border:"#8E8E93", btn_bg:"#48484A", btn_text:"#FFFFFF", subtext:"#AEAEB2", shadow:"rgba(0,0,0,0.35)" }
         };
 
-        function mudarTema(tipo) {
-            let t = temas[tipo];
+        // Salvar e recuperar configurações permanentes
+        function mudarTema(tipo, salvar = true) {
+            let t = temas[tipo] || temas.dark;
             document.documentElement.style.setProperty('--bg-app', t.bg_app);
             document.documentElement.style.setProperty('--text-app', t.text_app);
             document.documentElement.style.setProperty('--card-bg', t.card_bg);
@@ -472,7 +473,33 @@
             document.documentElement.style.setProperty('--btn-text', t.btn_text);
             document.documentElement.style.setProperty('--subtext', t.subtext);
             document.documentElement.style.setProperty('--shadow', t.shadow);
+            
+            let metaColor = document.getElementById('metaThemeColor');
+            if (metaColor) metaColor.setAttribute('content', t.bg_app);
+
+            let select = document.getElementById('selTema');
+            if (select) select.value = tipo;
+
+            if (salvar) {
+                localStorage.setItem('tema_preferido', tipo);
+            }
         }
+
+        function salvarVoz(tipo) {
+            localStorage.setItem('voz_preferida', tipo);
+        }
+
+        function carregarPreferenciasSalvas() {
+            let temaSalvo = localStorage.getItem('tema_preferido') || 'dark';
+            mudarTema(temaSalvo, false);
+
+            let vozSalva = localStorage.getItem('voz_preferida') || 'normal';
+            let selVoz = document.getElementById('selVoz');
+            if (selVoz) selVoz.value = vozSalva;
+        }
+
+        // Executa imediatamente ao abrir
+        carregarPreferenciasSalvas();
 
         function toggleSidebar() {
             let sb = document.getElementById('sidebar');
