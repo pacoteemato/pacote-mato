@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PACOTE É MATO - Ultra Rápido</title>
+    
+    <!-- Bibliotecas: Leitor de PDF e Scanner QR Code Ultra Rápido -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #000000;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 14px;
+            min-height: 100vh;
+        }
+
+        .header-card {
+            width: 100%;
+            max-width: 480px;
+            background-color: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 18px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 14px rgba(255,255,255,0.1);
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .header-sub {
+            font-size: 0.7rem;
+            color: #AAAAAA;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .upload-box {
+            width: 100%;
+            max-width: 480px;
+            background: #0B0B0B;
+            border: 2px dashed #FFFFFF;
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            width: 100%;
+            max-width: 480px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            background: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 14px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 900;
+        }
+
+        .stat-lbl {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #AAAAAA;
+            text-transform: uppercase;
+        }
+
+        /* Container da Câmera em Destaque */
+        .camera-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            height: 480px;
+            border: 2px solid #FFFFFF;
+            border-radius: 20px;
+            overflow: hidden;
+            background-color: #000000;
+            margin-bottom: 12px;
+        }
+
+        #reader {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        .btn-action {
+            position: absolute;
+            z-index: 10;
+            background: #FFFFFF;
+            color: #000000;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        #btn-flip { top: 12px; left: 12px; }
+        #btn-flash { top: 12px; right: 12px; }
+
+        .result-card {
+            width: 100%;
+            max-width: 480px;
+            background: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .stop-big {
+            font-size: 4.8rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .warning-card {
+            background: #FFCC00;
+            color: #000000;
+            font-weight: 900;
+            font-size: 0.85rem;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .manual-input {
+            width: 100%;
+            max-width: 480px;
+            background: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 12px;
+            padding: 12px;
+            color: #FFFFFF;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .btn-reset {
+            width: 100%;
+            max-width: 480px;
+            background: transparent;
+            color: #FF4444;
+            border: 1px solid #FF4444;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-card">
+        <div class="header-title">🏍️ PACOTE É MATO</div>
+        <div class="header-sub">SISTEMA INTELIGENTE DE LOGÍSTICA (ULTRA RÁPIDO)</div>
+    </div>
+
+    <div class="upload-box" onclick="document.getElementById('pdfInput').click()">
+        <span id="uploadTxt">📄 Toque para carregar o PDF da Rota</span>
+        <input type="file" id="pdfInput" accept="application/pdf" style="display:none">
+    </div>
+
+    <div class="stats-grid">
+        <div>
+            <div class="stat-val" id="stBipados">0 / 0</div>
+            <div class="stat-lbl">Pacotes</div>
+        </div>
+        <div>
+            <div class="stat-val" id="stParadas">0</div>
+            <div class="stat-lbl">Paradas Reais</div>
+        </div>
+        <div>
+            <div class="stat-val" id="stFaltam">0</div>
+            <div class="stat-lbl">Faltam</div>
+        </div>
+    </div>
+
+    <div class="camera-wrapper">
+        <button class="btn-action" id="btn-flip" onclick="alternarCamera()">🤳 Virar</button>
+        <button class="btn-action" id="btn-flash" onclick="alternarFlash()">🔦 Flash</button>
+        <div id="reader"></div>
+    </div>
+
+    <div class="result-card" id="cardResultado">
+        <div class="stop-big" id="resStop">P1</div>
+        <div style="font-weight:800; font-size: 0.9rem;" id="resPacote">BR1234567890BR</div>
+        <div class="warning-card" id="resAviso"></div>
+    </div>
+
+    <input type="text" class="manual-input" id="inputManual" placeholder="Ou digite o código do pacote aqui..." onchange="processarCodigo(this.value)">
+
+    <button class="btn-reset" onclick="zerarBipagens()">🔄 Zerar Bipagens Desta Rota</button>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let html5QrCode = null;
+        let sensorAtual = "environment"; 
+        let flashLigado = false;
+        let trackCamera = null;
+
+        let mapaRotas = {};
+        let stopCorrespondente = {};
+        let todosPacotes = new Set();
+        let pacotesBipados = new Set();
+        let chaveHash = "rota_padrao";
+
+        // Wake Lock: Mantém a tela acesa
+        async function manterTelaLigada() {
+            try {
+                if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
+            } catch(e) {}
+        }
+        manterTelaLigada();
+
+        // Inicializa o leitor e recupera cache
+        window.onload = function() {
+            iniciarCamera();
+            recuperarSessao();
+        };
+
+        function iniciarCamera() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => carregarStream()).catch(() => carregarStream());
+            } else {
+                html5QrCode = new Html5Qrcode("reader");
+                carregarStream();
+            }
+        }
+
+        function carregarStream() {
+            html5QrCode.start(
+                { facingMode: sensorAtual },
+                {
+                    fps: 30, // 30 quadros por segundo para leitura em tempo real
+                    qrbox: { width: 280, height: 280 },
+                    aspectRatio: 1.0
+                },
+                (decodedText) => {
+                    processarCodigo(decodedText);
+                },
+                (error) => {}
+            ).then(() => {
+                setTimeout(obterTrackCamera, 800);
+            }).catch(err => {});
+        }
+
+        function alternarCamera() {
+            sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
+            iniciarCamera();
+        }
+
+        function obterTrackCamera() {
+            try {
+                let video = document.querySelector("#reader video");
+                if (video && video.srcObject) {
+                    trackCamera = video.srcObject.getVideoTracks()[0];
+                }
+            } catch(e) {}
+        }
+
+        async function alternarFlash() {
+            if (!trackCamera || sensorAtual === "user") return;
+            try {
+                flashLigado = !flashLigado;
+                await trackCamera.applyConstraints({ advanced: [{ torch: flashLigado }] });
+                document.getElementById('btn-flash').innerText = flashLigado ? "⚡ Flash ON" : "🔦 Flash";
+            } catch(e) {}
+        }
+
+        // Leitura do PDF
+        document.getElementById('pdfInput').addEventListener('change', async function(e) {
+            let file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('uploadTxt').innerText = "Processando: " + file.name;
+            chaveHash = "rota_" + file.name + "_" + file.size;
+
+            let reader = new FileReader();
+            reader.onload = async function() {
+                let typedarray = new Uint8Array(this.result);
+                let pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let textoTotal = "";
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    let page = await pdf.getPage(i);
+                    let content = await page.getTextContent();
+                    let strings = content.items.map(item => item.str);
+                    textoTotal += strings.join(" ") + "\n";
+                }
+
+                extrairDadosRota(textoTotal);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function extrairDadosRota(texto) {
+            mapaRotas = {};
+            stopCorrespondente = {};
+            todosPacotes = new Set();
+            pacotesBipados = new Set();
+
+            let linhas = texto.split('\n');
+            let seqAuto = 0;
+
+            linhas.forEach(linha => {
+                let matchCods = linha.match(/BR[A-Za-z0-9]{10,22}/gi);
+                if (matchCods) {
+                    seqAuto++;
+                    let mNum = linha.match(/^(\d{1,3})\b/);
+                    let stopNum = mNum ? parseInt(mNum[1]) : seqAuto;
+
+                    matchCods.forEach(c => {
+                        let codUp = c.toUpperCase();
+                        todosPacotes.add(codUp);
+                        stopCorrespondente[codUp] = stopNum;
+                        
+                        let endKey = "end_" + stopNum;
+                        if (!mapaRotas[endKey]) mapaRotas[endKey] = [];
+                        mapaRotas[endKey].push(codUp);
+                    });
+                }
+            });
+
+            // Restaura pacotes salvos no navegador
+            let salvos = localStorage.getItem(chaveHash);
+            if (salvos) pacotesBipados = new Set(JSON.parse(salvos));
+
+            salvarSessao();
+            atualizarPainel();
+        }
+
+        function processarCodigo(codigoBruto) {
+            if (!codigoBruto) return;
+            let m = codigoBruto.match(/BR[A-Za-z0-9]{8,25}/i);
+            let codLimpo = m ? m[0].toUpperCase() : codigoBruto.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
+            let identificado = null;
+            for (let c of todosPacotes) {
+                if (c === codLimpo || codigoBruto.toUpperCase().includes(c) || c.includes(codLimpo)) {
+                    identificado = c;
+                    break;
+                }
+            }
+
+            if (identificado) {
+                pacotesBipados.add(identificado);
+                localStorage.setItem(chaveHash, JSON.stringify(Array.from(pacotesBipados)));
+                salvarSessao();
+
+                let numP = stopCorrespondente[identificado] || "?";
+                let listaDuplos = [];
+                for (let k in mapaRotas) {
+                    if (mapaRotas[k].includes(identificado)) {
+                        listaDuplos = mapaRotas[k];
+                        break;
+                    }
+                }
+
+                // Beep e Fala
+                playBeep();
+                falarNumero(numP, listaDuplos.length > 1);
+
+                // Exibe Resultado
+                document.getElementById('cardResultado').style.display = "block";
+                document.getElementById('resStop').innerText = "P" + numP;
+                document.getElementById('resPacote').innerText = "📍 " + identificado;
+
+                let aviso = document.getElementById('resAviso');
+                if (listaDuplos.length > 1) {
+                    let outros = listaDuplos.filter(x => x !== identificado).map(x => "P" + stopCorrespondente[x]);
+                    aviso.style.display = "block";
+                    aviso.innerText = "⚠️ MESMO ENDEREÇO! Também tem: " + outros.join(", ");
+                } else {
+                    aviso.style.display = "none";
+                }
+
+                atualizarPainel();
+                document.getElementById('inputManual').value = "";
+            }
+        }
+
+        function atualizarPainel() {
+            let bip = pacotesBipados.size;
+            let tot = todosPacotes.size;
+            let paradas = Object.keys(mapaRotas).length;
+
+            document.getElementById('stBipados').innerText = `${bip} / ${tot}`;
+            document.getElementById('stParadas').innerText = paradas;
+            document.getElementById('stFaltam').innerText = Math.max(0, tot - bip);
+        }
+
+        function playBeep() {
+            try {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.1);
+            } catch(e) {}
+        }
+
+        function falarNumero(num, ehDuplo) {
+            try {
+                window.speechSynthesis.cancel();
+                let txt = "" + num;
+                if (ehDuplo) txt += " Atenção! Mesmo endereço!";
+                let msg = new SpeechSynthesisUtterance(txt);
+                msg.lang = 'pt-BR';
+                window.speechSynthesis.speak(msg);
+            } catch(e) {}
+        }
+
+        function zerarBipagens() {
+            pacotesBipados.clear();
+            localStorage.removeItem(chaveHash);
+            salvarSessao();
+            atualizarPainel();
+            document.getElementById('cardResultado').style.display = "none";
+        }
+
+        function salvarSessao() {
+            let dados = {
+                chaveHash,
+                mapaRotas,
+                stopCorrespondente,
+                todosPacotes: Array.from(todosPacotes),
+                pacotesBipados: Array.from(pacotesBipados)
+            };
+            localStorage.setItem("sessao_ativa", JSON.stringify(dados));
+        }
+
+        function recuperarSessao() {
+            let s = localStorage.getItem("sessao_ativa");
+            if (s) {
+                let d = JSON.parse(s);
+                chaveHash = d.chaveHash;
+                mapaRotas = d.mapaRotas;
+                stopCorrespondente = d.stopCorrespondente;
+                todosPacotes = new Set(d.todosPacotes);
+                pacotesBipados = new Set(d.pacotesBipados);
+                atualizarPainel();
+            }
+        }
+    </script>
+</body>
+</html>
