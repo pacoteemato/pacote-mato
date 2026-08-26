@@ -16,7 +16,7 @@
 
     <!-- Bibliotecas PDF.js e Leitor QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
         :root {
@@ -237,7 +237,7 @@
             padding-bottom: 4px;
         }
 
-        /* CÂMERA NATIVA PURA */
+        /* CÂMERA */
         .camera-header { text-align: center; margin-bottom: 8px; }
         .camera-title { font-size: 1.05rem; font-weight: 900; color: var(--text-app); text-transform: uppercase; }
         .camera-sub { font-size: 0.78rem; color: var(--subtext); }
@@ -251,17 +251,11 @@
             background-color: #000000;
             margin-bottom: 15px;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        #camVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
+        #reader-wrapper { width: 100%; height: 100%; }
+        #reader { width: 100% !important; height: 100% !important; }
+        #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 
         .btn-cam-ctrl {
             position: absolute;
@@ -419,8 +413,9 @@
             <div class="camera-box">
                 <button class="btn-cam-ctrl" id="btn-flip" onclick="alternarCamera()">🤳 Virar</button>
                 <button class="btn-cam-ctrl" id="btn-flash" onclick="alternarFlash()">🔦 Flash</button>
-                <video id="camVideo" playsinline autoplay muted></video>
-                <canvas id="hiddenCanvas" style="display:none;"></canvas>
+                <div id="reader-wrapper">
+                    <div id="reader"></div>
+                </div>
             </div>
 
             <div class="custom-card" id="cardResult">
@@ -450,11 +445,10 @@
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        let streamCamera = null;
+        let html5QrCode = null;
         let sensorAtual = "environment"; // "environment" ou "user"
-        let loopLeitura = null;
         let flashLigado = false;
-        let trocando = false;
+        let processandoTroca = false;
 
         let mapaRotas = {};
         let stopCorrespondente = {};
@@ -462,8 +456,6 @@
         let todosPacotes = new Set();
         let pacotesBipados = new Set();
         let chaveStorageAtual = null;
-
-        const detectorNativo = ('BarcodeDetector' in window) ? new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'code_39'] }) : null;
 
         const temas = {
             dark: { bg_app:"#000000", text_app:"#FFFFFF", card_bg:"#0B0B0B", border:"#FFFFFF", btn_bg:"#FFFFFF", btn_text:"#000000", subtext:"#AAAAAA", shadow:"rgba(255,255,255,0.12)" },
@@ -535,101 +527,89 @@
         }
         ativarWakeLock();
 
-        // MOTOR DE CÂMERA 100% NATIVO PARA ANDROID/IOS
-        async function pararCamera() {
-            if (loopLeitura) {
-                cancelAnimationFrame(loopLeitura);
-                loopLeitura = null;
+        // ------------------------------------------------------------------
+        // DESLIGAMENTO FORÇADO DO HARDWARE ANTES DE TROCAR (DESTRAVA NO ANDROID)
+        // ------------------------------------------------------------------
+        async function finalizarCameraHardware() {
+            if (html5QrCode) {
+                try {
+                    if (html5QrCode.isScanning) {
+                        await html5QrCode.stop();
+                    }
+                    await html5QrCode.clear();
+                } catch(e) {}
+                html5QrCode = null;
             }
-            if (streamCamera) {
-                streamCamera.getTracks().forEach(t => t.stop());
-                streamCamera = null;
+
+            // Desliga fisicamente os canais de vídeo do aparelho
+            let videoEl = document.querySelector('#reader video');
+            if (videoEl && videoEl.srcObject) {
+                try {
+                    videoEl.srcObject.getTracks().forEach(track => track.stop());
+                } catch(e) {}
             }
-            let video = document.getElementById('camVideo');
-            if (video) video.srcObject = null;
+
+            // Recria a div DOM limpa
+            let wrap = document.getElementById('reader-wrapper');
+            if (wrap) {
+                wrap.innerHTML = '<div id="reader"></div>';
+            }
         }
 
         async function iniciarScanner() {
-            if (trocando) return;
-            trocando = true;
+            if (processandoTroca) return;
+            processandoTroca = true;
 
-            await pararCamera();
+            await finalizarCameraHardware();
+            await new Promise(r => setTimeout(r, 200));
 
-            let video = document.getElementById('camVideo');
+            html5QrCode = new Html5Qrcode("reader");
 
-            // Regras universais: sem restrições rígidas que quebram no sensor de selfie
-            const constraints = {
-                video: {
-                    facingMode: sensorAtual
-                },
-                audio: false
+            const config = {
+                fps: 20,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
             };
 
             try {
-                streamCamera = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = streamCamera;
-                
-                video.onloadedmetadata = () => {
-                    video.play().then(() => {
-                        iniciarLoopLeitura();
-                        trocando = false;
-                    }).catch(() => { trocando = false; });
-                };
-            } catch (err) {
-                // Fallback geral se o aparelho não aceitar facingMode exato
+                // Tenta abrir direto pelo modo (environment / user)
+                await html5QrCode.start(
+                    { facingMode: sensorAtual },
+                    config,
+                    (txt) => { processarCodigo(txt); },
+                    (err) => {}
+                );
+                processandoTroca = false;
+            } catch (errFacing) {
+                // Se o Android rejeitar facingMode, busca a lista física de lentes
                 try {
-                    streamCamera = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                    video.srcObject = streamCamera;
-                    video.onloadedmetadata = () => {
-                        video.play().then(() => {
-                            iniciarLoopLeitura();
-                            trocando = false;
-                        }).catch(() => { trocando = false; });
-                    };
-                } catch(err2) {
-                    trocando = false;
-                }
-            }
-        }
-
-        function iniciarLoopLeitura() {
-            let video = document.getElementById('camVideo');
-            let canvas = document.getElementById('hiddenCanvas');
-            let ctx = canvas.getContext('2d', { willReadFrequently: true });
-            let ultimoTempo = 0;
-
-            async function loop(tempo) {
-                if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
-                    if (tempo - ultimoTempo > 80) {
-                        ultimoTempo = tempo;
-
-                        if (detectorNativo) {
-                            try {
-                                const codes = await detectorNativo.detect(video);
-                                if (codes && codes.length > 0) {
-                                    processarCodigo(codes[0].rawValue);
-                                }
-                            } catch(e) {}
-                        } else if (window.jsQR) {
-                            canvas.width = video.videoWidth;
-                            canvas.height = video.videoHeight;
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                            let code = jsQR(imgData.data, imgData.width, imgData.height);
-                            if (code && code.data) {
-                                processarCodigo(code.data);
-                            }
+                    const devices = await Html5Qrcode.getCameras();
+                    if (devices && devices.length > 0) {
+                        let camAlvo = devices[0].id;
+                        if (sensorAtual === "user") {
+                            let front = devices.find(d => {
+                                let l = (d.label || '').toLowerCase();
+                                return l.includes('front') || l.includes('user') || l.includes('selfie') || l.includes('frontal');
+                            });
+                            if (front) camAlvo = front.id;
+                            else if (devices.length > 1) camAlvo = devices[devices.length - 1].id;
+                        } else {
+                            let back = devices.find(d => {
+                                let l = (d.label || '').toLowerCase();
+                                return l.includes('back') || l.includes('environment') || l.includes('traseira');
+                            });
+                            if (back) camAlvo = back.id;
                         }
-                    }
-                }
-                loopLeitura = requestAnimationFrame(loop);
-            }
 
-            loopLeitura = requestAnimationFrame(loop);
+                        await html5QrCode.start(camAlvo, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                    }
+                } catch(e) {}
+                processandoTroca = false;
+            }
         }
 
         async function alternarCamera() {
-            if (trocando) return;
+            if (processandoTroca) return;
             sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
             
             let btnFlash = document.getElementById('btn-flash');
@@ -647,19 +627,14 @@
         }
 
         async function alternarFlash() {
-            if (!streamCamera || sensorAtual === "user") return;
+            if (sensorAtual === "user" || !html5QrCode) return;
             try {
-                let track = streamCamera.getVideoTracks()[0];
-                if (track) {
-                    let caps = track.getCapabilities ? track.getCapabilities() : {};
-                    if (caps.torch) {
-                        flashLigado = !flashLigado;
-                        await track.applyConstraints({ advanced: [{ torch: flashLigado }] });
-                        document.getElementById('btn-flash').innerText = flashLigado ? "⚡ Flash ON" : "🔦 Flash";
-                    }
-                }
+                flashLigado = !flashLigado;
+                await html5QrCode.applyVideoConstraints({ advanced: [{ torch: flashLigado }] });
+                document.getElementById('btn-flash').innerText = flashLigado ? "⚡ Flash ON" : "🔦 Flash";
             } catch(e) {}
         }
+        // ------------------------------------------------------------------
 
         function normalizarEndereco(texto) {
             if (!texto) return "";
