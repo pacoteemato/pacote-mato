@@ -6,6 +6,14 @@
     <title>PACOTE É MATO</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
     
+    <!-- Configurações PWA para virar aplicativo nativo -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+
     <!-- PDF.js e HTML5 QR Code Scanner -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -47,7 +55,7 @@
             padding: 0 14px;
         }
 
-        /* BARRA LATERAL (MENU DRAWER) */
+        /* BARRA LATERAL */
         .sidebar-toggle {
             position: fixed;
             top: 14px;
@@ -397,6 +405,11 @@
     </div>
 
     <script>
+        // Registrar PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent("self.addEventListener('fetch', function(event) {});")).catch(() => {});
+        }
+
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         let html5QrCode = null;
@@ -497,7 +510,6 @@
             } catch(e) {}
         }
 
-        // Normalização rigorosa de endereço (Rua + Número)
         function normalizarEndereco(texto) {
             if (!texto) return "";
             let m = texto.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa)\s+([^,]+?)\s*,\s*(\d+)/i);
@@ -506,7 +518,6 @@
                 let numLimpo = m[2].trim();
                 return ruaLimpa + "_" + numLimpo;
             }
-            // Procura qualquer padrão com vírgula e número (ex: Nome da Rua, 123)
             let mGenerico = texto.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
             if (mGenerico) {
                 let r = mGenerico[1].toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
@@ -523,7 +534,6 @@
             return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
         }
 
-        // Leitura do PDF agrupando linhas por coordenadas para não cortar endereços
         document.getElementById('pdfInput').addEventListener('change', async function(e) {
             let file = e.target.files[0];
             if (!file) return;
@@ -540,7 +550,6 @@
                     let page = await pdf.getPage(i);
                     let content = await page.getTextContent();
                     
-                    // Agrupa palavras pela mesma linha física (altura Y)
                     let itensPorLinha = {};
                     content.items.forEach(item => {
                         let y = Math.round(item.transform[5]);
@@ -548,7 +557,6 @@
                         itensPorLinha[y].push(item.str);
                     });
 
-                    // Ordena do topo para a base da página
                     let chavesY = Object.keys(itensPorLinha).sort((a, b) => b - a);
                     chavesY.forEach(y => {
                         let linhaCompleta = itensPorLinha[y].join(" ").trim();
@@ -616,7 +624,6 @@
                 }
             });
 
-            // Constrói lista de endereços com múltiplos pacotes
             let htmlDuplos = "";
             let temDuplo = false;
             for (let end in mapaRotas) {
