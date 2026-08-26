@@ -443,9 +443,10 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         let html5QrCode = null;
-        let sensorAtual = "environment";
+        let modoCamera = "environment"; // "environment" ou "user"
         let trackCamera = null;
         let flashLigado = false;
+        let alternando = false;
 
         let mapaRotas = {};
         let stopCorrespondente = {};
@@ -524,37 +525,85 @@
         }
         ativarWakeLock();
 
-        // MOTOR ORIGINAL DE CÂMERA
-        function iniciarScanner() {
+        // MOTOR DE CÂMERA COM SUPORTE TOTAL A TROCA SEM TELA PRETA
+        async function pararScannerAtual() {
+            if (trackCamera) {
+                try { trackCamera.stop(); } catch(e) {}
+                trackCamera = null;
+            }
             if (html5QrCode) {
-                html5QrCode.stop().then(() => rodarCamera()).catch(() => rodarCamera());
-            } else {
-                html5QrCode = new Html5Qrcode("reader");
-                rodarCamera();
+                try {
+                    await html5QrCode.stop();
+                } catch(e) {}
             }
         }
 
-        function rodarCamera() {
-            html5QrCode.start(
-                { facingMode: sensorAtual },
-                { fps: 24, qrbox: { width: 280, height: 280 }, aspectRatio: 1.0 },
-                (txt) => { processarCodigo(txt); },
-                (err) => {}
-            ).then(() => {
+        async function iniciarScanner() {
+            await pararScannerAtual();
+
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            const config = { 
+                fps: 24, 
+                qrbox: { width: 270, height: 270 }
+            };
+
+            try {
+                // Descobre a lista de câmeras conectadas no aparelho
+                const cameras = await Html5Qrcode.getCameras();
+                let cameraId = null;
+
+                if (cameras && cameras.length > 0) {
+                    if (modoCamera === "user") {
+                        let front = cameras.find(c => {
+                            let l = (c.label || "").toLowerCase();
+                            return l.includes("front") || l.includes("frontal") || l.includes("user") || l.includes("selfie");
+                        });
+                        if (front) cameraId = front.id;
+                        else if (cameras.length > 1) cameraId = cameras[cameras.length - 1].id;
+                        else cameraId = cameras[0].id;
+                    } else {
+                        let back = cameras.find(c => {
+                            let l = (c.label || "").toLowerCase();
+                            return l.includes("back") || l.includes("traseira") || l.includes("rear") || l.includes("environment");
+                        });
+                        if (back) cameraId = back.id;
+                        else cameraId = cameras[0].id;
+                    }
+
+                    await html5QrCode.start(cameraId, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                } else {
+                    // Fallback
+                    await html5QrCode.start({ facingMode: modoCamera }, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                }
+
                 setTimeout(() => {
                     try {
                         let v = document.querySelector("#reader video");
-                        if (v && v.srcObject) trackCamera = v.srcObject.getVideoTracks()[0];
+                        if (v && v.srcObject) {
+                            trackCamera = v.srcObject.getVideoTracks()[0];
+                        }
                     } catch(e) {}
-                }, 800);
-            }).catch(() => {});
+                }, 400);
+
+            } catch(e) {
+                // Tentativa por facingMode caso falhe a seleção por ID
+                try {
+                    await html5QrCode.start({ facingMode: modoCamera }, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                } catch(errGrave) {}
+            }
         }
 
-        function alternarCamera() {
-            sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
+        async function alternarCamera() {
+            if (alternando) return;
+            alternando = true;
+
+            modoCamera = (modoCamera === "environment") ? "user" : "environment";
             
             let btnFlash = document.getElementById('btn-flash');
-            if (sensorAtual === "user") {
+            if (modoCamera === "user") {
                 document.getElementById('camTitle').innerText = "📸 BIPAR PACOTE (FRONTAL)";
                 btnFlash.style.display = 'none';
             } else {
@@ -564,11 +613,12 @@
                 flashLigado = false;
             }
 
-            iniciarScanner();
+            await iniciarScanner();
+            alternando = false;
         }
 
         async function alternarFlash() {
-            if (!trackCamera || sensorAtual === "user") return;
+            if (!trackCamera || modoCamera === "user") return;
             try {
                 flashLigado = !flashLigado;
                 await trackCamera.applyConstraints({ advanced: [{ torch: flashLigado }] });
