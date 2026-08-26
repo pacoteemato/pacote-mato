@@ -16,7 +16,7 @@
 
     <!-- Bibliotecas PDF.js e Leitor QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
     <style>
         :root {
@@ -237,7 +237,7 @@
             padding-bottom: 4px;
         }
 
-        /* CÂMERA */
+        /* CÂMERA NATIVA */
         .camera-header { text-align: center; margin-bottom: 8px; }
         .camera-title { font-size: 1.05rem; font-weight: 900; color: var(--text-app); text-transform: uppercase; }
         .camera-sub { font-size: 0.78rem; color: var(--subtext); }
@@ -251,22 +251,15 @@
             background-color: #000000;
             margin-bottom: 15px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        #reader-wrapper {
+        #camVideo {
             width: 100%;
             height: 100%;
-        }
-
-        #reader { 
-            width: 100% !important; 
-            height: 100% !important; 
-        }
-        
-        #reader video { 
-            width: 100% !important; 
-            height: 100% !important; 
-            object-fit: cover !important; 
+            object-fit: cover;
         }
 
         .btn-cam-ctrl {
@@ -425,9 +418,8 @@
             <div class="camera-box">
                 <button class="btn-cam-ctrl" id="btn-flip" onclick="alternarCamera()">🤳 Virar</button>
                 <button class="btn-cam-ctrl" id="btn-flash" onclick="alternarFlash()">🔦 Flash</button>
-                <div id="reader-wrapper">
-                    <div id="reader"></div>
-                </div>
+                <video id="camVideo" playsinline autoplay muted></video>
+                <canvas id="scanCanvas" style="display:none;"></canvas>
             </div>
 
             <div class="custom-card" id="cardResult">
@@ -457,11 +449,12 @@
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        let html5QrCode = null;
+        let streamAtual = null;
         let sensorAtual = "environment"; // "environment" ou "user"
         let trackCamera = null;
         let flashLigado = false;
-        let processandoTroca = false;
+        let scanningAtivo = false;
+        let loopScanId = null;
 
         let mapaRotas = {};
         let stopCorrespondente = {};
@@ -469,6 +462,8 @@
         let todosPacotes = new Set();
         let pacotesBipados = new Set();
         let chaveStorageAtual = null;
+
+        const detectorNativo = ('BarcodeDetector' in window) ? new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'code_39'] }) : null;
 
         const temas = {
             dark: { bg_app:"#000000", text_app:"#FFFFFF", card_bg:"#0B0B0B", border:"#FFFFFF", btn_bg:"#FFFFFF", btn_text:"#000000", subtext:"#AAAAAA", shadow:"rgba(255,255,255,0.12)" },
@@ -540,82 +535,102 @@
         }
         ativarWakeLock();
 
-        // Parada e limpeza completa do elemento DOM do vídeo
-        async function pararCameraTotal() {
-            if (trackCamera) {
-                try { trackCamera.stop(); } catch(e) {}
-                trackCamera = null;
+        // MOTOR DE CÂMERA NATIVO DIRETO NO VÍDEO
+        async function pararCamera() {
+            if (loopScanId) {
+                cancelAnimationFrame(loopScanId);
+                loopScanId = null;
             }
-            if (html5QrCode) {
-                try {
-                    if (html5QrCode.isScanning) {
-                        await html5QrCode.stop();
-                    }
-                    await html5QrCode.clear();
-                } catch(e) {}
-                html5QrCode = null;
+            scanningAtivo = false;
+
+            if (streamAtual) {
+                streamAtual.getTracks().forEach(t => t.stop());
+                streamAtual = null;
             }
-            // Recria a div no DOM para remover travas do navegador
-            let wrapper = document.getElementById('reader-wrapper');
-            if (wrapper) {
-                wrapper.innerHTML = '<div id="reader"></div>';
+            trackCamera = null;
+
+            let video = document.getElementById('camVideo');
+            if (video) {
+                video.srcObject = null;
             }
         }
 
         async function iniciarScanner() {
-            if (processandoTroca) return;
-            processandoTroca = true;
+            await pararCamera();
 
-            await pararCameraTotal();
-            await new Promise(r => setTimeout(r, 150));
-
-            html5QrCode = new Html5Qrcode("reader");
-
-            const config = { 
-                fps: 24, 
-                qrbox: { width: 260, height: 260 }
+            let video = document.getElementById('camVideo');
+            let constraints = {
+                video: {
+                    facingMode: sensorAtual === "user" ? "user" : { ideal: "environment" },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
             };
 
             try {
-                // Tenta abrir pelo facingMode
-                await html5QrCode.start(
-                    { facingMode: sensorAtual },
-                    config,
-                    (txt) => { processarCodigo(txt); },
-                    (err) => {}
-                );
-            } catch (errFacing) {
-                // Fallback: Busca pela lista física de câmeras
+                streamAtual = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = streamAtual;
+                trackCamera = streamAtual.getVideoTracks()[0];
+                await video.play();
+
+                scanningAtivo = true;
+                iniciarLoopLeitura();
+            } catch (err) {
+                // Fallback para qualquer vídeo disponível sem restrições
                 try {
-                    const cameras = await Html5Qrcode.getCameras();
-                    if (cameras && cameras.length > 0) {
-                        let camEscolhida = cameras[0].id;
-                        if (sensorAtual === "user") {
-                            let f = cameras.find(c => (c.label || '').toLowerCase().includes('front') || (c.label || '').toLowerCase().includes('user'));
-                            if (f) camEscolhida = f.id;
-                            else if (cameras.length > 1) camEscolhida = cameras[cameras.length - 1].id;
-                        } else {
-                            let b = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('environment'));
-                            if (b) camEscolhida = b.id;
+                    streamAtual = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    video.srcObject = streamAtual;
+                    trackCamera = streamAtual.getVideoTracks()[0];
+                    await video.play();
+
+                    scanningAtivo = true;
+                    iniciarLoopLeitura();
+                } catch(e2) {
+                    alert("⚠️ Permissão de câmera necessária para bipar!");
+                }
+            }
+        }
+
+        function iniciarLoopLeitura() {
+            let video = document.getElementById('camVideo');
+            let canvas = document.getElementById('scanCanvas');
+            let ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+            let ultimoScan = 0;
+
+            async function checarFrame(tempo) {
+                if (!scanningAtivo) return;
+
+                if (tempo - ultimoScan > 90 && video.readyState === video.HAVE_ENOUGH_DATA) {
+                    ultimoScan = tempo;
+
+                    if (detectorNativo) {
+                        try {
+                            let barcodes = await detectorNativo.detect(video);
+                            if (barcodes && barcodes.length > 0) {
+                                processarCodigo(barcodes[0].rawValue);
+                            }
+                        } catch (e) {}
+                    } else if (window.jsQR) {
+                        canvas.width = video.videoWidth || 640;
+                        canvas.height = video.videoHeight || 480;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        let code = jsQR(imgData.data, imgData.width, imgData.height);
+                        if (code && code.data) {
+                            processarCodigo(code.data);
                         }
-                        await html5QrCode.start(camEscolhida, config, (txt) => { processarCodigo(txt); }, (err) => {});
                     }
-                } catch(e) {}
+                }
+
+                loopScanId = requestAnimationFrame(checarFrame);
             }
 
-            setTimeout(() => {
-                try {
-                    let v = document.querySelector("#reader video");
-                    if (v && v.srcObject) {
-                        trackCamera = v.srcObject.getVideoTracks()[0];
-                    }
-                } catch(e) {}
-                processandoTroca = false;
-            }, 400);
+            loopScanId = requestAnimationFrame(checarFrame);
         }
 
         async function alternarCamera() {
-            if (processandoTroca) return;
             sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
             
             let btnFlash = document.getElementById('btn-flash');
@@ -647,11 +662,8 @@
         // Normalização precisa de logradouro + número
         function normalizarEndereco(texto) {
             if (!texto) return "";
-            
-            // Remove palavras de cabeçalho e ruídos
-            let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop)\b/gi, '').trim();
+            let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop|package)\b/gi, '').trim();
 
-            // Padrão 1: Tipo de logradouro (Rua, Av, etc) + nome + número
             let m = t.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa|rod(?:ovia)?\.?)\s+([^,]+?)\s*,\s*(\d+)/i);
             if (m) {
                 let r = m[1].toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -659,7 +671,6 @@
                 return r + "_" + n;
             }
 
-            // Padrão 2: Qualquer texto com vírgula e número (Ex: Nome da Rua, 120)
             let m2 = t.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
             if (m2) {
                 let r = m2[1].toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -677,7 +688,6 @@
             return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
         }
 
-        // Processamento do PDF por linhas exatas reconstruídas
         document.getElementById('pdfInput').addEventListener('change', async function(e) {
             let file = e.target.files[0];
             if (!file) return;
@@ -773,7 +783,6 @@
                         if (mNumAnt) stopNum = parseInt(mNumAnt[1]);
                     }
 
-                    // Tenta achar endereço na linha atual ou na linha anterior
                     let endKey = normalizarEndereco(linhaStr);
                     if (!endKey && idx > 0) {
                         endKey = normalizarEndereco(linhas[idx - 1]);
@@ -796,7 +805,6 @@
                 }
             });
 
-            // Recupera bipagens salvas
             if (chaveStorageAtual) {
                 let salvos = localStorage.getItem(chaveStorageAtual);
                 if (salvos) {
@@ -807,7 +815,6 @@
                 }
             }
 
-            // Monta a lista de duplos
             let htmlDuplos = "";
             let temDuplo = false;
             for (let end in mapaRotas) {
@@ -828,9 +835,17 @@
             iniciarScanner();
         }
 
+        let ultimoCodigoBipado = "";
+        let tempoUltimoBip = 0;
+
         function processarCodigo(codigoBruto) {
             if (!codigoBruto) return;
+            let agora = Date.now();
             let codLimpo = extrairCodigoChave(codigoBruto);
+
+            if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 2000)) {
+                return;
+            }
 
             let identificado = null;
             for (let c of todosPacotes) {
@@ -841,6 +856,9 @@
             }
 
             if (identificado) {
+                ultimoCodigoBipado = identificado;
+                tempoUltimoBip = agora;
+
                 pacotesBipados.add(identificado);
 
                 if (chaveStorageAtual) {
@@ -879,7 +897,10 @@
                 atualizarStats();
                 document.getElementById('inputManual').value = "";
             } else {
-                alert("❌ Código " + (codLimpo || codigoBruto) + " não encontrado no PDF!");
+                if (agora - tempoUltimoBip > 2500) {
+                    tempoUltimoBip = agora;
+                    alert("❌ Código " + (codLimpo || codigoBruto) + " não encontrado no PDF!");
+                }
             }
         }
 
