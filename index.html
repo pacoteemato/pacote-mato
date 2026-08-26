@@ -253,6 +253,7 @@
             overflow: hidden;
         }
 
+        #reader-container { width: 100%; height: 100%; }
         #reader { width: 100% !important; height: 100% !important; }
         #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 
@@ -412,7 +413,9 @@
             <div class="camera-box">
                 <button class="btn-cam-ctrl" id="btn-flip" onclick="alternarCamera()">🤳 Virar</button>
                 <button class="btn-cam-ctrl" id="btn-flash" onclick="alternarFlash()">🔦 Flash</button>
-                <div id="reader"></div>
+                <div id="reader-container">
+                    <div id="reader"></div>
+                </div>
             </div>
 
             <div class="custom-card" id="cardResult">
@@ -443,7 +446,7 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         let html5QrCode = null;
-        let sensorAtual = "environment";
+        let sensorAtual = "environment"; // "environment" ou "user"
         let trackCamera = null;
         let flashLigado = false;
         let trocandoCamera = false;
@@ -525,14 +528,15 @@
         }
         ativarWakeLock();
 
-        // Inicialização robusta e troca segura de câmera
-        async function pararCameraAtual() {
+        // Limpeza total de hardware de vídeo
+        async function finalizarCameraCompleta() {
             if (trackCamera) {
                 try {
                     trackCamera.stop();
                 } catch(e) {}
                 trackCamera = null;
             }
+
             if (html5QrCode) {
                 try {
                     if (html5QrCode.isScanning) {
@@ -540,6 +544,13 @@
                     }
                     await html5QrCode.clear();
                 } catch(e) {}
+                html5QrCode = null;
+            }
+
+            // Recria a div do reader limpa no DOM para zerar buffers do navegador
+            let cont = document.getElementById('reader-container');
+            if (cont) {
+                cont.innerHTML = '<div id="reader"></div>';
             }
         }
 
@@ -547,9 +558,11 @@
             if (trocandoCamera) return;
             trocandoCamera = true;
 
-            await pararCameraAtual();
-            
-            // Recria a instância limpa
+            await finalizarCameraCompleta();
+
+            // Pequeno intervalo para o sistema operacional liberar a lente anterior
+            await new Promise(r => setTimeout(r, 200));
+
             html5QrCode = new Html5Qrcode("reader");
 
             const config = { 
@@ -558,31 +571,58 @@
                 aspectRatio: 1.0 
             };
 
+            let cameraIniciada = false;
+
+            // Tentativa 1: Identificar o dispositivo exato pela lista de câmeras
             try {
-                // Tenta abrir pelo modo de direção (facingMode)
-                await html5QrCode.start(
-                    { facingMode: sensorAtual },
-                    config,
-                    (txt) => { processarCodigo(txt); },
-                    (err) => {}
-                );
-            } catch (errPrimario) {
-                // Fallback: Procura por lista de câmeras conectadas
-                try {
-                    const devices = await Html5Qrcode.getCameras();
-                    if (devices && devices.length) {
-                        let devId = devices[0].id;
-                        if (sensorAtual === "environment") {
-                            let back = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('traseira') || d.label.toLowerCase().includes('environment'));
-                            if (back) devId = back.id;
-                            else if (devices.length > 1) devId = devices[devices.length - 1].id;
-                        } else {
-                            let front = devices.find(d => d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('frontal') || d.label.toLowerCase().includes('user'));
-                            if (front) devId = front.id;
-                        }
-                        await html5QrCode.start(devId, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras && cameras.length > 0) {
+                    let idAlvo = null;
+                    if (sensorAtual === "user") {
+                        let camFront = cameras.find(c => {
+                            let label = (c.label || "").toLowerCase();
+                            return label.includes("front") || label.includes("frontal") || label.includes("user") || label.includes("selfie") || label.includes("delantera");
+                        });
+                        if (camFront) idAlvo = camFront.id;
+                        else if (cameras.length > 1) idAlvo = cameras[cameras.length - 1].id;
+                        else idAlvo = cameras[0].id;
+                    } else {
+                        let camBack = cameras.find(c => {
+                            let label = (c.label || "").toLowerCase();
+                            return label.includes("back") || label.includes("traseira") || label.includes("rear") || label.includes("environment");
+                        });
+                        if (camBack) idAlvo = camBack.id;
+                        else idAlvo = cameras[0].id;
                     }
-                } catch (errFallback) {}
+
+                    if (idAlvo) {
+                        await html5QrCode.start(idAlvo, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                        cameraIniciada = true;
+                    }
+                }
+            } catch (errDispositivos) {}
+
+            // Tentativa 2: Fallback padrão por restrição de face se não iniciou por ID
+            if (!cameraIniciada) {
+                try {
+                    await html5QrCode.start(
+                        { facingMode: sensorAtual },
+                        config,
+                        (txt) => { processarCodigo(txt); },
+                        (err) => {}
+                    );
+                    cameraIniciada = true;
+                } catch(errFacing) {}
+            }
+
+            // Tentativa 3: Forçar qualquer câmera disponível
+            if (!cameraIniciada) {
+                try {
+                    const cameras = await Html5Qrcode.getCameras();
+                    if (cameras && cameras.length > 0) {
+                        await html5QrCode.start(cameras[0].id, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                    }
+                } catch(e) {}
             }
 
             setTimeout(() => {
@@ -593,7 +633,7 @@
                     }
                 } catch(e) {}
                 trocandoCamera = false;
-            }, 600);
+            }, 500);
         }
 
         async function alternarCamera() {
