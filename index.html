@@ -55,7 +55,7 @@
             padding: 0 14px;
         }
 
-        /* BARRA DE NAVEGAÇÃO TOPO (HEADER) */
+        /* HEADER */
         .top-nav {
             width: 100%;
             max-width: 480px;
@@ -325,14 +325,12 @@
 </head>
 <body>
 
-    <!-- BARRA SUPERIOR PARA O MENU LATERAL -->
     <div class="top-nav">
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Menu</button>
     </div>
 
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- MENU LATERAL -->
     <div class="sidebar" id="sidebar">
         <h2><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f3cd_fe0f/512.gif" style="width:24px;"> PACOTE É MATO</h2>
         <div style="font-size:0.75rem; color:var(--subtext); margin-bottom:15px;">Sistema Inteligente de Triagem e Logística</div>
@@ -361,7 +359,6 @@
         </div>
     </div>
 
-    <!-- CONTAINER PRINCIPAL -->
     <div class="container">
         
         <div class="hero-card">
@@ -462,7 +459,6 @@
             gray: { bg_app:"#1C1C1E", text_app:"#F2F2F7", card_bg:"#2C2C2E", border:"#8E8E93", btn_bg:"#48484A", btn_text:"#FFFFFF", subtext:"#AEAEB2", shadow:"rgba(0,0,0,0.35)" }
         };
 
-        // Salvar e recuperar configurações permanentes
         function mudarTema(tipo, salvar = true) {
             let t = temas[tipo] || temas.dark;
             document.documentElement.style.setProperty('--bg-app', t.bg_app);
@@ -498,7 +494,6 @@
             if (selVoz) selVoz.value = vozSalva;
         }
 
-        // Executa imediatamente ao abrir
         carregarPreferenciasSalvas();
 
         function toggleSidebar() {
@@ -570,21 +565,16 @@
             } catch(e) {}
         }
 
+        // Normalização de endereço idêntica ao Python
         function normalizarEndereco(texto) {
             if (!texto) return "";
-            let m = texto.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa|rod(?:ovia)?\.?)\s+([^,]+?)\s*,\s*(\d+)/i);
+            let m = texto.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa)\s+([^,]+?)\s*,\s*(\d+)/i);
             if (m) {
-                let r = m[1].toLowerCase().replace(/[^a-z0-9]/g, '');
-                let n = m[2].trim();
-                return r + "_" + n;
+                let ruaLimpa = m[1].toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+                let numLimpo = m[2].trim();
+                return ruaLimpa + "_" + numLimpo;
             }
-            let m2 = texto.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
-            if (m2) {
-                let r = m2[1].toLowerCase().replace(/[^a-z0-9]/g, '');
-                let n = m2[2].trim();
-                return r + "_" + n;
-            }
-            return "";
+            return texto.toLowerCase().replace(/[^a-zA-Z0-9]/g, '').substring(0, 35);
         }
 
         function extrairCodigoChave(texto) {
@@ -594,6 +584,7 @@
             return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
         }
 
+        // Leitura precisa do PDF reconstruindo as linhas exatas do documento
         document.getElementById('pdfInput').addEventListener('change', async function(e) {
             let file = e.target.files[0];
             if (!file) return;
@@ -604,50 +595,69 @@
             reader.onload = async function() {
                 let typedarray = new Uint8Array(this.result);
                 let pdf = await pdfjsLib.getDocument(typedarray).promise;
-                let textoCompleto = "";
+                let linhasPdf = [];
 
                 for (let i = 1; i <= pdf.numPages; i++) {
                     let page = await pdf.getPage(i);
                     let content = await page.getTextContent();
                     
-                    let itens = content.items.sort((a, b) => {
-                        let yDiff = b.transform[5] - a.transform[5];
-                        if (Math.abs(yDiff) > 6) return yDiff;
-                        return a.transform[4] - b.transform[4];
+                    // Agrupa palavras pela mesma coordenada Y (mesma linha visual)
+                    let gruposY = {};
+                    content.items.forEach(item => {
+                        let y = Math.round(item.transform[5]);
+                        let achouGrupo = null;
+                        for (let k in gruposY) {
+                            if (Math.abs(k - y) <= 4) {
+                                achouGrupo = k;
+                                break;
+                            }
+                        }
+                        if (achouGrupo !== null) {
+                            gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
+                        } else {
+                            gruposY[y] = [{ x: item.transform[4], str: item.str }];
+                        }
                     });
 
-                    let textoPagina = itens.map(it => it.str).join(" ");
-                    textoCompleto += textoPagina + "\n";
+                    // Ordena linhas de cima para baixo
+                    let chaves = Object.keys(gruposY).sort((a, b) => b - a);
+                    chaves.forEach(k => {
+                        // Ordena itens da linha da esquerda para a direita
+                        gruposY[k].sort((a, b) => a.x - b.x);
+                        let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
+                        if (linhaTexto) linhasPdf.push(linhaTexto);
+                    });
                 }
 
-                processarTextoCompleto(textoCompleto);
+                processarLinhasExatas(linhasPdf);
             };
             reader.readAsArrayBuffer(file);
         });
 
-        function processarTextoCompleto(texto) {
+        function processarLinhasExatas(linhas) {
             mapaRotas = {};
             stopCorrespondente = {};
             nomeExibicao = {};
             todosPacotes = new Set();
             pacotesBipados = new Set();
 
-            let blocos = texto.split(/(?=\b\d{1,3}\s+(?:Rua|Av|Avenida|Alameda|Estrada|Rodovia|Travessa|[A-Z]))/i);
-            let seqAuto = 0;
+            let seqStopAuto = 0;
+            let termosIgnorar = ["ADDRESS", "NOTES", "CIRCUIT", "OPTIMIZED", "STOP", "DELIVERY", "ROUTE", "DISPATCH", "TOTAL", "PACKAGE", "POWERED BY"];
 
-            blocos.forEach(bloco => {
-                let blocoStr = bloco.trim();
-                if (!blocoStr) return;
+            linhas.forEach((linhaStr, idx) => {
+                linhaStr = linhaStr.trim();
+                if (!linhaStr) return;
 
-                let codsValidos = blocoStr.match(/BR[A-Za-z0-9]{10,20}/gi) || [];
+                let codsValidos = linhaStr.match(/BR[A-Za-z0-9]{10,20}/gi) || [];
 
                 if (codsValidos.length === 0) {
-                    let candidatos = blocoStr.match(/\b[A-Za-z0-9]{10,22}\b/g) || [];
+                    let candidatos = linhaStr.match(/\b[A-Za-z0-9]{10,22}\b/g) || [];
                     candidatos.forEach(c => {
                         let cUp = c.toUpperCase();
                         let ehNum = /^\d+$/.test(c);
                         let ehAlpha = /^[A-Za-z]+$/.test(c);
-                        if (!ehNum && !ehAlpha && !cUp.includes("CIRCUIT") && !cUp.includes("PACKAGE")) {
+                        let temIgnorar = termosIgnorar.some(t => cUp.includes(t));
+                        if (!ehNum && !ehAlpha && !temIgnorar) {
                             codsValidos.push(c);
                         }
                     });
@@ -656,20 +666,25 @@
                 codsValidos = codsValidos.map(c => c.toUpperCase());
 
                 if (codsValidos.length > 0) {
-                    seqAuto++;
-                    let mNum = blocoStr.match(/^(\d{1,3})\b/);
-                    let stopNum = mNum ? parseInt(mNum[1]) : seqAuto;
+                    seqStopAuto++;
+                    let stopNum = seqStopAuto;
+                    
+                    let mNum = linhaStr.match(/^(\d{1,3})\b/);
+                    if (mNum) {
+                        stopNum = parseInt(mNum[1]);
+                    } else if (idx > 0) {
+                        let mNumAnt = linhas[idx - 1].trim().match(/^(\d{1,3})$/);
+                        if (mNumAnt) stopNum = parseInt(mNumAnt[1]);
+                    }
 
-                    let endKey = normalizarEndereco(blocoStr);
-                    let nomeCurto = blocoStr.substring(0, 48).replace(/\s+/g, ' ');
-
+                    let endKey = normalizarEndereco(linhaStr);
                     if (!endKey || endKey.length < 3) {
-                        endKey = "end_parada_" + stopNum;
+                        endKey = "pacote_isolado_" + codsValidos[0];
                     }
 
                     if (!mapaRotas[endKey]) {
                         mapaRotas[endKey] = [];
-                        nomeExibicao[endKey] = nomeCurto;
+                        nomeExibicao[endKey] = linhaStr.substring(0, 45);
                     }
 
                     codsValidos.forEach(c => {
@@ -680,11 +695,12 @@
                 }
             });
 
+            // Constrói lista de endereços duplos corretamente
             let htmlDuplos = "";
             let temDuplo = false;
             for (let end in mapaRotas) {
                 let pacs = mapaRotas[end];
-                if (pacs.length > 1) {
+                if (pacs.length > 1 && !end.startsWith("pacote_isolado_")) {
                     temDuplo = true;
                     let stops = pacs.map(p => "P" + stopCorrespondente[p]).join(", ");
                     let nome = nomeExibicao[end] || end;
@@ -735,14 +751,14 @@
                 let aviso = document.getElementById('boxAviso');
                 let outrosStops = listaDuplos.filter(p => p !== identificado).map(p => "P" + stopCorrespondente[p]);
 
-                if (outrosStops.length > 0) {
+                if (outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_")) {
                     aviso.style.display = 'block';
                     aviso.innerText = "⚠️ MESMO ENDEREÇO! Este local também tem o(s) pacote(s): " + outrosStops.join(", ");
                 } else {
                     aviso.style.display = 'none';
                 }
 
-                falarParada(numP, outrosStops.length > 0, outrosStops[0]);
+                falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
                 atualizarStats();
                 document.getElementById('inputManual').value = "";
             } else {
