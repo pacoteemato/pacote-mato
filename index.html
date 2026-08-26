@@ -253,8 +253,21 @@
             overflow: hidden;
         }
 
-        #reader { width: 100% !important; height: 100% !important; }
-        #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+        #reader-wrapper {
+            width: 100%;
+            height: 100%;
+        }
+
+        #reader { 
+            width: 100% !important; 
+            height: 100% !important; 
+        }
+        
+        #reader video { 
+            width: 100% !important; 
+            height: 100% !important; 
+            object-fit: cover !important; 
+        }
 
         .btn-cam-ctrl {
             position: absolute;
@@ -412,7 +425,9 @@
             <div class="camera-box">
                 <button class="btn-cam-ctrl" id="btn-flip" onclick="alternarCamera()">🤳 Virar</button>
                 <button class="btn-cam-ctrl" id="btn-flash" onclick="alternarFlash()">🔦 Flash</button>
-                <div id="reader"></div>
+                <div id="reader-wrapper">
+                    <div id="reader"></div>
+                </div>
             </div>
 
             <div class="custom-card" id="cardResult">
@@ -446,7 +461,7 @@
         let sensorAtual = "environment"; // "environment" ou "user"
         let trackCamera = null;
         let flashLigado = false;
-        let trocando = false;
+        let processandoTroca = false;
 
         let mapaRotas = {};
         let stopCorrespondente = {};
@@ -525,77 +540,82 @@
         }
         ativarWakeLock();
 
-        // Para a câmera com liberação total do hardware
-        async function pararCamera() {
+        // Parada e limpeza completa do elemento DOM do vídeo
+        async function pararCameraTotal() {
             if (trackCamera) {
                 try { trackCamera.stop(); } catch(e) {}
                 trackCamera = null;
             }
             if (html5QrCode) {
                 try {
-                    await html5QrCode.stop();
+                    if (html5QrCode.isScanning) {
+                        await html5QrCode.stop();
+                    }
+                    await html5QrCode.clear();
                 } catch(e) {}
+                html5QrCode = null;
             }
-            // Força parada em todas as tracks ativas no navegador
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                try {
-                    let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                    stream.getTracks().forEach(t => t.stop());
-                } catch(e) {}
+            // Recria a div no DOM para remover travas do navegador
+            let wrapper = document.getElementById('reader-wrapper');
+            if (wrapper) {
+                wrapper.innerHTML = '<div id="reader"></div>';
             }
         }
 
         async function iniciarScanner() {
-            if (trocando) return;
-            trocando = true;
+            if (processandoTroca) return;
+            processandoTroca = true;
 
-            await pararCamera();
+            await pararCameraTotal();
+            await new Promise(r => setTimeout(r, 150));
 
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
-            }
+            html5QrCode = new Html5Qrcode("reader");
 
             const config = { 
                 fps: 24, 
-                qrbox: { width: 280, height: 280 },
-                aspectRatio: 1.0
+                qrbox: { width: 260, height: 260 }
             };
 
-            const cameraConfig = { facingMode: sensorAtual };
-
-            html5QrCode.start(
-                cameraConfig,
-                config,
-                (txt) => { processarCodigo(txt); },
-                (err) => {}
-            ).then(() => {
-                setTimeout(() => {
-                    try {
-                        let v = document.querySelector("#reader video");
-                        if (v && v.srcObject) {
-                            trackCamera = v.srcObject.getVideoTracks()[0];
-                        }
-                    } catch(e) {}
-                    trocando = false;
-                }, 400);
-            }).catch(async () => {
-                // Fallback de câmera caso exact facingMode falhe no aparelho
+            try {
+                // Tenta abrir pelo facingMode
+                await html5QrCode.start(
+                    { facingMode: sensorAtual },
+                    config,
+                    (txt) => { processarCodigo(txt); },
+                    (err) => {}
+                );
+            } catch (errFacing) {
+                // Fallback: Busca pela lista física de câmeras
                 try {
-                    const devices = await Html5Qrcode.getCameras();
-                    if (devices && devices.length > 0) {
-                        let target = devices[0].id;
-                        if (sensorAtual === "user" && devices.length > 1) {
-                            target = devices[devices.length - 1].id;
+                    const cameras = await Html5Qrcode.getCameras();
+                    if (cameras && cameras.length > 0) {
+                        let camEscolhida = cameras[0].id;
+                        if (sensorAtual === "user") {
+                            let f = cameras.find(c => (c.label || '').toLowerCase().includes('front') || (c.label || '').toLowerCase().includes('user'));
+                            if (f) camEscolhida = f.id;
+                            else if (cameras.length > 1) camEscolhida = cameras[cameras.length - 1].id;
+                        } else {
+                            let b = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('environment'));
+                            if (b) camEscolhida = b.id;
                         }
-                        await html5QrCode.start(target, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                        await html5QrCode.start(camEscolhida, config, (txt) => { processarCodigo(txt); }, (err) => {});
                     }
                 } catch(e) {}
-                trocando = false;
-            });
+            }
+
+            setTimeout(() => {
+                try {
+                    let v = document.querySelector("#reader video");
+                    if (v && v.srcObject) {
+                        trackCamera = v.srcObject.getVideoTracks()[0];
+                    }
+                } catch(e) {}
+                processandoTroca = false;
+            }, 400);
         }
 
         async function alternarCamera() {
-            if (trocando) return;
+            if (processandoTroca) return;
             sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
             
             let btnFlash = document.getElementById('btn-flash');
@@ -624,15 +644,30 @@
             } catch(e) {}
         }
 
+        // Normalização precisa de logradouro + número
         function normalizarEndereco(texto) {
             if (!texto) return "";
-            let m = texto.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa)\s+([^,]+?)\s*,\s*(\d+)/i);
+            
+            // Remove palavras de cabeçalho e ruídos
+            let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop)\b/gi, '').trim();
+
+            // Padrão 1: Tipo de logradouro (Rua, Av, etc) + nome + número
+            let m = t.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa|rod(?:ovia)?\.?)\s+([^,]+?)\s*,\s*(\d+)/i);
             if (m) {
-                let ruaLimpa = m[1].toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
-                let numLimpo = m[2].trim();
-                return ruaLimpa + "_" + numLimpo;
+                let r = m[1].toLowerCase().replace(/[^a-z0-9]/g, '');
+                let n = m[2].trim();
+                return r + "_" + n;
             }
-            return texto.toLowerCase().replace(/[^a-zA-Z0-9]/g, '').substring(0, 35);
+
+            // Padrão 2: Qualquer texto com vírgula e número (Ex: Nome da Rua, 120)
+            let m2 = t.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
+            if (m2) {
+                let r = m2[1].toLowerCase().replace(/[^a-z0-9]/g, '');
+                let n = m2[2].trim();
+                return r + "_" + n;
+            }
+
+            return "";
         }
 
         function extrairCodigoChave(texto) {
@@ -642,6 +677,7 @@
             return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
         }
 
+        // Processamento do PDF por linhas exatas reconstruídas
         document.getElementById('pdfInput').addEventListener('change', async function(e) {
             let file = e.target.files[0];
             if (!file) return;
@@ -737,7 +773,12 @@
                         if (mNumAnt) stopNum = parseInt(mNumAnt[1]);
                     }
 
+                    // Tenta achar endereço na linha atual ou na linha anterior
                     let endKey = normalizarEndereco(linhaStr);
+                    if (!endKey && idx > 0) {
+                        endKey = normalizarEndereco(linhas[idx - 1]);
+                    }
+
                     if (!endKey || endKey.length < 3) {
                         endKey = "pacote_isolado_" + codsValidos[0];
                     }
@@ -755,6 +796,7 @@
                 }
             });
 
+            // Recupera bipagens salvas
             if (chaveStorageAtual) {
                 let salvos = localStorage.getItem(chaveStorageAtual);
                 if (salvos) {
@@ -765,6 +807,7 @@
                 }
             }
 
+            // Monta a lista de duplos
             let htmlDuplos = "";
             let temDuplo = false;
             for (let end in mapaRotas) {
