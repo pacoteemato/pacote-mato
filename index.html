@@ -3,33 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PACOTE É MATO</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <title>PACOTE É MATO - Ultra Rápido</title>
     
-    <!-- Configurações PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000" id="metaThemeColor">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
-
-    <!-- Bibliotecas PDF.js e Leitor ZXing -->
+    <!-- Bibliotecas: Leitor de PDF e Scanner QR Code Ultra Rápido -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script src="https://unpkg.com/@zxing/library@0.19.1"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
-        :root {
-            --bg-app: #000000;
-            --text-app: #FFFFFF;
-            --card-bg: #0B0B0B;
-            --border: #FFFFFF;
-            --btn-bg: #FFFFFF;
-            --btn-text: #000000;
-            --subtext: #AAAAAA;
-            --shadow: rgba(255,255,255,0.12);
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -39,786 +19,362 @@
         }
 
         body {
-            background-color: var(--bg-app);
-            color: var(--text-app);
+            background-color: #000000;
+            color: #FFFFFF;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 14px;
             min-height: 100vh;
-            padding-bottom: 2rem;
-            transition: background-color 0.2s, color 0.2s;
         }
 
-        .container {
+        .header-card {
             width: 100%;
             max-width: 480px;
-            padding: 0 14px;
-        }
-
-        /* HEADER */
-        .top-nav {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 12px 14px;
-            margin-bottom: 4px;
-        }
-
-        .sidebar-toggle {
-            background: var(--card-bg);
-            color: var(--text-app);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            padding: 7px 14px;
-            font-size: 1.1rem;
-            font-weight: 900;
-            cursor: pointer;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        /* DRAWER LATERAL */
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.75);
-            z-index: 99998;
-            display: none;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 280px;
-            height: 100%;
-            background: var(--card-bg);
-            border-right: 2px solid var(--border);
-            z-index: 99999;
-            padding: 22px 18px;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-            color: var(--text-app);
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar h2 {
-            font-size: 1.2rem;
-            font-weight: 900;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .sidebar-item {
-            margin-top: 16px;
-        }
-
-        .sidebar-item label {
-            font-size: 0.85rem;
-            font-weight: 800;
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        .sidebar select, .sidebar button {
-            width: 100%;
-            padding: 11px;
-            border-radius: 10px;
-            border: 2px solid var(--border);
-            background: var(--btn-bg);
-            color: var(--btn-text);
-            font-weight: 900;
-            font-size: 0.88rem;
-            cursor: pointer;
-        }
-
-        /* HERO CARD */
-        .hero-card {
-            background-color: var(--card-bg);
-            padding: 22px 16px;
-            border-radius: 20px;
-            border: 2px solid var(--border);
-            text-align: center;
-            box-shadow: 0 8px 24px var(--shadow);
-            margin-bottom: 14px;
-        }
-        .welcome-logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; }
-        .welcome-title { font-size: 1.8rem; font-weight: 900; color: var(--text-app); letter-spacing: 2px; text-transform: uppercase; }
-        .welcome-subtitle { font-size: 0.72rem; color: var(--subtext); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
-
-        /* UPLOAD CARD */
-        .upload-card {
-            background-color: var(--card-bg);
-            padding: 20px 16px;
+            background-color: #0B0B0B;
+            border: 2px solid #FFFFFF;
             border-radius: 18px;
-            border: 2px dashed var(--border);
+            padding: 14px;
             text-align: center;
-            margin-bottom: 14px;
-            box-shadow: 0 4px 14px var(--shadow);
-        }
-        .upload-title { font-size: 1.1rem; font-weight: 800; color: var(--text-app); margin-bottom: 4px; }
-        .upload-sub { font-size: 0.8rem; color: var(--subtext); margin-bottom: 12px; }
-        .upload-arrow { font-size: 1.6rem; margin-bottom: 10px; animation: bounce 1.5s infinite; }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(6px); }
-            60% { transform: translateY(3px); }
+            margin-bottom: 12px;
+            box-shadow: 0 4px 14px rgba(255,255,255,0.1);
         }
 
-        .btn-upload-file {
-            width: 100%;
-            background-color: var(--btn-bg);
-            color: var(--btn-text);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
+        .header-title {
+            font-size: 1.4rem;
             font-weight: 900;
-            font-size: 0.95rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
         }
 
-        /* STATS BANNER */
-        .stat-banner {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 16px 8px;
-            border: 2px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-            margin-bottom: 16px;
-            box-shadow: 0 6px 18px var(--shadow);
-        }
-        .stat-item { flex: 1; }
-        .stat-value { font-size: 1.6rem; font-weight: 900; color: var(--text-app); line-height: 1.1; }
-        .stat-label { font-size: 0.78rem; color: var(--subtext); font-weight: 900; margin-top: 4px; letter-spacing: 0.8px; text-transform: uppercase; }
-
-        /* EXPANDER DUPLOS */
-        .expander {
-            background-color: var(--card-bg);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 15px;
-            cursor: pointer;
-        }
-        .expander-header {
+        .header-sub {
+            font-size: 0.7rem;
+            color: #AAAAAA;
             font-weight: 800;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-        }
-        .expander-content {
-            margin-top: 10px;
-            font-size: 0.85rem;
-            display: none;
-            border-top: 1px solid var(--border);
-            padding-top: 8px;
-            line-height: 1.6;
-        }
-        .item-duplo {
-            margin-bottom: 8px;
-            border-bottom: 1px dashed rgba(255,255,255,0.15);
-            padding-bottom: 4px;
+            letter-spacing: 1px;
         }
 
-        /* CÂMERA NATIVA ZXING */
-        .camera-header { text-align: center; margin-bottom: 8px; }
-        .camera-title { font-size: 1.05rem; font-weight: 900; color: var(--text-app); text-transform: uppercase; }
-        .camera-sub { font-size: 0.78rem; color: var(--subtext); }
+        .upload-box {
+            width: 100%;
+            max-width: 480px;
+            background: #0B0B0B;
+            border: 2px dashed #FFFFFF;
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
 
-        .camera-box {
+        .stats-grid {
+            width: 100%;
+            max-width: 480px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            background: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 14px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 900;
+        }
+
+        .stat-lbl {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #AAAAAA;
+            text-transform: uppercase;
+        }
+
+        /* Container da Câmera em Destaque */
+        .camera-wrapper {
             position: relative;
             width: 100%;
+            max-width: 480px;
             height: 480px;
-            border-radius: 18px;
-            border: 2px solid var(--border);
-            background-color: #000000;
-            margin-bottom: 15px;
+            border: 2px solid #FFFFFF;
+            border-radius: 20px;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: #000000;
+            margin-bottom: 12px;
         }
 
-        #videoElement {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        #reader {
+            width: 100% !important;
+            height: 100% !important;
         }
 
-        .btn-cam-ctrl {
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        .btn-action {
             position: absolute;
-            z-index: 9999;
-            background: var(--btn-bg);
-            color: var(--btn-text);
-            border: 2px solid var(--border);
-            padding: 6px 14px;
-            border-radius: 18px;
+            z-index: 10;
+            background: #FFFFFF;
+            color: #000000;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
             font-weight: 900;
-            font-size: 12px;
+            font-size: 0.8rem;
             cursor: pointer;
-            box-shadow: 0 2px 8px var(--shadow);
         }
-        #btn-flip { top: 10px; left: 10px; }
-        #btn-flash { top: 10px; right: 10px; }
 
-        /* RESULT CARD */
-        .custom-card {
-            background-color: var(--card-bg);
+        #btn-flip { top: 12px; left: 12px; }
+        #btn-flash { top: 12px; right: 12px; }
+
+        .result-card {
+            width: 100%;
+            max-width: 480px;
+            background: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 16px;
             padding: 16px;
-            border-radius: 14px;
-            border: 2px solid var(--border);
-            margin-bottom: 15px;
             text-align: center;
-            color: var(--text-app);
-            box-shadow: 0 4px 14px var(--shadow);
+            margin-bottom: 12px;
             display: none;
         }
-        .stop-number-big { font-size: 4.2rem; font-weight: 900; color: var(--text-app); line-height: 1; margin-bottom: 8px; }
 
-        .warning-box {
-            background: rgba(255, 204, 0, 0.2);
-            border: 2px solid #FFCC00;
-            color: #FFCC00;
-            font-weight: 800;
+        .stop-big {
+            font-size: 4.8rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .warning-card {
+            background: #FFCC00;
+            color: #000000;
+            font-weight: 900;
+            font-size: 0.85rem;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .manual-input {
+            width: 100%;
+            max-width: 480px;
+            background: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 12px;
+            padding: 12px;
+            color: #FFFFFF;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .btn-reset {
+            width: 100%;
+            max-width: 480px;
+            background: transparent;
+            color: #FF4444;
+            border: 1px solid #FF4444;
             padding: 10px;
             border-radius: 10px;
-            margin-bottom: 14px;
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .input-manual {
-            width: 100%;
-            padding: 12px;
-            background: var(--card-bg);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            color: var(--text-app);
             font-weight: 800;
-            margin-bottom: 15px;
+            cursor: pointer;
+            margin-bottom: 20px;
         }
-
-        .pix-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 16px;
-            text-align: center;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px var(--shadow);
-        }
-        .pix-title { font-size: 0.95rem; font-weight: 900; color: var(--text-app); margin-bottom: 6px; letter-spacing: 0.5px; }
-        .pix-desc { font-size: 0.82rem; color: var(--subtext); margin-bottom: 12px; line-height: 1.4; }
-        .pix-key { font-size: 0.9rem; font-weight: 800; color: var(--text-app); background: rgba(127,127,127,0.18); padding: 6px 10px; border-radius: 8px; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <div class="top-nav">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Menu</button>
+    <div class="header-card">
+        <div class="header-title">🏍️ PACOTE É MATO</div>
+        <div class="header-sub">SISTEMA INTELIGENTE DE LOGÍSTICA (ULTRA RÁPIDO)</div>
     </div>
 
-    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="upload-box" onclick="document.getElementById('pdfInput').click()">
+        <span id="uploadTxt">📄 Toque para carregar o PDF da Rota</span>
+        <input type="file" id="pdfInput" accept="application/pdf" style="display:none">
+    </div>
 
-    <div class="sidebar" id="sidebar">
-        <h2><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f3cd_fe0f/512.gif" style="width:24px;"> PACOTE É MATO</h2>
-        <div style="font-size:0.75rem; color:var(--subtext); margin-bottom:15px;">Sistema Inteligente de Triagem e Logística</div>
-        <hr style="border:0; border-top:1px solid var(--border); margin-bottom:15px;">
-
-        <div class="sidebar-item">
-            <label>🎨 Modo de Cor</label>
-            <select id="selTema" onchange="mudarTema(this.value, true)">
-                <option value="dark">Preto (Dark)</option>
-                <option value="light">Branco (Light)</option>
-                <option value="gray">Cinza (Gray)</option>
-            </select>
+    <div class="stats-grid">
+        <div>
+            <div class="stat-val" id="stBipados">0 / 0</div>
+            <div class="stat-lbl">Pacotes</div>
         </div>
-
-        <div class="sidebar-item">
-            <label>🎙️ Estilo da Voz</label>
-            <select id="selVoz" onchange="salvarVoz(this.value)">
-                <option value="normal">Feminina / Normal</option>
-                <option value="grave">Masculina / Grave</option>
-                <option value="rapida">Rápida / Ágil</option>
-            </select>
+        <div>
+            <div class="stat-val" id="stParadas">0</div>
+            <div class="stat-lbl">Paradas Reais</div>
         </div>
-
-        <div class="sidebar-item" style="margin-top:25px;">
-            <button onclick="zerarRota()">🔄 Zerar Bipagens Desta Rota</button>
+        <div>
+            <div class="stat-val" id="stFaltam">0</div>
+            <div class="stat-lbl">Faltam</div>
         </div>
     </div>
 
-    <div class="container">
-        
-        <div class="hero-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="welcome-logo">
-            <div class="welcome-title"><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f3cd_fe0f/512.gif" style="width:30px; vertical-align:-3px; margin-right:6px;">PACOTE É MATO</div>
-            <div class="welcome-subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
-        </div>
-
-        <div class="upload-card">
-            <div class="upload-title">📄 CARREGAR ROTA DA ENTREGA</div>
-            <div class="upload-sub">Selecione o arquivo PDF da sua rota para liberar a câmera</div>
-            <div class="upload-arrow">👇</div>
-            <button class="btn-upload-file" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt">
-                📁 Escolher Arquivo PDF
-            </button>
-            <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
-        </div>
-
-        <div id="areaExecucao" style="display:none;">
-            
-            <div class="stat-banner">
-                <div class="stat-item">
-                    <div class="stat-value" id="valPacotes">0 / 0</div>
-                    <div class="stat-label">PACOTES</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="valParadas">0</div>
-                    <div class="stat-label">PARADAS REAIS</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="valFaltam">0</div>
-                    <div class="stat-label">FALTAM</div>
-                </div>
-            </div>
-
-            <div class="expander" onclick="toggleExpander()">
-                <div class="expander-header">
-                    <span>🤖 Ver pacotes no mesmo endereço / duplos</span>
-                    <span id="expArrow">▼</span>
-                </div>
-                <div class="expander-content" id="expContent">
-                    Nenhum endereço com múltiplos pacotes nesta rota.
-                </div>
-            </div>
-
-            <div class="camera-header">
-                <div class="camera-title" id="camTitle">📸 BIPAR PACOTE (TRASEIRA)</div>
-                <div class="camera-sub">Aponte o QR Code para a câmera</div>
-            </div>
-
-            <div class="camera-box">
-                <button class="btn-cam-ctrl" id="btn-flip" onclick="alternarCamera()">🤳 Virar</button>
-                <button class="btn-cam-ctrl" id="btn-flash" onclick="alternarFlash()">🔦 Flash</button>
-                <video id="videoElement" playsinline autoplay muted></video>
-            </div>
-
-            <div class="custom-card" id="cardResult">
-                <div class="stop-number-big" id="resStop">P1</div>
-                <div id="resPacote">📍 Pacote: BR...</div>
-            </div>
-
-            <div class="warning-box" id="boxAviso"></div>
-
-            <div style="font-weight:900; margin-bottom:6px; font-size:0.9rem;">⌨️ Digitar código manualmente</div>
-            <input type="text" class="input-manual" id="inputManual" placeholder="Digite ou cole o código aqui..." onchange="processarCodigo(this.value)">
-
-        </div>
-
-        <div class="pix-card" id="cardPix">
-            <div class="pix-title">🚀 O app te ajudou no corre?</div>
-            <div class="pix-desc">Fortaleça o projeto! Qualquer valor ajuda a manter o sistema rodando liso na rua. Tamo junto!</div>
-            <div class="pix-key">🔑 Pix: Pacoteemato@gmail.com</div>
-        </div>
-
+    <div class="camera-wrapper">
+        <button class="btn-action" id="btn-flip" onclick="alternarCamera()">🤳 Virar</button>
+        <button class="btn-action" id="btn-flash" onclick="alternarFlash()">🔦 Flash</button>
+        <div id="reader"></div>
     </div>
+
+    <div class="result-card" id="cardResultado">
+        <div class="stop-big" id="resStop">P1</div>
+        <div style="font-weight:800; font-size: 0.9rem;" id="resPacote">BR1234567890BR</div>
+        <div class="warning-card" id="resAviso"></div>
+    </div>
+
+    <input type="text" class="manual-input" id="inputManual" placeholder="Ou digite o código do pacote aqui..." onchange="processarCodigo(this.value)">
+
+    <button class="btn-reset" onclick="zerarBipagens()">🔄 Zerar Bipagens Desta Rota</button>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent("self.addEventListener('fetch', function(event) {});")).catch(() => {});
-        }
-
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        let codeReader = null;
-        let dispositivosVideo = [];
-        let indexDispositivoAtual = 0;
-        let sensorAtual = "environment"; // "environment" ou "user"
-        let streamCamera = null;
+        let html5QrCode = null;
+        let sensorAtual = "environment"; 
         let flashLigado = false;
-        let trocando = false;
+        let trackCamera = null;
 
         let mapaRotas = {};
         let stopCorrespondente = {};
-        let nomeExibicao = {};
         let todosPacotes = new Set();
         let pacotesBipados = new Set();
-        let chaveStorageAtual = null;
+        let chaveHash = "rota_padrao";
 
-        const temas = {
-            dark: { bg_app:"#000000", text_app:"#FFFFFF", card_bg:"#0B0B0B", border:"#FFFFFF", btn_bg:"#FFFFFF", btn_text:"#000000", subtext:"#AAAAAA", shadow:"rgba(255,255,255,0.12)" },
-            light: { bg_app:"#FFFFFF", text_app:"#000000", card_bg:"#F5F5F7", border:"#000000", btn_bg:"#000000", btn_text:"#FFFFFF", subtext:"#555555", shadow:"rgba(0,0,0,0.15)" },
-            gray: { bg_app:"#1C1C1E", text_app:"#F2F2F7", card_bg:"#2C2C2E", border:"#8E8E93", btn_bg:"#48484A", btn_text:"#FFFFFF", subtext:"#AEAEB2", shadow:"rgba(0,0,0,0.35)" }
+        // Wake Lock: Mantém a tela acesa
+        async function manterTelaLigada() {
+            try {
+                if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
+            } catch(e) {}
+        }
+        manterTelaLigada();
+
+        // Inicializa o leitor e recupera cache
+        window.onload = function() {
+            iniciarCamera();
+            recuperarSessao();
         };
 
-        function mudarTema(tipo, salvar = true) {
-            let t = temas[tipo] || temas.dark;
-            document.documentElement.style.setProperty('--bg-app', t.bg_app);
-            document.documentElement.style.setProperty('--text-app', t.text_app);
-            document.documentElement.style.setProperty('--card-bg', t.card_bg);
-            document.documentElement.style.setProperty('--border', t.border);
-            document.documentElement.style.setProperty('--btn-bg', t.btn_bg);
-            document.documentElement.style.setProperty('--btn-text', t.btn_text);
-            document.documentElement.style.setProperty('--subtext', t.subtext);
-            document.documentElement.style.setProperty('--shadow', t.shadow);
-            
-            let metaColor = document.getElementById('metaThemeColor');
-            if (metaColor) metaColor.setAttribute('content', t.bg_app);
-
-            let select = document.getElementById('selTema');
-            if (select) select.value = tipo;
-
-            if (salvar) localStorage.setItem('tema_preferido', tipo);
-        }
-
-        function salvarVoz(tipo) {
-            localStorage.setItem('voz_preferida', tipo);
-        }
-
-        function carregarPreferenciasSalvas() {
-            let temaSalvo = localStorage.getItem('tema_preferido') || 'dark';
-            mudarTema(temaSalvo, false);
-
-            let vozSalva = localStorage.getItem('voz_preferida') || 'normal';
-            let selVoz = document.getElementById('selVoz');
-            if (selVoz) selVoz.value = vozSalva;
-        }
-
-        carregarPreferenciasSalvas();
-
-        function toggleSidebar() {
-            let sb = document.getElementById('sidebar');
-            let ov = document.getElementById('overlay');
-            if (sb.classList.contains('active')) {
-                sb.classList.remove('active');
-                ov.style.display = 'none';
+        function iniciarCamera() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => carregarStream()).catch(() => carregarStream());
             } else {
-                sb.classList.add('active');
-                ov.style.display = 'block';
+                html5QrCode = new Html5Qrcode("reader");
+                carregarStream();
             }
         }
 
-        function toggleExpander() {
-            let c = document.getElementById('expContent');
-            let a = document.getElementById('expArrow');
-            if (c.style.display === "block") {
-                c.style.display = "none";
-                a.innerText = "▼";
-            } else {
-                c.style.display = "block";
-                a.innerText = "▲";
-            }
+        function carregarStream() {
+            html5QrCode.start(
+                { facingMode: sensorAtual },
+                {
+                    fps: 30, // 30 quadros por segundo para leitura em tempo real
+                    qrbox: { width: 280, height: 280 },
+                    aspectRatio: 1.0
+                },
+                (decodedText) => {
+                    processarCodigo(decodedText);
+                },
+                (error) => {}
+            ).then(() => {
+                setTimeout(obterTrackCamera, 800);
+            }).catch(err => {});
         }
 
-        async function ativarWakeLock() {
-            try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e) {}
-        }
-        ativarWakeLock();
-
-        // INICIALIZAÇÃO DA CÂMERA COM ZXING (100% COMPATÍVEL COM FRONTAL E TRASEIRA)
-        async function pararCamera() {
-            if (codeReader) {
-                try {
-                    codeReader.reset();
-                } catch(e) {}
-            }
-            if (streamCamera) {
-                try {
-                    streamCamera.getTracks().forEach(t => t.stop());
-                } catch(e) {}
-                streamCamera = null;
-            }
-        }
-
-        async function iniciarScanner() {
-            if (trocando) return;
-            trocando = true;
-
-            await pararCamera();
-
-            if (!codeReader) {
-                codeReader = new ZXing.BrowserMultiFormatReader();
-            }
-
-            try {
-                dispositivosVideo = await codeReader.listVideoInputDevices();
-                let deviceIdEscolhido = null;
-
-                if (dispositivosVideo && dispositivosVideo.length > 0) {
-                    if (sensorAtual === "user") {
-                        let front = dispositivosVideo.find(d => {
-                            let label = (d.label || '').toLowerCase();
-                            return label.includes('front') || label.includes('frontal') || label.includes('user') || label.includes('selfie');
-                        });
-                        if (front) deviceIdEscolhido = front.deviceId;
-                        else if (dispositivosVideo.length > 1) deviceIdEscolhido = dispositivosVideo[dispositivosVideo.length - 1].deviceId;
-                        else deviceIdEscolhido = dispositivosVideo[0].deviceId;
-                    } else {
-                        let back = dispositivosVideo.find(d => {
-                            let label = (d.label || '').toLowerCase();
-                            return label.includes('back') || label.includes('traseira') || label.includes('rear') || label.includes('environment');
-                        });
-                        if (back) deviceIdEscolhido = back.deviceId;
-                        else deviceIdEscolhido = dispositivosVideo[0].deviceId;
-                    }
-                }
-
-                await codeReader.decodeFromVideoDevice(deviceIdEscolhido, 'videoElement', (result, err) => {
-                    if (result) {
-                        processarCodigo(result.getText());
-                    }
-                });
-
-                setTimeout(() => {
-                    let v = document.getElementById('videoElement');
-                    if (v && v.srcObject) {
-                        streamCamera = v.srcObject;
-                    }
-                    trocando = false;
-                }, 400);
-
-            } catch (err) {
-                trocando = false;
-            }
-        }
-
-        async function alternarCamera() {
-            if (trocando) return;
+        function alternarCamera() {
             sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
-            
-            let btnFlash = document.getElementById('btn-flash');
-            if (sensorAtual === "user") {
-                document.getElementById('camTitle').innerText = "📸 BIPAR PACOTE (FRONTAL)";
-                btnFlash.style.display = 'none';
-            } else {
-                document.getElementById('camTitle').innerText = "📸 BIPAR PACOTE (TRASEIRA)";
-                btnFlash.style.display = 'block';
-                btnFlash.innerText = "🔦 Flash";
-                flashLigado = false;
-            }
-
-            await iniciarScanner();
+            iniciarCamera();
         }
 
-        async function alternarFlash() {
-            if (!streamCamera || sensorAtual === "user") return;
+        function obterTrackCamera() {
             try {
-                let track = streamCamera.getVideoTracks()[0];
-                if (track) {
-                    let caps = track.getCapabilities ? track.getCapabilities() : {};
-                    if (caps.torch) {
-                        flashLigado = !flashLigado;
-                        await track.applyConstraints({ advanced: [{ torch: flashLigado }] });
-                        document.getElementById('btn-flash').innerText = flashLigado ? "⚡ Flash ON" : "🔦 Flash";
-                    }
+                let video = document.querySelector("#reader video");
+                if (video && video.srcObject) {
+                    trackCamera = video.srcObject.getVideoTracks()[0];
                 }
             } catch(e) {}
         }
 
-        function normalizarEndereco(texto) {
-            if (!texto) return "";
-            let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop|package)\b/gi, '').trim();
-
-            let m = t.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa|rod(?:ovia)?\.?)\s+([^,]+?)\s*,\s*(\d+)/i);
-            if (m) {
-                let r = m[1].toLowerCase().replace(/[^a-z0-9]/g, '');
-                let n = m[2].trim();
-                return r + "_" + n;
-            }
-
-            let m2 = t.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
-            if (m2) {
-                let r = m2[1].toLowerCase().replace(/[^a-z0-9]/g, '');
-                let n = m2[2].trim();
-                return r + "_" + n;
-            }
-
-            return "";
+        async function alternarFlash() {
+            if (!trackCamera || sensorAtual === "user") return;
+            try {
+                flashLigado = !flashLigado;
+                await trackCamera.applyConstraints({ advanced: [{ torch: flashLigado }] });
+                document.getElementById('btn-flash').innerText = flashLigado ? "⚡ Flash ON" : "🔦 Flash";
+            } catch(e) {}
         }
 
-        function extrairCodigoChave(texto) {
-            if (!texto) return "";
-            let m = texto.match(/BR[A-Za-z0-9]{8,25}/i);
-            if (m) return m[0].toUpperCase().trim();
-            return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
-        }
-
+        // Leitura do PDF
         document.getElementById('pdfInput').addEventListener('change', async function(e) {
             let file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('cardResult').style.display = 'none';
-            document.getElementById('boxAviso').style.display = 'none';
-            document.getElementById('inputManual').value = "";
-
-            document.getElementById('btnUploadTxt').innerHTML = "🔄 Trocar PDF: " + file.name;
-
-            chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
+            document.getElementById('uploadTxt').innerText = "Processando: " + file.name;
+            chaveHash = "rota_" + file.name + "_" + file.size;
 
             let reader = new FileReader();
             reader.onload = async function() {
                 let typedarray = new Uint8Array(this.result);
                 let pdf = await pdfjsLib.getDocument(typedarray).promise;
-                let linhasPdf = [];
+                let textoTotal = "";
 
                 for (let i = 1; i <= pdf.numPages; i++) {
                     let page = await pdf.getPage(i);
                     let content = await page.getTextContent();
-                    
-                    let gruposY = {};
-                    content.items.forEach(item => {
-                        let y = Math.round(item.transform[5]);
-                        let achouGrupo = null;
-                        for (let k in gruposY) {
-                            if (Math.abs(k - y) <= 4) {
-                                achouGrupo = k;
-                                break;
-                            }
-                        }
-                        if (achouGrupo !== null) {
-                            gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
-                        } else {
-                            gruposY[y] = [{ x: item.transform[4], str: item.str }];
-                        }
-                    });
-
-                    let chaves = Object.keys(gruposY).sort((a, b) => b - a);
-                    chaves.forEach(k => {
-                        gruposY[k].sort((a, b) => a.x - b.x);
-                        let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
-                        if (linhaTexto) linhasPdf.push(linhaTexto);
-                    });
+                    let strings = content.items.map(item => item.str);
+                    textoTotal += strings.join(" ") + "\n";
                 }
 
-                processarLinhasExatas(linhasPdf);
+                extrairDadosRota(textoTotal);
             };
             reader.readAsArrayBuffer(file);
         });
 
-        function processarLinhasExatas(linhas) {
+        function extrairDadosRota(texto) {
             mapaRotas = {};
             stopCorrespondente = {};
-            nomeExibicao = {};
             todosPacotes = new Set();
             pacotesBipados = new Set();
 
-            let seqStopAuto = 0;
-            let termosIgnorar = ["ADDRESS", "NOTES", "CIRCUIT", "OPTIMIZED", "STOP", "DELIVERY", "ROUTE", "DISPATCH", "TOTAL", "PACKAGE", "POWERED BY"];
+            let linhas = texto.split('\n');
+            let seqAuto = 0;
 
-            linhas.forEach((linhaStr, idx) => {
-                linhaStr = linhaStr.trim();
-                if (!linhaStr) return;
+            linhas.forEach(linha => {
+                let matchCods = linha.match(/BR[A-Za-z0-9]{10,22}/gi);
+                if (matchCods) {
+                    seqAuto++;
+                    let mNum = linha.match(/^(\d{1,3})\b/);
+                    let stopNum = mNum ? parseInt(mNum[1]) : seqAuto;
 
-                let codsValidos = linhaStr.match(/BR[A-Za-z0-9]{10,20}/gi) || [];
-
-                if (codsValidos.length === 0) {
-                    let candidatos = linhaStr.match(/\b[A-Za-z0-9]{10,22}\b/g) || [];
-                    candidatos.forEach(c => {
-                        let cUp = c.toUpperCase();
-                        let ehNum = /^\d+$/.test(c);
-                        let ehAlpha = /^[A-Za-z]+$/.test(c);
-                        let temIgnorar = termosIgnorar.some(t => cUp.includes(t));
-                        if (!ehNum && !ehAlpha && !temIgnorar) {
-                            codsValidos.push(c);
-                        }
-                    });
-                }
-
-                codsValidos = codsValidos.map(c => c.toUpperCase());
-
-                if (codsValidos.length > 0) {
-                    seqStopAuto++;
-                    let stopNum = seqStopAuto;
-                    
-                    let mNum = linhaStr.match(/^(\d{1,3})\b/);
-                    if (mNum) {
-                        stopNum = parseInt(mNum[1]);
-                    } else if (idx > 0) {
-                        let mNumAnt = linhas[idx - 1].trim().match(/^(\d{1,3})$/);
-                        if (mNumAnt) stopNum = parseInt(mNumAnt[1]);
-                    }
-
-                    let endKey = normalizarEndereco(linhaStr);
-                    if (!endKey && idx > 0) {
-                        endKey = normalizarEndereco(linhas[idx - 1]);
-                    }
-
-                    if (!endKey || endKey.length < 3) {
-                        endKey = "pacote_isolado_" + codsValidos[0];
-                    }
-
-                    if (!mapaRotas[endKey]) {
-                        mapaRotas[endKey] = [];
-                        nomeExibicao[endKey] = linhaStr.substring(0, 45);
-                    }
-
-                    codsValidos.forEach(c => {
-                        todosPacotes.add(c);
-                        if (!mapaRotas[endKey].includes(c)) mapaRotas[endKey].push(c);
-                        stopCorrespondente[c] = stopNum;
+                    matchCods.forEach(c => {
+                        let codUp = c.toUpperCase();
+                        todosPacotes.add(codUp);
+                        stopCorrespondente[codUp] = stopNum;
+                        
+                        let endKey = "end_" + stopNum;
+                        if (!mapaRotas[endKey]) mapaRotas[endKey] = [];
+                        mapaRotas[endKey].push(codUp);
                     });
                 }
             });
 
-            if (chaveStorageAtual) {
-                let salvos = localStorage.getItem(chaveStorageAtual);
-                if (salvos) {
-                    try {
-                        let lista = JSON.parse(salvos);
-                        pacotesBipados = new Set(lista);
-                    } catch (e) {}
-                }
-            }
+            // Restaura pacotes salvos no navegador
+            let salvos = localStorage.getItem(chaveHash);
+            if (salvos) pacotesBipados = new Set(JSON.parse(salvos));
 
-            let htmlDuplos = "";
-            let temDuplo = false;
-            for (let end in mapaRotas) {
-                let pacs = mapaRotas[end];
-                if (pacs.length > 1 && !end.startsWith("pacote_isolado_")) {
-                    temDuplo = true;
-                    let stops = pacs.map(p => "P" + stopCorrespondente[p]).join(", ");
-                    let nome = nomeExibicao[end] || end;
-                    htmlDuplos += `<div class="item-duplo">🚨 <b>${nome}</b>: <code>${pacs.length} pcts</code> (${stops})</div>`;
-                }
-            }
-            document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes nesta rota.";
-
-            document.getElementById('areaExecucao').style.display = 'block';
-            document.getElementById('cardPix').style.display = 'none';
-
-            atualizarStats();
-            iniciarScanner();
+            salvarSessao();
+            atualizarPainel();
         }
-
-        let ultimoCodigoBipado = "";
-        let tempoUltimoBip = 0;
 
         function processarCodigo(codigoBruto) {
             if (!codigoBruto) return;
-            let agora = Date.now();
-            let codLimpo = extrairCodigoChave(codigoBruto);
-
-            if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 2000)) {
-                return;
-            }
+            let m = codigoBruto.match(/BR[A-Za-z0-9]{8,25}/i);
+            let codLimpo = m ? m[0].toUpperCase() : codigoBruto.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
 
             let identificado = null;
             for (let c of todosPacotes) {
@@ -829,62 +385,50 @@
             }
 
             if (identificado) {
-                ultimoCodigoBipado = identificado;
-                tempoUltimoBip = agora;
-
                 pacotesBipados.add(identificado);
-
-                if (chaveStorageAtual) {
-                    localStorage.setItem(chaveStorageAtual, JSON.stringify(Array.from(pacotesBipados)));
-                }
+                localStorage.setItem(chaveHash, JSON.stringify(Array.from(pacotesBipados)));
+                salvarSessao();
 
                 let numP = stopCorrespondente[identificado] || "?";
-
-                let endMatch = "";
                 let listaDuplos = [];
-                for (let end in mapaRotas) {
-                    if (mapaRotas[end].includes(identificado)) {
-                        endMatch = end;
-                        listaDuplos = mapaRotas[end];
+                for (let k in mapaRotas) {
+                    if (mapaRotas[k].includes(identificado)) {
+                        listaDuplos = mapaRotas[k];
                         break;
                     }
                 }
 
+                // Beep e Fala
                 playBeep();
+                falarNumero(numP, listaDuplos.length > 1);
 
-                document.getElementById('cardResult').style.display = 'block';
+                // Exibe Resultado
+                document.getElementById('cardResultado').style.display = "block";
                 document.getElementById('resStop').innerText = "P" + numP;
-                document.getElementById('resPacote').innerText = "📍 Pacote: " + identificado;
+                document.getElementById('resPacote').innerText = "📍 " + identificado;
 
-                let aviso = document.getElementById('boxAviso');
-                let outrosStops = listaDuplos.filter(p => p !== identificado).map(p => "P" + stopCorrespondente[p]);
-
-                if (outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_")) {
-                    aviso.style.display = 'block';
-                    aviso.innerText = "⚠️ MESMO ENDEREÇO! Este local também tem o(s) pacote(s): " + outrosStops.join(", ");
+                let aviso = document.getElementById('resAviso');
+                if (listaDuplos.length > 1) {
+                    let outros = listaDuplos.filter(x => x !== identificado).map(x => "P" + stopCorrespondente[x]);
+                    aviso.style.display = "block";
+                    aviso.innerText = "⚠️ MESMO ENDEREÇO! Também tem: " + outros.join(", ");
                 } else {
-                    aviso.style.display = 'none';
+                    aviso.style.display = "none";
                 }
 
-                falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
-                atualizarStats();
+                atualizarPainel();
                 document.getElementById('inputManual').value = "";
-            } else {
-                if (agora - tempoUltimoBip > 2500) {
-                    tempoUltimoBip = agora;
-                    alert("❌ Código " + (codLimpo || codigoBruto) + " não encontrado no PDF!");
-                }
             }
         }
 
-        function atualizarStats() {
+        function atualizarPainel() {
             let bip = pacotesBipados.size;
             let tot = todosPacotes.size;
             let paradas = Object.keys(mapaRotas).length;
 
-            document.getElementById('valPacotes').innerText = `${bip} / ${tot}`;
-            document.getElementById('valParadas').innerText = paradas;
-            document.getElementById('valFaltam').innerText = Math.max(0, tot - bip);
+            document.getElementById('stBipados').innerText = `${bip} / ${tot}`;
+            document.getElementById('stParadas').innerText = paradas;
+            document.getElementById('stFaltam').innerText = Math.max(0, tot - bip);
         }
 
         function playBeep() {
@@ -899,32 +443,47 @@
             } catch(e) {}
         }
 
-        function falarParada(num, ehDuplo, stopOutro) {
+        function falarNumero(num, ehDuplo) {
             try {
                 window.speechSynthesis.cancel();
                 let txt = "" + num;
-                if (ehDuplo) txt += " Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                if (ehDuplo) txt += " Atenção! Mesmo endereço!";
                 let msg = new SpeechSynthesisUtterance(txt);
                 msg.lang = 'pt-BR';
-
-                let tipo = document.getElementById('selVoz').value;
-                if (tipo === "grave") { msg.pitch = 0.6; msg.rate = 0.95; }
-                else if (tipo === "rapida") { msg.pitch = 1.1; msg.rate = 1.35; }
-                else { msg.pitch = 1.0; msg.rate = 1.0; }
-
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
 
-        function zerarRota() {
+        function zerarBipagens() {
             pacotesBipados.clear();
-            if (chaveStorageAtual) {
-                localStorage.removeItem(chaveStorageAtual);
+            localStorage.removeItem(chaveHash);
+            salvarSessao();
+            atualizarPainel();
+            document.getElementById('cardResultado').style.display = "none";
+        }
+
+        function salvarSessao() {
+            let dados = {
+                chaveHash,
+                mapaRotas,
+                stopCorrespondente,
+                todosPacotes: Array.from(todosPacotes),
+                pacotesBipados: Array.from(pacotesBipados)
+            };
+            localStorage.setItem("sessao_ativa", JSON.stringify(dados));
+        }
+
+        function recuperarSessao() {
+            let s = localStorage.getItem("sessao_ativa");
+            if (s) {
+                let d = JSON.parse(s);
+                chaveHash = d.chaveHash;
+                mapaRotas = d.mapaRotas;
+                stopCorrespondente = d.stopCorrespondente;
+                todosPacotes = new Set(d.todosPacotes);
+                pacotesBipados = new Set(d.pacotesBipados);
+                atualizarPainel();
             }
-            atualizarStats();
-            document.getElementById('cardResult').style.display = 'none';
-            document.getElementById('boxAviso').style.display = 'none';
-            toggleSidebar();
         }
     </script>
 </body>
