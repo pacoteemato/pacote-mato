@@ -355,7 +355,7 @@
         </div>
 
         <div class="sidebar-item" style="margin-top:25px;">
-            <button onclick="zerarRota()">🔄 Zerar Rota Atual</button>
+            <button onclick="zerarRota()">🔄 Zerar Bipagens Desta Rota</button>
         </div>
     </div>
 
@@ -446,12 +446,14 @@
         let sensorAtual = "environment";
         let trackCamera = null;
         let flashLigado = false;
+        let trocandoCamera = false;
 
         let mapaRotas = {};
         let stopCorrespondente = {};
         let nomeExibicao = {};
         let todosPacotes = new Set();
         let pacotesBipados = new Set();
+        let chaveStorageAtual = null;
 
         const temas = {
             dark: { bg_app:"#000000", text_app:"#FFFFFF", card_bg:"#0B0B0B", border:"#FFFFFF", btn_bg:"#FFFFFF", btn_text:"#000000", subtext:"#AAAAAA", shadow:"rgba(255,255,255,0.12)" },
@@ -476,9 +478,7 @@
             let select = document.getElementById('selTema');
             if (select) select.value = tipo;
 
-            if (salvar) {
-                localStorage.setItem('tema_preferido', tipo);
-            }
+            if (salvar) localStorage.setItem('tema_preferido', tipo);
         }
 
         function salvarVoz(tipo) {
@@ -525,47 +525,107 @@
         }
         ativarWakeLock();
 
-        function iniciarScanner() {
+        // Inicialização robusta e troca segura de câmera
+        async function pararCameraAtual() {
+            if (trackCamera) {
+                try {
+                    trackCamera.stop();
+                } catch(e) {}
+                trackCamera = null;
+            }
             if (html5QrCode) {
-                html5QrCode.stop().then(() => rodarCamera()).catch(() => rodarCamera());
-            } else {
-                html5QrCode = new Html5Qrcode("reader");
-                rodarCamera();
+                try {
+                    if (html5QrCode.isScanning) {
+                        await html5QrCode.stop();
+                    }
+                    await html5QrCode.clear();
+                } catch(e) {}
             }
         }
 
-        function rodarCamera() {
-            html5QrCode.start(
-                { facingMode: sensorAtual },
-                { fps: 24, qrbox: { width: 280, height: 280 }, aspectRatio: 1.0 },
-                (txt) => { processarCodigo(txt); },
-                (err) => {}
-            ).then(() => {
-                setTimeout(() => {
-                    try {
-                        let v = document.querySelector("#reader video");
-                        if (v && v.srcObject) trackCamera = v.srcObject.getVideoTracks()[0];
-                    } catch(e) {}
-                }, 800);
-            }).catch(() => {});
+        async function iniciarScanner() {
+            if (trocandoCamera) return;
+            trocandoCamera = true;
+
+            await pararCameraAtual();
+            
+            // Recria a instância limpa
+            html5QrCode = new Html5Qrcode("reader");
+
+            const config = { 
+                fps: 24, 
+                qrbox: { width: 280, height: 280 }, 
+                aspectRatio: 1.0 
+            };
+
+            try {
+                // Tenta abrir pelo modo de direção (facingMode)
+                await html5QrCode.start(
+                    { facingMode: sensorAtual },
+                    config,
+                    (txt) => { processarCodigo(txt); },
+                    (err) => {}
+                );
+            } catch (errPrimario) {
+                // Fallback: Procura por lista de câmeras conectadas
+                try {
+                    const devices = await Html5Qrcode.getCameras();
+                    if (devices && devices.length) {
+                        let devId = devices[0].id;
+                        if (sensorAtual === "environment") {
+                            let back = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('traseira') || d.label.toLowerCase().includes('environment'));
+                            if (back) devId = back.id;
+                            else if (devices.length > 1) devId = devices[devices.length - 1].id;
+                        } else {
+                            let front = devices.find(d => d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('frontal') || d.label.toLowerCase().includes('user'));
+                            if (front) devId = front.id;
+                        }
+                        await html5QrCode.start(devId, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                    }
+                } catch (errFallback) {}
+            }
+
+            setTimeout(() => {
+                try {
+                    let v = document.querySelector("#reader video");
+                    if (v && v.srcObject) {
+                        trackCamera = v.srcObject.getVideoTracks()[0];
+                    }
+                } catch(e) {}
+                trocandoCamera = false;
+            }, 600);
         }
 
-        function alternarCamera() {
+        async function alternarCamera() {
+            if (trocandoCamera) return;
             sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
-            document.getElementById('camTitle').innerText = sensorAtual === "user" ? "📸 BIPAR PACOTE (FRONTAL)" : "📸 BIPAR PACOTE (TRASEIRA)";
-            iniciarScanner();
+            
+            let btnFlash = document.getElementById('btn-flash');
+            if (sensorAtual === "user") {
+                document.getElementById('camTitle').innerText = "📸 BIPAR PACOTE (FRONTAL)";
+                btnFlash.style.display = 'none';
+            } else {
+                document.getElementById('camTitle').innerText = "📸 BIPAR PACOTE (TRASEIRA)";
+                btnFlash.style.display = 'block';
+                btnFlash.innerText = "🔦 Flash";
+                flashLigado = false;
+            }
+
+            await iniciarScanner();
         }
 
         async function alternarFlash() {
             if (!trackCamera || sensorAtual === "user") return;
             try {
-                flashLigado = !flashLigado;
-                await trackCamera.applyConstraints({ advanced: [{ torch: flashLigado }] });
-                document.getElementById('btn-flash').innerText = flashLigado ? "⚡ Flash ON" : "🔦 Flash";
+                let caps = trackCamera.getCapabilities ? trackCamera.getCapabilities() : {};
+                if (caps.torch) {
+                    flashLigado = !flashLigado;
+                    await trackCamera.applyConstraints({ advanced: [{ torch: flashLigado }] });
+                    document.getElementById('btn-flash').innerText = flashLigado ? "⚡ Flash ON" : "🔦 Flash";
+                }
             } catch(e) {}
         }
 
-        // Normalização de endereço idêntica ao Python
         function normalizarEndereco(texto) {
             if (!texto) return "";
             let m = texto.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa)\s+([^,]+?)\s*,\s*(\d+)/i);
@@ -584,12 +644,17 @@
             return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
         }
 
-        // Leitura precisa do PDF reconstruindo as linhas exatas do documento
         document.getElementById('pdfInput').addEventListener('change', async function(e) {
             let file = e.target.files[0];
             if (!file) return;
 
+            document.getElementById('cardResult').style.display = 'none';
+            document.getElementById('boxAviso').style.display = 'none';
+            document.getElementById('inputManual').value = "";
+
             document.getElementById('btnUploadTxt').innerHTML = "🔄 Trocar PDF: " + file.name;
+
+            chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
 
             let reader = new FileReader();
             reader.onload = async function() {
@@ -601,7 +666,6 @@
                     let page = await pdf.getPage(i);
                     let content = await page.getTextContent();
                     
-                    // Agrupa palavras pela mesma coordenada Y (mesma linha visual)
                     let gruposY = {};
                     content.items.forEach(item => {
                         let y = Math.round(item.transform[5]);
@@ -619,10 +683,8 @@
                         }
                     });
 
-                    // Ordena linhas de cima para baixo
                     let chaves = Object.keys(gruposY).sort((a, b) => b - a);
                     chaves.forEach(k => {
-                        // Ordena itens da linha da esquerda para a direita
                         gruposY[k].sort((a, b) => a.x - b.x);
                         let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
                         if (linhaTexto) linhasPdf.push(linhaTexto);
@@ -695,7 +757,16 @@
                 }
             });
 
-            // Constrói lista de endereços duplos corretamente
+            if (chaveStorageAtual) {
+                let salvos = localStorage.getItem(chaveStorageAtual);
+                if (salvos) {
+                    try {
+                        let lista = JSON.parse(salvos);
+                        pacotesBipados = new Set(lista);
+                    } catch (e) {}
+                }
+            }
+
             let htmlDuplos = "";
             let temDuplo = false;
             for (let end in mapaRotas) {
@@ -730,6 +801,11 @@
 
             if (identificado) {
                 pacotesBipados.add(identificado);
+
+                if (chaveStorageAtual) {
+                    localStorage.setItem(chaveStorageAtual, JSON.stringify(Array.from(pacotesBipados)));
+                }
+
                 let numP = stopCorrespondente[identificado] || "?";
 
                 let endMatch = "";
@@ -807,6 +883,9 @@
 
         function zerarRota() {
             pacotesBipados.clear();
+            if (chaveStorageAtual) {
+                localStorage.removeItem(chaveStorageAtual);
+            }
             atualizarStats();
             document.getElementById('cardResult').style.display = 'none';
             document.getElementById('boxAviso').style.display = 'none';
