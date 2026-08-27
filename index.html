@@ -604,62 +604,63 @@
         <div class="auth-wrapper">
             
             <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 Baixar App no Celular
+                📲 <span data-i18n="download_app">Baixar App no Celular</span>
             </button>
 
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo" onclick="registrarCliqueAdmin()">
             <h1 class="brand-title" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
-            <p class="brand-subtitle">Organização e Triagem Rápida de Entregas</p>
+            <p class="brand-subtitle" data-i18n="brand_subtitle">Organização e Triagem Rápida de Entregas</p>
             
             <div class="input-group">
                 <span class="input-icon-left">📱</span>
-                <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15">
+                <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
             </div>
             
             <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
-                ⚡ Entrar no Sistema
+                ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
             </button>
             <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
-                🎁 Testar 3 Dias Grátis (1x)
+                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis (1x)</span>
             </button>
             
             <div id="msgErro" style="color:#ef4444; font-size:0.8rem; font-weight:800; margin-bottom:12px; display:none;"></div>
 
-            <div class="divider-label">Escolha seu Plano</div>
+            <div class="divider-label" data-i18n="choose_plan">Escolha seu Plano</div>
             
             <div class="plan-stack">
                 <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
                     <div>
-                        <div class="plan-name">Plano Semanal</div>
-                        <div class="plan-meta">7 dias de acesso total</div>
+                        <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
+                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
                     </div>
                     <div class="plan-val">R$ 5,00</div>
                 </div>
 
                 <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
-                    <span class="plan-badge-top">Mais Escolhido</span>
+                    <span class="plan-badge-top" data-i18n="most_popular">Mais Escolhido</span>
                     <div>
-                        <div class="plan-name">Plano Mensal (1 Mês)</div>
-                        <div class="plan-meta">30 dias • Melhor custo-benefício</div>
+                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
+                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
                     </div>
                     <div class="plan-val">R$ 10,00</div>
                 </div>
 
                 <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (3 Meses)', 'cardPlano90')">
                     <div>
-                        <div class="plan-name">Plano Trimestral (3 Meses)</div>
-                        <div class="plan-meta">90 dias com super desconto</div>
+                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
+                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com super desconto</div>
                     </div>
                     <div class="plan-val">R$ 25,00</div>
                 </div>
             </div>
 
             <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
-                ⚡ Gerar Pagamento Pix
+                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
             </button>
 
+            <!-- SUPORTE COM O SEU NÚMERO EXATO DO WHATSAPP -->
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+Pacote+%C3%89+Mato" target="_blank" style="display:block; color:#9ca3af; font-size:0.75rem; text-decoration:none; margin-top:16px; font-weight:700;">
-                💬 Suporte no WhatsApp
+                💬 <span data-i18n="whatsapp_support">Suporte no WhatsApp (+55 11 99005-9547)</span>
             </a>
         </div>
     </div>
@@ -667,20 +668,20 @@
     <!-- MODAL PIX -->
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
-            <div style="font-size:0.75rem; font-weight:800; color:var(--accent-green); text-transform:uppercase; letter-spacing:1px;">Pagamento Seguro</div>
+            <div style="font-size:0.75rem; font-weight:800; color:var(--accent-green); text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro</div>
             <h3 style="font-size:1.2rem; font-weight:900; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 10,00</h3>
             
             <div class="qr-placeholder" id="qrContainer"></div>
             
-            <div style="font-size:0.82rem; font-weight:800; color:var(--text-main); margin-bottom:2px;">Aguardando confirmação... ⏳</div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;">O app destrava sozinho após a confirmação.</div>
+            <div style="font-size:0.82rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O app destrava sozinho após a confirmação.</div>
 
             <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:var(--accent-green); border:1px solid var(--surface-border); border-radius:10px; font-size:0.72rem; text-align:center; outline:none;">
             
             <button class="btn-action-primary" style="background:var(--accent-green-gradient); color:#fff; margin-top:10px;" onclick="copiarPixCopiaCola()">
-                📋 Copiar Código Pix
+                📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
             </button>
-            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.8rem; font-weight:700; cursor:pointer;">
+            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.8rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
                 Cancelar
             </button>
         </div>
@@ -704,9 +705,9 @@
                 <div class="admin-nav-tabs">
                     <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
                     <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
-                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes/7d</button>
-                    <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagamentos</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar Acesso</button>
+                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes</button>
+                    <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar</button>
                 </div>
 
                 <div id="viewAdmin30d" style="max-height:260px; overflow-y:auto;"></div>
@@ -731,7 +732,7 @@
     <!-- APP PRINCIPAL -->
     <div class="top-nav">
         <button class="nav-btn" onclick="toggleSidebar()">
-            <span>☰</span> Menu
+            <span>☰</span> <span data-i18n="menu">Menu</span>
         </button>
         <span class="access-badge" id="diasRestantes">Acesso Ativo</span>
     </div>
@@ -740,14 +741,24 @@
 
     <div class="drawer-panel" id="sidebar">
         <div style="font-weight:900; font-size:1.1rem; margin-bottom:4px;">PACOTE É MATO</div>
-        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;">Sistema Inteligente de Entregas</div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;" data-i18n="brand_subtitle">Sistema Inteligente de Entregas</div>
 
         <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:20px;" onclick="dispararInstalacaoPWA()">
-            📲 Baixar App no Celular
+            📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
+        <!-- SELETOR DE IDIOMA (PT, ES, EN) -->
         <div style="margin-bottom:16px;">
-            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 Tema de Cor</label>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🌐 <span data-i18n="language_label">Idioma / Language</span></label>
+            <select id="selIdioma" class="drawer-select" onchange="mudarIdioma(this.value, true)">
+                <option value="pt">Português (Brasil)</option>
+                <option value="es">Español</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
             <select id="selTema" class="drawer-select" onchange="mudarTema(this.value, true)">
                 <option value="slate_tech">Slate Tech (Equilibrado)</option>
                 <option value="black_oled">Preto Puro (OLED)</option>
@@ -757,7 +768,7 @@
         </div>
 
         <div style="margin-bottom:16px;">
-            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ Voz do Sintetizador</label>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
             <select id="selVoz" class="drawer-select" onchange="salvarVoz(this.value)">
                 <option value="rapida">Rápida / Ágil (Padrão)</option>
                 <option value="normal">Feminina / Suave</option>
@@ -767,10 +778,10 @@
 
         <div style="margin-top:30px;">
             <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.85rem; margin-bottom:8px;">
-                🔄 Zerar Bipagens Desta Rota
+                🔄 <span data-i18n="reset_route">Zerar Bipagens Desta Rota</span>
             </button>
             <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.3); font-size:0.85rem;">
-                🔒 Desconectar Conta
+                🔒 <span data-i18n="logout">Desconectar Conta</span>
             </button>
         </div>
     </div>
@@ -778,29 +789,29 @@
     <div class="container">
 
         <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
-            📲 Baixar App no Celular
+            📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:65px; margin-bottom:6px;">
             <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
         <!-- RETOMAR ROTA SALVA -->
         <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.8rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div style="font-size:0.8rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.92rem; font-weight:900; color:#fff; margin-bottom:10px;">Rota em andamento</div>
             <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0;" onclick="retomarRotaAnterior()">
-                ⚡ Retomar Rota Onde Parei
+                ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
             </button>
         </div>
 
         <div class="upload-section">
-            <div style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:4px;">Carregar Rota em PDF</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:14px;">Importe a folha da sua rota para sincronizar as paradas</div>
+            <div style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:4px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:14px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
             <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt">
-                📄 Escolher Arquivo PDF
+                📄 <span data-i18n="choose_pdf">Escolher Arquivo PDF</span>
             </button>
             <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
         </div>
@@ -810,22 +821,22 @@
             <div class="metrics-board">
                 <div class="metric-cell">
                     <div class="metric-val" id="valPacotes">0 / 0</div>
-                    <div class="metric-lbl">Bipados</div>
+                    <div class="metric-lbl" data-i18n="metric_scanned">Bipados</div>
                 </div>
                 <div class="metric-cell">
                     <div class="metric-val" id="valParadas" style="color:#38bdf8;">0</div>
-                    <div class="metric-lbl">Paradas</div>
+                    <div class="metric-lbl" data-i18n="metric_stops">Paradas</div>
                 </div>
                 <div class="metric-cell">
                     <div class="metric-val" id="valFaltam" style="color:var(--accent-amber);">0</div>
-                    <div class="metric-lbl">Faltam</div>
+                    <div class="metric-lbl" data-i18n="metric_remaining">Faltam</div>
                 </div>
             </div>
 
             <!-- DUPLICATES EXPANDER -->
             <div style="background:var(--surface-1); border:1px solid var(--surface-border); border-radius:14px; padding:12px 16px; margin-bottom:14px; cursor:pointer;" onclick="toggleExpander()">
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; font-weight:800;">
-                    <span>📦 Múltiplos pacotes no mesmo local</span>
+                    <span data-i18n="multiple_packages">📦 Múltiplos pacotes no mesmo local</span>
                     <span id="expArrow">▼</span>
                 </div>
                 <div id="expContent" style="display:none; font-size:0.78rem; color:var(--text-muted); border-top:1px solid var(--surface-border); margin-top:10px; padding-top:8px; line-height:1.5;"></div>
@@ -833,7 +844,7 @@
 
             <!-- CAMERA -->
             <div class="camera-viewport">
-                <button class="cam-overlay-btn" style="top:12px; left:12px;" onclick="alternarCamera()">🤳 Virar</button>
+                <button class="cam-overlay-btn" style="top:12px; left:12px;" onclick="alternarCamera()">🤳 <span data-i18n="cam_flip">Virar</span></button>
                 <button class="cam-overlay-btn" id="btn-flash" style="top:12px; right:12px;" onclick="alternarFlash()">🔦 Flash</button>
                 <div id="reader"></div>
             </div>
@@ -846,13 +857,160 @@
 
             <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.8rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.9rem; padding-left:16px;" onchange="processarCodigo(this.value)">
+            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.9rem; padding-left:16px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
 
         </div>
 
     </div>
 
     <script>
+        // ==========================================
+        // SISTEMA MULTI-IDIOMA (PT, ES, EN)
+        // ==========================================
+        const traducoes = {
+            pt: {
+                download_app: "Baixar App no Celular",
+                brand_subtitle: "Organização e Triagem Rápida de Entregas",
+                whatsapp_placeholder: "WhatsApp (com DDD)",
+                btn_enter: "Entrar no Sistema",
+                btn_trial: "Testar 3 Dias Grátis (1x)",
+                choose_plan: "Escolha seu Plano",
+                plan_weekly_name: "Plano Semanal",
+                plan_weekly_meta: "7 dias de acesso total",
+                plan_monthly_name: "Plano Mensal (1 Mês)",
+                plan_monthly_meta: "30 dias • Melhor custo-benefício",
+                plan_quarterly_name: "Plano Trimestral (3 Meses)",
+                plan_quarterly_meta: "90 dias com super desconto",
+                most_popular: "Mais Escolhido",
+                generate_pix: "Gerar Pagamento Pix",
+                whatsapp_support: "Suporte no WhatsApp (+55 11 99005-9547)",
+                secure_payment: "Pagamento Seguro",
+                waiting_confirmation: "Aguardando confirmação... ⏳",
+                auto_unlock: "O app destrava sozinho após a confirmação.",
+                copy_pix: "Copiar Código Pix",
+                cancel: "Cancelar",
+                menu: "Menu",
+                language_label: "Idioma / Language",
+                theme_label: "Tema de Cor",
+                voice_label: "Voz do Sintetizador",
+                reset_route: "Zerar Bipagens Desta Rota",
+                logout: "Desconectar Conta",
+                logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
+                saved_route_found: "📂 ROTA ANTERIOR IDENTIFICADA",
+                resume_route: "Retomar Rota Onde Parei",
+                load_pdf_title: "Carregar Rota em PDF",
+                load_pdf_subtitle: "Importe a folha da sua rota para sincronizar as paradas",
+                choose_pdf: "Escolher Arquivo PDF",
+                metric_scanned: "Bipados",
+                metric_stops: "Paradas",
+                metric_remaining: "Faltam",
+                multiple_packages: "📦 Múltiplos pacotes no mesmo local",
+                cam_flip: "Virar",
+                manual_placeholder: "Digite o código manualmente...",
+                same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: "
+            },
+            es: {
+                download_app: "Descargar App en el Móvil",
+                brand_subtitle: "Organización y Clasificación Rápida de Entregas",
+                whatsapp_placeholder: "WhatsApp (con código de área)",
+                btn_enter: "Entrar al Sistema",
+                btn_trial: "Probar 3 Días Gratis (1x)",
+                choose_plan: "Elige tu Plan",
+                plan_weekly_name: "Plan Semanal",
+                plan_weekly_meta: "7 días de acceso total",
+                plan_monthly_name: "Plan Mensual (1 Mes)",
+                plan_monthly_meta: "30 días • Mejor relación calidad-precio",
+                plan_quarterly_name: "Plan Trimestral (3 Meses)",
+                plan_quarterly_meta: "90 días con super descuento",
+                most_popular: "Más Elegido",
+                generate_pix: "Generar Pago Pix",
+                whatsapp_support: "Soporte por WhatsApp (+55 11 99005-9547)",
+                secure_payment: "Pago Seguro",
+                waiting_confirmation: "Esperando confirmación... ⏳",
+                auto_unlock: "La app se desbloquea sola tras la confirmación.",
+                copy_pix: "Copiar Código Pix",
+                cancel: "Cancelar",
+                menu: "Menú",
+                language_label: "Idioma / Language",
+                theme_label: "Tema de Color",
+                voice_label: "Voz del Sintetizador",
+                reset_route: "Reiniciar Escaneos de Ruta",
+                logout: "Cerrar Sesión",
+                logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
+                saved_route_found: "📂 RUTA ANTERIOR ENCONTRADA",
+                resume_route: "Reanudar Ruta Donde Me Quedé",
+                load_pdf_title: "Cargar Ruta en PDF",
+                load_pdf_subtitle: "Importa la hoja de tu ruta para sincronizar las paradas",
+                choose_pdf: "Elegir Archivo PDF",
+                metric_scanned: "Escaneados",
+                metric_stops: "Paradas",
+                metric_remaining: "Faltan",
+                multiple_packages: "📦 Múltiples paquetes en el mismo lugar",
+                cam_flip: "Girar",
+                manual_placeholder: "Escribe el código manualmente...",
+                same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paquetes en este punto: "
+            },
+            en: {
+                download_app: "Download App on Phone",
+                brand_subtitle: "Smart Delivery Organization and Sorting",
+                whatsapp_placeholder: "WhatsApp (with area code)",
+                btn_enter: "Sign In",
+                btn_trial: "Try 3 Days Free (1x)",
+                choose_plan: "Choose Your Plan",
+                plan_weekly_name: "Weekly Plan",
+                plan_weekly_meta: "7 days full access",
+                plan_monthly_name: "Monthly Plan (1 Month)",
+                plan_monthly_meta: "30 days • Best value",
+                plan_quarterly_name: "Quarterly Plan (3 Months)",
+                plan_quarterly_meta: "90 days with super discount",
+                most_popular: "Most Popular",
+                generate_pix: "Generate Pix Payment",
+                whatsapp_support: "WhatsApp Support (+55 11 99005-9547)",
+                secure_payment: "Secure Payment",
+                waiting_confirmation: "Waiting for confirmation... ⏳",
+                auto_unlock: "The app unlocks automatically after confirmation.",
+                copy_pix: "Copy Pix Code",
+                cancel: "Cancel",
+                menu: "Menu",
+                language_label: "Language / Idioma",
+                theme_label: "Color Theme",
+                voice_label: "Synthesizer Voice",
+                reset_route: "Reset Scans for This Route",
+                logout: "Log Out",
+                logistics_system: "SMART LOGISTICS SYSTEM",
+                saved_route_found: "📂 PREVIOUS ROUTE FOUND",
+                resume_route: "Resume Route Where I Left",
+                load_pdf_title: "Upload Route PDF",
+                load_pdf_subtitle: "Import your route sheet to sync stops",
+                choose_pdf: "Choose PDF File",
+                metric_scanned: "Scanned",
+                metric_stops: "Stops",
+                metric_remaining: "Remaining",
+                multiple_packages: "📦 Multiple packages at the same location",
+                cam_flip: "Flip",
+                manual_placeholder: "Type code manually...",
+                same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: "
+            }
+        };
+
+        function mudarIdioma(lang, salvar = true) {
+            localStorage.setItem('idioma_preferido', lang);
+            let dict = traducoes[lang] || traducoes.pt;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                let key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                let key = el.getAttribute('data-i18n-placeholder');
+                if (dict[key]) el.setAttribute('placeholder', dict[key]);
+            });
+
+            let sel = document.getElementById('selIdioma');
+            if (sel) sel.value = lang;
+        }
+
         // ==========================================
         // TEMAS E ESTILIZAÇÃO
         // ==========================================
@@ -893,9 +1051,6 @@
             setTimeout(() => { t.style.display = 'none'; }, 3500);
         }
 
-        // ==========================================
-        // VALIDADOR DE NÚMERO DE WHATSAPP
-        // ==========================================
         function validarNumeroWhatsApp(zap) {
             let limpo = zap.replace(/\D/g, '');
             if (limpo.length < 10 || limpo.length > 11) return false;
@@ -905,6 +1060,9 @@
         }
 
         function carregarConfiguracoesSalvas() {
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            mudarIdioma(lang, false);
+
             let tema = localStorage.getItem('tema_preferido') || 'slate_tech';
             mudarTema(tema, false);
 
@@ -1069,7 +1227,6 @@
                             atualizadoEm: Date.now()
                         }, { merge: true });
 
-                        // Uso do paymentId como ID do documento para evitar duplicidade de registro
                         let docPagamentoRef = db.collection("pagamentos_concluidos").doc(paymentId);
                         let docCheck = await docPagamentoRef.get();
                         if (!docCheck.exists) {
@@ -1922,6 +2079,9 @@
             if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 1200)) return;
 
             let identificado = null;
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            let dict = traducoes[lang] || traducoes.pt;
+
             for (let c of todosPacotes) {
                 if (c === codLimpo || codigoBruto.toUpperCase().includes(c) || c.includes(codLimpo)) {
                     identificado = c;
@@ -1963,7 +2123,7 @@
 
                 if (outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_")) {
                     aviso.style.display = 'block';
-                    aviso.innerText = "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: " + outrosStops.join(", ");
+                    aviso.innerText = dict.same_address_alert + outrosStops.join(", ");
                 } else {
                     aviso.style.display = 'none';
                 }
@@ -1978,7 +2138,7 @@
 
                     card.classList.add('error-state');
                     card.style.display = 'block';
-                    resStop.innerText = "NÃO LOCALIZADO";
+                    resStop.innerText = lang === 'en' ? "NOT FOUND" : (lang === 'es' ? "NO ENCONTRADO" : "NÃO LOCALIZADO");
                     resPacote.innerText = "Código: " + (codLimpo || codigoBruto);
                     aviso.style.display = 'none';
                     document.getElementById('inputManual').value = "";
@@ -2029,11 +2189,16 @@
         function falarParada(num, ehDuplo, stopOutro) {
             try {
                 window.speechSynthesis.cancel();
+                let lang = localStorage.getItem('idioma_preferido') || 'pt';
                 let frase = "" + num;
-                if (ehDuplo) frase += ". Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                if (ehDuplo) {
+                    if (lang === 'en') frase += ". Attention! Same address as stop " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                    else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                    else frase += ". Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                }
 
                 let msg = new SpeechSynthesisUtterance(frase);
-                msg.lang = 'pt-BR';
+                msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
                 let tipo = localStorage.getItem('voz_preferida') || 'rapida';
                 
                 if (tipo === "rapida") {
