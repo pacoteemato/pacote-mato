@@ -8,7 +8,7 @@
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#07090e" id="metaThemeColor">
+    <meta name="theme-color" content="#111827" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -17,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -30,13 +30,13 @@
 
     <style>
         :root {
-            --bg-body: #07090e;
-            --surface-1: #0f1422;
-            --surface-2: #161d31;
-            --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.18);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-body: #111827;
+            --surface-1: #1f2937;
+            --surface-2: #374151;
+            --surface-border: rgba(255, 255, 255, 0.1);
+            --surface-border-hover: rgba(255, 255, 255, 0.2);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
             --primary: #3b82f6;
             --primary-gradient: linear-gradient(135deg, #2563eb, #38bdf8);
             --accent-green: #10b981;
@@ -44,7 +44,7 @@
             --accent-amber: #f59e0b;
             --accent-amber-gradient: linear-gradient(135deg, #d97706, #fbbf24);
             --danger: #ef4444;
-            --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--surface-border);
+            --shadow-card: 0 16px 36px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -93,14 +93,14 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 20, 34, 0.95);
+            background: rgba(31, 41, 55, 0.95);
             backdrop-filter: blur(12px);
             color: #ffffff;
             padding: 12px 22px;
             border-radius: 50px;
             font-weight: 800;
             font-size: 0.85rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--surface-border);
             z-index: 1000005;
             display: none;
@@ -132,7 +132,7 @@
             width: 100%;
             max-width: 400px;
             background: var(--surface-1);
-            border-radius: 24px;
+            border-radius: 26px;
             padding: 24px 20px;
             box-shadow: var(--shadow-card);
             border: 1px solid var(--surface-border);
@@ -140,11 +140,12 @@
         }
 
         .app-logo {
-            width: 70px;
-            height: 70px;
+            width: 76px;
+            height: 76px;
             object-fit: contain;
             margin-bottom: 8px;
             cursor: pointer;
+            filter: drop-shadow(0 6px 14px rgba(59, 130, 246, 0.25));
         }
 
         .brand-title {
@@ -152,30 +153,45 @@
             font-weight: 900;
             letter-spacing: -0.5px;
             color: var(--text-main);
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             cursor: pointer;
         }
 
         .brand-subtitle {
             font-size: 0.78rem;
             color: var(--text-muted);
-            margin-bottom: 16px;
+            margin-bottom: 18px;
+            font-weight: 600;
+        }
+
+        /* INPUT COM ÍCONE */
+        .input-group {
+            position: relative;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 14px;
+            font-size: 1.1rem;
+            pointer-events: none;
+            opacity: 0.8;
         }
 
         .input-auth {
             width: 100%;
-            padding: 13px 16px;
+            padding: 13px 16px 13px 44px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             border-radius: 14px;
             color: var(--text-main);
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 800;
-            text-align: center;
             outline: none;
             transition: all 0.2s;
             letter-spacing: 0.5px;
-            margin-bottom: 10px;
         }
 
         .input-auth:focus {
@@ -194,8 +210,12 @@
             font-size: 0.92rem;
             cursor: pointer;
             transition: all 0.15s;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .btn-action-primary:active { transform: scale(0.98); }
 
@@ -212,6 +232,10 @@
             transition: all 0.15s;
             box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
             margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .btn-action-trial:active { transform: scale(0.98); }
 
@@ -224,7 +248,7 @@
             color: var(--text-muted);
             letter-spacing: 1px;
             text-transform: uppercase;
-            margin: 12px 0 10px;
+            margin: 14px 0 10px;
         }
         .divider-label::before, .divider-label::after {
             content: "";
@@ -233,7 +257,7 @@
             background: var(--surface-border);
         }
 
-        /* SELEÇÃO INTELIGENTE DE PLANOS */
+        /* SELEÇÃO DE PLANOS COM GLOW */
         .plan-stack {
             display: flex;
             flex-direction: column;
@@ -245,7 +269,7 @@
             background: var(--surface-2);
             border: 2px solid var(--surface-border);
             border-radius: 14px;
-            padding: 11px 14px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -257,13 +281,13 @@
         .plan-item:active { transform: scale(0.98); }
 
         .plan-item.selecionado {
-            border-color: #3b82f6 !important;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.05));
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            border-color: #38bdf8 !important;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(37, 99, 235, 0.08));
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
         }
 
         .plan-item.featured {
-            border-color: rgba(16, 185, 129, 0.4);
+            border-color: rgba(16, 185, 129, 0.45);
         }
 
         .plan-badge-top {
@@ -271,7 +295,7 @@
             top: -9px;
             right: 14px;
             background: var(--accent-green-gradient);
-            color: #000000;
+            color: #ffffff;
             font-size: 0.62rem;
             font-weight: 900;
             padding: 2px 7px;
@@ -280,9 +304,9 @@
             letter-spacing: 0.5px;
         }
 
-        .plan-name { font-size: 0.88rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.7rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1.15rem; font-weight: 900; color: var(--accent-green); }
+        .plan-name { font-size: 0.9rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.72rem; color: var(--text-muted); text-align: left; margin-top: 2px; }
+        .plan-val { font-size: 1.18rem; font-weight: 900; color: var(--accent-green); }
 
         .btn-gerar-pix-confirm {
             width: 100%;
@@ -294,7 +318,7 @@
             font-weight: 900;
             font-size: 0.95rem;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
             display: none;
             animation: fadeIn 0.25s ease;
         }
@@ -389,12 +413,12 @@
 
         /* RETOMAR ROTA */
         .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(56, 189, 248, 0.05));
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(56, 189, 248, 0.08));
             border: 1.5px solid var(--primary);
             border-radius: 20px;
             padding: 16px;
             margin-bottom: 12px;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
             display: none;
             text-align: center;
         }
@@ -403,7 +427,7 @@
             background: var(--surface-1);
             padding: 22px 18px;
             border-radius: 20px;
-            border: 1px dashed rgba(59, 130, 246, 0.35);
+            border: 1px dashed rgba(59, 130, 246, 0.4);
             text-align: center;
             margin-bottom: 14px;
             box-shadow: var(--shadow-card);
@@ -441,7 +465,7 @@
         .metric-cell {
             padding: 6px 4px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.03);
         }
         .metric-val { font-size: 1.45rem; font-weight: 900; color: var(--text-main); }
         .metric-lbl { font-size: 0.68rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
@@ -464,7 +488,7 @@
         .cam-overlay-btn {
             position: absolute;
             z-index: 99;
-            background: rgba(15, 20, 34, 0.85);
+            background: rgba(31, 41, 55, 0.85);
             backdrop-filter: blur(8px);
             color: #ffffff;
             border: 1px solid var(--surface-border);
@@ -497,7 +521,7 @@
             color: var(--danger);
         }
 
-        /* SIDEBAR E OVERLAY COM Z-INDEX ADEQUADO */
+        /* SIDEBAR E OVERLAY */
         .drawer-mask {
             position: fixed;
             inset: 0;
@@ -580,7 +604,10 @@
             <h1 class="brand-title" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
             <p class="brand-subtitle">Organização e Triagem Rápida de Entregas</p>
             
-            <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15">
+            <div class="input-group">
+                <span class="input-icon-left">📱</span>
+                <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15">
+            </div>
             
             <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
                 ⚡ Entrar no Sistema
@@ -625,7 +652,7 @@
                 ⚡ Gerar Pagamento Pix
             </button>
 
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+Pacote+%C3%89+Mato" target="_blank" style="display:block; color:#64748b; font-size:0.75rem; text-decoration:none; margin-top:16px; font-weight:700;">
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+Pacote+%C3%89+Mato" target="_blank" style="display:block; color:#9ca3af; font-size:0.75rem; text-decoration:none; margin-top:16px; font-weight:700;">
                 💬 Suporte no WhatsApp
             </a>
         </div>
@@ -662,7 +689,7 @@
             </div>
             
             <div id="areaLoginAdmin">
-                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px;">
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:16px;">
                 <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:var(--accent-amber); color:#000;">Entrar</button>
             </div>
 
@@ -677,7 +704,7 @@
                 <div id="viewAdminTeste" style="max-height:280px; overflow-y:auto; display:none;"></div>
 
                 <div id="viewAdminAdd" style="display:none;">
-                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px;">
+                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
                     <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px;">
                         <option value="3">3 Dias (Teste)</option>
                         <option value="7">7 Dias</option>
@@ -708,7 +735,7 @@
         <div style="margin-bottom:16px;">
             <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 Tema de Cor</label>
             <select id="selTema" class="drawer-select" onchange="mudarTema(this.value, true)">
-                <option value="dark_modern">Dark Moderno (Padrão)</option>
+                <option value="slate_tech">Slate Tech (Equilibrado)</option>
                 <option value="black_oled">Preto Puro (OLED)</option>
                 <option value="light">Branco (Light)</option>
                 <option value="gray">Cinza Metálico</option>
@@ -746,7 +773,7 @@
 
         <!-- RETOMAR ROTA SALVA -->
         <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.8rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div style="font-size:0.8rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.92rem; font-weight:900; color:#fff; margin-bottom:10px;">Rota em andamento</div>
             <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0;" onclick="retomarRotaAnterior()">
                 ⚡ Retomar Rota Onde Parei
@@ -770,7 +797,7 @@
                     <div class="metric-lbl">Bipados</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valParadas" style="color:#60a5fa;">0</div>
+                    <div class="metric-val" id="valParadas" style="color:#38bdf8;">0</div>
                     <div class="metric-lbl">Paradas</div>
                 </div>
                 <div class="metric-cell">
@@ -803,7 +830,7 @@
 
             <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.8rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.9rem;" onchange="processarCodigo(this.value)">
+            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.9rem; padding-left:16px;" onchange="processarCodigo(this.value)">
 
         </div>
 
@@ -814,14 +841,14 @@
         // TEMAS E ESTILIZAÇÃO
         // ==========================================
         const paletas = {
-            dark_modern: { bg_body: "#07090e", surface_1: "#0f1422", surface_2: "#161d31", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#94a3b8" },
+            slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#374151", border: "rgba(255, 255, 255, 0.1)", text_main: "#f9fafb", text_muted: "#9ca3af" },
             black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888" },
             light: { bg_body: "#f1f5f9", surface_1: "#ffffff", surface_2: "#e2e8f0", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b" },
             gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa" }
         };
 
         function mudarTema(tipo, salvar = true) {
-            let p = paletas[tipo] || paletas.dark_modern;
+            let p = paletas[tipo] || paletas.slate_tech;
             document.documentElement.style.setProperty('--bg-body', p.bg_body);
             document.documentElement.style.setProperty('--surface-1', p.surface_1);
             document.documentElement.style.setProperty('--surface-2', p.surface_2);
@@ -850,7 +877,7 @@
         }
 
         function carregarConfiguracoesSalvas() {
-            let tema = localStorage.getItem('tema_preferido') || 'dark_modern';
+            let tema = localStorage.getItem('tema_preferido') || 'slate_tech';
             mudarTema(tema, false);
 
             let voz = localStorage.getItem('voz_preferida') || 'rapida';
@@ -1186,13 +1213,11 @@
                 listenerSessaoRealtime = null;
             }
             
-            // Fecha menu lateral e overlays
             let sb = document.getElementById('sidebar');
             if (sb) sb.classList.remove('active');
             let ov = document.getElementById('overlay');
             if (ov) ov.style.display = 'none';
 
-            // Para scanner
             finalizarCameraHardware();
 
             localStorage.removeItem('usuario_zap_salvo');
@@ -1208,23 +1233,19 @@
                 listenerSessaoRealtime = null;
             }
 
-            // Fecha a barra lateral
             let sb = document.getElementById('sidebar');
             if (sb) sb.classList.remove('active');
             let ov = document.getElementById('overlay');
             if (ov) ov.style.display = 'none';
 
-            // Encerra a câmera
             finalizarCameraHardware();
 
-            // Reseta a sessão
             localStorage.removeItem('usuario_zap_salvo');
             document.getElementById('inputTel').value = "";
             document.getElementById('areaExecucao').style.display = 'none';
             
-            // Mostra tela de login
             document.getElementById('telaBloqueio').style.display = 'flex';
-            notificar("🔒 Você foi desconectado com sucesso.");
+            notificar("🔒 Você foi desconectado.");
         }
 
         let zapSalvoInicial = localStorage.getItem('usuario_zap_salvo');
@@ -1480,7 +1501,7 @@
                         temDuplo = true;
                         let stops = pacs.map(p => "P" + stopCorrespondente[p]).join(", ");
                         let nome = nomeExibicao[end] || end;
-                        htmlDuplos += `<div style="margin-bottom:6px;">📍 <b>${nome}</b>: <code style="color:#60a5fa;">${pacs.length} pcts</code> (${stops})</div>`;
+                        htmlDuplos += `<div style="margin-bottom:6px;">📍 <b>${nome}</b>: <code style="color:#38bdf8;">${pacs.length} pcts</code> (${stops})</div>`;
                     }
                 }
                 document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes identificado.";
@@ -1724,7 +1745,7 @@
                     temDuplo = true;
                     let stops = pacs.map(p => "P" + stopCorrespondente[p]).join(", ");
                     let nome = nomeExibicao[end] || end;
-                    htmlDuplos += `<div style="margin-bottom:6px;">📍 <b>${nome}</b>: <code style="color:#60a5fa;">${pacs.length} pcts</code> (${stops})</div>`;
+                    htmlDuplos += `<div style="margin-bottom:6px;">📍 <b>${nome}</b>: <code style="color:#38bdf8;">${pacs.length} pcts</code> (${stops})</div>`;
                 }
             }
             document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes identificado.";
