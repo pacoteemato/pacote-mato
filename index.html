@@ -41,7 +41,7 @@
             --primary-gradient: linear-gradient(135deg, #2563eb, #38bdf8);
             --accent-green: #10b981;
             --accent-green-gradient: linear-gradient(135deg, #059669, #10b981);
-            --accent-amber: #f59e0b;
+            --accent-blue-soft: #38bdf8;
             --danger: #ef4444;
             --shadow-card: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--surface-border);
         }
@@ -223,7 +223,7 @@
 
         .btn-action-trial {
             width: 100%;
-            background: var(--accent-amber-gradient);
+            background: linear-gradient(135deg, #d97706, #fbbf24);
             color: #000000;
             border: none;
             border-radius: 14px;
@@ -568,7 +568,7 @@
         .drawer-panel.active { left: 0; }
 
         /* ==========================================
-           NOVO ESTILO LOGÍSTICA PRO (ESTILO DA REFERÊNCIA)
+           LOGÍSTICA PRO (COM AZUL HARMONIOSO PARA DUPLOS)
            ========================================== */
         .modal-rota-conteudo {
             max-height: 60vh;
@@ -589,8 +589,8 @@
         }
 
         .parada-box-pro.duplo-pro {
-            border-color: rgba(245, 158, 11, 0.5);
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), var(--surface-2));
+            border-color: rgba(56, 189, 248, 0.45);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), var(--surface-2));
         }
 
         .parada-header-row {
@@ -613,15 +613,15 @@
         }
 
         .parada-badge-num.destaque-duplo {
-            background: #451a03;
-            border-color: var(--accent-amber);
-            color: #fbbf24;
+            background: #1e3a8a;
+            border-color: #38bdf8;
+            color: #e0f2fe;
         }
 
         .tag-duplo-info {
             font-size: 0.72rem;
             font-weight: 900;
-            color: var(--accent-amber);
+            color: var(--accent-blue-soft);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             display: flex;
@@ -638,9 +638,8 @@
         }
 
         .acoes-footer-pro {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            display: flex;
+            justify-content: flex-end;
             border-top: 1px solid var(--surface-border);
             padding-top: 10px;
         }
@@ -649,7 +648,7 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--surface-border);
             border-radius: 12px;
-            padding: 9px;
+            padding: 9px 16px;
             color: var(--text-main);
             font-weight: 800;
             font-size: 0.78rem;
@@ -844,7 +843,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA PRO -->
+    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -855,7 +854,7 @@
             <!-- ABAS DE FILTRO: TODOS / DUPLOS -->
             <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
                 <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Todos (<span id="contadorTodos">0</span>)</button>
-                <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">⚠️ Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
+                <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
             </div>
 
             <div class="modal-rota-conteudo" id="listaParadasModal"></div>
@@ -1014,7 +1013,7 @@
                 📄 Escolher Arquivo PDF
             </button>
 
-            <!-- BOTÃO PARA VER AS PARADAS PRO -->
+            <!-- BOTÃO PARA VER AS PARADAS -->
             <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
                 👀 Visualizar Paradas da Rota
             </button>
@@ -1107,7 +1106,6 @@
                 metric_scanned: "Bipados",
                 metric_stops: "Paradas",
                 metric_remaining: "Faltam",
-                multiple_packages: "📦 Múltiplos pacotes no mesmo local",
                 cam_flip: "Virar",
                 flash_txt: "Flash",
                 manual_placeholder: "Digite o código manualmente...",
@@ -1149,7 +1147,6 @@
                 metric_scanned: "Escaneados",
                 metric_stops: "Paradas",
                 metric_remaining: "Faltan",
-                multiple_packages: "📦 Múltiples paquetes en el mismo lugar",
                 cam_flip: "Girar",
                 flash_txt: "Flash",
                 manual_placeholder: "Escribe el código manualmente...",
@@ -1191,7 +1188,6 @@
                 metric_scanned: "Scanned",
                 metric_stops: "Stops",
                 metric_remaining: "Remaining",
-                multiple_packages: "📦 Multiple packages at the same location",
                 cam_flip: "Flip",
                 flash_txt: "Flash",
                 manual_placeholder: "Type code manually...",
@@ -2114,7 +2110,7 @@
 
                 let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
                 let badgeDestaque = ehDuplo 
-                    ? `<div class="tag-duplo-info">⚠️ PACOTE DUPLO • ${qtd} pacotes</div>` 
+                    ? `<div class="tag-duplo-info">🔹 PACOTE DUPLO • ${qtd} pacotes</div>` 
                     : `<div style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
 
                 listaCards.push(`
@@ -2129,9 +2125,6 @@
                         <div class="acoes-footer-pro">
                             <button class="btn-acao-card" onclick="perguntarGps('${dados.endereco}', '${paradaFormatada}')">
                                 🚗 Waze / Maps
-                            </button>
-                            <button class="btn-acao-card" onclick="notificar('Pacotes: ${dados.pacotes.join(', ')}')">
-                                📦 Ver Pacotes
                             </button>
                         </div>
                     </div>
