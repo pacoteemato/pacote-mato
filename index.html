@@ -568,21 +568,30 @@
         }
         .drawer-panel.active { left: 0; }
 
-        .drawer-select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            background: var(--surface-2);
-            border: 1px solid var(--surface-border);
-            color: var(--text-main);
-            font-weight: 800;
-            outline: none;
-        }
-
-        /* SELETOR MODERNO EM BOTÕES LADO A LADO */
+        /* SELETORES MODERNOS EM BOTÕES (SEM A CAIXA PADRÃO DO ANDROID) */
         .segmented-control {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid var(--surface-border);
+        }
+
+        .segmented-control-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid var(--surface-border);
+        }
+
+        .segmented-control-4 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 4px;
             background: var(--surface-2);
             padding: 4px;
@@ -595,7 +604,7 @@
             border: none;
             color: var(--text-muted);
             padding: 8px 4px;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 800;
             border-radius: 10px;
             cursor: pointer;
@@ -797,33 +806,34 @@
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
-        <!-- SELETOR DE IDIOMA PROFISSIONAL (BOTÕES LADO A LADO) -->
+        <!-- SELETOR DE IDIOMA PROFISSIONAL -->
         <div style="margin-bottom:16px;">
-            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🌐 <span data-i18n="language_label">Idioma / Language</span></label>
+            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🌐 <span data-i18n="language_label">Idioma / Language</span></label>
             <div class="segmented-control">
-                <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">Português</button>
-                <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">Español</button>
-                <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">English</button>
+                <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
+                <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
+                <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">EN</button>
             </div>
         </div>
 
+        <!-- SELETOR DE TEMA PROFISSIONAL -->
         <div style="margin-bottom:16px;">
-            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
-            <select id="selTema" class="drawer-select" onchange="mudarTema(this.value, true)">
-                <option value="slate_tech">Slate Tech (Equilibrado)</option>
-                <option value="black_oled">Preto Puro (OLED)</option>
-                <option value="light">Branco (Light)</option>
-                <option value="gray">Cinza Metálico</option>
-            </select>
+            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
+            <div class="segmented-control-2">
+                <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Slate Tech</button>
+                <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
+            </div>
         </div>
 
+        <!-- SELETOR DE VOZ PROFISSIONAL (COM OPÇÃO DE MUDO/SEM VOZ) -->
         <div style="margin-bottom:16px;">
-            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
-            <select id="selVoz" class="drawer-select" onchange="salvarVoz(this.value)">
-                <option value="rapida">Rápida / Ágil (Padrão)</option>
-                <option value="normal">Feminina / Suave</option>
-                <option value="grave">Masculina / Grave</option>
-            </select>
+            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
+            <div class="segmented-control-4">
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Rápida</button>
+                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">👩 Normal</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">👨 Grave</button>
+                <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
+            </div>
         </div>
 
         <div style="margin-top:30px;">
@@ -1052,7 +1062,7 @@
             }
         };
 
-        function mudarIdioma(lang, salvar = true) {
+        function mudarIdioma(lang) {
             localStorage.setItem('idioma_preferido', lang);
             let dict = traducoes[lang] || traducoes.pt;
 
@@ -1069,7 +1079,6 @@
             let txtFlash = document.getElementById('txt-flash');
             if (txtFlash && !flashLigado) txtFlash.innerText = dict.flash_txt;
 
-            // Atualiza os botões visuais do seletor moderno
             ['pt', 'es', 'en'].forEach(l => {
                 let btn = document.getElementById('lang_' + l);
                 if (btn) {
@@ -1084,12 +1093,10 @@
         // ==========================================
         const paletas = {
             slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#374151", border: "rgba(255, 255, 255, 0.1)", text_main: "#f9fafb", text_muted: "#9ca3af", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1)" },
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 24px 48px -12px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
-            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 20px 40px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
+            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 24px 48px -12px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" }
         };
 
-        function mudarTema(tipo, salvar = true) {
+        function mudarTema(tipo) {
             let p = paletas[tipo] || paletas.slate_tech;
             document.documentElement.style.setProperty('--bg-body', p.bg_body);
             document.documentElement.style.setProperty('--surface-1', p.surface_1);
@@ -1102,14 +1109,26 @@
             let metaColor = document.getElementById('metaThemeColor');
             if (metaColor) metaColor.setAttribute('content', p.bg_body);
 
-            let select = document.getElementById('selTema');
-            if (select) select.value = tipo;
+            localStorage.setItem('tema_preferido', tipo);
 
-            if (salvar) localStorage.setItem('tema_preferido', tipo);
+            ['slate_tech', 'black_oled'].forEach(t => {
+                let btn = document.getElementById('theme_' + t);
+                if (btn) {
+                    if (t === tipo) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
         }
 
         function salvarVoz(tipo) {
             localStorage.setItem('voz_preferida', tipo);
+            ['rapida', 'normal', 'grave', 'mudo'].forEach(v => {
+                let btn = document.getElementById('voice_' + v);
+                if (btn) {
+                    if (v === tipo) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
         }
 
         function notificar(msg) {
@@ -1129,14 +1148,13 @@
 
         function carregarConfiguracoesSalvas() {
             let lang = localStorage.getItem('idioma_preferido') || 'pt';
-            mudarIdioma(lang, false);
+            mudarIdioma(lang);
 
             let tema = localStorage.getItem('tema_preferido') || 'slate_tech';
-            mudarTema(tema, false);
+            mudarTema(tema);
 
             let voz = localStorage.getItem('voz_preferida') || 'rapida';
-            let selVoz = document.getElementById('selVoz');
-            if (selVoz) selVoz.value = voz;
+            salvarVoz(voz);
             
             verificarRotaSalvaAnterior();
             verificarStatusInstalacaoPWA();
@@ -2273,6 +2291,9 @@
         }
 
         function falarParada(num, ehDuplo, stopOutro) {
+            let tipo = localStorage.getItem('voz_preferida') || 'rapida';
+            if (tipo === 'mudo') return; // Se estiver mudo, não fala nada
+
             try {
                 window.speechSynthesis.cancel();
                 let lang = localStorage.getItem('idioma_preferido') || 'pt';
@@ -2285,7 +2306,6 @@
 
                 let msg = new SpeechSynthesisUtterance(frase);
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
-                let tipo = localStorage.getItem('voz_preferida') || 'rapida';
                 
                 if (tipo === "rapida") {
                     msg.pitch = 1.05;
