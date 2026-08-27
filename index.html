@@ -72,21 +72,27 @@
             padding: 0 14px;
         }
 
-        #btnInstalarApp {
-            display: none;
+        /* BOTÃO FIXO DE INSTALAR APP */
+        .btn-instalar-destaque {
             width: 100%;
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
             color: #ffffff;
             border: none;
             border-radius: 14px;
-            padding: 13px;
+            padding: 12px 14px;
             font-weight: 800;
             font-size: 0.88rem;
             letter-spacing: 0.5px;
             margin-bottom: 12px;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.15s;
         }
+        .btn-instalar-destaque:active { transform: scale(0.98); }
 
         #toastNotificacao {
             position: fixed;
@@ -164,7 +170,6 @@
             font-weight: 600;
         }
 
-        /* INPUT COM ÍCONE */
         .input-group {
             position: relative;
             margin-bottom: 10px;
@@ -257,7 +262,6 @@
             background: var(--surface-border);
         }
 
-        /* SELEÇÃO DE PLANOS COM GLOW */
         .plan-stack {
             display: flex;
             flex-direction: column;
@@ -600,6 +604,12 @@
     <!-- TELA DE AUTENTICAÇÃO E PLANOS -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
+            
+            <!-- BOTÃO DE BAIXAR DIRETO NA TELA DE ENTRADA -->
+            <button class="btn-instalar-destaque" onclick="dispararInstalacaoPWA()">
+                📲 Baixar App no Celular
+            </button>
+
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo" onclick="registrarCliqueAdmin()">
             <h1 class="brand-title" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
             <p class="brand-subtitle">Organização e Triagem Rápida de Entregas</p>
@@ -732,6 +742,10 @@
         <div style="font-weight:900; font-size:1.1rem; margin-bottom:4px;">PACOTE É MATO</div>
         <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;">Sistema Inteligente de Entregas</div>
 
+        <button class="btn-instalar-destaque" style="margin-bottom:20px;" onclick="dispararInstalacaoPWA()">
+            📲 Instalar App no Celular
+        </button>
+
         <div style="margin-bottom:16px;">
             <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 Tema de Cor</label>
             <select id="selTema" class="drawer-select" onchange="mudarTema(this.value, true)">
@@ -763,7 +777,10 @@
 
     <div class="container">
 
-        <button id="btnInstalarApp" onclick="dispararInstalacaoPWA()">📲 Instalar Aplicativo no Celular</button>
+        <!-- BOTÃO NO TOPO DA TELA PRINCIPAL -->
+        <button id="btnInstalarAppTopo" class="btn-instalar-destaque" onclick="dispararInstalacaoPWA()">
+            📲 Instalar Aplicativo no Celular
+        </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:65px; margin-bottom:6px;">
@@ -885,10 +902,11 @@
             if (selVoz) selVoz.value = voz;
             
             verificarRotaSalvaAnterior();
+            verificarStatusInstalacaoPWA();
         }
 
         // ==========================================
-        // FIREBASE & CLOUDFLARE SETUP
+        // FIREBASE SETUP
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
@@ -1044,7 +1062,7 @@
         }
 
         // ==========================================
-        // TESTE 3 DIAS
+        // TESTE 3 DIAS (SISTEMA BLINDADO)
         // ==========================================
         async function ativarTesteGratis() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
@@ -1052,9 +1070,15 @@
             let btn = document.getElementById('btnTesteGratis');
 
             if (zap.length < 10) {
-                msgErro.innerText = "Informe seu número com DDD para resgatar o teste.";
+                msgErro.innerText = "Informe seu WhatsApp com DDD para resgatar o teste.";
                 msgErro.style.display = 'block';
                 document.getElementById('inputTel').focus();
+                return;
+            }
+
+            if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
+                msgErro.innerText = "❌ Este celular já utilizou o teste grátis!";
+                msgErro.style.display = 'block';
                 return;
             }
 
@@ -1062,22 +1086,19 @@
             btn.disabled = true;
 
             try {
-                let docZap = await db.collection("usuarios").doc(zap).get();
-                if (docZap.exists && docZap.data().jaUsouTeste) {
-                    msgErro.innerText = "Este WhatsApp já utilizou o teste gratuito.";
+                let docAparelho = await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).get();
+                if (docAparelho.exists) {
+                    localStorage.setItem('teste_gratis_bloqueado_local', 'true');
+                    msgErro.innerText = "❌ Este celular já utilizou o teste grátis anteriormente!";
                     msgErro.style.display = 'block';
                     btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
                     btn.disabled = false;
                     return;
                 }
 
-                let queryDev = await db.collection("usuarios")
-                    .where("deviceId", "==", MEU_DEVICE_ID)
-                    .where("jaUsouTeste", "==", true)
-                    .get();
-
-                if (!queryDev.empty) {
-                    msgErro.innerText = "Este dispositivo já utilizou o teste gratuito.";
+                let docZap = await db.collection("usuarios").doc(zap).get();
+                if (docZap.exists && docZap.data().jaUsouTeste) {
+                    msgErro.innerText = "❌ Este WhatsApp já utilizou o teste gratuito.";
                     msgErro.style.display = 'block';
                     btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
                     btn.disabled = false;
@@ -1097,13 +1118,20 @@
                     ativadoEm: Date.now()
                 }, { merge: true });
 
+                await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).set({
+                    whatsapp: zap,
+                    bloqueadoEm: Date.now()
+                });
+
+                localStorage.setItem('teste_gratis_bloqueado_local', 'true');
                 localStorage.setItem('usuario_zap_salvo', zap);
+                
                 msgErro.style.display = 'none';
-                notificar("🎉 Teste de 3 Dias Ativado!");
+                notificar("🎉 Teste de 3 Dias Ativado com Sucesso!");
                 iniciarMonitoramentoSessao(zap);
 
             } catch(e) {
-                msgErro.innerText = "Erro ao ativar teste.";
+                msgErro.innerText = "Erro ao ativar teste: " + e.message;
                 msgErro.style.display = 'block';
             }
 
@@ -1392,27 +1420,42 @@
         }
 
         // ==========================================
-        // PWA PROMPT
+        // SISTEMA DE INSTALAÇÃO PWA
         // ==========================================
         let deferredPrompt = null;
-        const btnInstalar = document.getElementById('btnInstalarApp');
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            if (!window.matchMedia('(display-mode: standalone)').matches) {
-                btnInstalar.style.display = 'block';
-            }
+            verificarStatusInstalacaoPWA();
         });
+
+        function verificarStatusInstalacaoPWA() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            const btnTopo = document.getElementById('btnInstalarAppTopo');
+            if (isStandalone) {
+                if (btnTopo) btnTopo.style.display = 'none';
+            } else {
+                if (btnTopo) btnTopo.style.display = 'flex';
+            }
+        }
 
         async function dispararInstalacaoPWA() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    btnInstalar.style.display = 'none';
+                    verificarStatusInstalacaoPWA();
                 }
                 deferredPrompt = null;
+            } else {
+                // Instrução para Safari iOS ou navegadores sem suporte ao prompt
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    notificar("📲 Para instalar no iPhone: Toque no ícone de Compartilhar (quadrado com seta) e escolha 'Adicionar à Tela de Início'.");
+                } else {
+                    notificar("📲 Para instalar: Toque nos 3 pontinhos do navegador e selecione 'Instalar Aplicativo' ou 'Adicionar à Tela Inicial'.");
+                }
             }
         }
 
