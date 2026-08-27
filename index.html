@@ -568,12 +568,12 @@
         }
         .drawer-panel.active { left: 0; }
 
-        /* MODAL DE VISUALIZAÇÃO DE ROTAS E PARADAS UNIFICADAS */
+        /* MODAL DE VISUALIZAÇÃO DE PARADAS COM FILTROS (TODOS / DUPLOS) */
         .modal-rota-conteudo {
-            max-height: 60vh;
+            max-height: 55vh;
             overflow-y: auto;
             text-align: left;
-            margin-top: 12px;
+            margin-top: 10px;
             padding-right: 4px;
         }
         .parada-card {
@@ -589,7 +589,7 @@
         }
         .parada-card.duplo {
             border-color: var(--accent-amber);
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(31, 41, 55, 0.95));
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(31, 41, 55, 0.95));
         }
 
         .gps-option-btn {
@@ -774,15 +774,20 @@
         </div>
     </div>
 
-    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA UNIFICADA -->
+    <!-- MODAL DE VISUALIZAÇÃO COM ABAS (TODOS / DUPLOS) -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <h3 style="color:var(--primary); font-weight:900; font-size:1.1rem;">📋 Paradas & Endereços</h3>
                 <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Endereços unificados e paradas duplas:</div>
             
+            <!-- ABAS DE FILTRO: TODOS / DUPLOS -->
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
+                <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Todos (<span id="contadorTodos">0</span>)</button>
+                <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">⚠️ Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
+            </div>
+
             <div class="modal-rota-conteudo" id="listaParadasModal"></div>
 
             <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
@@ -939,7 +944,7 @@
                 📄 Escolher Arquivo PDF
             </button>
 
-            <!-- BOTÃO PARA VER AS PARADAS UNIFICADAS DO PDF -->
+            <!-- BOTÃO PARA VER AS PARADAS DO PDF -->
             <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
                 👀 Visualizar Paradas da Rota
             </button>
@@ -962,15 +967,6 @@
                     <div class="metric-val" id="valFaltam" style="color:var(--accent-amber);">0</div>
                     <div class="metric-lbl" data-i18n="metric_remaining">Faltam</div>
                 </div>
-            </div>
-
-            <!-- DUPLICATES EXPANDER -->
-            <div style="background:var(--surface-1); border:1px solid var(--surface-border); border-radius:14px; padding:12px 16px; margin-bottom:14px; cursor:pointer;" onclick="toggleExpander()">
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; font-weight:800;">
-                    <span data-i18n="multiple_packages">📦 Múltiplos pacotes no mesmo local</span>
-                    <span id="expArrow">▼</span>
-                </div>
-                <div id="expContent" style="display:none; font-size:0.78rem; color:var(--text-muted); border-top:1px solid var(--surface-border); margin-top:10px; padding-top:8px; line-height:1.5;"></div>
             </div>
 
             <!-- CAMERA -->
@@ -1907,6 +1903,7 @@
         let pacotesBipados = new Set();
         let chaveStorageAtual = null;
         let enderecoSelecionadoGps = "";
+        let filtroAtualModal = 'todos';
 
         let audioCtx = null;
         function getAudioContext() {
@@ -1966,19 +1963,6 @@
                 document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
                 document.getElementById('btnVerParadasModal').style.display = 'flex';
 
-                let htmlDuplos = "";
-                let temDuplo = false;
-                for (let end in mapaRotas) {
-                    let pacs = mapaRotas[end];
-                    if (pacs.length > 1 && !end.startsWith("pacote_isolado_")) {
-                        temDuplo = true;
-                        let stops = pacs.map(p => "P" + stopCorrespondente[p]).join(", ");
-                        let nome = nomeExibicao[end] || end;
-                        htmlDuplos += `<div style="margin-bottom:6px;">📍 <b>${nome}</b>: <code style="color:#38bdf8;">${pacs.length} pcts</code> (${stops})</div>`;
-                    }
-                }
-                document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes identificado.";
-                
                 document.getElementById('areaExecucao').style.display = 'block';
                 document.getElementById('cardRetomarRota').style.display = 'none';
 
@@ -1992,26 +1976,51 @@
         }
 
         function abrirModalRota() {
+            filtroAtualModal = 'todos';
+            document.getElementById('filtroTabTodos').classList.add('active');
+            document.getElementById('filtroTabDuplos').classList.remove('active');
+            renderizarListaParadasModal();
+            document.getElementById('modalVisualizarRota').style.display = 'flex';
+        }
+
+        function fecharModalRota() {
+            document.getElementById('modalVisualizarRota').style.display = 'none';
+        }
+
+        function filtrarParadasModal(filtro) {
+            filtroAtualModal = filtro;
+            if (filtro === 'todos') {
+                document.getElementById('filtroTabTodos').classList.add('active');
+                document.getElementById('filtroTabDuplos').classList.remove('active');
+            } else {
+                document.getElementById('filtroTabDuplos').classList.add('active');
+                document.getElementById('filtroTabTodos').classList.remove('active');
+            }
+            renderizarListaParadasModal();
+        }
+
+        function renderizarListaParadasModal() {
             let container = document.getElementById('listaParadasModal');
             container.innerHTML = "";
 
             if (Object.keys(mapaRotas).length === 0) {
                 container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center;'>Nenhuma rota carregada no momento.</div>";
-                document.getElementById('modalVisualizarRota').style.display = 'flex';
                 return;
             }
 
-            // Agrupamento inteligente por endereço normalizado para juntar P1, P2, P3... no mesmo card
             let enderecosUnificados = {};
+            let totalDuplosCount = 0;
+            let totalTodosCount = 0;
+
             for (let end in mapaRotas) {
                 let pacs = mapaRotas[end];
-                let nomeEnd = nomeExibicao[end] || end;
+                if (end.startsWith("pacote_isolado_")) continue; // ignora isolados falsos
                 
-                // Pega os números das paradas correspondentes a esses pacotes
+                let nomeEnd = nomeExibicao[end] || end;
                 let stopsDesteEnd = [];
                 pacs.forEach(p => {
                     let st = stopCorrespondente[p] || 1;
-                    if (!stopsDesteEnd.includes(st)) stopsDesteEnd.includes(st) || stopsDesteEnd.push(st);
+                    if (!stopsDesteEnd.includes(st)) stopsDesteEnd.push(st);
                 });
                 stopsDesteEnd.sort((a,b) => a - b);
 
@@ -2020,16 +2029,23 @@
                 }
             }
 
-            let htmlParadas = "";
-            for (let end in enderecosUnificados) {
+            let chavesEnderecos = Object.keys(enderecosUnificados);
+            let listaCards = [];
+
+            chavesEnderecos.forEach(end => {
                 let dados = enderecosUnificados[end];
                 let qtd = dados.pacotes.length;
                 let ehDuplo = qtd > 1;
 
+                totalTodosCount++;
+                if (ehDuplo) totalDuplosCount++;
+
+                if (filtroAtualModal === 'duplos' && !ehDuplo) return;
+
                 let stopsFormatados = dados.stops.map(s => "P" + s).join(" e ");
                 let badgeDuplo = ehDuplo ? `<div style="font-size:0.65rem; font-weight:900; color:var(--accent-amber); text-transform:uppercase; margin-bottom:2px;">⚠️ PACOTE DUPLO / MÚLTIPLO (${qtd} pacotes)</div>` : "";
 
-                htmlParadas += `
+                listaCards.push(`
                     <div class="parada-card ${ehDuplo ? 'duplo' : ''}">
                         <div style="flex:1; cursor:pointer;" onclick="perguntarGps('${dados.endereco}', '${stopsFormatados}')">
                             ${badgeDuplo}
@@ -2038,15 +2054,17 @@
                         </div>
                         <button onclick="perguntarGps('${dados.endereco}', '${stopsFormatados}')" style="background:var(--primary); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:800; font-size:0.75rem; cursor:pointer;">🧭 Rota</button>
                     </div>
-                `;
+                `);
+            });
+
+            document.getElementById('contadorTodos').innerText = totalTodosCount;
+            document.getElementById('contadorDuplos').innerText = totalDuplosCount;
+
+            if (listaCards.length === 0) {
+                container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;'>Nenhum pacote duplo encontrado nesta rota.</div>";
+            } else {
+                container.innerHTML = listaCards.join('');
             }
-
-            container.innerHTML = htmlParadas;
-            document.getElementById('modalVisualizarRota').style.display = 'flex';
-        }
-
-        function fecharModalRota() {
-            document.getElementById('modalVisualizarRota').style.display = 'none';
         }
 
         function perguntarGps(endereco, paradaNome) {
@@ -2078,18 +2096,6 @@
             } else {
                 sb.classList.add('active');
                 ov.style.display = 'block';
-            }
-        }
-
-        function toggleExpander() {
-            let c = document.getElementById('expContent');
-            let a = document.getElementById('expArrow');
-            if (c.style.display === "block") {
-                c.style.display = "none";
-                a.innerText = "▼";
-            } else {
-                c.style.display = "block";
-                a.innerText = "▲";
             }
         }
 
@@ -2307,18 +2313,6 @@
                 }
             }
 
-            let htmlDuplos = "";
-            let temDuplo = false;
-            for (let end in mapaRotas) {
-                let pacs = mapaRotas[end];
-                if (pacs.length > 1 && !end.startsWith("pacote_isolado_")) {
-                    temDuplo = true;
-                    let stops = pacs.map(p => "P" + stopCorrespondente[p]).join(", ");
-                    let nome = nomeExibicao[end] || end;
-                    htmlDuplos += `<div style="margin-bottom:6px;">📍 <b>${nome}</b>: <code style="color:#38bdf8;">${pacs.length} pcts</code> (${stops})</div>`;
-                }
-            }
-            document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes identificado.";
             document.getElementById('areaExecucao').style.display = 'block';
             document.getElementById('cardRetomarRota').style.display = 'none';
 
