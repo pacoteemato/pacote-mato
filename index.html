@@ -559,18 +559,18 @@
         }
 
         .admin-nav-tabs {
-            display: flex;
-            gap: 6px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
             margin-bottom: 12px;
         }
         .admin-tab {
-            flex: 1;
-            padding: 8px 4px;
+            padding: 7px 4px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             color: var(--text-muted);
-            border-radius: 10px;
-            font-size: 0.72rem;
+            border-radius: 8px;
+            font-size: 0.68rem;
             font-weight: 800;
             cursor: pointer;
             text-align: center;
@@ -686,7 +686,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN (COM ABAS SEPARADAS POR PERÍODO) -->
+    <!-- MODAL ADMIN (COM ABA DE PAGAMENTOS CONCLUÍDOS) -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -701,17 +701,19 @@
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
                 
-                <!-- Abas de controle por período -->
+                <!-- Abas de controle -->
                 <div class="admin-nav-tabs">
                     <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
                     <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
                     <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes/7d</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="background:var(--primary); color:#fff;">➕ Liberar</button>
+                    <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagamentos</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar Acesso</button>
                 </div>
 
                 <div id="viewAdmin30d" style="max-height:260px; overflow-y:auto;"></div>
                 <div id="viewAdmin90d" style="max-height:260px; overflow-y:auto; display:none;"></div>
                 <div id="viewAdminTeste" style="max-height:260px; overflow-y:auto; display:none;"></div>
+                <div id="viewAdminPagos" style="max-height:260px; overflow-y:auto; display:none;"></div>
 
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
@@ -777,7 +779,7 @@
     <div class="container">
 
         <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
-            📲 Baixar App no Celular
+            📲 Instalar Aplicativo no Celular
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
@@ -897,9 +899,7 @@
         // ==========================================
         function validarNumeroWhatsApp(zap) {
             let limpo = zap.replace(/\D/g, '');
-            // Verifica se tem entre 10 e 11 dígitos (DDD + número)
             if (limpo.length < 10 || limpo.length > 11) return false;
-            // Valida DDD básico do Brasil (11 a 99)
             let ddd = parseInt(limpo.substring(0, 2));
             if (ddd < 11 || ddd > 99) return false;
             return true;
@@ -1028,7 +1028,7 @@
                         correctLevel: QRCode.CorrectLevel.M
                     });
 
-                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano);
+                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor);
                 } else {
                     notificar("Não foi possível gerar a cobrança Pix. Tente novamente.");
                     fecharModalPix();
@@ -1040,7 +1040,7 @@
             }
         }
 
-        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano) {
+        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor) {
             clearInterval(timerVerificadorPix);
             
             timerVerificadorPix = setInterval(async () => {
@@ -1052,6 +1052,8 @@
                         clearInterval(timerVerificadorPix);
                         
                         let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
+                        
+                        // Salva dados do usuário e registra na coleção de pagamentos concluídos
                         await db.collection("usuarios").doc(zap).set({
                             whatsapp: zap,
                             expiraEm: expiraEm,
@@ -1063,6 +1065,14 @@
                             tipo: "pago",
                             atualizadoEm: Date.now()
                         }, { merge: true });
+
+                        await db.collection("pagamentos_concluidos").add({
+                            whatsapp: zap,
+                            plano: nomePlano,
+                            valor: valor,
+                            data: new Date().toLocaleString('pt-BR'),
+                            timestamp: Date.now()
+                        });
 
                         fecharModalPix();
                         localStorage.setItem('usuario_zap_salvo', zap);
@@ -1087,7 +1097,7 @@
         }
 
         // ==========================================
-        // TESTE 3 DIAS (SISTEMA BLINDADO)
+        // TESTE 3 DIAS
         // ==========================================
         async function ativarTesteGratis() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
@@ -1176,7 +1186,6 @@
 
             if (!validarNumeroWhatsApp(zap)) {
                 if(zap === "121212") {
-                    // Permite login direto do Dono
                     localStorage.setItem('usuario_zap_salvo', zap);
                     document.getElementById('telaBloqueio').style.display = 'none';
                     document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
@@ -1324,7 +1333,7 @@
         }
 
         // ==========================================
-        // PAINEL ADMIN COM ABAS SEPARADAS
+        // PAINEL ADMIN (COM ABA DE PAGAMENTOS)
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -1350,13 +1359,14 @@
                 document.getElementById('areaLoginAdmin').style.display = 'none';
                 document.getElementById('areaGeradorAdmin').style.display = 'flex';
                 carregarUsuariosAdmin();
+                carregarPagamentosAdmin();
             } else {
                 notificar("Senha incorreta.");
             }
         }
 
         function alternarTabAdmin(tab) {
-            ['30d', '90d', 'teste', 'add'].forEach(t => {
+            ['30d', '90d', 'teste', 'pagos', 'add'].forEach(t => {
                 let btn = document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1)));
                 let view = document.getElementById('viewAdmin' + (t.charAt(0).toUpperCase() + t.slice(1)));
                 if(btn) btn.classList.remove('active');
@@ -1408,13 +1418,12 @@
                         </div>
                     `;
 
-                    // Separador por categorias exatas
                     if (duracao === 90) {
                         html90 += row;
                     } else if (duracao === 30) {
                         html30 += row;
                     } else {
-                        htmlTeste += row; // 3 dias, 7 dias ou testes
+                        htmlTeste += row;
                     }
                 });
 
@@ -1424,6 +1433,33 @@
 
             } catch(e) {
                 view30d.innerHTML = "Erro ao buscar dados.";
+            }
+        }
+
+        async function carregarPagamentosAdmin() {
+            let viewPagos = document.getElementById('viewAdminPagos');
+            viewPagos.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando pagamentos...</div>";
+
+            try {
+                let snapshot = await db.collection("pagamentos_concluidos").orderBy("timestamp", "desc").get();
+                let htmlPagos = "";
+
+                snapshot.forEach(doc => {
+                    let p = doc.data();
+                    htmlPagos += `
+                        <div class="user-row">
+                            <div>
+                                <div style="font-weight:800; font-size:0.82rem; color:#34d399;">📱 ${p.whatsapp}</div>
+                                <div style="font-size:0.7rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
+                                <div style="font-size:0.62rem; color:var(--text-muted);">🕒 ${p.data}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento concluído registrado ainda.</div>";
+            } catch(e) {
+                viewPagos.innerHTML = "Erro ao carregar histórico de pagamentos.";
             }
         }
 
