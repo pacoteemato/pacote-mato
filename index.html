@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PACOTE É MATO</title>
+    <title>PACOTE É MATO - PRO</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
     
     <!-- Configurações PWA -->
@@ -17,6 +17,10 @@
     <!-- Bibliotecas PDF.js e Leitor QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <!-- Firebase SDKs Compatíveis -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
@@ -59,7 +63,7 @@
         #btnInstalarApp {
             display: none;
             width: 100%;
-            background: #007AFF;
+            background: linear-gradient(135deg, #007AFF, #00C6FF);
             color: #FFFFFF;
             border: none;
             border-radius: 14px;
@@ -67,11 +71,13 @@
             font-weight: 900;
             font-size: 0.95rem;
             text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 14px;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
         }
 
-        /* TELA DE BLOQUEIO SIMPLES */
+        /* TELA DE BLOQUEIO */
         #telaBloqueio {
             position: fixed;
             top: 0;
@@ -98,18 +104,18 @@
             box-shadow: 0 10px 30px rgba(255,255,255,0.15);
         }
 
-        .input-senha {
+        .input-auth {
             width: 100%;
             padding: 14px;
             background: #000000;
             border: 2px solid #FFFFFF;
             border-radius: 12px;
             color: #FFFFFF;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 900;
             text-align: center;
-            margin: 16px 0 12px 0;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            margin: 14px 0 10px 0;
         }
 
         .btn-entrar {
@@ -118,7 +124,7 @@
             color: #000000;
             border: none;
             border-radius: 12px;
-            padding: 13px;
+            padding: 14px;
             font-weight: 900;
             font-size: 1rem;
             cursor: pointer;
@@ -136,6 +142,44 @@
             font-weight: 900;
             font-size: 0.95rem;
             margin-top: 14px;
+        }
+
+        /* MODAL ADMIN */
+        #modalAdmin {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.88);
+            z-index: 1000000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .card-admin {
+            width: 100%;
+            max-width: 380px;
+            background: #1C1C1E;
+            border: 2px solid #FFCC00;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            color: #FFF;
+        }
+
+        .input-admin {
+            width: 100%;
+            padding: 11px;
+            background: #000;
+            color: #fff;
+            border: 1px solid #FFCC00;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-align: center;
         }
 
         /* HEADER */
@@ -159,6 +203,15 @@
             font-weight: 900;
             cursor: pointer;
             box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .badge-status {
+            font-size: 0.75rem;
+            font-weight: 900;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
         }
 
         /* DRAWER LATERAL */
@@ -233,6 +286,8 @@
             text-align: center;
             box-shadow: 0 8px 24px var(--shadow);
             margin-bottom: 14px;
+            cursor: pointer;
+            user-select: none;
         }
         .welcome-logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; }
         .welcome-title { font-size: 1.8rem; font-weight: 900; color: var(--text-app); letter-spacing: 2px; text-transform: uppercase; }
@@ -407,26 +462,51 @@
 </head>
 <body>
 
-    <!-- TELA DE BLOQUEIO SIMPLES -->
+    <!-- TELA DE LOGIN FIREBASE -->
     <div id="telaBloqueio">
         <div class="card-auth">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:70px; margin-bottom:8px;">
-            <h2 style="font-size:1.4rem; font-weight:900;">PACOTE É MATO</h2>
-            <p style="font-size:0.82rem; color:var(--subtext); margin-top:4px;">Digite sua senha para liberar o aplicativo</p>
+            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:70px; margin-bottom:8px;" onclick="registrarCliqueAdmin()">
+            <h2 style="font-size:1.4rem; font-weight:900;" onclick="registrarCliqueAdmin()">PACOTE É MATO PRO</h2>
+            <p style="font-size:0.82rem; color:var(--subtext); margin-top:4px;">Digite seu WhatsApp cadastrado para liberar o app</p>
             
-            <input type="password" id="inputSenha" class="input-senha" placeholder="SENHA DE ACESSO">
-            <button class="btn-entrar" onclick="validarSenha()">Entrar no App</button>
-            <div id="msgErroSenha" style="color:#FF3B30; font-size:0.82rem; font-weight:900; margin-top:8px; display:none;">Senha incorreta!</div>
+            <input type="tel" id="inputTel" class="input-auth" placeholder="Seu WhatsApp com DDD">
+            <button class="btn-entrar" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">⚡ Acessar Aplicativo</button>
+            <div id="msgErro" style="color:#FF3B30; font-size:0.82rem; font-weight:900; margin-top:8px; display:none;"></div>
 
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+quero+liberar+meu+acesso+ao+Pacote+%C3%89+Mato" target="_blank" class="btn-whatsapp">
-                💬 Pedir Acesso no WhatsApp
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+quero+assinar+o+Pacote+%C3%89+Mato+PRO" target="_blank" class="btn-whatsapp">
+                💬 Comprar Acesso no WhatsApp (Pix)
             </a>
+        </div>
+    </div>
+
+    <!-- MODAL DO PAINEL ADMIN DO DONO -->
+    <div id="modalAdmin">
+        <div class="card-admin">
+            <h3 style="color:#FFCC00; font-weight:900; margin-bottom:12px;">👑 PAINEL DO DONO (FIREBASE)</h3>
+            <div id="areaLoginAdmin">
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-admin">
+                <button onclick="autenticarAdmin()" style="width:100%; padding:10px; background:#FFCC00; color:#000; font-weight:900; border:none; border-radius:8px; cursor:pointer;">Entrar</button>
+            </div>
+            <div id="areaGeradorAdmin" style="display:none;">
+                <input type="tel" id="inputClienteZap" placeholder="WhatsApp do Cliente (só números)" class="input-admin">
+                
+                <select id="selDiasAdmin" class="input-admin" style="background:#2C2C2E; color:#FFCC00;">
+                    <option value="7">7 Dias</option>
+                    <option value="30" selected>30 Dias (1 Mês)</option>
+                    <option value="90">90 Dias (3 Meses)</option>
+                    <option value="365">365 Dias (1 Ano)</option>
+                </select>
+
+                <button onclick="liberarClienteNoFirebase()" style="width:100%; padding:12px; background:#25D366; color:#FFF; font-weight:900; border:none; border-radius:8px; cursor:pointer; margin-bottom:10px;">⚡ Liberar / Renovar Cliente</button>
+            </div>
+            <button onclick="fecharModalAdmin()" style="margin-top:10px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Fechar Painel</button>
         </div>
     </div>
 
     <!-- APP PRINCIPAL -->
     <div class="top-nav">
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Menu</button>
+        <span class="badge-status" id="diasRestantes">PRO Ativo</span>
     </div>
 
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -459,16 +539,16 @@
         </div>
 
         <div class="sidebar-item" style="margin-top:10px;">
-            <button onclick="sairDoApp()" style="background:#FF3B30; color:#fff; border:none;">🔒 Sair / Bloquear</button>
+            <button onclick="sairDoApp()" style="background:#FF3B30; color:#fff; border:none;">🔒 Desconectar Conta</button>
         </div>
     </div>
 
     <div class="container">
 
-        <!-- BOTÃO DE INSTALAÇÃO -->
+        <!-- BOTÃO INTELIGENTE DE INSTALAÇÃO PWA -->
         <button id="btnInstalarApp" onclick="dispararInstalacaoPWA()">📲 Instalar Aplicativo no Celular</button>
         
-        <div class="hero-card">
+        <div class="hero-card" onclick="registrarCliqueAdmin()">
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="welcome-logo">
             <div class="welcome-title"><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f3cd_fe0f/512.gif" style="width:30px; vertical-align:-3px; margin-right:6px;">PACOTE É MATO</div>
             <div class="welcome-subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
@@ -540,39 +620,199 @@
 
     <script>
         // ==========================================
-        // SISTEMA DE SENHAS SIMPLES
+        // CONEXÃO OFICIAL COM O SEU FIREBASE
         // ==========================================
-        // Coloque aqui a senha do dono (121212) e as senhas que você der aos clientes
-        const SENHAS_AUTORIZADAS = ["121212", "rota2026", "pacotepro"];
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
+            authDomain: "pacote-e-mato.firebaseapp.com",
+            projectId: "pacote-e-mato",
+            storageBucket: "pacote-e-mato.firebasestorage.app",
+            messagingSenderId: "535255652602",
+            appId: "1:535255652602:web:2881a450c393d22ccc1143"
+        };
 
-        function verificarLogin() {
-            let logado = localStorage.getItem('app_logado_sucesso');
-            if (logado === "true") {
-                document.getElementById('telaBloqueio').style.display = 'none';
-            } else {
-                document.getElementById('telaBloqueio').style.display = 'flex';
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const SENHA_DONO = "121212";
+        let cliquesAdmin = 0;
+        let timerCliques = null;
+
+        function obterDeviceId() {
+            let id = localStorage.getItem('app_device_hw_id');
+            if (!id) {
+                id = 'DEV_' + Math.random().toString(36).substring(2, 12) + '_' + Date.now();
+                localStorage.setItem('app_device_hw_id', id);
+            }
+            return id;
+        }
+        const MEU_DEVICE_ID = obterDeviceId();
+
+        function registrarCliqueAdmin() {
+            cliquesAdmin++;
+            clearTimeout(timerCliques);
+            timerCliques = setTimeout(() => { cliquesAdmin = 0; }, 2000);
+
+            if (cliquesAdmin >= 5) {
+                cliquesAdmin = 0;
+                abrirModalAdmin();
             }
         }
 
-        function validarSenha() {
-            let senhaDigitada = document.getElementById('inputSenha').value.trim();
-            if (SENHAS_AUTORIZADAS.includes(senhaDigitada)) {
-                localStorage.setItem('app_logado_sucesso', "true");
-                document.getElementById('msgErroSenha').style.display = 'none';
-                document.getElementById('telaBloqueio').style.display = 'none';
+        function abrirModalAdmin() {
+            document.getElementById('modalAdmin').style.display = 'flex';
+        }
+
+        function fecharModalAdmin() {
+            document.getElementById('modalAdmin').style.display = 'none';
+        }
+
+        function autenticarAdmin() {
+            let pass = document.getElementById('passAdmin').value;
+            if (pass === SENHA_DONO) {
+                document.getElementById('areaLoginAdmin').style.display = 'none';
+                document.getElementById('areaGeradorAdmin').style.display = 'block';
             } else {
-                document.getElementById('msgErroSenha').style.display = 'block';
+                alert("Senha incorreta!");
             }
+        }
+
+        async function liberarClienteNoFirebase() {
+            let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
+            let dias = parseInt(document.getElementById('selDiasAdmin').value);
+
+            if (zap.length < 10) {
+                alert("Digite um WhatsApp válido com DDD!");
+                return;
+            }
+
+            let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
+
+            try {
+                await db.collection("usuarios").doc(zap).set({
+                    whatsapp: zap,
+                    expiraEm: expiraEm,
+                    ativo: true,
+                    deviceId: "", // Reseta o aparelho para o cliente cadastrar o celular dele no 1º login
+                    atualizadoEm: Date.now()
+                }, { merge: true });
+
+                alert(`✅ WhatsApp ${zap} liberado por ${dias} dias com sucesso!`);
+                document.getElementById('inputClienteZap').value = "";
+            } catch(e) {
+                alert("Erro ao salvar no Firebase: " + e.message);
+            }
+        }
+
+        async function autenticarUsuarioFirebase() {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let msgErro = document.getElementById('msgErro');
+            let btn = document.getElementById('btnEntrarAuth');
+
+            if (!zap) {
+                msgErro.innerText = "Por favor, digite seu número com DDD.";
+                msgErro.style.display = 'block';
+                return;
+            }
+
+            // Acesso Direto do Dono
+            if (zap === "121212" || zap === "11990059547") {
+                localStorage.setItem('usuario_zap_salvo', zap);
+                document.getElementById('telaBloqueio').style.display = 'none';
+                document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
+                return;
+            }
+
+            btn.innerText = "Verificando...";
+            btn.disabled = true;
+
+            try {
+                let doc = await db.collection("usuarios").doc(zap).get();
+
+                if (!doc.exists) {
+                    msgErro.innerText = "Número não cadastrado! Peça seu acesso no WhatsApp abaixo.";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Acessar Aplicativo";
+                    btn.disabled = false;
+                    return;
+                }
+
+                let data = doc.data();
+                let agora = Date.now();
+
+                if (!data.ativo || agora > data.expiraEm) {
+                    msgErro.innerText = "Seu plano expirou! Renove seu acesso via Pix.";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Acessar Aplicativo";
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Trava de 1 Aparelho por Conta
+                if (!data.deviceId) {
+                    // Primeiro acesso: vincula ao aparelho atual
+                    await db.collection("usuarios").doc(zap).update({ deviceId: MEU_DEVICE_ID });
+                } else if (data.deviceId !== MEU_DEVICE_ID) {
+                    msgErro.innerText = "Esta conta já está conectada em outro celular!";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Acessar Aplicativo";
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Sucesso
+                localStorage.setItem('usuario_zap_salvo', zap);
+                let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
+                document.getElementById('diasRestantes').innerText = `⚡ PRO (${dias}d restantes)`;
+                document.getElementById('telaBloqueio').style.display = 'none';
+                msgErro.style.display = 'none';
+
+            } catch(e) {
+                msgErro.innerText = "Erro ao conectar ao servidor. Verifique sua internet.";
+                msgErro.style.display = 'block';
+            }
+
+            btn.innerText = "⚡ Acessar Aplicativo";
+            btn.disabled = false;
+        }
+
+        async function checarSessaoAutomatica() {
+            let zap = localStorage.getItem('usuario_zap_salvo');
+            if (!zap) {
+                document.getElementById('telaBloqueio').style.display = 'flex';
+                return;
+            }
+
+            if (zap === "121212" || zap === "11990059547") {
+                document.getElementById('telaBloqueio').style.display = 'none';
+                document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
+                return;
+            }
+
+            try {
+                let doc = await db.collection("usuarios").doc(zap).get();
+                if (doc.exists) {
+                    let data = doc.data();
+                    let agora = Date.now();
+                    if (data.ativo && agora <= data.expiraEm && data.deviceId === MEU_DEVICE_ID) {
+                        let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
+                        document.getElementById('diasRestantes').innerText = `⚡ PRO (${dias}d restantes)`;
+                        document.getElementById('telaBloqueio').style.display = 'none';
+                        return;
+                    }
+                }
+            } catch(e) {}
+
+            sairDoApp();
         }
 
         function sairDoApp() {
-            localStorage.removeItem('app_logado_sucesso');
-            document.getElementById('inputSenha').value = "";
+            localStorage.removeItem('usuario_zap_salvo');
+            document.getElementById('inputTel').value = "";
             document.getElementById('telaBloqueio').style.display = 'flex';
-            toggleSidebar();
         }
 
-        verificarLogin();
+        checarSessaoAutomatica();
 
         // ==========================================
         // INSTALAÇÃO DO APP (PWA)
