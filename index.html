@@ -60,7 +60,6 @@
             padding: 0 14px;
         }
 
-        /* BOTÃO INSTALAR PWA */
         #btnInstalarApp {
             display: none;
             width: 100%;
@@ -78,7 +77,7 @@
             box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
         }
 
-        /* TELA DE BLOQUEIO E PLANOS */
+        /* TELA DE BLOQUEIO */
         #telaBloqueio {
             position: fixed;
             top: 0;
@@ -148,7 +147,6 @@
             box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
         }
 
-        /* GRID DE PLANOS */
         .planos-grid {
             display: flex;
             flex-direction: column;
@@ -178,7 +176,7 @@
         .plano-sub { font-size: 0.72rem; color: var(--subtext); }
         .plano-preco { font-size: 1.15rem; font-weight: 900; color: #00E676; }
 
-        /* MODAL PIX PAGAMENTO */
+        /* MODAL PIX */
         #modalPix {
             position: fixed;
             top: 0;
@@ -227,6 +225,19 @@
             padding: 12px;
             cursor: pointer;
             margin-top: 10px;
+        }
+
+        .btn-enviar-comprovante {
+            display: block;
+            width: 100%;
+            background: #25D366;
+            color: #FFF;
+            font-weight: 900;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border-radius: 10px;
+            padding: 11px;
+            margin-top: 8px;
         }
 
         /* MODAL ADMIN */
@@ -543,12 +554,12 @@
 </head>
 <body>
 
-    <!-- TELA DE LOGIN, TESTE GRÁTIS E COMPRA DE PLANOS -->
+    <!-- TELA DE LOGIN, TESTE GRÁTIS E PLANOS -->
     <div id="telaBloqueio">
         <div class="card-auth">
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:65px; margin-bottom:6px;" onclick="registrarCliqueAdmin()">
             <h2 style="font-size:1.3rem; font-weight:900;" onclick="registrarCliqueAdmin()">PACOTE É MATO PRO</h2>
-            <p style="font-size:0.78rem; color:var(--subtext); margin-top:2px;">Digite seu WhatsApp para entrar, testar ou assinar</p>
+            <p style="font-size:0.78rem; color:var(--subtext); margin-top:2px;">Digite seu WhatsApp para entrar ou testar</p>
             
             <input type="tel" id="inputTel" class="input-auth" placeholder="Seu WhatsApp (ex: 11999999999)">
             
@@ -558,18 +569,18 @@
             <div id="msgErro" style="color:#FF3B30; font-size:0.8rem; font-weight:900; margin-bottom:10px; display:none;"></div>
 
             <div style="border-top:1px solid #333; padding-top:12px; margin-top:4px;">
-                <div style="font-size:0.85rem; font-weight:900; color:#FFF; margin-bottom:8px;">💎 PLANOS PRO (PIX AUTOMÁTICO):</div>
+                <div style="font-size:0.85rem; font-weight:900; color:#FFF; margin-bottom:8px;">💎 PLANOS PRO (PIX DIRETO):</div>
                 
                 <div class="planos-grid">
-                    <div class="card-plano" onclick="iniciarPagamentoPix(7, 5.00, '7 Dias')">
+                    <div class="card-plano" onclick="gerarPixManual(7, 5.00, '7 Dias (Semanal)')">
                         <div class="plano-info">
                             <div class="plano-nome">⚡ 7 DIAS (Semanal)</div>
-                            <div class="plano-sub">Liberação automática imediata</div>
+                            <div class="plano-sub">Chave Pix + QR Code</div>
                         </div>
                         <div class="plano-preco">R$ 5,00</div>
                     </div>
 
-                    <div class="card-plano destaque" onclick="iniciarPagamentoPix(30, 10.00, '30 Dias (Mensal)')">
+                    <div class="card-plano destaque" onclick="gerarPixManual(30, 10.00, '30 Dias (Mensal)')">
                         <div class="plano-info">
                             <div class="plano-nome">🔥 30 DIAS (1 Mês)</div>
                             <div class="plano-sub">Mais Escolhido pelos Entregadores</div>
@@ -577,7 +588,7 @@
                         <div class="plano-preco">R$ 10,00</div>
                     </div>
 
-                    <div class="card-plano" onclick="iniciarPagamentoPix(90, 25.00, '90 Dias (Trimestral)')">
+                    <div class="card-plano" onclick="gerarPixManual(90, 25.00, '90 Dias (Trimestral)')">
                         <div class="plano-info">
                             <div class="plano-nome">💎 90 DIAS (3 Meses)</div>
                             <div class="plano-sub">Super Desconto Trimestral</div>
@@ -593,7 +604,7 @@
         </div>
     </div>
 
-    <!-- MODAL DO PIX AUTOMÁTICO -->
+    <!-- MODAL DO PIX DIRETO -->
     <div id="modalPix">
         <div class="card-pix">
             <h3 style="color:#00E676; font-weight:900; font-size:1.1rem;">PAGAMENTO PIX</h3>
@@ -601,20 +612,19 @@
             
             <div class="qr-box" id="qrContainer"></div>
             
-            <div style="font-size:0.78rem; color:#FFF; font-weight:bold; margin-bottom:6px;">Aguardando pagamento... ⏳</div>
-            <div style="font-size:0.72rem; color:#888;">O app vai liberar sozinho assim que você pagar!</div>
-
-            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:8px; background:#000; color:#00E676; border:1px solid #333; border-radius:8px; font-size:0.75rem; margin-top:10px; text-align:center;">
+            <div style="font-size:0.75rem; color:#AAA; margin-bottom:4px;">Chave Pix (WhatsApp): <b>11990059547</b></div>
+            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:8px; background:#000; color:#00E676; border:1px solid #333; border-radius:8px; font-size:0.75rem; margin-top:4px; text-align:center;">
             
             <button class="btn-copiar-pix" onclick="copiarPixCopiaCola()">📋 Copiar Código Pix</button>
-            <button onclick="fecharModalPix()" style="margin-top:12px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Cancelar</button>
+            <a id="btnZapComprovante" href="#" target="_blank" class="btn-enviar-comprovante">💬 Enviar Comprovante no Zap</a>
+            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Fechar</button>
         </div>
     </div>
 
     <!-- MODAL DO PAINEL ADMIN DO DONO -->
     <div id="modalAdmin">
         <div class="card-admin">
-            <h3 style="color:#FFCC00; font-weight:900; margin-bottom:12px;">👑 PAINEL DO DONO (MANUAL)</h3>
+            <h3 style="color:#FFCC00; font-weight:900; margin-bottom:12px;">👑 PAINEL DO DONO (FIREBASE)</h3>
             <div id="areaLoginAdmin">
                 <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-admin">
                 <button onclick="autenticarAdmin()" style="width:100%; padding:10px; background:#FFCC00; color:#000; font-weight:900; border:none; border-radius:8px; cursor:pointer;">Entrar</button>
@@ -630,7 +640,7 @@
                     <option value="365">365 Dias (1 Ano)</option>
                 </select>
 
-                <button onclick="liberarClienteManual()" style="width:100%; padding:12px; background:#25D366; color:#FFF; font-weight:900; border:none; border-radius:8px; cursor:pointer; margin-bottom:10px;">⚡ Liberar Manualmente</button>
+                <button onclick="liberarClienteManual()" style="width:100%; padding:12px; background:#25D366; color:#FFF; font-weight:900; border:none; border-radius:8px; cursor:pointer; margin-bottom:10px;">⚡ Liberar Cliente no Banco</button>
             </div>
             <button onclick="fecharModalAdmin()" style="margin-top:10px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Fechar</button>
         </div>
@@ -753,7 +763,7 @@
 
     <script>
         // ==========================================
-        // CREDENCIAIS FIREBASE E MERCADO PAGO
+        // CONFIGURAÇÃO FIREBASE E DADOS PIX
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
@@ -767,11 +777,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const MP_ACCESS_TOKEN = "APP_USR-3462920425581371-082708-50d2ec42d1ad7e23a9e1c33313b7d148-3561183926";
+        const CHAVE_PIX_DONO = "11990059547";
         const SENHA_DONO = "121212";
-
-        let timerVerificadorPix = null;
-        let qrCodeInstance = null;
+        let listenerSessaoRealtime = null;
 
         function obterDeviceId() {
             let id = localStorage.getItem('app_device_hw_id');
@@ -782,6 +790,85 @@
             return id;
         }
         const MEU_DEVICE_ID = obterDeviceId();
+
+        // ==========================================
+        // GERADOR DE CÓDIGO PIX
+        // ==========================================
+        function calcularCRC16(payload) {
+            let polinomio = 0x1021;
+            let resultado = 0xFFFF;
+            for (let i = 0; i < payload.length; i++) {
+                resultado ^= payload.charCodeAt(i) << 8;
+                for (let bit = 0; bit < 8; bit++) {
+                    if ((resultado & 0x8000) !== 0) {
+                        resultado = (resultado << 1) ^ polinomio;
+                    } else {
+                        resultado = resultado << 1;
+                    }
+                    resultado &= 0xFFFF;
+                }
+            }
+            return resultado.toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function formatarCampoPix(id, valor) {
+            let tam = valor.length.toString().padStart(2, '0');
+            return `${id}${tam}${valor}`;
+        }
+
+        function criarPixPayload(chave, nome, cidade, valor, txid = "***") {
+            let merchantAccount = formatarCampoPix("00", "br.gov.bcb.pix") + formatarCampoPix("01", chave);
+            let payload = 
+                formatarCampoPix("00", "01") +
+                formatarCampoPix("26", merchantAccount) +
+                formatarCampoPix("52", "0000") +
+                formatarCampoPix("53", "986") +
+                formatarCampoPix("54", valor.toFixed(2)) +
+                formatarCampoPix("58", "BR") +
+                formatarCampoPix("59", nome.substring(0, 25)) +
+                formatarCampoPix("60", cidade.substring(0, 15)) +
+                formatarCampoPix("62", formatarCampoPix("05", txid)) +
+                "6304";
+            
+            return payload + calcularCRC16(payload);
+        }
+
+        function gerarPixManual(dias, valor, nomePlano) {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            if (zap.length < 10) {
+                alert("Por favor, digite seu WhatsApp com DDD antes de escolher um plano!");
+                document.getElementById('inputTel').focus();
+                return;
+            }
+
+            document.getElementById('pixPlanoNome').innerText = `${nomePlano} - R$ ${valor.toFixed(2).replace('.', ',')}`;
+            document.getElementById('modalPix').style.display = 'flex';
+
+            let codigoPix = criarPixPayload(CHAVE_PIX_DONO, "PACOTE E MATO", "SAO PAULO", valor, "ASSINATURA");
+            document.getElementById('pixCopiaColaOut').value = codigoPix;
+
+            document.getElementById('qrContainer').innerHTML = "";
+            new QRCode(document.getElementById('qrContainer'), {
+                text: codigoPix,
+                width: 160,
+                height: 160,
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            document.getElementById('btnZapComprovante').href = `https://wa.me/5511990059547?text=Ol%C3%A1%2C+acabei+de+fazer+o+Pix+do+plano+*${encodeURIComponent(nomePlano)}*+(R%24+${valor.toFixed(2)})+para+o+meu+WhatsApp%3A+*${zap}*.+Segue+o+comprovante%3A`;
+        }
+
+        function fecharModalPix() {
+            document.getElementById('modalPix').style.display = 'none';
+        }
+
+        function copiarPixCopiaCola() {
+            let campo = document.getElementById('pixCopiaColaOut');
+            if (!campo.value) return;
+            campo.select();
+            navigator.clipboard.writeText(campo.value);
+            alert("📋 Código Pix Copiado com sucesso! Abra seu banco e pague na opção 'Pix Copia e Cola'.");
+        }
 
         // ==========================================
         // SISTEMA DE TESTE GRÁTIS (3 DIAS - 1 VEZ)
@@ -802,7 +889,6 @@
             btn.disabled = true;
 
             try {
-                // 1. Checa se o número já usou o teste
                 let docZap = await db.collection("usuarios").doc(zap).get();
                 if (docZap.exists && docZap.data().jaUsouTeste) {
                     msgErro.innerText = "❌ Este WhatsApp já utilizou o teste grátis de 3 dias!";
@@ -812,7 +898,6 @@
                     return;
                 }
 
-                // 2. Checa se o aparelho atual já usou o teste (anti-fraude de aparelho)
                 let queryDev = await db.collection("usuarios")
                     .where("deviceId", "==", MEU_DEVICE_ID)
                     .where("jaUsouTeste", "==", true)
@@ -826,8 +911,7 @@
                     return;
                 }
 
-                // 3. Libera 3 dias no Firebase
-                let expiraEm = Date.now() + (3 * 24 * 60 * 60 * 1000); // 3 Dias exatos
+                let expiraEm = Date.now() + (3 * 24 * 60 * 60 * 1000);
 
                 await db.collection("usuarios").doc(zap).set({
                     whatsapp: zap,
@@ -842,7 +926,7 @@
                 alert("🎉 Parabéns! Seu Teste Grátis de 3 Dias foi ativado com sucesso!");
                 localStorage.setItem('usuario_zap_salvo', zap);
                 msgErro.style.display = 'none';
-                checarSessaoAutomatica();
+                iniciarMonitoramentoSessao(zap);
 
             } catch(e) {
                 msgErro.innerText = "Erro ao ativar teste: " + e.message;
@@ -854,116 +938,7 @@
         }
 
         // ==========================================
-        // MOTOR DE PAGAMENTO PIX AUTOMÁTICO
-        // ==========================================
-        async function iniciarPagamentoPix(dias, valor, nomePlano) {
-            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
-            if (zap.length < 10) {
-                alert("Por favor, digite seu WhatsApp com DDD antes de escolher um plano!");
-                document.getElementById('inputTel').focus();
-                return;
-            }
-
-            document.getElementById('pixPlanoNome').innerText = `${nomePlano} - R$ ${valor.toFixed(2).replace('.', ',')}`;
-            document.getElementById('modalPix').style.display = 'flex';
-            document.getElementById('qrContainer').innerHTML = "Gerando Pix...";
-            document.getElementById('pixCopiaColaOut').value = "";
-
-            try {
-                const response = await fetch("https://api.mercadopago.com/v1/payments", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${MP_ACCESS_TOKEN}`,
-                        "Content-Type": "application/json",
-                        "X-Idempotency-Key": `${zap}_${Date.now()}`
-                    },
-                    body: JSON.stringify({
-                        transaction_amount: valor,
-                        description: `Pacote E Mato - ${nomePlano}`,
-                        payment_method_id: "pix",
-                        payer: {
-                            email: `cliente_${zap}@pacoteemato.com`,
-                            first_name: "Entregador",
-                            last_name: zap
-                        }
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data && data.point_of_interaction) {
-                    const copiaCola = data.point_of_interaction.transaction_data.qr_code;
-                    const paymentId = data.id;
-
-                    document.getElementById('pixCopiaColaOut').value = copiaCola;
-
-                    document.getElementById('qrContainer').innerHTML = "";
-                    qrCodeInstance = new QRCode(document.getElementById('qrContainer'), {
-                        text: copiaCola,
-                        width: 160,
-                        height: 160,
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
-
-                    iniciarVerificacaoStatusPix(paymentId, zap, dias);
-                } else {
-                    alert("Erro ao gerar Pix. Verifique os dados ou tente novamente.");
-                    fecharModalPix();
-                }
-
-            } catch (err) {
-                alert("Erro de conexão ao gerar o Pix: " + err.message);
-                fecharModalPix();
-            }
-        }
-
-        function iniciarVerificacaoStatusPix(paymentId, zap, dias) {
-            clearInterval(timerVerificadorPix);
-            
-            timerVerificadorPix = setInterval(async () => {
-                try {
-                    const res = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-                        headers: { "Authorization": `Bearer ${MP_ACCESS_TOKEN}` }
-                    });
-                    const payData = await res.json();
-
-                    if (payData.status === "approved") {
-                        clearInterval(timerVerificadorPix);
-                        
-                        let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
-                        await db.collection("usuarios").doc(zap).set({
-                            whatsapp: zap,
-                            expiraEm: expiraEm,
-                            ativo: true,
-                            deviceId: MEU_DEVICE_ID,
-                            plano: `${dias} dias`,
-                            atualizadoEm: Date.now()
-                        }, { merge: true });
-
-                        alert("🎉 Pagamento Aprovado com Sucesso! Seu acesso foi liberado.");
-                        fecharModalPix();
-                        localStorage.setItem('usuario_zap_salvo', zap);
-                        checarSessaoAutomatica();
-                    }
-                } catch(e) {}
-            }, 2500);
-        }
-
-        function fecharModalPix() {
-            clearInterval(timerVerificadorPix);
-            document.getElementById('modalPix').style.display = 'none';
-        }
-
-        function copiarPixCopiaCola() {
-            let campo = document.getElementById('pixCopiaColaOut');
-            if (!campo.value) return;
-            campo.select();
-            navigator.clipboard.writeText(campo.value);
-            alert("📋 Código Pix Copiado com sucesso! Abra seu banco e pague na opção 'Pix Copia e Cola'.");
-        }
-
-        // ==========================================
-        // AUTENTICAÇÃO E SESSÃO
+        // AUTENTICAÇÃO E VIGIA EM TEMPO REAL
         // ==========================================
         async function autenticarUsuarioFirebase() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
@@ -976,7 +951,8 @@
                 return;
             }
 
-            if (zap === "121212" || zap === "11990059547") {
+            // Senha mestre do Dono
+            if (zap === "121212") {
                 localStorage.setItem('usuario_zap_salvo', zap);
                 document.getElementById('telaBloqueio').style.display = 'none';
                 document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
@@ -990,7 +966,7 @@
                 let doc = await db.collection("usuarios").doc(zap).get();
 
                 if (!doc.exists) {
-                    msgErro.innerText = "Número não encontrado! Ative o Teste Grátis ou escolha um plano.";
+                    msgErro.innerText = "Número não encontrado! Ative o Teste Grátis ou faça o Pix do plano.";
                     msgErro.style.display = 'block';
                     btn.innerText = "⚡ Entrar no Aplicativo";
                     btn.disabled = false;
@@ -1008,21 +984,14 @@
                     return;
                 }
 
-                if (!data.deviceId) {
-                    await db.collection("usuarios").doc(zap).update({ deviceId: MEU_DEVICE_ID });
-                } else if (data.deviceId !== MEU_DEVICE_ID) {
-                    msgErro.innerText = "Esta conta já está conectada em outro celular!";
-                    msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Aplicativo";
-                    btn.disabled = false;
-                    return;
-                }
+                // Assume este celular como o dispositivo ativo oficial
+                await db.collection("usuarios").doc(zap).update({
+                    deviceId: MEU_DEVICE_ID
+                });
 
                 localStorage.setItem('usuario_zap_salvo', zap);
-                let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
-                document.getElementById('diasRestantes').innerText = `⚡ PRO (${dias}d restantes)`;
-                document.getElementById('telaBloqueio').style.display = 'none';
                 msgErro.style.display = 'none';
+                iniciarMonitoramentoSessao(zap);
 
             } catch(e) {
                 msgErro.innerText = "Erro ao conectar ao servidor. Verifique sua internet.";
@@ -1033,43 +1002,72 @@
             btn.disabled = false;
         }
 
-        async function checarSessaoAutomatica() {
-            let zap = localStorage.getItem('usuario_zap_salvo');
-            if (!zap) {
-                document.getElementById('telaBloqueio').style.display = 'flex';
-                return;
-            }
+        function iniciarMonitoramentoSessao(zap) {
+            if (listenerSessaoRealtime) listenerSessaoRealtime();
 
-            if (zap === "121212" || zap === "11990059547") {
+            if (zap === "121212") {
                 document.getElementById('telaBloqueio').style.display = 'none';
                 document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
                 return;
             }
 
-            try {
-                let doc = await db.collection("usuarios").doc(zap).get();
-                if (doc.exists) {
-                    let data = doc.data();
-                    let agora = Date.now();
-                    if (data.ativo && agora <= data.expiraEm && (data.deviceId === MEU_DEVICE_ID || !data.deviceId)) {
-                        let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
-                        document.getElementById('diasRestantes').innerText = `⚡ PRO (${dias}d restantes)`;
-                        document.getElementById('telaBloqueio').style.display = 'none';
-                        return;
-                    }
+            // Vigia em tempo real no banco
+            listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
+                if (!doc.exists) {
+                    desconectarForcado("Conta não encontrada!");
+                    return;
                 }
-            } catch(e) {}
 
-            sairDoApp();
+                let data = doc.data();
+                let agora = Date.now();
+
+                if (!data.ativo || agora > data.expiraEm) {
+                    desconectarForcado("Seu plano expirou!");
+                    return;
+                }
+
+                // Se o ID do aparelho no Firebase mudou (alguém logou em outro celular), desconecta este na hora!
+                if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
+                    desconectarForcado("⚠️ Esta conta acabou de ser conectada em outro celular!");
+                    return;
+                }
+
+                // Tudo certo: Mantém conectado
+                let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
+                document.getElementById('diasRestantes').innerText = `⚡ PRO (${dias}d restantes)`;
+                document.getElementById('telaBloqueio').style.display = 'none';
+            });
+        }
+
+        function desconectarForcado(motivo) {
+            if (listenerSessaoRealtime) {
+                listenerSessaoRealtime();
+                listenerSessaoRealtime = null;
+            }
+            localStorage.removeItem('usuario_zap_salvo');
+            let msgErro = document.getElementById('msgErro');
+            msgErro.innerText = motivo;
+            msgErro.style.display = 'block';
+            document.getElementById('telaBloqueio').style.display = 'flex';
         }
 
         function sairDoApp() {
+            if (listenerSessaoRealtime) {
+                listenerSessaoRealtime();
+                listenerSessaoRealtime = null;
+            }
             localStorage.removeItem('usuario_zap_salvo');
             document.getElementById('inputTel').value = "";
             document.getElementById('telaBloqueio').style.display = 'flex';
         }
 
-        checarSessaoAutomatica();
+        // Checagem ao abrir a página
+        let zapSalvoInicial = localStorage.getItem('usuario_zap_salvo');
+        if (zapSalvoInicial) {
+            iniciarMonitoramentoSessao(zapSalvoInicial);
+        } else {
+            document.getElementById('telaBloqueio').style.display = 'flex';
+        }
 
         // ==========================================
         // PAINEL ADMIN
@@ -1118,7 +1116,7 @@
                     whatsapp: zap,
                     expiraEm: expiraEm,
                     ativo: true,
-                    deviceId: "",
+                    deviceId: "", // Limpa para o cliente associar no próximo login dele
                     atualizadoEm: Date.now()
                 }, { merge: true });
 
