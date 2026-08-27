@@ -570,7 +570,7 @@
 
         /* MODAL DE VISUALIZAÇÃO DE ROTAS E PARADAS */
         .modal-rota-conteudo {
-            max-height: 65vh;
+            max-height: 60vh;
             overflow-y: auto;
             text-align: left;
             margin-top: 12px;
@@ -579,13 +579,33 @@
         .parada-card {
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 10px 12px;
+            border-radius: 14px;
+            padding: 12px;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
         .parada-card.duplo {
             border-color: var(--accent-amber);
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(31, 41, 55, 0.9));
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(31, 41, 55, 0.95));
+        }
+
+        /* MODAL DE ESCOLHA DE GPS (WAZE OU MAPS) */
+        .gps-option-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--surface-border);
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .segmented-control {
@@ -755,20 +775,37 @@
         </div>
     </div>
 
-    <!-- MODAL DE VISUALIZAÇÃO DA ROTA E PARADAS -->
+    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <h3 style="color:var(--primary); font-weight:900; font-size:1.1rem;">📋 Paradas & Endereços</h3>
                 <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Confira os pacotes duplos e sequência de entregas:</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Clique no número da parada para navegar (Waze / Maps):</div>
             
-            <div class="modal-rota-conteudo" id="listaParadasModal">
-                <!-- Gerado via JavaScript -->
-            </div>
+            <div class="modal-rota-conteudo" id="listaParadasModal"></div>
 
             <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE ESCOLHA DE GPS (WAZE OU GOOGLE MAPS) -->
+    <div id="modalEscolhaGps" class="modal-backdrop">
+        <div class="modal-card" style="max-width:340px;">
+            <div style="font-size:0.75rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
+            <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin-bottom:14px;" id="tituloGpsParada">Parada P1</h3>
+            
+            <button class="gps-option-btn" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">
+                🚗 Abrir no Waze
+            </button>
+            <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">
+                🗺️ Abrir no Google Maps
+            </button>
+            
+            <button onclick="fecharModalGps()" style="margin-top:8px; background:none; border:none; color:var(--text-muted); font-size:0.8rem; font-weight:700; cursor:pointer;">
+                Cancelar
+            </button>
         </div>
     </div>
 
@@ -1870,6 +1907,7 @@
         let todosPacotes = new Set();
         let pacotesBipados = new Set();
         let chaveStorageAtual = null;
+        let enderecoSelecionadoGps = "";
 
         let audioCtx = null;
         function getAudioContext() {
@@ -1964,7 +2002,6 @@
                 return;
             }
 
-            // Agrupa por número de parada principal
             let paradasOrdenadas = {};
             for (let end in mapaRotas) {
                 let pacs = mapaRotas[end];
@@ -1986,14 +2023,18 @@
                 let dados = paradasOrdenadas[st];
                 let qtd = dados.pacotes.length;
                 let ehDuplo = qtd > 1;
+                let enderecoEncoded = encodeURIComponent(dados.endereco);
 
                 let badgeDuplo = ehDuplo ? `<div style="font-size:0.65rem; font-weight:900; color:var(--accent-amber); text-transform:uppercase; margin-bottom:2px;">⚠️ PACOTE DUPLO / MÚLTIPLO (${qtd} pacotes)</div>` : "";
 
                 htmlParadas += `
                     <div class="parada-card ${ehDuplo ? 'duplo' : ''}">
-                        ${badgeDuplo}
-                        <div style="font-size:0.82rem; font-weight:900; color:var(--text-main);">P${st} • ${dados.endereco}</div>
-                        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Pacotes: ${dados.pacotes.join(', ')}</div>
+                        <div style="flex:1; cursor:pointer;" onclick="perguntarGps('${dados.endereco}', 'P${st}')">
+                            ${badgeDuplo}
+                            <div style="font-size:0.85rem; font-weight:900; color:var(--text-main);">📍 P${st} • ${dados.endereco}</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Pacotes: ${dados.pacotes.join(', ')}</div>
+                        </div>
+                        <button onclick="perguntarGps('${dados.endereco}', 'P${st}')" style="background:var(--primary); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:800; font-size:0.75rem; cursor:pointer;">🧭 Rota</button>
                     </div>
                 `;
             });
@@ -2004,6 +2045,26 @@
 
         function fecharModalRota() {
             document.getElementById('modalVisualizarRota').style.display = 'none';
+        }
+
+        function perguntarGps(endereco, paradaNome) {
+            enderecoSelecionadoGps = endereco;
+            document.getElementById('tituloGpsParada').innerText = `Navegar para ${paradaNome}`;
+            document.getElementById('modalEscolhaGps').style.display = 'flex';
+        }
+
+        function fecharModalGps() {
+            document.getElementById('modalEscolhaGps').style.display = 'none';
+        }
+
+        function abrirGpsSelecionado(app) {
+            let query = encodeURIComponent(enderecoSelecionadoGps);
+            if (app === 'waze') {
+                window.open(`https://waze.com/ul?q=${query}&navigate=yes`, '_blank');
+            } else {
+                window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+            }
+            fecharModalGps();
         }
 
         function toggleSidebar() {
