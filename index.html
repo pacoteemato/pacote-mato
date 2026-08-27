@@ -88,7 +88,6 @@
             box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
         }
 
-        /* TOAST FLUIDO ELEGANTE */
         #toastNotificacao {
             position: fixed;
             top: 20px;
@@ -120,7 +119,7 @@
             position: fixed;
             inset: 0;
             background: var(--bg-body);
-            z-index: 99999;
+            z-index: 1000000;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -311,7 +310,7 @@
             inset: 0;
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
-            z-index: 100000;
+            z-index: 1000010;
             display: none;
             justify-content: center;
             align-items: center;
@@ -498,6 +497,7 @@
             color: var(--danger);
         }
 
+        /* SIDEBAR E OVERLAY COM Z-INDEX ADEQUADO */
         .drawer-mask {
             position: fixed;
             inset: 0;
@@ -620,7 +620,7 @@
                 </div>
             </div>
 
-            <!-- BOTÃO DE PAGAR QUE SÓ APARECE APÓS ESCOLHER O PLANO -->
+            <!-- BOTÃO DE PAGAR -->
             <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
                 ⚡ Gerar Pagamento Pix
             </button>
@@ -906,7 +906,7 @@
             btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
             btn.style.display = 'block';
 
-            notificar(`Plano ${nomePlano} selecionado. Clique abaixo para gerar o Pix!`);
+            notificar(`Plano ${nomePlano} selecionado. Clique abaixo para gerar o Pix.`);
         }
 
         function iniciarPixPlanoSelecionado() {
@@ -1185,6 +1185,16 @@
                 listenerSessaoRealtime();
                 listenerSessaoRealtime = null;
             }
+            
+            // Fecha menu lateral e overlays
+            let sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('active');
+            let ov = document.getElementById('overlay');
+            if (ov) ov.style.display = 'none';
+
+            // Para scanner
+            finalizarCameraHardware();
+
             localStorage.removeItem('usuario_zap_salvo');
             let msgErro = document.getElementById('msgErro');
             msgErro.innerText = motivo;
@@ -1197,9 +1207,24 @@
                 listenerSessaoRealtime();
                 listenerSessaoRealtime = null;
             }
+
+            // Fecha a barra lateral
+            let sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('active');
+            let ov = document.getElementById('overlay');
+            if (ov) ov.style.display = 'none';
+
+            // Encerra a câmera
+            finalizarCameraHardware();
+
+            // Reseta a sessão
             localStorage.removeItem('usuario_zap_salvo');
             document.getElementById('inputTel').value = "";
+            document.getElementById('areaExecucao').style.display = 'none';
+            
+            // Mostra tela de login
             document.getElementById('telaBloqueio').style.display = 'flex';
+            notificar("🔒 Você foi desconectado com sucesso.");
         }
 
         let zapSalvoInicial = localStorage.getItem('usuario_zap_salvo');
@@ -1513,7 +1538,10 @@
             if (videoEl && videoEl.srcObject) {
                 try { videoEl.srcObject.getTracks().forEach(t => t.stop()); } catch(e) {}
             }
-            document.querySelector('.camera-viewport').innerHTML = '<button class="cam-overlay-btn" style="top:12px; left:12px;" onclick="alternarCamera()">🤳 Virar</button><button class="cam-overlay-btn" id="btn-flash" style="top:12px; right:12px;" onclick="alternarFlash()">🔦 Flash</button><div id="reader"></div>';
+            let viewport = document.querySelector('.camera-viewport');
+            if (viewport) {
+                viewport.innerHTML = '<button class="cam-overlay-btn" style="top:12px; left:12px;" onclick="alternarCamera()">🤳 Virar</button><button class="cam-overlay-btn" id="btn-flash" style="top:12px; right:12px;" onclick="alternarFlash()">🔦 Flash</button><div id="reader"></div>';
+            }
         }
 
         async function iniciarScanner() {
