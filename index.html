@@ -487,7 +487,6 @@
         #reader { width: 100% !important; height: 100% !important; }
         #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 
-        /* BOTÕES DA CÂMERA ULTRA PROFISSIONAIS (GLASSMORPHISM) */
         .cam-overlay-btn {
             position: absolute;
             z-index: 99;
@@ -578,6 +577,36 @@
             color: var(--text-main);
             font-weight: 800;
             outline: none;
+        }
+
+        /* SELETOR MODERNO EM BOTÕES LADO A LADO */
+        .segmented-control {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid var(--surface-border);
+        }
+
+        .segmented-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 4px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .segmented-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
         }
 
         .admin-nav-tabs {
@@ -768,13 +797,14 @@
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
+        <!-- SELETOR DE IDIOMA PROFISSIONAL (BOTÕES LADO A LADO) -->
         <div style="margin-bottom:16px;">
             <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🌐 <span data-i18n="language_label">Idioma / Language</span></label>
-            <select id="selIdioma" class="drawer-select" onchange="mudarIdioma(this.value, true)">
-                <option value="pt">Português (Brasil)</option>
-                <option value="es">Español</option>
-                <option value="en">English</option>
-            </select>
+            <div class="segmented-control">
+                <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">Português</button>
+                <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">Español</button>
+                <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">English</button>
+            </div>
         </div>
 
         <div style="margin-bottom:16px;">
@@ -862,7 +892,7 @@
                 <div id="expContent" style="display:none; font-size:0.78rem; color:var(--text-muted); border-top:1px solid var(--surface-border); margin-top:10px; padding-top:8px; line-height:1.5;"></div>
             </div>
 
-            <!-- CAMERA COM BOTÕES PROFISSIONAIS (SVG + GLASSMORPHISM) -->
+            <!-- CAMERA -->
             <div class="camera-viewport">
                 <button class="cam-overlay-btn" style="top:12px; left:12px;" onclick="alternarCamera()">
                     <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
@@ -1039,8 +1069,14 @@
             let txtFlash = document.getElementById('txt-flash');
             if (txtFlash && !flashLigado) txtFlash.innerText = dict.flash_txt;
 
-            let sel = document.getElementById('selIdioma');
-            if (sel) sel.value = lang;
+            // Atualiza os botões visuais do seletor moderno
+            ['pt', 'es', 'en'].forEach(l => {
+                let btn = document.getElementById('lang_' + l);
+                if (btn) {
+                    if (l === lang) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
         }
 
         // ==========================================
@@ -1972,7 +2008,6 @@
             } catch(e) {}
         }
 
-        // ... Restante do código de rotas e processamento ...
         function normalizarEndereco(texto) {
             if (!texto) return "";
             let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop|package)\b/gi, '').trim();
