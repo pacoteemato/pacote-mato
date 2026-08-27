@@ -265,16 +265,13 @@
             flex-direction: column;
             gap: 8px;
             margin-bottom: 12px;
-            max-height: 240px;
-            overflow-y: auto;
-            padding-right: 2px;
         }
 
         .plan-item {
             background: var(--surface-2);
             border: 2px solid var(--surface-border);
             border-radius: 14px;
-            padding: 11px 14px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -309,9 +306,9 @@
             letter-spacing: 0.5px;
         }
 
-        .plan-name { font-size: 0.88rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.68rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1.1rem; font-weight: 900; color: var(--accent-green); }
+        .plan-name { font-size: 0.9rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.72rem; color: var(--text-muted); text-align: left; margin-top: 2px; }
+        .plan-val { font-size: 1.18rem; font-weight: 900; color: var(--accent-green); }
 
         .btn-gerar-pix-confirm {
             width: 100%;
@@ -564,18 +561,19 @@
         .admin-nav-tabs {
             display: flex;
             gap: 6px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .admin-tab {
             flex: 1;
-            padding: 9px;
+            padding: 8px 4px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             color: var(--text-muted);
             border-radius: 10px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 800;
             cursor: pointer;
+            text-align: center;
         }
         .admin-tab.active {
             background: var(--accent-amber);
@@ -630,14 +628,6 @@
             <div class="divider-label">Escolha seu Plano</div>
             
             <div class="plan-stack">
-                <div class="plan-item" id="cardPlano3" onclick="selecionarPlano(3, 3.00, '3 Dias', 'cardPlano3')">
-                    <div>
-                        <div class="plan-name">Plano 3 Dias</div>
-                        <div class="plan-meta">Acesso rápido por 3 dias</div>
-                    </div>
-                    <div class="plan-val">R$ 3,00</div>
-                </div>
-
                 <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
                     <div>
                         <div class="plan-name">Plano Semanal</div>
@@ -661,14 +651,6 @@
                         <div class="plan-meta">90 dias com super desconto</div>
                     </div>
                     <div class="plan-val">R$ 25,00</div>
-                </div>
-
-                <div class="plan-item" id="cardPlano365" onclick="selecionarPlano(365, 80.00, '365 Dias (1 Ano)', 'cardPlano365')">
-                    <div>
-                        <div class="plan-name">Plano Anual (1 Ano)</div>
-                        <div class="plan-meta">365 dias • Acesso completo</div>
-                    </div>
-                    <div class="plan-val">R$ 80,00</div>
                 </div>
             </div>
 
@@ -704,11 +686,11 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN -->
+    <!-- MODAL ADMIN (COM ABAS SEPARADAS POR PERÍODO) -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <h3 style="color:var(--accent-amber); font-weight:900; font-size:1.1rem;">👑 Painel Master</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:var(--accent-amber); font-weight:900; font-size:1.1rem;">👑 Painel Master & Controle</h3>
                 <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             
@@ -718,14 +700,18 @@
             </div>
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
+                
+                <!-- Abas de controle por período -->
                 <div class="admin-nav-tabs">
-                    <button class="admin-tab active" id="tabPro" onclick="alternarTabAdmin('pro')">💎 Pagantes</button>
-                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')">➕ Liberar</button>
+                    <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
+                    <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
+                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes/7d</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="background:var(--primary); color:#fff;">➕ Liberar</button>
                 </div>
 
-                <div id="viewAdminPro" style="max-height:280px; overflow-y:auto;"></div>
-                <div id="viewAdminTeste" style="max-height:280px; overflow-y:auto; display:none;"></div>
+                <div id="viewAdmin30d" style="max-height:260px; overflow-y:auto;"></div>
+                <div id="viewAdmin90d" style="max-height:260px; overflow-y:auto; display:none;"></div>
+                <div id="viewAdminTeste" style="max-height:260px; overflow-y:auto; display:none;"></div>
 
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
@@ -734,7 +720,6 @@
                         <option value="7">7 Dias (Semanal)</option>
                         <option value="30" selected>30 Dias (1 Mês)</option>
                         <option value="90">90 Dias (3 Meses)</option>
-                        <option value="365">365 Dias (1 Ano)</option>
                     </select>
                     <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
                 </div>
@@ -907,6 +892,19 @@
             setTimeout(() => { t.style.display = 'none'; }, 3500);
         }
 
+        // ==========================================
+        // VALIDADOR DE NÚMERO DE WHATSAPP
+        // ==========================================
+        function validarNumeroWhatsApp(zap) {
+            let limpo = zap.replace(/\D/g, '');
+            // Verifica se tem entre 10 e 11 dígitos (DDD + número)
+            if (limpo.length < 10 || limpo.length > 11) return false;
+            // Valida DDD básico do Brasil (11 a 99)
+            let ddd = parseInt(limpo.substring(0, 2));
+            if (ddd < 11 || ddd > 99) return false;
+            return true;
+        }
+
         function carregarConfiguracoesSalvas() {
             let tema = localStorage.getItem('tema_preferido') || 'slate_tech';
             mudarTema(tema, false);
@@ -961,6 +959,13 @@
         let planoSelecionadoAtual = null;
 
         function selecionarPlano(dias, valor, nomePlano, cardId) {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            if (!validarNumeroWhatsApp(zap)) {
+                notificar("⚠️ Digite um número de WhatsApp válido com DDD antes de escolher o plano.");
+                document.getElementById('inputTel').focus();
+                return;
+            }
+
             document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
             document.getElementById(cardId).classList.add('selecionado');
 
@@ -986,9 +991,8 @@
         // ==========================================
         async function gerarPixAutomatico(dias, valor, nomePlano) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
-            if (zap.length < 10) {
-                notificar("Por favor, digite seu WhatsApp com DDD antes de prosseguir.");
-                document.getElementById('inputTel').focus();
+            if (!validarNumeroWhatsApp(zap)) {
+                notificar("⚠️ Número de WhatsApp inválido.");
                 return;
             }
 
@@ -1024,7 +1028,7 @@
                         correctLevel: QRCode.CorrectLevel.M
                     });
 
-                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias);
+                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano);
                 } else {
                     notificar("Não foi possível gerar a cobrança Pix. Tente novamente.");
                     fecharModalPix();
@@ -1036,7 +1040,7 @@
             }
         }
 
-        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias) {
+        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano) {
             clearInterval(timerVerificadorPix);
             
             timerVerificadorPix = setInterval(async () => {
@@ -1054,7 +1058,8 @@
                             ativo: true,
                             bloqueado: false,
                             deviceId: MEU_DEVICE_ID,
-                            plano: `${dias} dias`,
+                            plano: nomePlano,
+                            duracaoDias: dias,
                             tipo: "pago",
                             atualizadoEm: Date.now()
                         }, { merge: true });
@@ -1089,8 +1094,8 @@
             let msgErro = document.getElementById('msgErro');
             let btn = document.getElementById('btnTesteGratis');
 
-            if (zap.length < 10) {
-                msgErro.innerText = "Informe seu WhatsApp com DDD para resgatar o teste.";
+            if (!validarNumeroWhatsApp(zap)) {
+                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD (Ex: 11999998888).";
                 msgErro.style.display = 'block';
                 document.getElementById('inputTel').focus();
                 return;
@@ -1136,6 +1141,7 @@
                     jaUsouTeste: true,
                     tipo: "teste",
                     plano: "Teste Grátis (3 Dias)",
+                    duracaoDias: 3,
                     ativadoEm: Date.now()
                 }, { merge: true });
 
@@ -1168,16 +1174,16 @@
             let msgErro = document.getElementById('msgErro');
             let btn = document.getElementById('btnEntrarAuth');
 
-            if (!zap) {
-                msgErro.innerText = "Por favor, digite seu número com DDD.";
+            if (!validarNumeroWhatsApp(zap)) {
+                if(zap === "121212") {
+                    // Permite login direto do Dono
+                    localStorage.setItem('usuario_zap_salvo', zap);
+                    document.getElementById('telaBloqueio').style.display = 'none';
+                    document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
+                    return;
+                }
+                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
                 msgErro.style.display = 'block';
-                return;
-            }
-
-            if (zap === "121212") {
-                localStorage.setItem('usuario_zap_salvo', zap);
-                document.getElementById('telaBloqueio').style.display = 'none';
-                document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
                 return;
             }
 
@@ -1318,7 +1324,7 @@
         }
 
         // ==========================================
-        // PAINEL ADMIN (COM BOTÃO DE BLOQUEIO)
+        // PAINEL ADMIN COM ABAS SEPARADAS
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -1350,37 +1356,29 @@
         }
 
         function alternarTabAdmin(tab) {
-            document.getElementById('tabPro').classList.remove('active');
-            document.getElementById('tabTeste').classList.remove('active');
-            document.getElementById('tabAdd').classList.remove('active');
+            ['30d', '90d', 'teste', 'add'].forEach(t => {
+                let btn = document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1)));
+                let view = document.getElementById('viewAdmin' + (t.charAt(0).toUpperCase() + t.slice(1)));
+                if(btn) btn.classList.remove('active');
+                if(view) view.style.display = 'none';
+            });
 
-            document.getElementById('viewAdminPro').style.display = 'none';
-            document.getElementById('viewAdminTeste').style.display = 'none';
-            document.getElementById('viewAdminAdd').style.display = 'none';
-
-            if (tab === 'pro') {
-                document.getElementById('tabPro').classList.add('active');
-                document.getElementById('viewAdminPro').style.display = 'block';
-            } else if (tab === 'teste') {
-                document.getElementById('tabTeste').classList.add('active');
-                document.getElementById('viewAdminTeste').style.display = 'block';
-            } else if (tab === 'add') {
-                document.getElementById('tabAdd').classList.add('active');
-                document.getElementById('viewAdminAdd').style.display = 'block';
-            }
+            document.getElementById('tab' + (tab.charAt(0).toUpperCase() + tab.slice(1))).classList.add('active');
+            document.getElementById('viewAdmin' + (tab.charAt(0).toUpperCase() + tab.slice(1))).style.display = 'block';
         }
 
         async function carregarUsuariosAdmin() {
-            let viewPro = document.getElementById('viewAdminPro');
+            let view30d = document.getElementById('viewAdmin30d');
+            let view90d = document.getElementById('viewAdmin90d');
             let viewTeste = document.getElementById('viewAdminTeste');
             
-            viewPro.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
+            view30d.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
+            view90d.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
             viewTeste.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
 
             try {
                 let snapshot = await db.collection("usuarios").get();
-                let proHtml = "";
-                let testeHtml = "";
+                let html30 = "", html90 = "", htmlTeste = "";
                 let agora = Date.now();
 
                 snapshot.forEach(doc => {
@@ -1389,6 +1387,7 @@
                     let expira = u.expiraEm || 0;
                     let bloqueado = u.bloqueado === true;
                     let ativo = u.ativo && agora <= expira && !bloqueado;
+                    let duracao = u.duracaoDias || 30;
                     
                     let dias = Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
                     let statusLabel = bloqueado ? `<span style="color:#ef4444; font-weight:800;">Bloqueado ⛔</span>` : (ativo ? `<span style="color:#10b981;">Ativo (${dias}d)</span>` : `<span style="color:#f59e0b;">Expirado</span>`);
@@ -1399,28 +1398,32 @@
                     let row = `
                         <div class="user-row">
                             <div>
-                                <div style="font-weight:800; font-size:0.85rem; color:var(--text-main);">${zap}</div>
-                                <div style="font-size:0.7rem; color:var(--text-muted);">${u.plano || 'Acesso'} • ${statusLabel}</div>
+                                <div style="font-weight:800; font-size:0.82rem; color:var(--text-main);">${zap}</div>
+                                <div style="font-size:0.68rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
                             </div>
-                            <div style="display:flex; gap:6px;">
-                                <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:8px; padding:5px 8px; font-size:0.68rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
-                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:8px; padding:5px 8px; font-size:0.68rem; font-weight:800; cursor:pointer;">Excluir</button>
+                            <div style="display:flex; gap:5px;">
+                                <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:6px; padding:4px 7px; font-size:0.62rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
+                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:4px 7px; font-size:0.62rem; font-weight:800; cursor:pointer;">Excluir</button>
                             </div>
                         </div>
                     `;
 
-                    if (u.tipo === 'teste' || u.jaUsouTeste) {
-                        testeHtml += row;
+                    // Separador por categorias exatas
+                    if (duracao === 90) {
+                        html90 += row;
+                    } else if (duracao === 30) {
+                        html30 += row;
                     } else {
-                        proHtml += row;
+                        htmlTeste += row; // 3 dias, 7 dias ou testes
                     }
                 });
 
-                viewPro.innerHTML = proHtml || "<div style='font-size:0.75rem; color:#888;'>Nenhum assinante cadastrado.</div>";
-                viewTeste.innerHTML = testeHtml || "<div style='font-size:0.75rem; color:#888;'>Nenhum teste grátis registrado.</div>";
+                view30d.innerHTML = html30 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 1 Mês.</div>";
+                view90d.innerHTML = html90 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 3 Meses.</div>";
+                viewTeste.innerHTML = htmlTeste || "<div style='font-size:0.75rem; color:#888;'>Nenhum teste ou plano semanal.</div>";
 
             } catch(e) {
-                viewPro.innerHTML = "Erro ao buscar dados.";
+                view30d.innerHTML = "Erro ao buscar dados.";
             }
         }
 
@@ -1440,13 +1443,13 @@
             let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
             let dias = parseInt(document.getElementById('selDiasAdmin').value);
 
-            if (zap.length < 10) {
-                notificar("Digite um WhatsApp válido com DDD.");
+            if (!validarNumeroWhatsApp(zap)) {
+                notificar("⚠️ Digite um WhatsApp válido com DDD.");
                 return;
             }
 
             let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
-            let nomePlanoManual = dias === 3 ? "3 Dias" : (dias === 7 ? "7 Dias (Semanal)" : (dias === 30 ? "30 Dias (1 Mês)" : (dias === 90 ? "90 Dias (3 Meses)" : "365 Dias (1 Ano)")));
+            let nomePlanoManual = dias === 3 ? "3 Dias" : (dias === 7 ? "7 Dias (Semanal)" : (dias === 30 ? "30 Dias (1 Mês)" : "90 Dias (3 Meses)"));
 
             try {
                 await db.collection("usuarios").doc(zap).set({
@@ -1457,12 +1460,13 @@
                     deviceId: "",
                     tipo: "pago",
                     plano: `${nomePlanoManual} (Manual)`,
+                    duracaoDias: dias,
                     atualizadoEm: Date.now()
                 }, { merge: true });
 
                 notificar(`WhatsApp ${zap} liberado com sucesso por ${dias} dias.`);
                 document.getElementById('inputClienteZap').value = "";
-                alternarTabAdmin('pro');
+                alternarTabAdmin('30d');
                 carregarUsuariosAdmin();
             } catch(e) {
                 notificar("Erro ao salvar no banco.");
