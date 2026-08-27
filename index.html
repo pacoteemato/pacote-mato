@@ -568,18 +568,26 @@
         }
         .drawer-panel.active { left: 0; }
 
-        /* AVISO DE MENSAGEM DO ADMIN PARA O USUÁRIO */
-        .banner-mensagem-usuario {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
-            border: 1.5px solid var(--accent-amber);
-            border-radius: 16px;
-            padding: 14px;
-            margin-bottom: 14px;
-            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.2);
-            display: none;
+        /* MODAL DE VISUALIZAÇÃO DE ROTAS E PARADAS */
+        .modal-rota-conteudo {
+            max-height: 65vh;
+            overflow-y: auto;
+            text-align: left;
+            margin-top: 12px;
+            padding-right: 4px;
+        }
+        .parada-card {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+        .parada-card.duplo {
+            border-color: var(--accent-amber);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(31, 41, 55, 0.9));
         }
 
-        /* SELETORES MODERNOS */
         .segmented-control {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -747,7 +755,24 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN (COM ABA DE MENSAGENS) -->
+    <!-- MODAL DE VISUALIZAÇÃO DA ROTA E PARADAS -->
+    <div id="modalVisualizarRota" class="modal-backdrop">
+        <div class="modal-card" style="max-width:440px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h3 style="color:var(--primary); font-weight:900; font-size:1.1rem;">📋 Paradas & Endereços</h3>
+                <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Confira os pacotes duplos e sequência de entregas:</div>
+            
+            <div class="modal-rota-conteudo" id="listaParadasModal">
+                <!-- Gerado via JavaScript -->
+            </div>
+
+            <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL ADMIN -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -767,21 +792,13 @@
                     <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
                     <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes</button>
                     <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
-                    <button class="admin-tab" id="tabMsg" onclick="alternarTabAdmin('msg')" style="background:var(--accent-amber); color:#000;">💬 Enviar Msg</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="background:var(--primary); color:#fff;">➕ Liberar</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar Acesso</button>
                 </div>
 
                 <div id="viewAdmin30d" style="max-height:260px; overflow-y:auto;"></div>
                 <div id="viewAdmin90d" style="max-height:260px; overflow-y:auto; display:none;"></div>
                 <div id="viewAdminTeste" style="max-height:260px; overflow-y:auto; display:none;"></div>
                 <div id="viewAdminPagos" style="max-height:260px; overflow-y:auto; display:none;"></div>
-
-                <!-- ABA DE ENVIAR MENSAGEM PARA O USUÁRIO -->
-                <div id="viewAdminMsg" style="display:none;">
-                    <input type="tel" id="inputMsgZap" placeholder="WhatsApp do Entregador (ou 'todos')" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
-                    <textarea id="inputMsgTexto" placeholder="Digite a mensagem para o entregador..." class="input-auth" style="height:90px; resize:none; margin-bottom:8px; padding-left:16px; padding-top:12px;"></textarea>
-                    <button onclick="enviarMensagemAdmin()" class="btn-action-primary" style="background:var(--accent-amber); color:#000;">📤 Enviar Mensagem</button>
-                </div>
 
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
@@ -869,12 +886,6 @@
             <div style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
-        <!-- CAIXA DE MENSAGEM DO ADMIN EXIBIDA PARA O USUÁRIO -->
-        <div class="banner-mensagem-usuario" id="bannerMsgAdmin">
-            <div style="font-size:0.75rem; font-weight:900; color:var(--accent-amber); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">💬 AVISO DO SUPORTE / ADMIN</div>
-            <div id="txtMsgAdminConteudo" style="font-size:0.88rem; font-weight:800; color:#fff; line-height:1.4;"></div>
-        </div>
-
         <!-- RETOMAR ROTA SALVA -->
         <div class="card-retomar-rota" id="cardRetomarRota">
             <div style="font-size:0.8rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
@@ -887,9 +898,16 @@
         <div class="upload-section">
             <div style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:4px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:14px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
-            <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt">
-                📄 <span data-i18n="choose_pdf">Escolher Arquivo PDF</span>
+            
+            <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
+                📄 Escolher Arquivo PDF
             </button>
+
+            <!-- BOTÃO PARA VER AS PARADAS DO PDF -->
+            <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
+                👀 Visualizar Paradas da Rota
+            </button>
+
             <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
         </div>
 
@@ -1106,7 +1124,7 @@
         }
 
         // ==========================================
-        // TEMAS (TODAS AS 4 CORES)
+        // TEMAS
         // ==========================================
         const paletas = {
             slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#374151", border: "rgba(255, 255, 255, 0.1)", text_main: "#f9fafb", text_muted: "#9ca3af", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1)" },
@@ -1181,8 +1199,6 @@
             let zapSalvo = localStorage.getItem('usuario_zap_salvo');
             if (!zapSalvo) {
                 document.getElementById('telaBloqueio').style.display = 'flex';
-            } else {
-                verificarMensagensAdmin(zapSalvo);
             }
 
             if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
@@ -1221,58 +1237,6 @@
             return id;
         }
         const MEU_DEVICE_ID = obterDeviceId();
-
-        // ==========================================
-        // SISTEMA DE MENSAGENS DO ADMIN
-        // ==========================================
-        async function enviarMensagemAdmin() {
-            let zapDestino = document.getElementById('inputMsgZap').value.trim().toLowerCase();
-            let textoMsg = document.getElementById('inputMsgTexto').value.trim();
-
-            if (!zapDestino || !textoMsg) {
-                notificar("⚠️ Preencha o WhatsApp de destino e a mensagem.");
-                return;
-            }
-
-            try {
-                await db.collection("mensagens_admin").add({
-                    destino: zapDestino, // Pode ser número ou 'todos'
-                    mensagem: textoMsg,
-                    data: new Date().toLocaleString('pt-BR'),
-                    timestamp: Date.now()
-                });
-
-                notificar("💬 Mensagem enviada com sucesso!");
-                document.getElementById('inputMsgZap').value = "";
-                document.getElementById('inputMsgTexto').value = "";
-            } catch(e) {
-                notificar("Erro ao enviar mensagem.");
-            }
-        }
-
-        async function verificarMensagensAdmin(zap) {
-            let banner = document.getElementById('bannerMsgAdmin');
-            let txtConteudo = document.getElementById('txtMsgAdminConteudo');
-
-            try {
-                let snapshot = await db.collection("mensagens_admin").orderBy("timestamp", "desc").limit(5).get();
-                let mensagemValida = null;
-
-                snapshot.forEach(doc => {
-                    let m = doc.data();
-                    if (!mensagemValida && (m.destino === 'todos' || m.destino === zap)) {
-                        mensagemValida = m.mensagem;
-                    }
-                });
-
-                if (mensagemValida) {
-                    txtConteudo.innerText = mensagemValida;
-                    banner.style.display = 'block';
-                } else {
-                    banner.style.display = 'none';
-                }
-            } catch(e) {}
-        }
 
         // ==========================================
         // SELEÇÃO DE PLANO ANTES DO PIX
@@ -1571,7 +1535,6 @@
 
         function iniciarMonitoramentoSessao(zap) {
             if (listenerSessaoRealtime) listenerSessaoRealtime();
-            verificarMensagensAdmin(zap);
 
             if (zap === "121212") {
                 document.getElementById('telaBloqueio').style.display = 'none';
@@ -1691,7 +1654,7 @@
         }
 
         function alternarTabAdmin(tab) {
-            ['30d', '90d', 'teste', 'pagos', 'msg', 'add'].forEach(t => {
+            ['30d', '90d', 'teste', 'pagos', 'add'].forEach(t => {
                 let btn = document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1)));
                 let view = document.getElementById('viewAdmin' + (t.charAt(0).toUpperCase() + t.slice(1)));
                 if(btn) btn.classList.remove('active');
@@ -1888,7 +1851,7 @@
         }
 
         // ==========================================
-        // SISTEMA DE ROTAS E LEITURA
+        // SISTEMA DE ROTAS, PARADAS E LEITURA
         // ==========================================
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('data:text/javascript;charset=utf-8,+encodeURIComponent("self.addEventListener(\'fetch\', function(event) {});")').catch(() => {});
@@ -1928,6 +1891,7 @@
                     if (parsed.todosPacotes && parsed.todosPacotes.length > 0) {
                         document.getElementById('txtNomeRotaSalva').innerText = `${parsed.nomeArquivo || 'Rota'} (${parsed.pacotesBipados.length}/${parsed.todosPacotes.length} bipados)`;
                         cardRetomar.style.display = 'block';
+                        document.getElementById('btnVerParadasModal').style.display = 'flex';
                         return;
                     }
                 } catch(e) {}
@@ -1963,6 +1927,7 @@
                 chaveStorageAtual = parsed.chaveStorage;
 
                 document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
+                document.getElementById('btnVerParadasModal').style.display = 'flex';
 
                 let htmlDuplos = "";
                 let temDuplo = false;
@@ -1987,6 +1952,58 @@
             } catch(e) {
                 notificar("Erro ao carregar a rota anterior.");
             }
+        }
+
+        function abrirModalRota() {
+            let container = document.getElementById('listaParadasModal');
+            container.innerHTML = "";
+
+            if (Object.keys(mapaRotas).length === 0) {
+                container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center;'>Nenhuma rota carregada no momento.</div>";
+                document.getElementById('modalVisualizarRota').style.display = 'flex';
+                return;
+            }
+
+            // Agrupa por número de parada principal
+            let paradasOrdenadas = {};
+            for (let end in mapaRotas) {
+                let pacs = mapaRotas[end];
+                pacs.forEach(p => {
+                    let st = stopCorrespondente[p] || 1;
+                    if (!paradasOrdenadas[st]) {
+                        paradasOrdenadas[st] = { endereco: nomeExibicao[end] || end, pacotes: [] };
+                    }
+                    if (!paradasOrdenadas[st].pacotes.includes(p)) {
+                        paradasOrdenadas[st].pacotes.push(p);
+                    }
+                });
+            }
+
+            let chavesStops = Object.keys(paradasOrdenadas).sort((a,b) => parseInt(a) - parseInt(b));
+            let htmlParadas = "";
+
+            chavesStops.forEach(st => {
+                let dados = paradasOrdenadas[st];
+                let qtd = dados.pacotes.length;
+                let ehDuplo = qtd > 1;
+
+                let badgeDuplo = ehDuplo ? `<div style="font-size:0.65rem; font-weight:900; color:var(--accent-amber); text-transform:uppercase; margin-bottom:2px;">⚠️ PACOTE DUPLO / MÚLTIPLO (${qtd} pacotes)</div>` : "";
+
+                htmlParadas += `
+                    <div class="parada-card ${ehDuplo ? 'duplo' : ''}">
+                        ${badgeDuplo}
+                        <div style="font-size:0.82rem; font-weight:900; color:var(--text-main);">P${st} • ${dados.endereco}</div>
+                        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Pacotes: ${dados.pacotes.join(', ')}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = htmlParadas;
+            document.getElementById('modalVisualizarRota').style.display = 'flex';
+        }
+
+        function fecharModalRota() {
+            document.getElementById('modalVisualizarRota').style.display = 'none';
         }
 
         function toggleSidebar() {
@@ -2126,6 +2143,7 @@
             document.getElementById('boxAviso').style.display = 'none';
             document.getElementById('inputManual').value = "";
             document.getElementById('btnUploadTxt').innerHTML = "📄 " + file.name.substring(0, 20) + "...";
+            document.getElementById('btnVerParadasModal').style.display = 'flex';
 
             chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
 
