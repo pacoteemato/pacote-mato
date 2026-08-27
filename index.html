@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PACOTE É MATO</title>
+    <title>PACOTE É MATO - PRO</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
     
     <!-- Configurações PWA -->
@@ -55,13 +55,131 @@
             padding: 0 14px;
         }
 
+        /* BOTÃO DE INSTALAÇÃO PWA */
+        #btnInstalarApp {
+            display: none;
+            width: 100%;
+            background: linear-gradient(135deg, #007AFF, #00C6FF);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+            animation: pulseInstall 2s infinite;
+        }
+
+        @keyframes pulseInstall {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* TELA DE BLOQUEIO */
+        #telaBloqueio {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .card-auth {
+            width: 100%;
+            max-width: 380px;
+            background: #0B0B0B;
+            border: 2px solid #FFFFFF;
+            border-radius: 20px;
+            padding: 26px 20px;
+            box-shadow: 0 10px 30px rgba(255,255,255,0.15);
+        }
+
+        .input-token {
+            width: 100%;
+            padding: 14px;
+            background: #000000;
+            border: 2px solid #FFFFFF;
+            border-radius: 12px;
+            color: #FFFFFF;
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 16px 0;
+        }
+
+        .btn-ativar {
+            width: 100%;
+            background: #FFFFFF;
+            color: #000000;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 900;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-comprar {
+            display: block;
+            width: 100%;
+            background: #25D366;
+            color: #FFFFFF;
+            text-decoration: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            margin-top: 14px;
+        }
+
+        /* MODAL ADMIN GERADOR */
+        #modalAdmin {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card-admin {
+            width: 100%;
+            max-width: 380px;
+            background: #1C1C1E;
+            border: 2px solid #FFCC00;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            color: #FFF;
+        }
+
         /* HEADER */
         .top-nav {
             width: 100%;
             max-width: 480px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: space-between;
             padding: 12px 14px;
             margin-bottom: 4px;
         }
@@ -76,6 +194,15 @@
             font-weight: 900;
             cursor: pointer;
             box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .badge-status {
+            font-size: 0.75rem;
+            font-weight: 900;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
         }
 
         /* DRAWER LATERAL */
@@ -150,6 +277,8 @@
             text-align: center;
             box-shadow: 0 8px 24px var(--shadow);
             margin-bottom: 14px;
+            cursor: pointer;
+            user-select: none;
         }
         .welcome-logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; }
         .welcome-title { font-size: 1.8rem; font-weight: 900; color: var(--text-app); letter-spacing: 2px; text-transform: uppercase; }
@@ -320,25 +449,49 @@
             font-weight: 800;
             margin-bottom: 15px;
         }
-
-        .pix-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 16px;
-            text-align: center;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px var(--shadow);
-        }
-        .pix-title { font-size: 0.95rem; font-weight: 900; color: var(--text-app); margin-bottom: 6px; letter-spacing: 0.5px; }
-        .pix-desc { font-size: 0.82rem; color: var(--subtext); margin-bottom: 12px; line-height: 1.4; }
-        .pix-key { font-size: 0.9rem; font-weight: 800; color: var(--text-app); background: rgba(127,127,127,0.18); padding: 6px 10px; border-radius: 8px; display: inline-block; }
     </style>
 </head>
 <body>
 
+    <!-- TELA DE BLOQUEIO / ASSINATURA -->
+    <div id="telaBloqueio">
+        <div class="card-auth">
+            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:70px; margin-bottom:12px;" onclick="registrarCliqueAdmin()">
+            <h2 style="font-size:1.4rem; font-weight:900;" onclick="registrarCliqueAdmin()">PACOTE É MATO PRO</h2>
+            <p style="font-size:0.82rem; color:var(--subtext); margin-top:6px;">Insira sua Chave de Acesso para liberar o aplicativo no seu aparelho.</p>
+            
+            <input type="text" id="inputToken" class="input-token" placeholder="COLE O CÓDIGO AQUI">
+            <button class="btn-ativar" onclick="ativarLicenca()">⚡ Ativar Acesso</button>
+            <div id="msgErroToken" style="color:#FF3B30; font-size:0.8rem; font-weight:900; margin-top:8px; display:none;">Chave inválida ou expirada!</div>
+
+            <!-- Coloque seu número de WhatsApp abaixo -->
+            <a href="https://wa.me/5511999999999?text=Ol%C3%A1%2C+quero+assinar+o+Pacote+%C3%89+Mato+PRO" target="_blank" class="btn-comprar">
+                💬 Comprar Chave de 30 Dias (Pix)
+            </a>
+        </div>
+    </div>
+
+    <!-- MODAL DO PAINEL ADMIN GERADOR DE CHAVES -->
+    <div id="modalAdmin">
+        <div class="card-admin">
+            <h3 style="color:#FFCC00; font-weight:900; margin-bottom:10px;">👑 PAINEL DO DONO</h3>
+            <div id="areaLoginAdmin">
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" style="width:100%; padding:10px; border-radius:8px; border:1px solid #FFCC00; background:#000; color:#fff; text-align:center; margin-bottom:10px;">
+                <button onclick="autenticarAdmin()" style="width:100%; padding:10px; background:#FFCC00; color:#000; font-weight:900; border:none; border-radius:8px; cursor:pointer;">Entrar</button>
+            </div>
+            <div id="areaGeradorAdmin" style="display:none;">
+                <button onclick="gerarNovaChaveViaPainel(30)" style="width:100%; padding:12px; background:#25D366; color:#FFF; font-weight:900; border:none; border-radius:8px; cursor:pointer; margin-bottom:10px;">⚡ Gerar Chave (30 Dias)</button>
+                <input type="text" id="chaveGeradaOut" readonly style="width:100%; padding:10px; background:#000; color:#00FF66; border:1px solid #444; border-radius:8px; text-align:center; font-weight:bold; font-size:0.85rem; margin-bottom:10px;">
+                <button onclick="copiarChaveGerada()" style="width:100%; padding:10px; background:#FFF; color:#000; font-weight:900; border:none; border-radius:8px; cursor:pointer; margin-bottom:10px;">📋 Copiar Chave</button>
+            </div>
+            <button onclick="fecharModalAdmin()" style="margin-top:10px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Fechar Painel</button>
+        </div>
+    </div>
+
+    <!-- APP PRINCIPAL -->
     <div class="top-nav">
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Menu</button>
+        <span class="badge-status" id="diasRestantes">PRO Ativo</span>
     </div>
 
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -369,11 +522,18 @@
         <div class="sidebar-item" style="margin-top:25px;">
             <button onclick="zerarRota()">🔄 Zerar Bipagens Desta Rota</button>
         </div>
+
+        <div class="sidebar-item" style="margin-top:10px;">
+            <button onclick="sairLicenca()" style="background:#FF3B30; color:#fff; border:none;">🔒 Desconectar Licença</button>
+        </div>
     </div>
 
     <div class="container">
+
+        <!-- BOTÃO INTELIGENTE DE INSTALAR APLICATIVO -->
+        <button id="btnInstalarApp" onclick="dispararInstalacaoPWA()">📲 Instalar Aplicativo no Celular</button>
         
-        <div class="hero-card">
+        <div class="hero-card" onclick="registrarCliqueAdmin()">
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="welcome-logo">
             <div class="welcome-title"><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f3cd_fe0f/512.gif" style="width:30px; vertical-align:-3px; margin-right:6px;">PACOTE É MATO</div>
             <div class="welcome-subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
@@ -441,15 +601,168 @@
 
         </div>
 
-        <div class="pix-card" id="cardPix">
-            <div class="pix-title">🚀 O app te ajudou no corre?</div>
-            <div class="pix-desc">Fortaleça o projeto! Qualquer valor ajuda a manter o sistema rodando liso na rua. Tamo junto!</div>
-            <div class="pix-key">🔑 Pix: Pacoteemato@gmail.com</div>
-        </div>
-
     </div>
 
     <script>
+        // ==========================================
+        // CONTROLE DO BOTÃO DE INSTALAÇÃO (PWA)
+        // ==========================================
+        let deferredPrompt = null;
+        const btnInstalar = document.getElementById('btnInstalarApp');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Mostra o botão se o app não estiver instalado
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                btnInstalar.style.display = 'block';
+            }
+        });
+
+        async function dispararInstalacaoPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    btnInstalar.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        }
+
+        window.addEventListener('appinstalled', () => {
+            btnInstalar.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        // ==========================================
+        // SISTEMA DE SEGURANÇA E GERADOR ADMIN
+        // ==========================================
+        const SEGREDO = "PACOTE_MATO_2026";
+        const SENHA_DONO = "admin123"; // Sua senha de acesso ao gerador
+        let cliquesAdmin = 0;
+        let timerCliques = null;
+
+        function registrarCliqueAdmin() {
+            cliquesAdmin++;
+            clearTimeout(timerCliques);
+            timerCliques = setTimeout(() => { cliquesAdmin = 0; }, 2000);
+
+            if (cliquesAdmin >= 5) {
+                cliquesAdmin = 0;
+                abrirModalAdmin();
+            }
+        }
+
+        function abrirModalAdmin() {
+            document.getElementById('modalAdmin').style.display = 'flex';
+        }
+
+        function fecharModalAdmin() {
+            document.getElementById('modalAdmin').style.display = 'none';
+        }
+
+        function autenticarAdmin() {
+            let pass = document.getElementById('passAdmin').value;
+            if (pass === SENHA_DONO) {
+                document.getElementById('areaLoginAdmin').style.display = 'none';
+                document.getElementById('areaGeradorAdmin').style.display = 'block';
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        function gerarNovaChaveViaPainel(dias = 30) {
+            let exp = Date.now() + (dias * 24 * 60 * 60 * 1000);
+            let h = gerarAssinatura(exp);
+            let token = btoa(exp + "|" + h);
+            document.getElementById('chaveGeradaOut').value = token;
+        }
+
+        function copiarChaveGerada() {
+            let campo = document.getElementById('chaveGeradaOut');
+            if (!campo.value) return;
+            campo.select();
+            navigator.clipboard.writeText(campo.value);
+            alert("✅ Chave de 30 dias copiada com sucesso!");
+        }
+
+        function verificarLicencaSalva() {
+            let token = localStorage.getItem('app_licenca_token');
+            if (!token) {
+                document.getElementById('telaBloqueio').style.display = 'flex';
+                return false;
+            }
+
+            try {
+                let dec = atob(token);
+                let partes = dec.split("|");
+                let expiraEm = parseInt(partes[0]);
+                let hash = partes[1];
+
+                if (gerarAssinatura(expiraEm) !== hash) {
+                    throw new Error("Token corrompido");
+                }
+
+                let agora = Date.now();
+                if (agora > expiraEm) {
+                    alert("⚠️ Sua licença de 30 dias expirou! Renove seu acesso para continuar usando.");
+                    sairLicenca();
+                    return false;
+                }
+
+                let dias = Math.ceil((expiraEm - agora) / (1000 * 60 * 60 * 24));
+                document.getElementById('diasRestantes').innerText = `⚡ PRO (${dias}d restantes)`;
+                document.getElementById('telaBloqueio').style.display = 'none';
+                return true;
+            } catch(e) {
+                sairLicenca();
+                return false;
+            }
+        }
+
+        function gerarAssinatura(timestamp) {
+            let str = timestamp + "_" + SEGREDO;
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash).toString(16).toUpperCase();
+        }
+
+        function ativarLicenca() {
+            let token = document.getElementById('inputToken').value.trim();
+            if (!token) return;
+
+            try {
+                let dec = atob(token);
+                let partes = dec.split("|");
+                let expiraEm = parseInt(partes[0]);
+                let hash = partes[1];
+
+                if (gerarAssinatura(expiraEm) === hash && Date.now() < expiraEm) {
+                    localStorage.setItem('app_licenca_token', token);
+                    document.getElementById('msgErroToken').style.display = 'none';
+                    verificarLicencaSalva();
+                } else {
+                    document.getElementById('msgErroToken').style.display = 'block';
+                }
+            } catch(e) {
+                document.getElementById('msgErroToken').style.display = 'block';
+            }
+        }
+
+        function sairLicenca() {
+            localStorage.removeItem('app_licenca_token');
+            document.getElementById('telaBloqueio').style.display = 'flex';
+        }
+
+        verificarLicencaSalva();
+
+        // ==========================================
+        // MOTOR DO APLICATIVO LOGÍSTICO
+        // ==========================================
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent("self.addEventListener('fetch', function(event) {});")).catch(() => {});
         }
@@ -820,7 +1133,6 @@
             document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes nesta rota.";
 
             document.getElementById('areaExecucao').style.display = 'block';
-            document.getElementById('cardPix').style.display = 'none';
 
             atualizarStats();
             iniciarScanner();
@@ -889,12 +1201,10 @@
                     aviso.style.display = 'none';
                 }
 
-                // Voz apenas para falar o número da parada
                 falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
                 atualizarStats();
                 document.getElementById('inputManual').value = "";
             } else {
-                // Código Inválido: apenas tela vermelha e bip grave (sem voz)
                 if (agora - tempoUltimoBip > 1500) {
                     tempoUltimoBip = agora;
                     playBeepErro();
