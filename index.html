@@ -197,7 +197,7 @@
             background: #141416;
             border: 2px solid #00E676;
             border-radius: 20px;
-            padding: 20px;
+            padding: 18px;
             text-align: center;
             color: #FFF;
         }
@@ -206,9 +206,9 @@
             background: #FFF;
             padding: 10px;
             border-radius: 12px;
-            width: 180px;
-            height: 180px;
-            margin: 12px auto;
+            width: 170px;
+            height: 170px;
+            margin: 10px auto;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -224,7 +224,20 @@
             border-radius: 10px;
             padding: 12px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-copiar-chave {
+            width: 100%;
+            background: #2C2C2E;
+            color: #FFF;
+            font-weight: 900;
+            font-size: 0.85rem;
+            border: 1px solid #48484A;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 6px;
         }
 
         .btn-enviar-comprovante {
@@ -569,13 +582,13 @@
             <div id="msgErro" style="color:#FF3B30; font-size:0.8rem; font-weight:900; margin-bottom:10px; display:none;"></div>
 
             <div style="border-top:1px solid #333; padding-top:12px; margin-top:4px;">
-                <div style="font-size:0.85rem; font-weight:900; color:#FFF; margin-bottom:8px;">💎 PLANOS PRO (PIX DIRETO):</div>
+                <div style="font-size:0.85rem; font-weight:900; color:#FFF; margin-bottom:8px;">💎 PLANOS PRO (PAGAMENTO PIX):</div>
                 
                 <div class="planos-grid">
                     <div class="card-plano" onclick="gerarPixManual(7, 5.00, '7 Dias (Semanal)')">
                         <div class="plano-info">
                             <div class="plano-nome">⚡ 7 DIAS (Semanal)</div>
-                            <div class="plano-sub">Chave Pix + QR Code</div>
+                            <div class="plano-sub">Pix Copia e Cola + QR Code</div>
                         </div>
                         <div class="plano-preco">R$ 5,00</div>
                     </div>
@@ -612,11 +625,13 @@
             
             <div class="qr-box" id="qrContainer"></div>
             
-            <div style="font-size:0.75rem; color:#AAA; margin-bottom:4px;">Chave Pix (WhatsApp): <b>11990059547</b></div>
-            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:8px; background:#000; color:#00E676; border:1px solid #333; border-radius:8px; font-size:0.75rem; margin-top:4px; text-align:center;">
+            <div style="font-size:0.75rem; color:#AAA; margin-bottom:2px;">Chave Pix (Telefone): <b>11990059547</b></div>
+            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:8px; background:#000; color:#00E676; border:1px solid #333; border-radius:8px; font-size:0.72rem; margin-top:2px; text-align:center;">
             
-            <button class="btn-copiar-pix" onclick="copiarPixCopiaCola()">📋 Copiar Código Pix</button>
-            <a id="btnZapComprovante" href="#" target="_blank" class="btn-enviar-comprovante">💬 Enviar Comprovante no Zap</a>
+            <button class="btn-copiar-pix" onclick="copiarPixCopiaCola()">📋 Copiar Código Copia e Cola</button>
+            <button class="btn-copiar-chave" onclick="copiarChaveDireta()">🔑 Copiar Apenas a Chave Pix</button>
+            
+            <a id="btnZapComprovante" href="#" target="_blank" class="btn-enviar-comprovante">💬 Enviar Comprovante no WhatsApp</a>
             <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Fechar</button>
         </div>
     </div>
@@ -688,7 +703,6 @@
 
     <div class="container">
 
-        <!-- BOTÃO DE INSTALAÇÃO PWA -->
         <button id="btnInstalarApp" onclick="dispararInstalacaoPWA()">📲 Instalar Aplicativo no Celular</button>
         
         <div class="hero-card" onclick="registrarCliqueAdmin()">
@@ -777,7 +791,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const CHAVE_PIX_DONO = "11990059547";
+        const CHAVE_PIX_DONO_TEL = "11990059547";
+        const CHAVE_PIX_FORMATADA_BCB = "+5511990059547";
         const SENHA_DONO = "121212";
         let listenerSessaoRealtime = null;
 
@@ -792,41 +807,42 @@
         const MEU_DEVICE_ID = obterDeviceId();
 
         // ==========================================
-        // GERADOR DE CÓDIGO PIX
+        // GERADOR OFICIAL DE CÓDIGO PIX (PADRÃO BR CODE / EMV)
         // ==========================================
-        function calcularCRC16(payload) {
-            let polinomio = 0x1021;
-            let resultado = 0xFFFF;
-            for (let i = 0; i < payload.length; i++) {
-                resultado ^= payload.charCodeAt(i) << 8;
-                for (let bit = 0; bit < 8; bit++) {
-                    if ((resultado & 0x8000) !== 0) {
-                        resultado = (resultado << 1) ^ polinomio;
+        function calcularCRC16(str) {
+            let crc = 0xFFFF;
+            for (let i = 0; i < str.length; i++) {
+                crc ^= str.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((crc & 0x8000) !== 0) {
+                        crc = (crc << 1) ^ 0x1021;
                     } else {
-                        resultado = resultado << 1;
+                        crc = crc << 1;
                     }
-                    resultado &= 0xFFFF;
+                    crc &= 0xFFFF;
                 }
             }
-            return resultado.toString(16).toUpperCase().padStart(4, '0');
+            return crc.toString(16).toUpperCase().padStart(4, '0');
         }
 
         function formatarCampoPix(id, valor) {
-            let tam = valor.length.toString().padStart(2, '0');
-            return `${id}${tam}${valor}`;
+            let len = valor.length.toString().padStart(2, '0');
+            return `${id}${len}${valor}`;
         }
 
-        function criarPixPayload(chave, nome, cidade, valor, txid = "***") {
-            let merchantAccount = formatarCampoPix("00", "br.gov.bcb.pix") + formatarCampoPix("01", chave);
+        function criarPixPayloadOficial(chaveTelefoneCom55, nomeBeneficiario, cidade, valor, txid = "***") {
+            let infoConta = formatarCampoPix("00", "br.gov.bcb.pix") + formatarCampoPix("01", chaveTelefoneCom55);
+            
             let payload = 
                 formatarCampoPix("00", "01") +
-                formatarCampoPix("26", merchantAccount) +
+                formatarCampoPix("01", "11") +
+                formatarCampoPix("26", infoConta) +
                 formatarCampoPix("52", "0000") +
                 formatarCampoPix("53", "986") +
                 formatarCampoPix("54", valor.toFixed(2)) +
                 formatarCampoPix("58", "BR") +
-                formatarCampoPix("59", nome.substring(0, 25)) +
-                formatarCampoPix("60", cidade.substring(0, 15)) +
+                formatarCampoPix("59", nomeBeneficiario) +
+                formatarCampoPix("60", cidade) +
                 formatarCampoPix("62", formatarCampoPix("05", txid)) +
                 "6304";
             
@@ -844,14 +860,14 @@
             document.getElementById('pixPlanoNome').innerText = `${nomePlano} - R$ ${valor.toFixed(2).replace('.', ',')}`;
             document.getElementById('modalPix').style.display = 'flex';
 
-            let codigoPix = criarPixPayload(CHAVE_PIX_DONO, "PACOTE E MATO", "SAO PAULO", valor, "ASSINATURA");
+            let codigoPix = criarPixPayloadOficial(CHAVE_PIX_FORMATADA_BCB, "JOAO VITOR", "SAO PAULO", valor, "ASSINATURA");
             document.getElementById('pixCopiaColaOut').value = codigoPix;
 
             document.getElementById('qrContainer').innerHTML = "";
             new QRCode(document.getElementById('qrContainer'), {
                 text: codigoPix,
-                width: 160,
-                height: 160,
+                width: 150,
+                height: 150,
                 correctLevel: QRCode.CorrectLevel.M
             });
 
@@ -867,7 +883,12 @@
             if (!campo.value) return;
             campo.select();
             navigator.clipboard.writeText(campo.value);
-            alert("📋 Código Pix Copiado com sucesso! Abra seu banco e pague na opção 'Pix Copia e Cola'.");
+            alert("📋 Código Pix Copia e Cola copiado com sucesso! Abra o app do seu banco e cole na opção 'Pix Copia e Cola'.");
+        }
+
+        function copiarChaveDireta() {
+            navigator.clipboard.writeText(CHAVE_PIX_DONO_TEL);
+            alert(`🔑 Chave Pix ${CHAVE_PIX_DONO_TEL} copiada com sucesso!`);
         }
 
         // ==========================================
@@ -951,7 +972,6 @@
                 return;
             }
 
-            // Senha mestre do Dono
             if (zap === "121212") {
                 localStorage.setItem('usuario_zap_salvo', zap);
                 document.getElementById('telaBloqueio').style.display = 'none';
@@ -984,7 +1004,6 @@
                     return;
                 }
 
-                // Assume este celular como o dispositivo ativo oficial
                 await db.collection("usuarios").doc(zap).update({
                     deviceId: MEU_DEVICE_ID
                 });
@@ -1011,7 +1030,6 @@
                 return;
             }
 
-            // Vigia em tempo real no banco
             listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
                 if (!doc.exists) {
                     desconectarForcado("Conta não encontrada!");
@@ -1026,13 +1044,11 @@
                     return;
                 }
 
-                // Se o ID do aparelho no Firebase mudou (alguém logou em outro celular), desconecta este na hora!
                 if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
                     desconectarForcado("⚠️ Esta conta acabou de ser conectada em outro celular!");
                     return;
                 }
 
-                // Tudo certo: Mantém conectado
                 let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
                 document.getElementById('diasRestantes').innerText = `⚡ PRO (${dias}d restantes)`;
                 document.getElementById('telaBloqueio').style.display = 'none';
@@ -1061,7 +1077,6 @@
             document.getElementById('telaBloqueio').style.display = 'flex';
         }
 
-        // Checagem ao abrir a página
         let zapSalvoInicial = localStorage.getItem('usuario_zap_salvo');
         if (zapSalvoInicial) {
             iniciarMonitoramentoSessao(zapSalvoInicial);
@@ -1116,7 +1131,7 @@
                     whatsapp: zap,
                     expiraEm: expiraEm,
                     ativo: true,
-                    deviceId: "", // Limpa para o cliente associar no próximo login dele
+                    deviceId: "",
                     atualizadoEm: Date.now()
                 }, { merge: true });
 
