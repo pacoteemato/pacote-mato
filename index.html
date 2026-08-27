@@ -568,7 +568,18 @@
         }
         .drawer-panel.active { left: 0; }
 
-        /* SELETORES MODERNOS EM GRID */
+        /* AVISO DE MENSAGEM DO ADMIN PARA O USUÁRIO */
+        .banner-mensagem-usuario {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+            border: 1.5px solid var(--accent-amber);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.2);
+            display: none;
+        }
+
+        /* SELETORES MODERNOS */
         .segmented-control {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -736,7 +747,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN -->
+    <!-- MODAL ADMIN (COM ABA DE MENSAGENS) -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -756,13 +767,21 @@
                     <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
                     <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes</button>
                     <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar</button>
+                    <button class="admin-tab" id="tabMsg" onclick="alternarTabAdmin('msg')" style="background:var(--accent-amber); color:#000;">💬 Enviar Msg</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="background:var(--primary); color:#fff;">➕ Liberar</button>
                 </div>
 
                 <div id="viewAdmin30d" style="max-height:260px; overflow-y:auto;"></div>
                 <div id="viewAdmin90d" style="max-height:260px; overflow-y:auto; display:none;"></div>
                 <div id="viewAdminTeste" style="max-height:260px; overflow-y:auto; display:none;"></div>
                 <div id="viewAdminPagos" style="max-height:260px; overflow-y:auto; display:none;"></div>
+
+                <!-- ABA DE ENVIAR MENSAGEM PARA O USUÁRIO -->
+                <div id="viewAdminMsg" style="display:none;">
+                    <input type="tel" id="inputMsgZap" placeholder="WhatsApp do Entregador (ou 'todos')" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
+                    <textarea id="inputMsgTexto" placeholder="Digite a mensagem para o entregador..." class="input-auth" style="height:90px; resize:none; margin-bottom:8px; padding-left:16px; padding-top:12px;"></textarea>
+                    <button onclick="enviarMensagemAdmin()" class="btn-action-primary" style="background:var(--accent-amber); color:#000;">📤 Enviar Mensagem</button>
+                </div>
 
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
@@ -806,7 +825,7 @@
             </div>
         </div>
 
-        <!-- SELETOR DE TEMAS (TODAS AS 4 CORES RESTAURADAS) -->
+        <!-- SELETOR DE TEMAS -->
         <div style="margin-bottom:16px;">
             <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
             <div class="segmented-control-grid4">
@@ -817,7 +836,7 @@
             </div>
         </div>
 
-        <!-- SELETOR DE VOZ TRADICIONAL (COM VOZ MASCULINA) -->
+        <!-- SELETOR DE VOZ -->
         <div style="margin-bottom:16px;">
             <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
             <div class="segmented-control-grid4">
@@ -848,6 +867,12 @@
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:65px; margin-bottom:6px;">
             <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
             <div style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+        </div>
+
+        <!-- CAIXA DE MENSAGEM DO ADMIN EXIBIDA PARA O USUÁRIO -->
+        <div class="banner-mensagem-usuario" id="bannerMsgAdmin">
+            <div style="font-size:0.75rem; font-weight:900; color:var(--accent-amber); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">💬 AVISO DO SUPORTE / ADMIN</div>
+            <div id="txtMsgAdminConteudo" style="font-size:0.88rem; font-weight:800; color:#fff; line-height:1.4;"></div>
         </div>
 
         <!-- RETOMAR ROTA SALVA -->
@@ -1156,6 +1181,8 @@
             let zapSalvo = localStorage.getItem('usuario_zap_salvo');
             if (!zapSalvo) {
                 document.getElementById('telaBloqueio').style.display = 'flex';
+            } else {
+                verificarMensagensAdmin(zapSalvo);
             }
 
             if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
@@ -1194,6 +1221,58 @@
             return id;
         }
         const MEU_DEVICE_ID = obterDeviceId();
+
+        // ==========================================
+        // SISTEMA DE MENSAGENS DO ADMIN
+        // ==========================================
+        async function enviarMensagemAdmin() {
+            let zapDestino = document.getElementById('inputMsgZap').value.trim().toLowerCase();
+            let textoMsg = document.getElementById('inputMsgTexto').value.trim();
+
+            if (!zapDestino || !textoMsg) {
+                notificar("⚠️ Preencha o WhatsApp de destino e a mensagem.");
+                return;
+            }
+
+            try {
+                await db.collection("mensagens_admin").add({
+                    destino: zapDestino, // Pode ser número ou 'todos'
+                    mensagem: textoMsg,
+                    data: new Date().toLocaleString('pt-BR'),
+                    timestamp: Date.now()
+                });
+
+                notificar("💬 Mensagem enviada com sucesso!");
+                document.getElementById('inputMsgZap').value = "";
+                document.getElementById('inputMsgTexto').value = "";
+            } catch(e) {
+                notificar("Erro ao enviar mensagem.");
+            }
+        }
+
+        async function verificarMensagensAdmin(zap) {
+            let banner = document.getElementById('bannerMsgAdmin');
+            let txtConteudo = document.getElementById('txtMsgAdminConteudo');
+
+            try {
+                let snapshot = await db.collection("mensagens_admin").orderBy("timestamp", "desc").limit(5).get();
+                let mensagemValida = null;
+
+                snapshot.forEach(doc => {
+                    let m = doc.data();
+                    if (!mensagemValida && (m.destino === 'todos' || m.destino === zap)) {
+                        mensagemValida = m.mensagem;
+                    }
+                });
+
+                if (mensagemValida) {
+                    txtConteudo.innerText = mensagemValida;
+                    banner.style.display = 'block';
+                } else {
+                    banner.style.display = 'none';
+                }
+            } catch(e) {}
+        }
 
         // ==========================================
         // SELEÇÃO DE PLANO ANTES DO PIX
@@ -1492,6 +1571,7 @@
 
         function iniciarMonitoramentoSessao(zap) {
             if (listenerSessaoRealtime) listenerSessaoRealtime();
+            verificarMensagensAdmin(zap);
 
             if (zap === "121212") {
                 document.getElementById('telaBloqueio').style.display = 'none';
@@ -1611,7 +1691,7 @@
         }
 
         function alternarTabAdmin(tab) {
-            ['30d', '90d', 'teste', 'pagos', 'add'].forEach(t => {
+            ['30d', '90d', 'teste', 'pagos', 'msg', 'add'].forEach(t => {
                 let btn = document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1)));
                 let view = document.getElementById('viewAdmin' + (t.charAt(0).toUpperCase() + t.slice(1)));
                 if(btn) btn.classList.remove('active');
@@ -2302,13 +2382,13 @@
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
                 
                 if (tipo === "grave") {
-                    msg.pitch = 0.6; // Voz masculina grave
+                    msg.pitch = 0.6;
                     msg.rate = 1.1;
                 } else if (tipo === "normal") {
-                    msg.pitch = 1.2; // Voz feminina suave
+                    msg.pitch = 1.2;
                     msg.rate = 1.0;
                 } else {
-                    msg.pitch = 1.05; // Rápida padrão
+                    msg.pitch = 1.05;
                     msg.rate = 1.45;
                 }
 
