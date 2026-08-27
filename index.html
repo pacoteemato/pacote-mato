@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PACOTE É MATO • Pro Logistics</title>
+    <title>PACOTE É MATO</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#090d16" id="metaThemeColor">
+    <meta name="theme-color" content="#07090e" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -63,8 +63,7 @@
             align-items: center;
             min-height: 100vh;
             padding-bottom: 2rem;
-            background-image: radial-gradient(circle at top center, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
-            background-attachment: fixed;
+            transition: background-color 0.25s, color 0.25s;
         }
 
         .container {
@@ -73,7 +72,6 @@
             padding: 0 14px;
         }
 
-        /* PWA Install Button */
         #btnInstalarApp {
             display: none;
             width: 100%;
@@ -90,35 +88,38 @@
             box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
         }
 
-        /* TOAST ALERT */
-        #toastSucesso {
+        /* TOAST FLUIDO ELEGANTE */
+        #toastNotificacao {
             position: fixed;
-            top: 24px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(16, 185, 129, 0.95);
-            backdrop-filter: blur(8px);
+            background: rgba(15, 20, 34, 0.95);
+            backdrop-filter: blur(12px);
             color: #ffffff;
-            padding: 12px 24px;
+            padding: 12px 22px;
             border-radius: 50px;
             font-weight: 800;
-            font-size: 0.88rem;
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            font-size: 0.85rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--surface-border);
             z-index: 1000005;
             display: none;
             animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+            max-width: 90%;
         }
 
         @keyframes slideDown {
-            from { transform: translate(-50%, -40px); opacity: 0; }
+            from { transform: translate(-50%, -30px); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* AUTH & PAYWALL SCREEN */
+        /* TELA DE AUTENTICAÇÃO */
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: #05070b;
+            background: var(--bg-body);
             z-index: 99999;
             display: flex;
             flex-direction: column;
@@ -126,7 +127,6 @@
             align-items: center;
             padding: 16px;
             overflow-y: auto;
-            background-image: radial-gradient(circle at 50% 10%, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
         }
 
         .auth-wrapper {
@@ -140,74 +140,62 @@
             text-align: center;
         }
 
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.25);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: #60a5fa;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
+        .app-logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            cursor: pointer;
         }
 
         .brand-title {
             font-size: 1.5rem;
             font-weight: 900;
             letter-spacing: -0.5px;
-            color: #ffffff;
-            margin-bottom: 4px;
+            color: var(--text-main);
+            margin-bottom: 3px;
+            cursor: pointer;
         }
 
         .brand-subtitle {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
-            margin-bottom: 18px;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
         }
 
         .input-auth {
             width: 100%;
-            padding: 14px 16px;
+            padding: 13px 16px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             border-radius: 14px;
-            color: #ffffff;
+            color: var(--text-main);
             font-size: 1.05rem;
             font-weight: 800;
             text-align: center;
             outline: none;
             transition: all 0.2s;
             letter-spacing: 0.5px;
+            margin-bottom: 10px;
         }
 
         .input-auth:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-            background: #111726;
         }
 
         .btn-action-primary {
             width: 100%;
-            background: #ffffff;
-            color: #000000;
+            background: var(--primary-gradient);
+            color: #ffffff;
             border: none;
             border-radius: 14px;
-            padding: 14px;
+            padding: 13px;
             font-weight: 900;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             cursor: pointer;
             transition: all 0.15s;
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
             margin-bottom: 8px;
         }
         .btn-action-primary:active { transform: scale(0.98); }
@@ -224,7 +212,7 @@
             cursor: pointer;
             transition: all 0.15s;
             box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .btn-action-trial:active { transform: scale(0.98); }
 
@@ -237,7 +225,7 @@
             color: var(--text-muted);
             letter-spacing: 1px;
             text-transform: uppercase;
-            margin: 14px 0 10px;
+            margin: 12px 0 10px;
         }
         .divider-label::before, .divider-label::after {
             content: "";
@@ -246,18 +234,19 @@
             background: var(--surface-border);
         }
 
-        /* PLAN CARDS GRID */
+        /* SELEÇÃO INTELIGENTE DE PLANOS */
         .plan-stack {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            margin-bottom: 12px;
         }
 
         .plan-item {
             background: var(--surface-2);
-            border: 1px solid var(--surface-border);
+            border: 2px solid var(--surface-border);
             border-radius: 14px;
-            padding: 12px 16px;
+            padding: 11px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -265,15 +254,17 @@
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
         }
-        .plan-item:hover, .plan-item:active {
-            border-color: var(--surface-border-hover);
-            transform: translateY(-1px);
+
+        .plan-item:active { transform: scale(0.98); }
+
+        .plan-item.selecionado {
+            border-color: #3b82f6 !important;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.05));
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
         .plan-item.featured {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.02));
-            border: 1.5px solid var(--accent-green);
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.4);
         }
 
         .plan-badge-top {
@@ -282,19 +273,39 @@
             right: 14px;
             background: var(--accent-green-gradient);
             color: #000000;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 900;
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 2px 7px;
+            border-radius: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .plan-name { font-size: 0.92rem; font-weight: 800; color: #ffffff; text-align: left; }
-        .plan-meta { font-size: 0.72rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1.25rem; font-weight: 900; color: var(--accent-green); }
+        .plan-name { font-size: 0.88rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.7rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
+        .plan-val { font-size: 1.15rem; font-weight: 900; color: var(--accent-green); }
 
-        /* MODAL POPUPS */
+        .btn-gerar-pix-confirm {
+            width: 100%;
+            background: var(--accent-green-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            padding: 13px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* MODAIS */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -331,7 +342,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
-        /* TOP NAVIGATION */
+        /* HEADER */
         .top-nav {
             width: 100%;
             max-width: 440px;
@@ -356,7 +367,7 @@
             gap: 6px;
         }
 
-        .pro-badge {
+        .access-badge {
             font-size: 0.72rem;
             font-weight: 800;
             padding: 6px 12px;
@@ -366,7 +377,6 @@
             color: #34d399;
         }
 
-        /* MAIN APP CARDS */
         .hero-banner {
             background: var(--surface-1);
             padding: 20px 16px;
@@ -376,6 +386,18 @@
             box-shadow: var(--shadow-card);
             margin-bottom: 12px;
             cursor: pointer;
+        }
+
+        /* RETOMAR ROTA */
+        .card-retomar-rota {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(56, 189, 248, 0.05));
+            border: 1.5px solid var(--primary);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.2);
+            display: none;
+            text-align: center;
         }
 
         .upload-section {
@@ -405,7 +427,6 @@
             gap: 8px;
         }
 
-        /* METRICS DASHBOARD */
         .metrics-board {
             background: var(--surface-1);
             border-radius: 18px;
@@ -423,10 +444,9 @@
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.02);
         }
-        .metric-val { font-size: 1.45rem; font-weight: 900; color: #ffffff; }
+        .metric-val { font-size: 1.45rem; font-weight: 900; color: var(--text-main); }
         .metric-lbl { font-size: 0.68rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
-        /* CAMERA VIEWFINDER */
         .camera-viewport {
             position: relative;
             width: 100%;
@@ -456,7 +476,6 @@
             cursor: pointer;
         }
 
-        /* RESULT BANNER */
         .result-panel {
             background: var(--surface-1);
             padding: 18px;
@@ -467,7 +486,7 @@
             box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
             display: none;
         }
-        .stop-number { font-size: 4rem; font-weight: 900; color: #ffffff; line-height: 1; margin-bottom: 4px; }
+        .stop-number { font-size: 4rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
         
         .result-panel.error-state {
             border-color: var(--danger);
@@ -479,7 +498,6 @@
             color: var(--danger);
         }
 
-        /* SIDEBAR DRAWER */
         .drawer-mask {
             position: fixed;
             inset: 0;
@@ -510,12 +528,11 @@
             border-radius: 12px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            color: #ffffff;
+            color: var(--text-main);
             font-weight: 800;
             outline: none;
         }
 
-        /* ADMIN TABS & LIST */
         .admin-nav-tabs {
             display: flex;
             gap: 6px;
@@ -554,19 +571,16 @@
 <body>
 
     <!-- TOAST NOTIFICATION -->
-    <div id="toastSucesso">🎉 Operação realizada com sucesso!</div>
+    <div id="toastNotificacao"></div>
 
     <!-- TELA DE AUTENTICAÇÃO E PLANOS -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
-            
-            <div class="brand-badge" onclick="registrarCliqueAdmin()">⚡ Sistema Pro Logística</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo" onclick="registrarCliqueAdmin()">
             <h1 class="brand-title" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
             <p class="brand-subtitle">Organização e Triagem Rápida de Entregas</p>
             
-            <div class="input-group">
-                <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15">
-            </div>
+            <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15">
             
             <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
                 ⚡ Entrar no Sistema
@@ -577,10 +591,10 @@
             
             <div id="msgErro" style="color:#ef4444; font-size:0.8rem; font-weight:800; margin-bottom:12px; display:none;"></div>
 
-            <div class="divider-label">Planos de Acesso Pro</div>
+            <div class="divider-label">Escolha seu Plano</div>
             
             <div class="plan-stack">
-                <div class="plan-item" onclick="gerarPixAutomatico(7, 5.00, '7 Dias (Semanal)')">
+                <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
                     <div>
                         <div class="plan-name">Plano Semanal</div>
                         <div class="plan-meta">7 dias de acesso total</div>
@@ -588,7 +602,7 @@
                     <div class="plan-val">R$ 5,00</div>
                 </div>
 
-                <div class="plan-item featured" onclick="gerarPixAutomatico(30, 10.00, '30 Dias (Mensal)')">
+                <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
                     <span class="plan-badge-top">Mais Escolhido</span>
                     <div>
                         <div class="plan-name">Plano Mensal</div>
@@ -597,7 +611,7 @@
                     <div class="plan-val">R$ 10,00</div>
                 </div>
 
-                <div class="plan-item" onclick="gerarPixAutomatico(90, 25.00, '90 Dias (Trimestral)')">
+                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (Trimestral)', 'cardPlano90')">
                     <div>
                         <div class="plan-name">Plano Trimestral</div>
                         <div class="plan-meta">90 dias com super desconto</div>
@@ -606,21 +620,26 @@
                 </div>
             </div>
 
+            <!-- BOTÃO DE PAGAR QUE SÓ APARECE APÓS ESCOLHER O PLANO -->
+            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
+                ⚡ Gerar Pagamento Pix
+            </button>
+
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+Pacote+%C3%89+Mato" target="_blank" style="display:block; color:#64748b; font-size:0.75rem; text-decoration:none; margin-top:16px; font-weight:700;">
                 💬 Suporte no WhatsApp
             </a>
         </div>
     </div>
 
-    <!-- MODAL DO PIX AUTOMÁTICO -->
+    <!-- MODAL PIX AUTOMÁTICO -->
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
             <div style="font-size:0.75rem; font-weight:800; color:var(--accent-green); text-transform:uppercase; letter-spacing:1px;">Pagamento Seguro</div>
-            <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 10,00</h3>
+            <h3 style="font-size:1.2rem; font-weight:900; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 10,00</h3>
             
             <div class="qr-placeholder" id="qrContainer"></div>
             
-            <div style="font-size:0.82rem; font-weight:800; color:#fff; margin-bottom:2px;">Aguardando pagamento... ⏳</div>
+            <div style="font-size:0.82rem; font-weight:800; color:var(--text-main); margin-bottom:2px;">Aguardando confirmação... ⏳</div>
             <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;">O app destrava sozinho após a confirmação.</div>
 
             <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:var(--accent-green); border:1px solid var(--surface-border); border-radius:10px; font-size:0.72rem; text-align:center; outline:none;">
@@ -634,7 +653,7 @@
         </div>
     </div>
 
-    <!-- MODAL DO PAINEL ADMIN DO DONO -->
+    <!-- MODAL ADMIN -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -677,17 +696,27 @@
         <button class="nav-btn" onclick="toggleSidebar()">
             <span>☰</span> Menu
         </button>
-        <span class="pro-badge" id="diasRestantes">PRO Ativo</span>
+        <span class="access-badge" id="diasRestantes">Acesso Ativo</span>
     </div>
 
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
     <div class="drawer-panel" id="sidebar">
         <div style="font-weight:900; font-size:1.1rem; margin-bottom:4px;">PACOTE É MATO</div>
-        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;">Versão Profissional • Build 2026</div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;">Sistema Inteligente de Entregas</div>
 
         <div style="margin-bottom:16px;">
-            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">Voz do Sintetizador</label>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 Tema de Cor</label>
+            <select id="selTema" class="drawer-select" onchange="mudarTema(this.value, true)">
+                <option value="dark_modern">Dark Moderno (Padrão)</option>
+                <option value="black_oled">Preto Puro (OLED)</option>
+                <option value="light">Branco (Light)</option>
+                <option value="gray">Cinza Metálico</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ Voz do Sintetizador</label>
             <select id="selVoz" class="drawer-select" onchange="salvarVoz(this.value)">
                 <option value="rapida">Rápida / Ágil (Padrão)</option>
                 <option value="normal">Feminina / Suave</option>
@@ -696,8 +725,8 @@
         </div>
 
         <div style="margin-top:30px;">
-            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:#fff; border:1px solid var(--surface-border); font-size:0.85rem; margin-bottom:8px;">
-                🔄 Zerar Bipagens
+            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.85rem; margin-bottom:8px;">
+                🔄 Zerar Bipagens Desta Rota
             </button>
             <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.3); font-size:0.85rem;">
                 🔒 Desconectar Conta
@@ -710,12 +739,22 @@
         <button id="btnInstalarApp" onclick="dispararInstalacaoPWA()">📲 Instalar Aplicativo no Celular</button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <div style="font-size:0.72rem; font-weight:800; color:#60a5fa; letter-spacing:1px; text-transform:uppercase;">Tecnologia de Roteirização</div>
-            <div style="font-size:1.4rem; font-weight:900; color:#fff; margin-top:2px;">PACOTE É MATO PRO</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:65px; margin-bottom:6px;">
+            <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+        </div>
+
+        <!-- RETOMAR ROTA SALVA -->
+        <div class="card-retomar-rota" id="cardRetomarRota">
+            <div style="font-size:0.8rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div id="txtNomeRotaSalva" style="font-size:0.92rem; font-weight:900; color:#fff; margin-bottom:10px;">Rota em andamento</div>
+            <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0;" onclick="retomarRotaAnterior()">
+                ⚡ Retomar Rota Onde Parei
+            </button>
         </div>
 
         <div class="upload-section">
-            <div style="font-size:0.95rem; font-weight:800; color:#fff; margin-bottom:4px;">Carregar Rota em PDF</div>
+            <div style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:4px;">Carregar Rota em PDF</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:14px;">Importe a folha da sua rota para sincronizar as paradas</div>
             <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt">
                 📄 Escolher Arquivo PDF
@@ -772,6 +811,56 @@
 
     <script>
         // ==========================================
+        // TEMAS E ESTILIZAÇÃO
+        // ==========================================
+        const paletas = {
+            dark_modern: { bg_body: "#07090e", surface_1: "#0f1422", surface_2: "#161d31", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#94a3b8" },
+            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888" },
+            light: { bg_body: "#f1f5f9", surface_1: "#ffffff", surface_2: "#e2e8f0", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b" },
+            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa" }
+        };
+
+        function mudarTema(tipo, salvar = true) {
+            let p = paletas[tipo] || paletas.dark_modern;
+            document.documentElement.style.setProperty('--bg-body', p.bg_body);
+            document.documentElement.style.setProperty('--surface-1', p.surface_1);
+            document.documentElement.style.setProperty('--surface-2', p.surface_2);
+            document.documentElement.style.setProperty('--surface-border', p.border);
+            document.documentElement.style.setProperty('--text-main', p.text_main);
+            document.documentElement.style.setProperty('--text-muted', p.text_muted);
+            
+            let metaColor = document.getElementById('metaThemeColor');
+            if (metaColor) metaColor.setAttribute('content', p.bg_body);
+
+            let select = document.getElementById('selTema');
+            if (select) select.value = tipo;
+
+            if (salvar) localStorage.setItem('tema_preferido', tipo);
+        }
+
+        function salvarVoz(tipo) {
+            localStorage.setItem('voz_preferida', tipo);
+        }
+
+        function notificar(msg) {
+            let t = document.getElementById('toastNotificacao');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3500);
+        }
+
+        function carregarConfiguracoesSalvas() {
+            let tema = localStorage.getItem('tema_preferido') || 'dark_modern';
+            mudarTema(tema, false);
+
+            let voz = localStorage.getItem('voz_preferida') || 'rapida';
+            let selVoz = document.getElementById('selVoz');
+            if (selVoz) selVoz.value = voz;
+            
+            verificarRotaSalvaAnterior();
+        }
+
+        // ==========================================
         // FIREBASE & CLOUDFLARE SETUP
         // ==========================================
         const firebaseConfig = {
@@ -802,27 +891,46 @@
         }
         const MEU_DEVICE_ID = obterDeviceId();
 
-        function exibirToastSucesso(msg) {
-            let toast = document.getElementById('toastSucesso');
-            if (msg) toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        // ==========================================
+        // SELEÇÃO DE PLANO ANTES DO PIX
+        // ==========================================
+        let planoSelecionadoAtual = null;
+
+        function selecionarPlano(dias, valor, nomePlano, cardId) {
+            document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
+            document.getElementById(cardId).classList.add('selecionado');
+
+            planoSelecionadoAtual = { dias, valor, nomePlano };
+
+            let btn = document.getElementById('btnConfirmarPagamento');
+            btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
+            btn.style.display = 'block';
+
+            notificar(`Plano ${nomePlano} selecionado. Clique abaixo para gerar o Pix!`);
+        }
+
+        function iniciarPixPlanoSelecionado() {
+            if (!planoSelecionadoAtual) {
+                notificar("Selecione um plano acima primeiro.");
+                return;
+            }
+            gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano);
         }
 
         // ==========================================
-        // AUTOMATED PIX GATEWAY
+        // GERADOR PIX AUTOMATIZADO
         // ==========================================
         async function gerarPixAutomatico(dias, valor, nomePlano) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             if (zap.length < 10) {
-                alert("Por favor, digite seu WhatsApp com DDD antes de selecionar o plano.");
+                notificar("Por favor, digite seu WhatsApp com DDD antes de prosseguir.");
                 document.getElementById('inputTel').focus();
                 return;
             }
 
             document.getElementById('pixPlanoNome').innerText = `${nomePlano} • R$ ${valor.toFixed(2).replace('.', ',')}`;
             document.getElementById('modalPix').style.display = 'flex';
-            document.getElementById('qrContainer').innerHTML = "<div style='color:#000; font-weight:800; font-size:0.8rem;'>Gerando QR Code...</div>";
+            document.getElementById('qrContainer').innerHTML = "<div style='color:#000; font-weight:800; font-size:0.8rem;'>Gerando QR Code Pix...</div>";
             document.getElementById('pixCopiaColaOut').value = "";
 
             try {
@@ -854,12 +962,12 @@
 
                     iniciarMonitoramentoPixAprovado(paymentId, zap, dias);
                 } else {
-                    alert("Não foi possível gerar a cobrança Pix. Tente novamente.");
+                    notificar("Não foi possível gerar a cobrança Pix. Tente novamente.");
                     fecharModalPix();
                 }
 
             } catch (err) {
-                alert("Erro de conexão: " + err.message);
+                notificar("Erro de conexão com o Pix.");
                 fecharModalPix();
             }
         }
@@ -888,7 +996,7 @@
 
                         fecharModalPix();
                         localStorage.setItem('usuario_zap_salvo', zap);
-                        exibirToastSucesso("🎉 Pagamento Aprovado! Bem-vindo ao PRO.");
+                        notificar("🎉 Pagamento Aprovado! Bem-vindo.");
                         iniciarMonitoramentoSessao(zap);
                     }
                 } catch(e) {}
@@ -905,11 +1013,11 @@
             if (!campo.value) return;
             campo.select();
             navigator.clipboard.writeText(campo.value);
-            exibirToastSucesso("📋 Código Pix Copiado!");
+            notificar("📋 Código Pix Copiado com sucesso!");
         }
 
         // ==========================================
-        // 3-DAY TRIAL ENGINE
+        // TESTE 3 DIAS
         // ==========================================
         async function ativarTesteGratis() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
@@ -929,7 +1037,7 @@
             try {
                 let docZap = await db.collection("usuarios").doc(zap).get();
                 if (docZap.exists && docZap.data().jaUsouTeste) {
-                    msgErro.innerText = "❌ Este WhatsApp já resgatou o teste de 3 dias!";
+                    msgErro.innerText = "Este WhatsApp já utilizou o teste gratuito.";
                     msgErro.style.display = 'block';
                     btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
                     btn.disabled = false;
@@ -942,7 +1050,7 @@
                     .get();
 
                 if (!queryDev.empty) {
-                    msgErro.innerText = "❌ Este dispositivo já utilizou o teste gratuito!";
+                    msgErro.innerText = "Este dispositivo já utilizou o teste gratuito.";
                     msgErro.style.display = 'block';
                     btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
                     btn.disabled = false;
@@ -964,11 +1072,11 @@
 
                 localStorage.setItem('usuario_zap_salvo', zap);
                 msgErro.style.display = 'none';
-                exibirToastSucesso("🎉 Teste de 3 Dias Ativado com Sucesso!");
+                notificar("🎉 Teste de 3 Dias Ativado!");
                 iniciarMonitoramentoSessao(zap);
 
             } catch(e) {
-                msgErro.innerText = "Erro: " + e.message;
+                msgErro.innerText = "Erro ao ativar teste.";
                 msgErro.style.display = 'block';
             }
 
@@ -977,7 +1085,7 @@
         }
 
         // ==========================================
-        // AUTH & REALTIME SESSION WATCHDOG
+        // AUTH & SESSÃO REALTIME
         // ==========================================
         async function autenticarUsuarioFirebase() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
@@ -1004,7 +1112,7 @@
                 let doc = await db.collection("usuarios").doc(zap).get();
 
                 if (!doc.exists) {
-                    msgErro.innerText = "Número não localizado. Assine um plano ou ative o teste grátis.";
+                    msgErro.innerText = "Número não localizado. Escolha um plano ou ative o teste.";
                     msgErro.style.display = 'block';
                     btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
@@ -1015,7 +1123,7 @@
                 let agora = Date.now();
 
                 if (!data.ativo || agora > data.expiraEm) {
-                    msgErro.innerText = "Sua assinatura expirou. Selecione um plano abaixo para renovar.";
+                    msgErro.innerText = "Acesso expirado. Selecione um plano abaixo para renovar.";
                     msgErro.style.display = 'block';
                     btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
@@ -1026,11 +1134,11 @@
 
                 localStorage.setItem('usuario_zap_salvo', zap);
                 msgErro.style.display = 'none';
-                exibirToastSucesso("⚡ Sessão Iniciada!");
+                notificar("⚡ Bem-vindo de volta!");
                 iniciarMonitoramentoSessao(zap);
 
             } catch(e) {
-                msgErro.innerText = "Erro de conexão com o banco.";
+                msgErro.innerText = "Erro ao conectar ao banco de dados.";
                 msgErro.style.display = 'block';
             }
 
@@ -1062,12 +1170,12 @@
                 }
 
                 if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
-                    desconectarForcado("⚠️ Esta conta foi conectada em outro celular!");
+                    desconectarForcado("⚠️ Esta conta foi conectada em outro aparelho!");
                     return;
                 }
 
                 let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
-                document.getElementById('diasRestantes').innerText = `PRO (${dias}d rest.)`;
+                document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
                 document.getElementById('telaBloqueio').style.display = 'none';
             });
         }
@@ -1102,7 +1210,7 @@
         }
 
         // ==========================================
-        // MASTER ADMIN PANEL
+        // PAINEL ADMIN
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -1129,7 +1237,7 @@
                 document.getElementById('areaGeradorAdmin').style.display = 'flex';
                 carregarUsuariosAdmin();
             } else {
-                alert("Senha incorreta.");
+                notificar("Senha incorreta.");
             }
         }
 
@@ -1178,8 +1286,8 @@
                     let row = `
                         <div class="user-row">
                             <div>
-                                <div style="font-weight:800; font-size:0.85rem; color:#fff;">${zap}</div>
-                                <div style="font-size:0.7rem; color:#94a3b8;">${u.plano || 'PRO'} • ${badge}</div>
+                                <div style="font-weight:800; font-size:0.85rem; color:var(--text-main);">${zap}</div>
+                                <div style="font-size:0.7rem; color:var(--text-muted);">${u.plano || 'Acesso'} • ${badge}</div>
                             </div>
                             <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:8px; padding:5px 10px; font-size:0.72rem; font-weight:800; cursor:pointer;">Remover</button>
                         </div>
@@ -1201,10 +1309,9 @@
         }
 
         async function deletarUsuarioAdmin(zap) {
-            if (confirm(`Remover acesso de ${zap}?`)) {
-                await db.collection("usuarios").doc(zap).delete();
-                carregarUsuariosAdmin();
-            }
+            await db.collection("usuarios").doc(zap).delete();
+            notificar(`Acesso de ${zap} removido.`);
+            carregarUsuariosAdmin();
         }
 
         async function liberarClienteManual() {
@@ -1212,7 +1319,7 @@
             let dias = parseInt(document.getElementById('selDiasAdmin').value);
 
             if (zap.length < 10) {
-                alert("Digite um WhatsApp válido com DDD.");
+                notificar("Digite um WhatsApp válido com DDD.");
                 return;
             }
 
@@ -1229,12 +1336,12 @@
                     atualizadoEm: Date.now()
                 }, { merge: true });
 
-                alert(`WhatsApp ${zap} liberado com sucesso por ${dias} dias.`);
+                notificar(`WhatsApp ${zap} liberado com sucesso por ${dias} dias.`);
                 document.getElementById('inputClienteZap').value = "";
                 alternarTabAdmin('pro');
                 carregarUsuariosAdmin();
             } catch(e) {
-                alert("Erro: " + e.message);
+                notificar("Erro ao salvar no banco.");
             }
         }
 
@@ -1264,7 +1371,7 @@
         }
 
         // ==========================================
-        // LOGISTICS CORE ENGINE
+        // SISTEMA DE ROTAS E LEITURA
         // ==========================================
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent("self.addEventListener('fetch', function(event) {});")).catch(() => {});
@@ -1295,8 +1402,74 @@
             return audioCtx;
         }
 
-        function salvarVoz(tipo) {
-            localStorage.setItem('voz_preferida', tipo);
+        function verificarRotaSalvaAnterior() {
+            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
+            let cardRetomar = document.getElementById('cardRetomarRota');
+            if (dadosSalvos) {
+                try {
+                    let parsed = JSON.parse(dadosSalvos);
+                    if (parsed.todosPacotes && parsed.todosPacotes.length > 0) {
+                        document.getElementById('txtNomeRotaSalva').innerText = `${parsed.nomeArquivo || 'Rota'} (${parsed.pacotesBipados.length}/${parsed.todosPacotes.length} bipados)`;
+                        cardRetomar.style.display = 'block';
+                        return;
+                    }
+                } catch(e) {}
+            }
+            cardRetomar.style.display = 'none';
+        }
+
+        function salvarEstadoCompletoRota(nomeArquivo) {
+            let dados = {
+                nomeArquivo: nomeArquivo || (chaveStorageAtual ? chaveStorageAtual.replace('bipados_', '') : 'Rota Salva'),
+                chaveStorage: chaveStorageAtual,
+                mapaRotas: mapaRotas,
+                stopCorrespondente: stopCorrespondente,
+                nomeExibicao: nomeExibicao,
+                todosPacotes: Array.from(todosPacotes),
+                pacotesBipados: Array.from(pacotesBipados),
+                salvoEm: Date.now()
+            };
+            localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
+        }
+
+        function retomarRotaAnterior() {
+            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
+            if (!dadosSalvos) return;
+
+            try {
+                let parsed = JSON.parse(dadosSalvos);
+                mapaRotas = parsed.mapaRotas || {};
+                stopCorrespondente = parsed.stopCorrespondente || {};
+                nomeExibicao = parsed.nomeExibicao || {};
+                todosPacotes = new Set(parsed.todosPacotes || []);
+                pacotesBipados = new Set(parsed.pacotesBipados || []);
+                chaveStorageAtual = parsed.chaveStorage;
+
+                document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
+
+                let htmlDuplos = "";
+                let temDuplo = false;
+                for (let end in mapaRotas) {
+                    let pacs = mapaRotas[end];
+                    if (pacs.length > 1 && !end.startsWith("pacote_isolado_")) {
+                        temDuplo = true;
+                        let stops = pacs.map(p => "P" + stopCorrespondente[p]).join(", ");
+                        let nome = nomeExibicao[end] || end;
+                        htmlDuplos += `<div style="margin-bottom:6px;">📍 <b>${nome}</b>: <code style="color:#60a5fa;">${pacs.length} pcts</code> (${stops})</div>`;
+                    }
+                }
+                document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes identificado.";
+                
+                document.getElementById('areaExecucao').style.display = 'block';
+                document.getElementById('cardRetomarRota').style.display = 'none';
+
+                atualizarStats();
+                iniciarScanner();
+                notificar("⚡ Rota anterior retomada!");
+
+            } catch(e) {
+                notificar("Erro ao carregar a rota anterior.");
+            }
         }
 
         function toggleSidebar() {
@@ -1453,12 +1626,12 @@
                     });
                 }
 
-                processarLinhasExatas(linhasPdf);
+                processarLinhasExatas(linhasPdf, file.name);
             };
             reader.readAsArrayBuffer(file);
         });
 
-        function processarLinhasExatas(linhas) {
+        function processarLinhasExatas(linhas, nomeArquivo) {
             mapaRotas = {};
             stopCorrespondente = {};
             nomeExibicao = {};
@@ -1528,7 +1701,9 @@
             }
             document.getElementById('expContent').innerHTML = temDuplo ? htmlDuplos : "Nenhum endereço com múltiplos pacotes identificado.";
             document.getElementById('areaExecucao').style.display = 'block';
+            document.getElementById('cardRetomarRota').style.display = 'none';
 
+            salvarEstadoCompletoRota(nomeArquivo);
             atualizarStats();
             iniciarScanner();
         }
@@ -1562,6 +1737,7 @@
 
                 pacotesBipados.add(identificado);
                 if (chaveStorageAtual) localStorage.setItem(chaveStorageAtual, JSON.stringify(Array.from(pacotesBipados)));
+                salvarEstadoCompletoRota();
 
                 let numP = stopCorrespondente[identificado] || "?";
                 let endMatch = "";
@@ -1674,13 +1850,16 @@
         function zerarRota() {
             pacotesBipados.clear();
             if (chaveStorageAtual) localStorage.removeItem(chaveStorageAtual);
+            salvarEstadoCompletoRota();
             atualizarStats();
             document.getElementById('cardResult').style.display = 'none';
             document.getElementById('cardResult').classList.remove('error-state');
             document.getElementById('boxAviso').style.display = 'none';
             toggleSidebar();
-            exibirToastSucesso("Bipagens desta rota foram zeradas.");
+            notificar("Bipagens desta rota foram zeradas.");
         }
+
+        window.addEventListener('DOMContentLoaded', carregarConfiguracoesSalvas);
     </script>
 </body>
 </html>
