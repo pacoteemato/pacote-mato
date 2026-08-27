@@ -579,16 +579,6 @@
             border: 1px solid var(--surface-border);
         }
 
-        .segmented-control-2 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-            background: var(--surface-2);
-            padding: 4px;
-            border-radius: 14px;
-            border: 1px solid var(--surface-border);
-        }
-
         .segmented-control-grid4 {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -816,7 +806,7 @@
             </div>
         </div>
 
-        <!-- SELETOR DE TEMAS (TODAS AS CORES RESTAURADAS) -->
+        <!-- SELETOR DE TEMAS (TODAS AS 4 CORES RESTAURADAS) -->
         <div style="margin-bottom:16px;">
             <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
             <div class="segmented-control-grid4">
@@ -827,13 +817,13 @@
             </div>
         </div>
 
-        <!-- SELETOR DE VOZ (INCLUINDO SÃOPAULO E BAHIA) -->
+        <!-- SELETOR DE VOZ TRADICIONAL (COM VOZ MASCULINA) -->
         <div style="margin-bottom:16px;">
             <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
             <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Padrão</button>
-                <button class="segmented-btn" id="voice_sp" onclick="salvarVoz('sp')">🧢 Sampa (SP)</button>
-                <button class="segmented-btn" id="voice_ba" onclick="salvarVoz('ba')">🌴 Bahia (BA)</button>
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Rápida</button>
+                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">👩 Feminina</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">👨 Masculina</button>
                 <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
             </div>
         </div>
@@ -1091,7 +1081,7 @@
         }
 
         // ==========================================
-        // TEMAS (TODAS AS CORES RESTAURADAS)
+        // TEMAS (TODAS AS 4 CORES)
         // ==========================================
         const paletas = {
             slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#374151", border: "rgba(255, 255, 255, 0.1)", text_main: "#f9fafb", text_muted: "#9ca3af", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1)" },
@@ -1126,7 +1116,7 @@
 
         function salvarVoz(tipo) {
             localStorage.setItem('voz_preferida', tipo);
-            ['rapida', 'sp', 'ba', 'mudo'].forEach(v => {
+            ['rapida', 'normal', 'grave', 'mudo'].forEach(v => {
                 let btn = document.getElementById('voice_' + v);
                 if (btn) {
                     if (v === tipo) btn.classList.add('active');
@@ -2302,33 +2292,23 @@
                 window.speechSynthesis.cancel();
                 let lang = localStorage.getItem('idioma_preferido') || 'pt';
                 let frase = "" + num;
-
-                // Sotaques regionais customizados
-                if (tipo === 'sp') {
-                    frase = "Meu, parada " + num + ". Vai que é sua!";
-                    if (ehDuplo) frase += " Ó, mano, mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + ", saca só!";
-                } else if (tipo === 'ba') {
-                    frase = "Oxente, painho! Parada " + num + ", mainha tá mandando.";
-                    if (ehDuplo) frase += " Ô parça, é o mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + ", painho!";
-                } else {
-                    if (ehDuplo) {
-                        if (lang === 'en') frase += ". Attention! Same address as stop " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-                        else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-                        else frase += ". Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-                    }
+                if (ehDuplo) {
+                    if (lang === 'en') frase += ". Attention! Same address as stop " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                    else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                    else frase += ". Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
                 }
 
                 let msg = new SpeechSynthesisUtterance(frase);
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
                 
-                if (tipo === "sp") {
-                    msg.pitch = 1.1;
-                    msg.rate = 1.5; // Agilizado, estilo correria de Sampa
-                } else if (tipo === "ba") {
-                    msg.pitch = 0.95;
-                    msg.rate = 0.9; // Mais cadenciado e tranquilo, estilo Bahia
+                if (tipo === "grave") {
+                    msg.pitch = 0.6; // Voz masculina grave
+                    msg.rate = 1.1;
+                } else if (tipo === "normal") {
+                    msg.pitch = 1.2; // Voz feminina suave
+                    msg.rate = 1.0;
                 } else {
-                    msg.pitch = 1.05;
+                    msg.pitch = 1.05; // Rápida padrão
                     msg.rate = 1.45;
                 }
 
