@@ -176,7 +176,7 @@
         .plano-sub { font-size: 0.72rem; color: var(--subtext); }
         .plano-preco { font-size: 1.15rem; font-weight: 900; color: #00E676; }
 
-        /* MODAL PIX */
+        /* MODAL PIX AUTOMÁTICO */
         #modalPix {
             position: fixed;
             top: 0;
@@ -224,32 +224,6 @@
             border-radius: 10px;
             padding: 12px;
             cursor: pointer;
-            margin-top: 8px;
-        }
-
-        .btn-copiar-chave {
-            width: 100%;
-            background: #2C2C2E;
-            color: #FFF;
-            font-weight: 900;
-            font-size: 0.85rem;
-            border: 1px solid #48484A;
-            border-radius: 10px;
-            padding: 10px;
-            cursor: pointer;
-            margin-top: 6px;
-        }
-
-        .btn-enviar-comprovante {
-            display: block;
-            width: 100%;
-            background: #25D366;
-            color: #FFF;
-            font-weight: 900;
-            font-size: 0.9rem;
-            text-decoration: none;
-            border-radius: 10px;
-            padding: 11px;
             margin-top: 8px;
         }
 
@@ -572,7 +546,7 @@
         <div class="card-auth">
             <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:65px; margin-bottom:6px;" onclick="registrarCliqueAdmin()">
             <h2 style="font-size:1.3rem; font-weight:900;" onclick="registrarCliqueAdmin()">PACOTE É MATO PRO</h2>
-            <p style="font-size:0.78rem; color:var(--subtext); margin-top:2px;">Digite seu WhatsApp para entrar ou testar</p>
+            <p style="font-size:0.78rem; color:var(--subtext); margin-top:2px;">Digite seu WhatsApp para entrar, testar ou assinar</p>
             
             <input type="tel" id="inputTel" class="input-auth" placeholder="Seu WhatsApp (ex: 11999999999)">
             
@@ -582,18 +556,18 @@
             <div id="msgErro" style="color:#FF3B30; font-size:0.8rem; font-weight:900; margin-bottom:10px; display:none;"></div>
 
             <div style="border-top:1px solid #333; padding-top:12px; margin-top:4px;">
-                <div style="font-size:0.85rem; font-weight:900; color:#FFF; margin-bottom:8px;">💎 PLANOS PRO (PAGAMENTO PIX):</div>
+                <div style="font-size:0.85rem; font-weight:900; color:#FFF; margin-bottom:8px;">💎 PLANOS PRO (PIX AUTOMÁTICO):</div>
                 
                 <div class="planos-grid">
-                    <div class="card-plano" onclick="gerarPixManual(7, 5.00, '7 Dias (Semanal)')">
+                    <div class="card-plano" onclick="gerarPixAutomatico(7, 5.00, '7 Dias (Semanal)')">
                         <div class="plano-info">
                             <div class="plano-nome">⚡ 7 DIAS (Semanal)</div>
-                            <div class="plano-sub">Pix Copia e Cola + QR Code</div>
+                            <div class="plano-sub">Liberação automática imediata</div>
                         </div>
                         <div class="plano-preco">R$ 5,00</div>
                     </div>
 
-                    <div class="card-plano destaque" onclick="gerarPixManual(30, 10.00, '30 Dias (Mensal)')">
+                    <div class="card-plano destaque" onclick="gerarPixAutomatico(30, 10.00, '30 Dias (Mensal)')">
                         <div class="plano-info">
                             <div class="plano-nome">🔥 30 DIAS (1 Mês)</div>
                             <div class="plano-sub">Mais Escolhido pelos Entregadores</div>
@@ -601,7 +575,7 @@
                         <div class="plano-preco">R$ 10,00</div>
                     </div>
 
-                    <div class="card-plano" onclick="gerarPixManual(90, 25.00, '90 Dias (Trimestral)')">
+                    <div class="card-plano" onclick="gerarPixAutomatico(90, 25.00, '90 Dias (Trimestral)')">
                         <div class="plano-info">
                             <div class="plano-nome">💎 90 DIAS (3 Meses)</div>
                             <div class="plano-sub">Super Desconto Trimestral</div>
@@ -617,7 +591,7 @@
         </div>
     </div>
 
-    <!-- MODAL DO PIX DIRETO -->
+    <!-- MODAL DO PIX AUTOMÁTICO -->
     <div id="modalPix">
         <div class="card-pix">
             <h3 style="color:#00E676; font-weight:900; font-size:1.1rem;">PAGAMENTO PIX</h3>
@@ -625,14 +599,13 @@
             
             <div class="qr-box" id="qrContainer"></div>
             
-            <div style="font-size:0.75rem; color:#AAA; margin-bottom:2px;">Chave Pix (Telefone): <b>11990059547</b></div>
+            <div style="font-size:0.78rem; color:#FFF; font-weight:bold; margin-bottom:4px;">Aguardando pagamento... ⏳</div>
+            <div style="font-size:0.72rem; color:#888; margin-bottom:6px;">O app destrava sozinho na hora após pagar!</div>
+
             <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:8px; background:#000; color:#00E676; border:1px solid #333; border-radius:8px; font-size:0.72rem; margin-top:2px; text-align:center;">
             
-            <button class="btn-copiar-pix" onclick="copiarPixCopiaCola()">📋 Copiar Código Copia e Cola</button>
-            <button class="btn-copiar-chave" onclick="copiarChaveDireta()">🔑 Copiar Apenas a Chave Pix</button>
-            
-            <a id="btnZapComprovante" href="#" target="_blank" class="btn-enviar-comprovante">💬 Enviar Comprovante no WhatsApp</a>
-            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Fechar</button>
+            <button class="btn-copiar-pix" onclick="copiarPixCopiaCola()">📋 Copiar Código Pix</button>
+            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:#AAA; font-size:0.8rem; cursor:pointer;">✖ Cancelar</button>
         </div>
     </div>
 
@@ -777,7 +750,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURAÇÃO FIREBASE E DADOS PIX
+        // CONFIGURAÇÕES GERAIS E CLOUDFLARE WORKER
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
@@ -791,9 +764,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const CHAVE_PIX_DONO_TEL = "11990059547";
-        const CHAVE_PIX_FORMATADA_BCB = "+5511990059547";
+        const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
         const SENHA_DONO = "121212";
+        
+        let timerVerificadorPix = null;
         let listenerSessaoRealtime = null;
 
         function obterDeviceId() {
@@ -807,49 +781,9 @@
         const MEU_DEVICE_ID = obterDeviceId();
 
         // ==========================================
-        // GERADOR OFICIAL DE CÓDIGO PIX (PADRÃO BR CODE / EMV)
+        // MOTOR DE PIX AUTOMÁTICO COM CLOUDFLARE WORKER
         // ==========================================
-        function calcularCRC16(str) {
-            let crc = 0xFFFF;
-            for (let i = 0; i < str.length; i++) {
-                crc ^= str.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    if ((crc & 0x8000) !== 0) {
-                        crc = (crc << 1) ^ 0x1021;
-                    } else {
-                        crc = crc << 1;
-                    }
-                    crc &= 0xFFFF;
-                }
-            }
-            return crc.toString(16).toUpperCase().padStart(4, '0');
-        }
-
-        function formatarCampoPix(id, valor) {
-            let len = valor.length.toString().padStart(2, '0');
-            return `${id}${len}${valor}`;
-        }
-
-        function criarPixPayloadOficial(chaveTelefoneCom55, nomeBeneficiario, cidade, valor, txid = "***") {
-            let infoConta = formatarCampoPix("00", "br.gov.bcb.pix") + formatarCampoPix("01", chaveTelefoneCom55);
-            
-            let payload = 
-                formatarCampoPix("00", "01") +
-                formatarCampoPix("01", "11") +
-                formatarCampoPix("26", infoConta) +
-                formatarCampoPix("52", "0000") +
-                formatarCampoPix("53", "986") +
-                formatarCampoPix("54", valor.toFixed(2)) +
-                formatarCampoPix("58", "BR") +
-                formatarCampoPix("59", nomeBeneficiario) +
-                formatarCampoPix("60", cidade) +
-                formatarCampoPix("62", formatarCampoPix("05", txid)) +
-                "6304";
-            
-            return payload + calcularCRC16(payload);
-        }
-
-        function gerarPixManual(dias, valor, nomePlano) {
+        async function gerarPixAutomatico(dias, valor, nomePlano) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             if (zap.length < 10) {
                 alert("Por favor, digite seu WhatsApp com DDD antes de escolher um plano!");
@@ -859,22 +793,80 @@
 
             document.getElementById('pixPlanoNome').innerText = `${nomePlano} - R$ ${valor.toFixed(2).replace('.', ',')}`;
             document.getElementById('modalPix').style.display = 'flex';
+            document.getElementById('qrContainer').innerHTML = "<div style='color:#000; font-weight:bold; font-size:0.85rem;'>Gerando Pix Oficial...</div>";
+            document.getElementById('pixCopiaColaOut').value = "";
 
-            let codigoPix = criarPixPayloadOficial(CHAVE_PIX_FORMATADA_BCB, "JOAO VITOR", "SAO PAULO", valor, "ASSINATURA");
-            document.getElementById('pixCopiaColaOut').value = codigoPix;
+            try {
+                const response = await fetch(`${CLOUDFLARE_WORKER_URL}/criar-pix`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        valor: valor,
+                        descricao: `Pacote É Mato - ${nomePlano}`,
+                        zap: zap
+                    })
+                });
 
-            document.getElementById('qrContainer').innerHTML = "";
-            new QRCode(document.getElementById('qrContainer'), {
-                text: codigoPix,
-                width: 150,
-                height: 150,
-                correctLevel: QRCode.CorrectLevel.M
-            });
+                const data = await response.json();
 
-            document.getElementById('btnZapComprovante').href = `https://wa.me/5511990059547?text=Ol%C3%A1%2C+acabei+de+fazer+o+Pix+do+plano+*${encodeURIComponent(nomePlano)}*+(R%24+${valor.toFixed(2)})+para+o+meu+WhatsApp%3A+*${zap}*.+Segue+o+comprovante%3A`;
+                if (data && data.point_of_interaction && data.point_of_interaction.transaction_data) {
+                    const copiaCola = data.point_of_interaction.transaction_data.qr_code;
+                    const paymentId = data.id;
+
+                    document.getElementById('pixCopiaColaOut').value = copiaCola;
+
+                    document.getElementById('qrContainer').innerHTML = "";
+                    new QRCode(document.getElementById('qrContainer'), {
+                        text: copiaCola,
+                        width: 150,
+                        height: 150,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+
+                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias);
+                } else {
+                    alert("Erro ao gerar Pix no Mercado Pago. Tente novamente em instantes.");
+                    fecharModalPix();
+                }
+
+            } catch (err) {
+                alert("Erro ao conectar ao gerador de Pix: " + err.message);
+                fecharModalPix();
+            }
+        }
+
+        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias) {
+            clearInterval(timerVerificadorPix);
+            
+            timerVerificadorPix = setInterval(async () => {
+                try {
+                    const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentId}`);
+                    const payData = await res.json();
+
+                    if (payData && payData.status === "approved") {
+                        clearInterval(timerVerificadorPix);
+                        
+                        let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
+                        await db.collection("usuarios").doc(zap).set({
+                            whatsapp: zap,
+                            expiraEm: expiraEm,
+                            ativo: true,
+                            deviceId: MEU_DEVICE_ID,
+                            plano: `${dias} dias`,
+                            atualizadoEm: Date.now()
+                        }, { merge: true });
+
+                        alert("🎉 Pagamento Pix Aprovado! Seu aplicativo foi liberado com sucesso.");
+                        fecharModalPix();
+                        localStorage.setItem('usuario_zap_salvo', zap);
+                        iniciarMonitoramentoSessao(zap);
+                    }
+                } catch(e) {}
+            }, 2000);
         }
 
         function fecharModalPix() {
+            clearInterval(timerVerificadorPix);
             document.getElementById('modalPix').style.display = 'none';
         }
 
@@ -883,12 +875,7 @@
             if (!campo.value) return;
             campo.select();
             navigator.clipboard.writeText(campo.value);
-            alert("📋 Código Pix Copia e Cola copiado com sucesso! Abra o app do seu banco e cole na opção 'Pix Copia e Cola'.");
-        }
-
-        function copiarChaveDireta() {
-            navigator.clipboard.writeText(CHAVE_PIX_DONO_TEL);
-            alert(`🔑 Chave Pix ${CHAVE_PIX_DONO_TEL} copiada com sucesso!`);
+            alert("📋 Código Pix Copiado com sucesso! Abra o app do seu banco e pague na opção 'Pix Copia e Cola'.");
         }
 
         // ==========================================
@@ -986,7 +973,7 @@
                 let doc = await db.collection("usuarios").doc(zap).get();
 
                 if (!doc.exists) {
-                    msgErro.innerText = "Número não encontrado! Ative o Teste Grátis ou faça o Pix do plano.";
+                    msgErro.innerText = "Número não encontrado! Ative o Teste Grátis ou escolha um plano.";
                     msgErro.style.display = 'block';
                     btn.innerText = "⚡ Entrar no Aplicativo";
                     btn.disabled = false;
