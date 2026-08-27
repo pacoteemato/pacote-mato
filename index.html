@@ -686,7 +686,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN (COM ABA DE PAGAMENTOS CONCLUÍDOS) -->
+    <!-- MODAL ADMIN -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -701,7 +701,6 @@
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
                 
-                <!-- Abas de controle -->
                 <div class="admin-nav-tabs">
                     <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
                     <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
@@ -779,7 +778,7 @@
     <div class="container">
 
         <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
-            📲 Instalar Aplicativo no Celular
+            📲 Baixar App no Celular
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
@@ -920,6 +919,11 @@
             if (!zapSalvo) {
                 document.getElementById('telaBloqueio').style.display = 'flex';
             }
+
+            if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
+                let btnTeste = document.getElementById('btnTesteGratis');
+                if (btnTeste) btnTeste.style.display = 'none';
+            }
         }
 
         // ==========================================
@@ -1016,7 +1020,7 @@
 
                 if (data && data.point_of_interaction && data.point_of_interaction.transaction_data) {
                     const copiaCola = data.point_of_interaction.transaction_data.qr_code;
-                    const paymentId = data.id;
+                    const paymentId = String(data.id);
 
                     document.getElementById('pixCopiaColaOut').value = copiaCola;
 
@@ -1053,7 +1057,6 @@
                         
                         let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
                         
-                        // Salva dados do usuário e registra na coleção de pagamentos concluídos
                         await db.collection("usuarios").doc(zap).set({
                             whatsapp: zap,
                             expiraEm: expiraEm,
@@ -1066,13 +1069,18 @@
                             atualizadoEm: Date.now()
                         }, { merge: true });
 
-                        await db.collection("pagamentos_concluidos").add({
-                            whatsapp: zap,
-                            plano: nomePlano,
-                            valor: valor,
-                            data: new Date().toLocaleString('pt-BR'),
-                            timestamp: Date.now()
-                        });
+                        // Uso do paymentId como ID do documento para evitar duplicidade de registro
+                        let docPagamentoRef = db.collection("pagamentos_concluidos").doc(paymentId);
+                        let docCheck = await docPagamentoRef.get();
+                        if (!docCheck.exists) {
+                            await docPagamentoRef.set({
+                                whatsapp: zap,
+                                plano: nomePlano,
+                                valor: valor,
+                                data: new Date().toLocaleString('pt-BR'),
+                                timestamp: Date.now()
+                            });
+                        }
 
                         fecharModalPix();
                         localStorage.setItem('usuario_zap_salvo', zap);
@@ -1114,6 +1122,7 @@
             if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
                 msgErro.innerText = "❌ Este celular já utilizou o teste grátis!";
                 msgErro.style.display = 'block';
+                if (btn) btn.style.display = 'none';
                 return;
             }
 
@@ -1126,8 +1135,7 @@
                     localStorage.setItem('teste_gratis_bloqueado_local', 'true');
                     msgErro.innerText = "❌ Este celular já utilizou o teste grátis anteriormente!";
                     msgErro.style.display = 'block';
-                    btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
-                    btn.disabled = false;
+                    btn.style.display = 'none';
                     return;
                 }
 
@@ -1161,6 +1169,7 @@
                 });
 
                 localStorage.setItem('teste_gratis_bloqueado_local', 'true');
+                if (btn) btn.style.display = 'none';
                 localStorage.setItem('usuario_zap_salvo', zap);
                 
                 msgErro.style.display = 'none';
@@ -1170,10 +1179,9 @@
             } catch(e) {
                 msgErro.innerText = "Erro ao ativar teste: " + e.message;
                 msgErro.style.display = 'block';
+                btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
+                btn.disabled = false;
             }
-
-            btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
-            btn.disabled = false;
         }
 
         // ==========================================
@@ -1333,7 +1341,7 @@
         }
 
         // ==========================================
-        // PAINEL ADMIN (COM ABA DE PAGAMENTOS)
+        // PAINEL ADMIN
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
