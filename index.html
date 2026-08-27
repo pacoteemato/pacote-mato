@@ -119,7 +119,6 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* TELA DE AUTENTICAÇÃO (Começa invisível para evitar o piscar) */
         #telaBloqueio {
             position: fixed;
             inset: 0;
@@ -266,13 +265,16 @@
             flex-direction: column;
             gap: 8px;
             margin-bottom: 12px;
+            max-height: 240px;
+            overflow-y: auto;
+            padding-right: 2px;
         }
 
         .plan-item {
             background: var(--surface-2);
             border: 2px solid var(--surface-border);
             border-radius: 14px;
-            padding: 12px 14px;
+            padding: 11px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -307,9 +309,9 @@
             letter-spacing: 0.5px;
         }
 
-        .plan-name { font-size: 0.9rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.72rem; color: var(--text-muted); text-align: left; margin-top: 2px; }
-        .plan-val { font-size: 1.18rem; font-weight: 900; color: var(--accent-green); }
+        .plan-name { font-size: 0.88rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.68rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
+        .plan-val { font-size: 1.1rem; font-weight: 900; color: var(--accent-green); }
 
         .btn-gerar-pix-confirm {
             width: 100%;
@@ -628,6 +630,14 @@
             <div class="divider-label">Escolha seu Plano</div>
             
             <div class="plan-stack">
+                <div class="plan-item" id="cardPlano3" onclick="selecionarPlano(3, 3.00, '3 Dias', 'cardPlano3')">
+                    <div>
+                        <div class="plan-name">Plano 3 Dias</div>
+                        <div class="plan-meta">Acesso rápido por 3 dias</div>
+                    </div>
+                    <div class="plan-val">R$ 3,00</div>
+                </div>
+
                 <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
                     <div>
                         <div class="plan-name">Plano Semanal</div>
@@ -639,18 +649,26 @@
                 <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
                     <span class="plan-badge-top">Mais Escolhido</span>
                     <div>
-                        <div class="plan-name">Plano Mensal</div>
+                        <div class="plan-name">Plano Mensal (1 Mês)</div>
                         <div class="plan-meta">30 dias • Melhor custo-benefício</div>
                     </div>
                     <div class="plan-val">R$ 10,00</div>
                 </div>
 
-                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (Trimestral)', 'cardPlano90')">
+                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (3 Meses)', 'cardPlano90')">
                     <div>
-                        <div class="plan-name">Plano Trimestral</div>
+                        <div class="plan-name">Plano Trimestral (3 Meses)</div>
                         <div class="plan-meta">90 dias com super desconto</div>
                     </div>
                     <div class="plan-val">R$ 25,00</div>
+                </div>
+
+                <div class="plan-item" id="cardPlano365" onclick="selecionarPlano(365, 80.00, '365 Dias (1 Ano)', 'cardPlano365')">
+                    <div>
+                        <div class="plan-name">Plano Anual (1 Ano)</div>
+                        <div class="plan-meta">365 dias • Acesso completo</div>
+                    </div>
+                    <div class="plan-val">R$ 80,00</div>
                 </div>
             </div>
 
@@ -712,8 +730,8 @@
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
                     <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px;">
-                        <option value="3">3 Dias (Teste)</option>
-                        <option value="7">7 Dias</option>
+                        <option value="3">3 Dias</option>
+                        <option value="7">7 Dias (Semanal)</option>
                         <option value="30" selected>30 Dias (1 Mês)</option>
                         <option value="90">90 Dias (3 Meses)</option>
                         <option value="365">365 Dias (1 Ano)</option>
@@ -900,7 +918,6 @@
             verificarRotaSalvaAnterior();
             verificarStatusInstalacaoPWA();
 
-            // Se não houver número salvo no celular, aí sim exibe a tela de login imediatamente sem piscar
             let zapSalvo = localStorage.getItem('usuario_zap_salvo');
             if (!zapSalvo) {
                 document.getElementById('telaBloqueio').style.display = 'flex';
@@ -1035,6 +1052,7 @@
                             whatsapp: zap,
                             expiraEm: expiraEm,
                             ativo: true,
+                            bloqueado: false,
                             deviceId: MEU_DEVICE_ID,
                             plano: `${dias} dias`,
                             tipo: "pago",
@@ -1113,6 +1131,7 @@
                     whatsapp: zap,
                     expiraEm: expiraEm,
                     ativo: true,
+                    bloqueado: false,
                     deviceId: MEU_DEVICE_ID,
                     jaUsouTeste: true,
                     tipo: "teste",
@@ -1179,6 +1198,14 @@
                 let data = doc.data();
                 let agora = Date.now();
 
+                if (data.bloqueado) {
+                    msgErro.innerText = "❌ Este número foi bloqueado temporariamente pelo suporte.";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.disabled = false;
+                    return;
+                }
+
                 if (!data.ativo || agora > data.expiraEm) {
                     msgErro.innerText = "Acesso expirado. Selecione um plano abaixo para renovar.";
                     msgErro.style.display = 'block';
@@ -1220,6 +1247,11 @@
 
                 let data = doc.data();
                 let agora = Date.now();
+
+                if (data.bloqueado) {
+                    desconectarForcado("❌ Acesso bloqueado pelo administrador.");
+                    return;
+                }
 
                 if (!data.ativo || agora > data.expiraEm) {
                     desconectarForcado("Assinatura expirada.");
@@ -1286,7 +1318,7 @@
         }
 
         // ==========================================
-        // PAINEL ADMIN
+        // PAINEL ADMIN (COM BOTÃO DE BLOQUEIO)
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -1355,17 +1387,25 @@
                     let u = doc.data();
                     let zap = u.whatsapp || doc.id;
                     let expira = u.expiraEm || 0;
-                    let ativo = u.ativo && agora <= expira;
+                    let bloqueado = u.bloqueado === true;
+                    let ativo = u.ativo && agora <= expira && !bloqueado;
+                    
                     let dias = Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
-                    let badge = ativo ? `<span style="color:#10b981;">Ativo (${dias}d)</span>` : `<span style="color:#ef4444;">Expirado</span>`;
+                    let statusLabel = bloqueado ? `<span style="color:#ef4444; font-weight:800;">Bloqueado ⛔</span>` : (ativo ? `<span style="color:#10b981;">Ativo (${dias}d)</span>` : `<span style="color:#f59e0b;">Expirado</span>`);
+
+                    let btnBloqueioTexto = bloqueado ? "Desbloquear" : "Bloquear";
+                    let btnBloqueioCor = bloqueado ? "#10b981" : "#f59e0b";
 
                     let row = `
                         <div class="user-row">
                             <div>
                                 <div style="font-weight:800; font-size:0.85rem; color:var(--text-main);">${zap}</div>
-                                <div style="font-size:0.7rem; color:var(--text-muted);">${u.plano || 'Acesso'} • ${badge}</div>
+                                <div style="font-size:0.7rem; color:var(--text-muted);">${u.plano || 'Acesso'} • ${statusLabel}</div>
                             </div>
-                            <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:8px; padding:5px 10px; font-size:0.72rem; font-weight:800; cursor:pointer;">Remover</button>
+                            <div style="display:flex; gap:6px;">
+                                <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:8px; padding:5px 8px; font-size:0.68rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
+                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:8px; padding:5px 8px; font-size:0.68rem; font-weight:800; cursor:pointer;">Excluir</button>
+                            </div>
                         </div>
                     `;
 
@@ -1384,6 +1424,12 @@
             }
         }
 
+        async function alternarBloqueioUsuario(zap, statusBloqueio) {
+            await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
+            notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
+            carregarUsuariosAdmin();
+        }
+
         async function deletarUsuarioAdmin(zap) {
             await db.collection("usuarios").doc(zap).delete();
             notificar(`Acesso de ${zap} removido.`);
@@ -1400,15 +1446,17 @@
             }
 
             let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
+            let nomePlanoManual = dias === 3 ? "3 Dias" : (dias === 7 ? "7 Dias (Semanal)" : (dias === 30 ? "30 Dias (1 Mês)" : (dias === 90 ? "90 Dias (3 Meses)" : "365 Dias (1 Ano)")));
 
             try {
                 await db.collection("usuarios").doc(zap).set({
                     whatsapp: zap,
                     expiraEm: expiraEm,
                     ativo: true,
+                    bloqueado: false,
                     deviceId: "",
                     tipo: "pago",
-                    plano: `${dias} dias (Manual)`,
+                    plano: `${nomePlanoManual} (Manual)`,
                     atualizadoEm: Date.now()
                 }, { merge: true });
 
