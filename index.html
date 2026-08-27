@@ -568,7 +568,7 @@
         }
         .drawer-panel.active { left: 0; }
 
-        /* MODAL DE VISUALIZAÇÃO DE ROTAS E PARADAS */
+        /* MODAL DE VISUALIZAÇÃO DE ROTAS E PARADAS UNIFICADAS */
         .modal-rota-conteudo {
             max-height: 60vh;
             overflow-y: auto;
@@ -592,7 +592,6 @@
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(31, 41, 55, 0.95));
         }
 
-        /* MODAL DE ESCOLHA DE GPS (WAZE OU MAPS) */
         .gps-option-btn {
             width: 100%;
             padding: 12px;
@@ -775,14 +774,14 @@
         </div>
     </div>
 
-    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA -->
+    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA UNIFICADA -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <h3 style="color:var(--primary); font-weight:900; font-size:1.1rem;">📋 Paradas & Endereços</h3>
                 <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Clique no número da parada para navegar (Waze / Maps):</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Endereços unificados e paradas duplas:</div>
             
             <div class="modal-rota-conteudo" id="listaParadasModal"></div>
 
@@ -790,11 +789,11 @@
         </div>
     </div>
 
-    <!-- MODAL DE ESCOLHA DE GPS (WAZE OU GOOGLE MAPS) -->
+    <!-- MODAL DE ESCOLHA DE GPS -->
     <div id="modalEscolhaGps" class="modal-backdrop">
         <div class="modal-card" style="max-width:340px;">
             <div style="font-size:0.75rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
-            <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin-bottom:14px;" id="tituloGpsParada">Parada P1</h3>
+            <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin-bottom:14px;" id="tituloGpsParada">Parada</h3>
             
             <button class="gps-option-btn" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">
                 🚗 Abrir no Waze
@@ -940,7 +939,7 @@
                 📄 Escolher Arquivo PDF
             </button>
 
-            <!-- BOTÃO PARA VER AS PARADAS DO PDF -->
+            <!-- BOTÃO PARA VER AS PARADAS UNIFICADAS DO PDF -->
             <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
                 👀 Visualizar Paradas da Rota
             </button>
@@ -2002,42 +2001,45 @@
                 return;
             }
 
-            let paradasOrdenadas = {};
+            // Agrupamento inteligente por endereço normalizado para juntar P1, P2, P3... no mesmo card
+            let enderecosUnificados = {};
             for (let end in mapaRotas) {
                 let pacs = mapaRotas[end];
+                let nomeEnd = nomeExibicao[end] || end;
+                
+                // Pega os números das paradas correspondentes a esses pacotes
+                let stopsDesteEnd = [];
                 pacs.forEach(p => {
                     let st = stopCorrespondente[p] || 1;
-                    if (!paradasOrdenadas[st]) {
-                        paradasOrdenadas[st] = { endereco: nomeExibicao[end] || end, pacotes: [] };
-                    }
-                    if (!paradasOrdenadas[st].pacotes.includes(p)) {
-                        paradasOrdenadas[st].pacotes.push(p);
-                    }
+                    if (!stopsDesteEnd.includes(st)) stopsDesteEnd.includes(st) || stopsDesteEnd.push(st);
                 });
+                stopsDesteEnd.sort((a,b) => a - b);
+
+                if (!enderecosUnificados[end]) {
+                    enderecosUnificados[end] = { endereco: nomeEnd, stops: stopsDesteEnd, pacotes: pacs };
+                }
             }
 
-            let chavesStops = Object.keys(paradasOrdenadas).sort((a,b) => parseInt(a) - parseInt(b));
             let htmlParadas = "";
-
-            chavesStops.forEach(st => {
-                let dados = paradasOrdenadas[st];
+            for (let end in enderecosUnificados) {
+                let dados = enderecosUnificados[end];
                 let qtd = dados.pacotes.length;
                 let ehDuplo = qtd > 1;
-                let enderecoEncoded = encodeURIComponent(dados.endereco);
 
+                let stopsFormatados = dados.stops.map(s => "P" + s).join(" e ");
                 let badgeDuplo = ehDuplo ? `<div style="font-size:0.65rem; font-weight:900; color:var(--accent-amber); text-transform:uppercase; margin-bottom:2px;">⚠️ PACOTE DUPLO / MÚLTIPLO (${qtd} pacotes)</div>` : "";
 
                 htmlParadas += `
                     <div class="parada-card ${ehDuplo ? 'duplo' : ''}">
-                        <div style="flex:1; cursor:pointer;" onclick="perguntarGps('${dados.endereco}', 'P${st}')">
+                        <div style="flex:1; cursor:pointer;" onclick="perguntarGps('${dados.endereco}', '${stopsFormatados}')">
                             ${badgeDuplo}
-                            <div style="font-size:0.85rem; font-weight:900; color:var(--text-main);">📍 P${st} • ${dados.endereco}</div>
+                            <div style="font-size:0.85rem; font-weight:900; color:var(--text-main);">📍 ${stopsFormatados} • ${dados.endereco}</div>
                             <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Pacotes: ${dados.pacotes.join(', ')}</div>
                         </div>
-                        <button onclick="perguntarGps('${dados.endereco}', 'P${st}')" style="background:var(--primary); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:800; font-size:0.75rem; cursor:pointer;">🧭 Rota</button>
+                        <button onclick="perguntarGps('${dados.endereco}', '${stopsFormatados}')" style="background:var(--primary); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:800; font-size:0.75rem; cursor:pointer;">🧭 Rota</button>
                     </div>
                 `;
-            });
+            }
 
             container.innerHTML = htmlParadas;
             document.getElementById('modalVisualizarRota').style.display = 'flex';
