@@ -44,7 +44,7 @@
             --accent-amber: #f59e0b;
             --accent-amber-gradient: linear-gradient(135deg, #d97706, #fbbf24);
             --danger: #ef4444;
-            --shadow-card: 0 16px 36px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--surface-border);
+            --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -72,8 +72,8 @@
             padding: 0 14px;
         }
 
-        /* BOTÃO FIXO DE INSTALAR APP */
-        .btn-instalar-destaque {
+        /* BOTÃO INTELIGENTE DE DOWNLOAD PWA */
+        .btn-instalar-dinamico {
             width: 100%;
             background: linear-gradient(135deg, #0284c7, #38bdf8);
             color: #ffffff;
@@ -83,16 +83,16 @@
             font-weight: 800;
             font-size: 0.88rem;
             letter-spacing: 0.5px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             cursor: pointer;
-            box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: transform 0.15s;
+            transition: transform 0.15s, opacity 0.2s;
         }
-        .btn-instalar-destaque:active { transform: scale(0.98); }
+        .btn-instalar-dinamico:active { transform: scale(0.98); }
 
         #toastNotificacao {
             position: fixed;
@@ -146,16 +146,16 @@
         }
 
         .app-logo {
-            width: 76px;
-            height: 76px;
+            width: 78px;
+            height: 78px;
             object-fit: contain;
             margin-bottom: 8px;
             cursor: pointer;
-            filter: drop-shadow(0 6px 14px rgba(59, 130, 246, 0.25));
+            filter: drop-shadow(0 8px 16px rgba(59, 130, 246, 0.3));
         }
 
         .brand-title {
-            font-size: 1.5rem;
+            font-size: 1.55rem;
             font-weight: 900;
             letter-spacing: -0.5px;
             color: var(--text-main);
@@ -170,6 +170,7 @@
             font-weight: 600;
         }
 
+        /* INPUT COM MICRO-ÍCONE DE WHATSAPP */
         .input-group {
             position: relative;
             margin-bottom: 10px;
@@ -180,9 +181,9 @@
         .input-icon-left {
             position: absolute;
             left: 14px;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             pointer-events: none;
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
         .input-auth {
@@ -220,7 +221,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
         }
         .btn-action-primary:active { transform: scale(0.98); }
 
@@ -240,7 +241,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
         }
         .btn-action-trial:active { transform: scale(0.98); }
 
@@ -262,6 +263,7 @@
             background: var(--surface-border);
         }
 
+        /* SELEÇÃO DE PLANOS COM EFEITO NEON/GLOW */
         .plan-stack {
             display: flex;
             flex-direction: column;
@@ -278,7 +280,7 @@
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
         }
 
@@ -286,8 +288,8 @@
 
         .plan-item.selecionado {
             border-color: #38bdf8 !important;
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(37, 99, 235, 0.08));
-            box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(37, 99, 235, 0.08));
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 0 10px rgba(56, 189, 248, 0.1);
         }
 
         .plan-item.featured {
@@ -324,6 +326,9 @@
             cursor: pointer;
             box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
             display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             animation: fadeIn 0.25s ease;
         }
 
@@ -605,8 +610,8 @@
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             
-            <!-- BOTÃO DE BAIXAR DIRETO NA TELA DE ENTRADA -->
-            <button class="btn-instalar-destaque" onclick="dispararInstalacaoPWA()">
+            <!-- BOTÃO DE DOWNLOAD NA TELA DE LOGIN -->
+            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
                 📲 Baixar App no Celular
             </button>
 
@@ -742,8 +747,9 @@
         <div style="font-weight:900; font-size:1.1rem; margin-bottom:4px;">PACOTE É MATO</div>
         <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;">Sistema Inteligente de Entregas</div>
 
-        <button class="btn-instalar-destaque" style="margin-bottom:20px;" onclick="dispararInstalacaoPWA()">
-            📲 Instalar App no Celular
+        <!-- BOTÃO DE DOWNLOAD NA SIDEBAR -->
+        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:20px;" onclick="dispararInstalacaoPWA()">
+            📲 Baixar App no Celular
         </button>
 
         <div style="margin-bottom:16px;">
@@ -777,9 +783,9 @@
 
     <div class="container">
 
-        <!-- BOTÃO NO TOPO DA TELA PRINCIPAL -->
-        <button id="btnInstalarAppTopo" class="btn-instalar-destaque" onclick="dispararInstalacaoPWA()">
-            📲 Instalar Aplicativo no Celular
+        <!-- BOTÃO DE DOWNLOAD NA TELA PRINCIPAL -->
+        <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
+            📲 Baixar App no Celular
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
@@ -858,10 +864,10 @@
         // TEMAS E ESTILIZAÇÃO
         // ==========================================
         const paletas = {
-            slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#374151", border: "rgba(255, 255, 255, 0.1)", text_main: "#f9fafb", text_muted: "#9ca3af" },
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888" },
-            light: { bg_body: "#f1f5f9", surface_1: "#ffffff", surface_2: "#e2e8f0", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa" }
+            slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#374151", border: "rgba(255, 255, 255, 0.1)", text_main: "#f9fafb", text_muted: "#9ca3af", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1)" },
+            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 24px 48px -12px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
+            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 20px 40px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
+            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
         };
 
         function mudarTema(tipo, salvar = true) {
@@ -872,6 +878,7 @@
             document.documentElement.style.setProperty('--surface-border', p.border);
             document.documentElement.style.setProperty('--text-main', p.text_main);
             document.documentElement.style.setProperty('--text-muted', p.text_muted);
+            document.documentElement.style.setProperty('--shadow-card', p.shadow);
             
             let metaColor = document.getElementById('metaThemeColor');
             if (metaColor) metaColor.setAttribute('content', p.bg_body);
@@ -949,7 +956,7 @@
 
             let btn = document.getElementById('btnConfirmarPagamento');
             btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
-            btn.style.display = 'block';
+            btn.style.display = 'flex';
 
             notificar(`Plano ${nomePlano} selecionado. Clique abaixo para gerar o Pix.`);
         }
@@ -1420,7 +1427,7 @@
         }
 
         // ==========================================
-        // SISTEMA DE INSTALAÇÃO PWA
+        // SISTEMA INTELIGENTE DE INSTALAÇÃO PWA
         // ==========================================
         let deferredPrompt = null;
 
@@ -1430,13 +1437,27 @@
             verificarStatusInstalacaoPWA();
         });
 
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            verificarStatusInstalacaoPWA();
+            notificar("🎉 Aplicativo instalado com sucesso!");
+        });
+
         function verificarStatusInstalacaoPWA() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-            const btnTopo = document.getElementById('btnInstalarAppTopo');
+            
+            const btnAuth = document.getElementById('btnDownloadAuth');
+            const btnPrincipal = document.getElementById('btnDownloadPrincipal');
+            const btnSidebar = document.getElementById('btnDownloadSidebar');
+
             if (isStandalone) {
-                if (btnTopo) btnTopo.style.display = 'none';
+                if (btnAuth) btnAuth.style.display = 'none';
+                if (btnPrincipal) btnPrincipal.style.display = 'none';
+                if (btnSidebar) btnSidebar.style.display = 'none';
             } else {
-                if (btnTopo) btnTopo.style.display = 'flex';
+                if (btnAuth) btnAuth.style.display = 'flex';
+                if (btnPrincipal) btnPrincipal.style.display = 'flex';
+                if (btnSidebar) btnSidebar.style.display = 'flex';
             }
         }
 
@@ -1449,7 +1470,6 @@
                 }
                 deferredPrompt = null;
             } else {
-                // Instrução para Safari iOS ou navegadores sem suporte ao prompt
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 if (isIOS) {
                     notificar("📲 Para instalar no iPhone: Toque no ícone de Compartilhar (quadrado com seta) e escolha 'Adicionar à Tela de Início'.");
