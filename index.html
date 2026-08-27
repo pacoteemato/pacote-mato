@@ -32,9 +32,9 @@
         :root {
             --bg-body: #111827;
             --surface-1: #1f2937;
-            --surface-2: #374151;
-            --surface-border: rgba(255, 255, 255, 0.1);
-            --surface-border-hover: rgba(255, 255, 255, 0.2);
+            --surface-2: #2b3748;
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --surface-border-hover: rgba(255, 255, 255, 0.18);
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
             --primary: #3b82f6;
@@ -42,9 +42,8 @@
             --accent-green: #10b981;
             --accent-green-gradient: linear-gradient(135deg, #059669, #10b981);
             --accent-amber: #f59e0b;
-            --accent-amber-gradient: linear-gradient(135deg, #d97706, #fbbf24);
             --danger: #ef4444;
-            --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--surface-border);
+            --shadow-card: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -347,10 +346,10 @@
 
         .modal-card {
             width: 100%;
-            max-width: 380px;
+            max-width: 410px;
             background: var(--surface-1);
             border: 1px solid var(--surface-border);
-            border-radius: 24px;
+            border-radius: 26px;
             padding: 22px;
             text-align: center;
             box-shadow: var(--shadow-card);
@@ -568,29 +567,100 @@
         }
         .drawer-panel.active { left: 0; }
 
-        /* MODAL DE VISUALIZAÇÃO DE PARADAS COM FILTROS (TODOS / DUPLOS) */
+        /* ==========================================
+           NOVO ESTILO LOGÍSTICA PRO (ESTILO DA REFERÊNCIA)
+           ========================================== */
         .modal-rota-conteudo {
-            max-height: 55vh;
+            max-height: 60vh;
             overflow-y: auto;
             text-align: left;
             margin-top: 10px;
             padding-right: 4px;
         }
-        .parada-card {
+
+        .parada-box-pro {
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 8px;
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: transform 0.15s;
+        }
+
+        .parada-box-pro.duplo-pro {
+            border-color: rgba(245, 158, 11, 0.5);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), var(--surface-2));
+        }
+
+        .parada-header-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            margin-bottom: 8px;
         }
-        .parada-card.duplo {
+
+        .parada-badge-num {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 6px 14px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .parada-badge-num.destaque-duplo {
+            background: #451a03;
             border-color: var(--accent-amber);
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(31, 41, 55, 0.95));
+            color: #fbbf24;
         }
+
+        .tag-duplo-info {
+            font-size: 0.72rem;
+            font-weight: 900;
+            color: var(--accent-amber);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .endereco-texto-pro {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            line-height: 1.35;
+        }
+
+        .acoes-footer-pro {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            border-top: 1px solid var(--surface-border);
+            padding-top: 10px;
+        }
+
+        .btn-acao-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 9px;
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .btn-acao-card:active { background: rgba(59, 130, 246, 0.2); }
 
         .gps-option-btn {
             width: 100%;
@@ -774,7 +844,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE VISUALIZAÇÃO COM ABAS (TODOS / DUPLOS) -->
+    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA PRO -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -944,7 +1014,7 @@
                 📄 Escolher Arquivo PDF
             </button>
 
-            <!-- BOTÃO PARA VER AS PARADAS DO PDF -->
+            <!-- BOTÃO PARA VER AS PARADAS PRO -->
             <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
                 👀 Visualizar Paradas da Rota
             </button>
@@ -1159,10 +1229,10 @@
         // TEMAS
         // ==========================================
         const paletas = {
-            slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#374151", border: "rgba(255, 255, 255, 0.1)", text_main: "#f9fafb", text_muted: "#9ca3af", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.1)" },
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 24px 48px -12px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
-            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 20px 40px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
+            slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#2b3748", border: "rgba(255, 255, 255, 0.08)", text_main: "#f9fafb", text_muted: "#9ca3af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
+            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
+            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
+            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
         };
 
         function mudarTema(tipo) {
@@ -2014,7 +2084,7 @@
 
             for (let end in mapaRotas) {
                 let pacs = mapaRotas[end];
-                if (end.startsWith("pacote_isolado_")) continue; // ignora isolados falsos
+                if (end.startsWith("pacote_isolado_")) continue;
                 
                 let nomeEnd = nomeExibicao[end] || end;
                 let stopsDesteEnd = [];
@@ -2042,17 +2112,28 @@
 
                 if (filtroAtualModal === 'duplos' && !ehDuplo) return;
 
-                let stopsFormatados = dados.stops.map(s => "P" + s).join(" e ");
-                let badgeDuplo = ehDuplo ? `<div style="font-size:0.65rem; font-weight:900; color:var(--accent-amber); text-transform:uppercase; margin-bottom:2px;">⚠️ PACOTE DUPLO / MÚLTIPLO (${qtd} pacotes)</div>` : "";
+                let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
+                let badgeDestaque = ehDuplo 
+                    ? `<div class="tag-duplo-info">⚠️ PACOTE DUPLO • ${qtd} pacotes</div>` 
+                    : `<div style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
 
                 listaCards.push(`
-                    <div class="parada-card ${ehDuplo ? 'duplo' : ''}">
-                        <div style="flex:1; cursor:pointer;" onclick="perguntarGps('${dados.endereco}', '${stopsFormatados}')">
-                            ${badgeDuplo}
-                            <div style="font-size:0.85rem; font-weight:900; color:var(--text-main);">📍 ${stopsFormatados} • ${dados.endereco}</div>
-                            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Pacotes: ${dados.pacotes.join(', ')}</div>
+                    <div class="parada-box-pro ${ehDuplo ? 'duplo-pro' : ''}">
+                        <div class="parada-header-row">
+                            <div class="parada-badge-num ${ehDuplo ? 'destaque-duplo' : ''}">PARADA ${paradaFormatada}</div>
+                            ${badgeDestaque}
                         </div>
-                        <button onclick="perguntarGps('${dados.endereco}', '${stopsFormatados}')" style="background:var(--primary); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:800; font-size:0.75rem; cursor:pointer;">🧭 Rota</button>
+                        
+                        <div class="endereco-texto-pro">📍 ${dados.endereco}</div>
+
+                        <div class="acoes-footer-pro">
+                            <button class="btn-acao-card" onclick="perguntarGps('${dados.endereco}', '${paradaFormatada}')">
+                                🚗 Waze / Maps
+                            </button>
+                            <button class="btn-acao-card" onclick="notificar('Pacotes: ${dados.pacotes.join(', ')}')">
+                                📦 Ver Pacotes
+                            </button>
+                        </div>
                     </div>
                 `);
             });
@@ -2069,7 +2150,7 @@
 
         function perguntarGps(endereco, paradaNome) {
             enderecoSelecionadoGps = endereco;
-            document.getElementById('tituloGpsParada').innerText = `Navegar para ${paradaNome}`;
+            document.getElementById('tituloGpsParada').innerText = `Navegar para Parada ${paradaNome}`;
             document.getElementById('modalEscolhaGps').style.display = 'flex';
         }
 
