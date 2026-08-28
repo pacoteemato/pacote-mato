@@ -8,7 +8,7 @@
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a" id="metaThemeColor">
+    <meta name="theme-color" content="#090d16" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -30,11 +30,11 @@
 
     <style>
         :root {
-            --bg-body: #0b1329;
-            --surface-1: #131c35;
-            --surface-2: #1e293b;
+            --bg-body: #090d16;
+            --surface-1: #10172a;
+            --surface-2: #1b253f;
             --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.16);
+            --surface-border-hover: rgba(255, 255, 255, 0.18);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --primary: #2563eb;
@@ -43,7 +43,7 @@
             --accent-green-gradient: linear-gradient(135deg, #047857, #10b981);
             --accent-blue-soft: #38bdf8;
             --danger: #dc2626;
-            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--surface-border);
+            --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -115,10 +115,11 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
+        /* TELA DE LOGIN ULTRA PROFISSIONAL E MODERNA */
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: var(--bg-body);
+            background: radial-gradient(circle at top center, #172342 0%, #090d16 70%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -130,47 +131,49 @@
 
         .auth-wrapper {
             width: 100%;
-            max-width: 390px;
+            max-width: 410px;
             background: var(--surface-1);
-            border-radius: 20px;
-            padding: 28px 22px;
+            border-radius: 24px;
+            padding: 30px 24px;
             box-shadow: var(--shadow-card);
             border: 1px solid var(--surface-border);
             text-align: left;
         }
 
-        .auth-header-flex {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+        .auth-header-center {
+            text-align: center;
+            margin-bottom: 22px;
         }
 
-        .app-logo {
-            width: 48px;
-            height: 48px;
+        .app-logo-pro {
+            width: 64px;
+            height: 64px;
             object-fit: contain;
+            margin: 0 auto 10px;
+            display: block;
             cursor: pointer;
+            filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.4));
         }
 
-        .brand-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            letter-spacing: -0.3px;
+        .brand-title-pro {
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
             color: var(--text-main);
+            margin-bottom: 2px;
         }
 
-        .brand-subtitle {
+        .brand-subtitle-pro {
             font-size: 0.72rem;
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         .form-label-pro {
-            font-size: 0.75rem;
-            font-weight: 700;
+            font-size: 0.72rem;
+            font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -195,12 +198,12 @@
 
         .input-auth {
             width: 100%;
-            padding: 12px 14px 12px 42px;
+            padding: 13px 14px 13px 42px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 12px;
+            border-radius: 14px;
             color: var(--text-main);
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             font-weight: 700;
             outline: none;
             transition: all 0.2s;
@@ -208,8 +211,8 @@
 
         .input-auth:focus {
             border-color: var(--primary);
-            background: rgba(30, 41, 59, 0.8);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
         }
 
         .btn-action-primary {
@@ -217,13 +220,13 @@
             background: var(--primary-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 13px;
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             cursor: pointer;
             transition: all 0.15s;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -237,19 +240,40 @@
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
             border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 11px;
+            border-radius: 14px;
+            padding: 12px;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             cursor: pointer;
             transition: all 0.15s;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
         }
         .btn-action-trial:active { transform: scale(0.98); }
+
+        /* BOTÃO DE SUPORTE NA TELA DE LOGIN */
+        .btn-support-login {
+            width: 100%;
+            background: rgba(5, 150, 105, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(5, 150, 105, 0.3);
+            border-radius: 14px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            margin-bottom: 14px;
+            transition: all 0.2s;
+        }
+        .btn-support-login:active { transform: scale(0.98); }
 
         .divider-label {
             display: flex;
@@ -260,7 +284,7 @@
             color: var(--text-muted);
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            margin: 16px 0 12px;
+            margin: 14px 0 10px;
         }
         .divider-label::before, .divider-label::after {
             content: "";
@@ -279,8 +303,8 @@
         .plan-item {
             background: var(--surface-2);
             border: 1.5px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 14px;
+            padding: 11px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -323,12 +347,12 @@
             background: var(--accent-green-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 13px;
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.35);
             display: none;
             align-items: center;
             justify-content: center;
@@ -599,7 +623,7 @@
         }
 
         .parada-badge-num {
-            background: #0b1329;
+            background: #090d16;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 10px;
             padding: 5px 12px;
@@ -757,16 +781,14 @@
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             
-            <div class="auth-header-flex">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo" onclick="registrarCliqueAdmin()">
-                <div>
-                    <h1 class="brand-title" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
-                    <p class="brand-subtitle" data-i18n="brand_subtitle">Plataforma de Logística</p>
-                </div>
+            <div class="auth-header-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
+                <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
+                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
             </div>
 
             <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 <span data-i18n="download_app">Baixar App no Celular</span>
+                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
             </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
@@ -775,7 +797,7 @@
                 <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
             </div>
 
-            <label class="form-label-pro" data-i18n="password_label">Defina sua Senha Pessoal</label>
+            <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
             <div class="input-group">
                 <span class="input-icon-left">🔑</span>
                 <input type="password" id="inputSenha" class="input-auth" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
@@ -787,6 +809,13 @@
             <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
                 🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
             </button>
+
+            <!-- BOTÃO DE SUPORTE NA TELA DE LOGIN -->
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+                <button class="btn-support-login">
+                    💬 Suporte
+                </button>
+            </a>
             
             <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
 
@@ -1245,7 +1274,7 @@
         // TEMAS
         // ==========================================
         const paletas = {
-            slate_tech: { bg_body: "#0b1329", surface_1: "#131c35", surface_2: "#1e293b", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#94a3b8", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
+            slate_tech: { bg_body: "#090d16", surface_1: "#10172a", surface_2: "#1b253f", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#94a3b8", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
             black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
             light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
             gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
