@@ -567,9 +567,6 @@
         }
         .drawer-panel.active { left: 0; }
 
-        /* ==========================================
-           LOGÍSTICA PRO (COM AZUL HARMONIOSO PARA DUPLOS)
-           ========================================== */
         .modal-rota-conteudo {
             max-height: 60vh;
             overflow-y: auto;
@@ -772,6 +769,11 @@
                 <span class="input-icon-left">📱</span>
                 <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
             </div>
+
+            <div class="input-group">
+                <span class="input-icon-left">🔑</span>
+                <input type="password" id="inputSenha" class="input-auth" placeholder="Sua Senha Pessoal" data-i18n-placeholder="password_placeholder">
+            </div>
             
             <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
                 ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
@@ -851,7 +853,6 @@
                 <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             
-            <!-- ABAS DE FILTRO: TODOS / DUPLOS -->
             <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
                 <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Todos (<span id="contadorTodos">0</span>)</button>
                 <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
@@ -882,7 +883,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN -->
+    <!-- MODAL ADMIN (COM SENHAS E REDEFINIÇÃO) -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -912,6 +913,7 @@
 
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
+                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial (Ex: 1234)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
                     <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px;">
                         <option value="3">3 Dias</option>
                         <option value="7">7 Dias (Semanal)</option>
@@ -1074,6 +1076,7 @@
                 download_app: "Baixar App no Celular",
                 brand_subtitle: "Organização e Triagem Rápida de Entregas",
                 whatsapp_placeholder: "WhatsApp (com DDD)",
+                password_placeholder: "Sua Senha Pessoal",
                 btn_enter: "Entrar no Sistema",
                 btn_trial: "Testar 3 Dias Grátis (1x)",
                 choose_plan: "Escolha seu Plano",
@@ -1115,6 +1118,7 @@
                 download_app: "Descargar App en el Móvil",
                 brand_subtitle: "Organización y Clasificación Rápida de Entregas",
                 whatsapp_placeholder: "WhatsApp (con código de área)",
+                password_placeholder: "Tu Contraseña",
                 btn_enter: "Entrar al Sistema",
                 btn_trial: "Probar 3 Días Gratis (1x)",
                 choose_plan: "Elige tu Plan",
@@ -1156,6 +1160,7 @@
                 download_app: "Download App on Phone",
                 brand_subtitle: "Smart Delivery Organization and Sorting",
                 whatsapp_placeholder: "WhatsApp (with area code)",
+                password_placeholder: "Your Password",
                 btn_enter: "Sign In",
                 btn_trial: "Try 3 Days Free (1x)",
                 choose_plan: "Choose Your Plan",
@@ -1435,9 +1440,11 @@
                         clearInterval(timerVerificadorPix);
                         
                         let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
+                        let senhaPadrao = "1234";
                         
                         await db.collection("usuarios").doc(zap).set({
                             whatsapp: zap,
+                            senha: senhaPadrao,
                             expiraEm: expiraEm,
                             ativo: true,
                             bloqueado: false,
@@ -1462,7 +1469,7 @@
 
                         fecharModalPix();
                         localStorage.setItem('usuario_zap_salvo', zap);
-                        notificar("🎉 Pagamento Aprovado! Bem-vindo.");
+                        notificar("🎉 Pagamento Aprovado! Senha padrão: 1234");
                         iniciarMonitoramentoSessao(zap);
                     }
                 } catch(e) {}
@@ -1487,13 +1494,21 @@
         // ==========================================
         async function ativarTesteGratis() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
             let msgErro = document.getElementById('msgErro');
             let btn = document.getElementById('btnTesteGratis');
 
             if (!validarNumeroWhatsApp(zap)) {
-                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD (Ex: 11999998888).";
+                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
                 msgErro.style.display = 'block';
                 document.getElementById('inputTel').focus();
+                return;
+            }
+
+            if (!senha || senha.length < 3) {
+                msgErro.innerText = "❌ Digite uma senha válida (mínimo 3 dígitos).";
+                msgErro.style.display = 'block';
+                document.getElementById('inputSenha').focus();
                 return;
             }
 
@@ -1530,6 +1545,7 @@
 
                 await db.collection("usuarios").doc(zap).set({
                     whatsapp: zap,
+                    senha: senha,
                     expiraEm: expiraEm,
                     ativo: true,
                     bloqueado: false,
@@ -1563,10 +1579,11 @@
         }
 
         // ==========================================
-        // AUTH & SESSÃO REALTIME
+        // AUTH & SESSÃO REALTIME (COM SENHA)
         // ==========================================
         async function autenticarUsuarioFirebase() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
             let msgErro = document.getElementById('msgErro');
             let btn = document.getElementById('btnEntrarAuth');
 
@@ -1579,6 +1596,13 @@
                 }
                 msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
                 msgErro.style.display = 'block';
+                return;
+            }
+
+            if (!senha) {
+                msgErro.innerText = "❌ Digite sua senha de acesso.";
+                msgErro.style.display = 'block';
+                document.getElementById('inputSenha').focus();
                 return;
             }
 
@@ -1599,6 +1623,15 @@
                 let data = doc.data();
                 let agora = Date.now();
 
+                // Verifica a senha (se o usuário antigo não tiver senha cadastrada, aceita temporariamente e define)
+                if (data.senha && data.senha !== senha) {
+                    msgErro.innerText = "❌ Senha incorreta!";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.disabled = false;
+                    return;
+                }
+
                 if (data.bloqueado) {
                     msgErro.innerText = "❌ Este número foi bloqueado temporariamente pelo suporte.";
                     msgErro.style.display = 'block';
@@ -1615,7 +1648,10 @@
                     return;
                 }
 
-                await db.collection("usuarios").doc(zap).update({ deviceId: MEU_DEVICE_ID });
+                await db.collection("usuarios").doc(zap).update({ 
+                    deviceId: MEU_DEVICE_ID,
+                    senha: data.senha || senha 
+                });
 
                 localStorage.setItem('usuario_zap_salvo', zap);
                 msgErro.style.display = 'none';
@@ -1705,6 +1741,7 @@
 
             localStorage.removeItem('usuario_zap_salvo');
             document.getElementById('inputTel').value = "";
+            document.getElementById('inputSenha').value = "";
             document.getElementById('areaExecucao').style.display = 'none';
             
             document.getElementById('telaBloqueio').style.display = 'flex';
@@ -1719,7 +1756,7 @@
         }
 
         // ==========================================
-        // PAINEL ADMIN
+        // PAINEL ADMIN (COM VISUALIZAÇÃO E REDEFINIÇÃO DE SENHAS)
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -1780,6 +1817,7 @@
                 snapshot.forEach(doc => {
                     let u = doc.data();
                     let zap = u.whatsapp || doc.id;
+                    let senhaUser = u.senha || "1234";
                     let expira = u.expiraEm || 0;
                     let bloqueado = u.bloqueado === true;
                     let ativo = u.ativo && agora <= expira && !bloqueado;
@@ -1794,12 +1832,16 @@
                     let row = `
                         <div class="user-row">
                             <div>
-                                <div style="font-weight:800; font-size:0.82rem; color:var(--text-main);">${zap}</div>
+                                <div style="font-weight:800; font-size:0.82rem; color:var(--text-main);">📱 ${zap}</div>
+                                <div style="font-size:0.72rem; color:#38bdf8; font-weight:800;">🔑 Senha: ${senhaUser}</div>
                                 <div style="font-size:0.68rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
                             </div>
-                            <div style="display:flex; gap:5px;">
-                                <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:6px; padding:4px 7px; font-size:0.62rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
-                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:4px 7px; font-size:0.62rem; font-weight:800; cursor:pointer;">Excluir</button>
+                            <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
+                                <div style="display:flex; gap:4px;">
+                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 6px; font-size:0.6rem; font-weight:800; cursor:pointer;">Nova Senha</button>
+                                    <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:6px; padding:4px 6px; font-size:0.6rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
+                                </div>
+                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:4px 6px; font-size:0.6rem; font-weight:800; cursor:pointer; width:100%;">Excluir</button>
                             </div>
                         </div>
                     `;
@@ -1849,6 +1891,22 @@
             }
         }
 
+        async function redefinirSenhaAdmin(zap) {
+            let novaSenha = prompt(`Digite a nova senha para o número ${zap}:`);
+            if (!novaSenha) return;
+
+            try {
+                await db.collection("usuarios").doc(zap).update({ 
+                    senha: novaSenha.trim(),
+                    deviceId: "" // Limpa o aparelho para permitir novo login com a nova senha
+                });
+                notificar(`Senha do ${zap} redefinida com sucesso para: ${novaSenha}`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao redefinir senha.");
+            }
+        }
+
         async function alternarBloqueioUsuario(zap, statusBloqueio) {
             await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
             notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
@@ -1863,10 +1921,16 @@
 
         async function liberarClienteManual() {
             let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputClienteSenha').value.trim();
             let dias = parseInt(document.getElementById('selDiasAdmin').value);
 
             if (!validarNumeroWhatsApp(zap)) {
                 notificar("⚠️ Digite um WhatsApp válido com DDD.");
+                return;
+            }
+
+            if (!senha) {
+                notificar("⚠️ Digite uma senha inicial para o entregador.");
                 return;
             }
 
@@ -1876,6 +1940,7 @@
             try {
                 await db.collection("usuarios").doc(zap).set({
                     whatsapp: zap,
+                    senha: senha,
                     expiraEm: expiraEm,
                     ativo: true,
                     bloqueado: false,
@@ -1886,8 +1951,9 @@
                     atualizadoEm: Date.now()
                 }, { merge: true });
 
-                notificar(`WhatsApp ${zap} liberado com sucesso por ${dias} dias.`);
+                notificar(`WhatsApp ${zap} liberado com senha ${senha} por ${dias} dias.`);
                 document.getElementById('inputClienteZap').value = "";
+                document.getElementById('inputClienteSenha').value = "";
                 alternarTabAdmin('30d');
                 carregarUsuariosAdmin();
             } catch(e) {
