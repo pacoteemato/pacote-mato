@@ -8,7 +8,7 @@
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#111827" id="metaThemeColor">
+    <meta name="theme-color" content="#0f172a" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -17,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -30,20 +30,20 @@
 
     <style>
         :root {
-            --bg-body: #111827;
-            --surface-1: #1f2937;
-            --surface-2: #2b3748;
+            --bg-body: #0b1329;
+            --surface-1: #131c35;
+            --surface-2: #1e293b;
             --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.18);
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --primary: #3b82f6;
-            --primary-gradient: linear-gradient(135deg, #2563eb, #38bdf8);
-            --accent-green: #10b981;
-            --accent-green-gradient: linear-gradient(135deg, #059669, #10b981);
+            --surface-border-hover: rgba(255, 255, 255, 0.16);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #2563eb;
+            --primary-gradient: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            --accent-green: #059669;
+            --accent-green-gradient: linear-gradient(135deg, #047857, #10b981);
             --accent-blue-soft: #38bdf8;
-            --danger: #ef4444;
-            --shadow-card: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--surface-border);
+            --danger: #dc2626;
+            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -73,22 +73,20 @@
 
         .btn-instalar-dinamico {
             width: 100%;
-            background: linear-gradient(135deg, #0284c7, #38bdf8);
-            color: #ffffff;
-            border: none;
-            border-radius: 14px;
-            padding: 12px 14px;
-            font-weight: 800;
-            font-size: 0.88rem;
-            letter-spacing: 0.5px;
+            background: rgba(37, 99, 235, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 11px 14px;
+            font-weight: 700;
+            font-size: 0.85rem;
             margin-bottom: 14px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: transform 0.15s, opacity 0.2s;
+            transition: all 0.2s;
         }
         .btn-instalar-dinamico:active { transform: scale(0.98); }
 
@@ -97,27 +95,27 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(31, 41, 55, 0.95);
-            backdrop-filter: blur(12px);
-            color: #ffffff;
-            padding: 12px 22px;
-            border-radius: 50px;
-            font-weight: 800;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 11px 20px;
+            border-radius: 12px;
+            font-weight: 700;
             font-size: 0.85rem;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--surface-border);
             z-index: 1000005;
             display: none;
-            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: slideDown 0.25s ease;
             text-align: center;
             max-width: 90%;
         }
 
         @keyframes slideDown {
-            from { transform: translate(-50%, -30px); opacity: 0; }
+            from { transform: translate(-50%, -20px); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
+        /* TELA DE LOGIN CORPORATIVA E LIMPA */
         #telaBloqueio {
             position: fixed;
             inset: 0;
@@ -133,43 +131,57 @@
 
         .auth-wrapper {
             width: 100%;
-            max-width: 400px;
+            max-width: 390px;
             background: var(--surface-1);
-            border-radius: 26px;
-            padding: 24px 20px;
+            border-radius: 20px;
+            padding: 28px 22px;
             box-shadow: var(--shadow-card);
             border: 1px solid var(--surface-border);
-            text-align: center;
+            text-align: left;
+        }
+
+        .auth-header-flex {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
         .app-logo {
-            width: 78px;
-            height: 78px;
+            width: 48px;
+            height: 48px;
             object-fit: contain;
-            margin-bottom: 8px;
             cursor: pointer;
-            filter: drop-shadow(0 8px 16px rgba(59, 130, 246, 0.3));
         }
 
         .brand-title {
-            font-size: 1.55rem;
-            font-weight: 900;
-            letter-spacing: -0.5px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
             color: var(--text-main);
-            margin-bottom: 2px;
-            cursor: pointer;
         }
 
         .brand-subtitle {
-            font-size: 0.78rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
-            margin-bottom: 18px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-label-pro {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: block;
         }
 
         .input-group {
             position: relative;
-            margin-bottom: 10px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
         }
@@ -177,28 +189,28 @@
         .input-icon-left {
             position: absolute;
             left: 14px;
-            font-size: 1.15rem;
+            font-size: 1rem;
             pointer-events: none;
-            opacity: 0.85;
+            opacity: 0.7;
         }
 
         .input-auth {
             width: 100%;
-            padding: 13px 16px 13px 44px;
+            padding: 12px 14px 12px 42px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 14px;
+            border-radius: 12px;
             color: var(--text-main);
-            font-size: 1rem;
-            font-weight: 800;
+            font-size: 0.92rem;
+            font-weight: 700;
             outline: none;
             transition: all 0.2s;
-            letter-spacing: 0.5px;
         }
 
         .input-auth:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            background: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
         }
 
         .btn-action-primary {
@@ -206,38 +218,37 @@
             background: var(--primary-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 14px;
-            padding: 13px;
-            font-weight: 900;
-            font-size: 0.92rem;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.15s;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
         .btn-action-primary:active { transform: scale(0.98); }
 
         .btn-action-trial {
             width: 100%;
-            background: linear-gradient(135deg, #d97706, #fbbf24);
-            color: #000000;
-            border: none;
-            border-radius: 14px;
-            padding: 12px;
-            font-weight: 800;
-            font-size: 0.88rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.15s;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
         .btn-action-trial:active { transform: scale(0.98); }
 
@@ -245,12 +256,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 0.72rem;
-            font-weight: 800;
+            font-size: 0.7rem;
+            font-weight: 700;
             color: var(--text-muted);
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            margin: 14px 0 10px;
+            margin: 16px 0 12px;
         }
         .divider-label::before, .divider-label::after {
             content: "";
@@ -268,14 +279,14 @@
 
         .plan-item {
             background: var(--surface-2);
-            border: 2px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 12px 14px;
+            border: 1.5px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s;
             position: relative;
         }
 
@@ -283,48 +294,47 @@
 
         .plan-item.selecionado {
             border-color: #38bdf8 !important;
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(37, 99, 235, 0.08));
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 0 10px rgba(56, 189, 248, 0.1);
+            background: rgba(56, 189, 248, 0.08);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
         }
 
         .plan-item.featured {
-            border-color: rgba(16, 185, 129, 0.45);
+            border-color: rgba(16, 185, 129, 0.4);
         }
 
         .plan-badge-top {
             position: absolute;
-            top: -9px;
-            right: 14px;
+            top: -8px;
+            right: 12px;
             background: var(--accent-green-gradient);
             color: #ffffff;
-            font-size: 0.62rem;
-            font-weight: 900;
-            padding: 2px 7px;
-            border-radius: 8px;
+            font-size: 0.58rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .plan-name { font-size: 0.9rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.72rem; color: var(--text-muted); text-align: left; margin-top: 2px; }
-        .plan-val { font-size: 1.18rem; font-weight: 900; color: var(--accent-green); }
+        .plan-name { font-size: 0.85rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.68rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
+        .plan-val { font-size: 1.05rem; font-weight: 900; color: #34d399; }
 
         .btn-gerar-pix-confirm {
             width: 100%;
             background: var(--accent-green-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 14px;
-            padding: 13px;
-            font-weight: 900;
-            font-size: 0.95rem;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
             display: none;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            animation: fadeIn 0.25s ease;
+            gap: 6px;
+            animation: fadeIn 0.2s ease;
         }
 
         @keyframes fadeIn {
@@ -336,7 +346,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
             z-index: 1000010;
             display: none;
             justify-content: center;
@@ -346,10 +356,10 @@
 
         .modal-card {
             width: 100%;
-            max-width: 410px;
+            max-width: 380px;
             background: var(--surface-1);
             border: 1px solid var(--surface-border);
-            border-radius: 26px;
+            border-radius: 20px;
             padding: 22px;
             text-align: center;
             box-shadow: var(--shadow-card);
@@ -358,14 +368,14 @@
         .qr-placeholder {
             background: #ffffff;
             padding: 12px;
-            border-radius: 16px;
-            width: 170px;
-            height: 170px;
-            margin: 14px auto;
+            border-radius: 14px;
+            width: 160px;
+            height: 160px;
+            margin: 12px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .top-nav {
@@ -383,19 +393,19 @@
             border: 1px solid var(--surface-border);
             border-radius: 12px;
             padding: 8px 14px;
-            font-size: 0.85rem;
-            font-weight: 800;
+            font-size: 0.82rem;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
         .access-badge {
-            font-size: 0.72rem;
-            font-weight: 800;
-            padding: 6px 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 5px 10px;
             border-radius: 20px;
             border: 1px solid rgba(16, 185, 129, 0.3);
             background: rgba(16, 185, 129, 0.1);
@@ -404,8 +414,8 @@
 
         .hero-banner {
             background: var(--surface-1);
-            padding: 20px 16px;
-            border-radius: 20px;
+            padding: 18px 16px;
+            border-radius: 18px;
             border: 1px solid var(--surface-border);
             text-align: center;
             box-shadow: var(--shadow-card);
@@ -414,21 +424,21 @@
         }
 
         .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(56, 189, 248, 0.08));
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(56, 189, 248, 0.05));
             border: 1.5px solid var(--primary);
-            border-radius: 20px;
-            padding: 16px;
+            border-radius: 18px;
+            padding: 14px;
             margin-bottom: 12px;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
             display: none;
             text-align: center;
         }
 
         .upload-section {
             background: var(--surface-1);
-            padding: 22px 18px;
-            border-radius: 20px;
-            border: 1px dashed rgba(59, 130, 246, 0.4);
+            padding: 20px 16px;
+            border-radius: 18px;
+            border: 1px dashed rgba(59, 130, 246, 0.3);
             text-align: center;
             margin-bottom: 14px;
             box-shadow: var(--shadow-card);
@@ -439,12 +449,12 @@
             background: var(--primary-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 14px;
-            padding: 14px;
+            border-radius: 12px;
+            padding: 13px;
             font-weight: 800;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -453,29 +463,29 @@
 
         .metrics-board {
             background: var(--surface-1);
-            border-radius: 18px;
-            padding: 14px 10px;
+            border-radius: 16px;
+            padding: 12px 8px;
             border: 1px solid var(--surface-border);
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            gap: 6px;
             text-align: center;
             margin-bottom: 14px;
             box-shadow: var(--shadow-card);
         }
         .metric-cell {
             padding: 6px 4px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
         }
-        .metric-val { font-size: 1.45rem; font-weight: 900; color: var(--text-main); }
-        .metric-lbl { font-size: 0.68rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+        .metric-val { font-size: 1.35rem; font-weight: 900; color: var(--text-main); }
+        .metric-lbl { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
         .camera-viewport {
             position: relative;
             width: 100%;
-            height: 440px;
-            border-radius: 22px;
+            height: 420px;
+            border-radius: 20px;
             border: 1px solid var(--surface-border);
             background: #000000;
             margin-bottom: 14px;
@@ -489,64 +499,57 @@
         .cam-overlay-btn {
             position: absolute;
             z-index: 99;
-            background: rgba(17, 24, 39, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            padding: 9px 14px;
-            border-radius: 14px;
-            font-weight: 800;
-            font-size: 0.76rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.72rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .cam-overlay-btn:active {
-            transform: scale(0.93);
-            background: rgba(37, 99, 235, 0.75);
-            border-color: rgba(56, 189, 248, 0.4);
+            gap: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
         .cam-overlay-btn svg {
-            width: 15px;
-            height: 15px;
+            width: 14px;
+            height: 14px;
             fill: currentColor;
         }
         .cam-overlay-btn.active-flash {
             background: rgba(245, 158, 11, 0.85);
-            border-color: rgba(251, 191, 36, 0.6);
+            border-color: rgba(251, 191, 36, 0.5);
             color: #000000;
         }
 
         .result-panel {
             background: var(--surface-1);
-            padding: 18px;
-            border-radius: 18px;
+            padding: 16px;
+            border-radius: 16px;
             border: 1.5px solid #3b82f6;
             margin-bottom: 14px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
             display: none;
         }
-        .stop-number { font-size: 4rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
+        .stop-number { font-size: 3.5rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
         
         .result-panel.error-state {
             border-color: var(--danger);
-            background: rgba(239, 68, 68, 0.08);
-            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
+            background: rgba(220, 38, 38, 0.08);
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15);
         }
         .result-panel.error-state .stop-number {
-            font-size: 1.7rem;
+            font-size: 1.5rem;
             color: var(--danger);
         }
 
         .drawer-mask {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(4px);
             z-index: 99998;
             display: none;
@@ -556,12 +559,12 @@
             position: fixed;
             top: 0;
             left: -320px;
-            width: 290px;
+            width: 280px;
             height: 100%;
             background: var(--surface-1);
             border-right: 1px solid var(--surface-border);
             z-index: 99999;
-            padding: 24px 18px;
+            padding: 22px 16px;
             transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-y: auto;
         }
@@ -578,35 +581,33 @@
         .parada-box-pro {
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            transition: transform 0.15s;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
         }
 
         .parada-box-pro.duplo-pro {
-            border-color: rgba(56, 189, 248, 0.45);
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), var(--surface-2));
+            border-color: rgba(56, 189, 248, 0.4);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), var(--surface-2));
         }
 
         .parada-header-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .parada-badge-num {
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 6px 14px;
-            font-weight: 900;
-            font-size: 0.95rem;
+            background: #0b1329;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-weight: 800;
+            font-size: 0.88rem;
             color: var(--text-main);
             letter-spacing: 0.5px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .parada-badge-num.destaque-duplo {
@@ -616,8 +617,8 @@
         }
 
         .tag-duplo-info {
-            font-size: 0.72rem;
-            font-weight: 900;
+            font-size: 0.68rem;
+            font-weight: 800;
             color: var(--accent-blue-soft);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -627,28 +628,28 @@
         }
 
         .endereco-texto-pro {
-            font-size: 0.95rem;
-            font-weight: 800;
+            font-size: 0.9rem;
+            font-weight: 700;
             color: var(--text-main);
-            margin-bottom: 12px;
-            line-height: 1.35;
+            margin-bottom: 10px;
+            line-height: 1.3;
         }
 
         .acoes-footer-pro {
             display: flex;
             justify-content: flex-end;
             border-top: 1px solid var(--surface-border);
-            padding-top: 10px;
+            padding-top: 8px;
         }
 
         .btn-acao-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 9px 16px;
+            border-radius: 10px;
+            padding: 8px 14px;
             color: var(--text-main);
-            font-weight: 800;
-            font-size: 0.78rem;
+            font-weight: 700;
+            font-size: 0.75rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -660,11 +661,11 @@
 
         .gps-option-btn {
             width: 100%;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 11px;
+            border-radius: 11px;
             border: 1px solid var(--surface-border);
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -679,7 +680,7 @@
             gap: 4px;
             background: var(--surface-2);
             padding: 4px;
-            border-radius: 14px;
+            border-radius: 12px;
             border: 1px solid var(--surface-border);
         }
 
@@ -689,7 +690,7 @@
             gap: 4px;
             background: var(--surface-2);
             padding: 4px;
-            border-radius: 14px;
+            border-radius: 12px;
             border: 1px solid var(--surface-border);
         }
 
@@ -698,9 +699,9 @@
             border: none;
             color: var(--text-muted);
             padding: 8px 4px;
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             font-weight: 800;
-            border-radius: 10px;
+            border-radius: 9px;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
@@ -709,7 +710,7 @@
         .segmented-btn.active {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
         }
 
         .admin-nav-tabs {
@@ -724,13 +725,13 @@
             border: 1px solid var(--surface-border);
             color: var(--text-muted);
             border-radius: 8px;
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             font-weight: 800;
             cursor: pointer;
             text-align: center;
         }
         .admin-tab.active {
-            background: var(--accent-amber);
+            background: #d97706;
             color: #000000;
             border-color: transparent;
         }
@@ -739,7 +740,7 @@
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 10px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -753,38 +754,44 @@
     <!-- TOAST NOTIFICATION -->
     <div id="toastNotificacao"></div>
 
-    <!-- TELA DE AUTENTICAÇÃO E PLANOS -->
+    <!-- TELA DE LOGIN CORPORATIVA E PROFISSIONAL -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             
-            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 <span data-i18n="download_app">Baixar App no Celular</span>
-            </button>
-
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo" onclick="registrarCliqueAdmin()">
-            <h1 class="brand-title" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
-            <p class="brand-subtitle" data-i18n="brand_subtitle">Organização e Triagem Rápida de Entregas</p>
-            
-            <div class="input-group">
-                <span class="input-icon-left">📱</span>
-                <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+            <div class="auth-header-flex">
+                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo" onclick="registrarCliqueAdmin()">
+                <div>
+                    <h1 class="brand-title" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
+                    <p class="brand-subtitle" data-i18n="brand_subtitle">Plataforma de Logística</p>
+                </div>
             </div>
 
+            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
+                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+            </button>
+            
+            <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
+            <div class="input-group">
+                <span class="input-icon-left">📱</span>
+                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+            </div>
+
+            <label class="form-label-pro" data-i18n="password_label">Senha Pessoal</label>
             <div class="input-group">
                 <span class="input-icon-left">🔑</span>
-                <input type="password" id="inputSenha" class="input-auth" placeholder="Sua Senha Pessoal" data-i18n-placeholder="password_placeholder">
+                <input type="password" id="inputSenha" class="input-auth" placeholder="••••••••" data-i18n-placeholder="password_placeholder">
             </div>
             
             <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
                 ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
             </button>
             <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
-                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis (1x)</span>
+                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
             </button>
             
-            <div id="msgErro" style="color:#ef4444; font-size:0.8rem; font-weight:800; margin-bottom:12px; display:none;"></div>
+            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
 
-            <div class="divider-label" data-i18n="choose_plan">Escolha seu Plano</div>
+            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
             
             <div class="plan-stack">
                 <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
@@ -796,7 +803,7 @@
                 </div>
 
                 <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
-                    <span class="plan-badge-top" data-i18n="most_popular">Mais Escolhido</span>
+                    <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
                     <div>
                         <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
                         <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
@@ -807,7 +814,7 @@
                 <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (3 Meses)', 'cardPlano90')">
                     <div>
                         <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
-                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com super desconto</div>
+                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
                     </div>
                     <div class="plan-val">R$ 25,00</div>
                 </div>
@@ -816,30 +823,26 @@
             <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
                 ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
             </button>
-
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+Pacote+%C3%89+Mato" target="_blank" style="display:block; color:#9ca3af; font-size:0.75rem; text-decoration:none; margin-top:16px; font-weight:700;">
-                💬 <span data-i18n="whatsapp_support">Suporte no WhatsApp (+55 11 99005-9547)</span>
-            </a>
         </div>
     </div>
 
     <!-- MODAL PIX -->
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
-            <div style="font-size:0.75rem; font-weight:800; color:var(--accent-green); text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro</div>
-            <h3 style="font-size:1.2rem; font-weight:900; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 10,00</h3>
+            <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
+            <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 10,00</h3>
             
             <div class="qr-placeholder" id="qrContainer"></div>
             
-            <div style="font-size:0.82rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O app destrava sozinho após a confirmação.</div>
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
+            <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O sistema destrava sozinho após o pagamento.</div>
 
-            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:var(--accent-green); border:1px solid var(--surface-border); border-radius:10px; font-size:0.72rem; text-align:center; outline:none;">
+            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-size:0.68rem; text-align:center; outline:none;">
             
-            <button class="btn-action-primary" style="background:var(--accent-green-gradient); color:#fff; margin-top:10px;" onclick="copiarPixCopiaCola()">
+            <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
                 📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
             </button>
-            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.8rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
+            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
                 Cancelar
             </button>
         </div>
@@ -847,9 +850,9 @@
 
     <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA -->
     <div id="modalVisualizarRota" class="modal-backdrop">
-        <div class="modal-card" style="max-width:440px; text-align:left;">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <h3 style="color:var(--primary); font-weight:900; font-size:1.1rem;">📋 Paradas & Endereços</h3>
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📋 Paradas & Endereços</h3>
                 <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             
@@ -866,9 +869,9 @@
 
     <!-- MODAL DE ESCOLHA DE GPS -->
     <div id="modalEscolhaGps" class="modal-backdrop">
-        <div class="modal-card" style="max-width:340px;">
-            <div style="font-size:0.75rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
-            <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin-bottom:14px;" id="tituloGpsParada">Parada</h3>
+        <div class="modal-card" style="max-width:330px;">
+            <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
+            <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
             
             <button class="gps-option-btn" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">
                 🚗 Abrir no Waze
@@ -877,23 +880,23 @@
                 🗺️ Abrir no Google Maps
             </button>
             
-            <button onclick="fecharModalGps()" style="margin-top:8px; background:none; border:none; color:var(--text-muted); font-size:0.8rem; font-weight:700; cursor:pointer;">
+            <button onclick="fecharModalGps()" style="margin-top:6px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;">
                 Cancelar
             </button>
         </div>
     </div>
 
-    <!-- MODAL ADMIN (COM SENHAS E REDEFINIÇÃO) -->
+    <!-- MODAL ADMIN -->
     <div id="modalAdmin" class="modal-backdrop">
-        <div class="modal-card" style="max-width:440px; text-align:left;">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:var(--accent-amber); font-weight:900; font-size:1.1rem;">👑 Painel Master & Controle</h3>
+                <h3 style="color:#d97706; font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
                 <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             
             <div id="areaLoginAdmin">
-                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:16px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:var(--accent-amber); color:#000;">Entrar</button>
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
+                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:#d97706; color:#000;">Entrar</button>
             </div>
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
@@ -906,15 +909,15 @@
                     <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar Acesso</button>
                 </div>
 
-                <div id="viewAdmin30d" style="max-height:260px; overflow-y:auto;"></div>
-                <div id="viewAdmin90d" style="max-height:260px; overflow-y:auto; display:none;"></div>
-                <div id="viewAdminTeste" style="max-height:260px; overflow-y:auto; display:none;"></div>
-                <div id="viewAdminPagos" style="max-height:260px; overflow-y:auto; display:none;"></div>
+                <div id="viewAdmin30d" style="max-height:250px; overflow-y:auto;"></div>
+                <div id="viewAdmin90d" style="max-height:250px; overflow-y:auto; display:none;"></div>
+                <div id="viewAdminTeste" style="max-height:250px; overflow-y:auto; display:none;"></div>
+                <div id="viewAdminPagos" style="max-height:250px; overflow-y:auto; display:none;"></div>
 
                 <div id="viewAdminAdd" style="display:none;">
-                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
-                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial (Ex: 1234)" class="input-auth" style="margin-bottom:8px; padding-left:16px;">
-                    <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px;">
+                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
+                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial (Ex: 1234)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
+                    <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
                         <option value="3">3 Dias</option>
                         <option value="7">7 Dias (Semanal)</option>
                         <option value="30" selected>30 Dias (1 Mês)</option>
@@ -936,17 +939,27 @@
 
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
+    <!-- MENU LATERAL COM BOTÃO DE SUPORTE -->
     <div class="drawer-panel" id="sidebar">
-        <div style="font-weight:900; font-size:1.1rem; margin-bottom:4px;">PACOTE É MATO</div>
-        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;" data-i18n="brand_subtitle">Sistema Inteligente de Entregas</div>
+        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
+        <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
 
-        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:20px;" onclick="dispararInstalacaoPWA()">
+        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:16px;" onclick="dispararInstalacaoPWA()">
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
-        <!-- SELETOR DE IDIOMA -->
+        <!-- BOTÃO DE SUPORTE NA LATERAL -->
         <div style="margin-bottom:16px;">
-            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🌐 <span data-i18n="language_label">Idioma / Language</span></label>
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+                <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
+                    💬 Suporte
+                </button>
+            </a>
+        </div>
+
+        <!-- SELETOR DE IDIOMA -->
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span data-i18n="language_label">Idioma</span></label>
             <div class="segmented-control">
                 <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
                 <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
@@ -955,8 +968,8 @@
         </div>
 
         <!-- SELETOR DE TEMAS -->
-        <div style="margin-bottom:16px;">
-            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
             <div class="segmented-control-grid4">
                 <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Slate Tech</button>
                 <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
@@ -966,8 +979,8 @@
         </div>
 
         <!-- SELETOR DE VOZ -->
-        <div style="margin-bottom:16px;">
-            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
             <div class="segmented-control-grid4">
                 <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Rápida</button>
                 <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">👩 Feminina</button>
@@ -976,11 +989,11 @@
             </div>
         </div>
 
-        <div style="margin-top:30px;">
-            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.85rem; margin-bottom:8px;">
-                🔄 <span data-i18n="reset_route">Zerar Bipagens Desta Rota</span>
+        <div style="margin-top:24px;">
+            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
+                🔄 <span data-i18n="reset_route">Zerar Bipagens</span>
             </button>
-            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.3); font-size:0.85rem;">
+            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(220, 38, 38, 0.15); color:#ef4444; border:1px solid rgba(220, 38, 38, 0.3); font-size:0.8rem;">
                 🔒 <span data-i18n="logout">Desconectar Conta</span>
             </button>
         </div>
@@ -993,23 +1006,23 @@
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:65px; margin-bottom:6px;">
-            <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:55px; margin-bottom:4px;">
+            <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
+            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
         <!-- RETOMAR ROTA SALVA -->
         <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.8rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
-            <div id="txtNomeRotaSalva" style="font-size:0.92rem; font-weight:900; color:#fff; margin-bottom:10px;">Rota em andamento</div>
-            <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0;" onclick="retomarRotaAnterior()">
+            <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
+            <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
                 ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
             </button>
         </div>
 
         <div class="upload-section">
-            <div style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:4px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:14px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
+            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
             
             <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
                 📄 Escolher Arquivo PDF
@@ -1042,11 +1055,11 @@
 
             <!-- CAMERA -->
             <div class="camera-viewport">
-                <button class="cam-overlay-btn" style="top:12px; left:12px;" onclick="alternarCamera()">
+                <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
                     <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
                     <span data-i18n="cam_flip">Virar</span>
                 </button>
-                <button class="cam-overlay-btn" id="btn-flash" style="top:12px; right:12px;" onclick="alternarFlash()">
+                <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">
                     <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l3-8z"/></svg>
                     <span id="txt-flash">Flash</span>
                 </button>
@@ -1056,12 +1069,12 @@
             <!-- SCAN RESULT -->
             <div class="result-panel" id="cardResult">
                 <div class="stop-number" id="resStop">P1</div>
-                <div id="resPacote" style="font-size:0.85rem; font-weight:800; color:var(--text-muted);">📍 Pacote: BR...</div>
+                <div id="resPacote" style="font-size:0.82rem; font-weight:800; color:var(--text-muted);">📍 Pacote: BR...</div>
             </div>
 
-            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.8rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.9rem; padding-left:16px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
+            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
 
         </div>
 
@@ -1074,31 +1087,32 @@
         const traducoes = {
             pt: {
                 download_app: "Baixar App no Celular",
-                brand_subtitle: "Organização e Triagem Rápida de Entregas",
-                whatsapp_placeholder: "WhatsApp (com DDD)",
-                password_placeholder: "Sua Senha Pessoal",
+                brand_subtitle: "Plataforma de Logística",
+                whatsapp_label: "WhatsApp / Acesso",
+                password_label: "Senha Pessoal",
+                whatsapp_placeholder: "Número com DDD",
+                password_placeholder: "Sua senha",
                 btn_enter: "Entrar no Sistema",
-                btn_trial: "Testar 3 Dias Grátis (1x)",
-                choose_plan: "Escolha seu Plano",
+                btn_trial: "Testar 3 Dias Grátis",
+                choose_plan: "Planos de Acesso",
                 plan_weekly_name: "Plano Semanal",
                 plan_weekly_meta: "7 dias de acesso total",
                 plan_monthly_name: "Plano Mensal (1 Mês)",
                 plan_monthly_meta: "30 dias • Melhor custo-benefício",
                 plan_quarterly_name: "Plano Trimestral (3 Meses)",
-                plan_quarterly_meta: "90 dias com super desconto",
-                most_popular: "Mais Escolhido",
+                plan_quarterly_meta: "90 dias com desconto",
+                most_popular: "Popular",
                 generate_pix: "Gerar Pagamento Pix",
-                whatsapp_support: "Suporte no WhatsApp (+55 11 99005-9547)",
-                secure_payment: "Pagamento Seguro",
+                secure_payment: "Pagamento Seguro Pix",
                 waiting_confirmation: "Aguardando confirmação... ⏳",
-                auto_unlock: "O app destrava sozinho após a confirmação.",
+                auto_unlock: "O sistema destrava sozinho após o pagamento.",
                 copy_pix: "Copiar Código Pix",
                 cancel: "Cancelar",
                 menu: "Menu",
-                language_label: "Idioma / Language",
+                language_label: "Idioma",
                 theme_label: "Tema de Cor",
                 voice_label: "Voz do Sintetizador",
-                reset_route: "Zerar Bipagens Desta Rota",
+                reset_route: "Zerar Bipagens",
                 logout: "Desconectar Conta",
                 logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
                 saved_route_found: "📂 ROTA ANTERIOR IDENTIFICADA",
@@ -1116,31 +1130,32 @@
             },
             es: {
                 download_app: "Descargar App en el Móvil",
-                brand_subtitle: "Organización y Clasificación Rápida de Entregas",
-                whatsapp_placeholder: "WhatsApp (con código de área)",
-                password_placeholder: "Tu Contraseña",
+                brand_subtitle: "Plataforma de Logística",
+                whatsapp_label: "WhatsApp / Acceso",
+                password_label: "Contraseña",
+                whatsapp_placeholder: "Número con código de área",
+                password_placeholder: "Tu contraseña",
                 btn_enter: "Entrar al Sistema",
-                btn_trial: "Probar 3 Días Gratis (1x)",
-                choose_plan: "Elige tu Plan",
+                btn_trial: "Probar 3 Días Gratis",
+                choose_plan: "Planes de Acceso",
                 plan_weekly_name: "Plan Semanal",
                 plan_weekly_meta: "7 días de acceso total",
                 plan_monthly_name: "Plan Mensual (1 Mes)",
                 plan_monthly_meta: "30 días • Mejor relación calidad-precio",
                 plan_quarterly_name: "Plan Trimestral (3 Meses)",
-                plan_quarterly_meta: "90 días con super descuento",
-                most_popular: "Más Elegido",
+                plan_quarterly_meta: "90 días con descuento",
+                most_popular: "Popular",
                 generate_pix: "Generar Pago Pix",
-                whatsapp_support: "Soporte por WhatsApp (+55 11 99005-9547)",
-                secure_payment: "Pago Seguro",
+                secure_payment: "Pago Seguro Pix",
                 waiting_confirmation: "Esperando confirmación... ⏳",
-                auto_unlock: "La app se desbloquea sola tras la confirmación.",
+                auto_unlock: "El sistema se desbloquea solo tras el pago.",
                 copy_pix: "Copiar Código Pix",
                 cancel: "Cancelar",
                 menu: "Menú",
-                language_label: "Idioma / Language",
+                language_label: "Idioma",
                 theme_label: "Tema de Color",
                 voice_label: "Voz del Sintetizador",
-                reset_route: "Reiniciar Escaneos de Ruta",
+                reset_route: "Reiniciar Escaneos",
                 logout: "Cerrar Sesión",
                 logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
                 saved_route_found: "📂 RUTA ANTERIOR ENCONTRADA",
@@ -1158,31 +1173,32 @@
             },
             en: {
                 download_app: "Download App on Phone",
-                brand_subtitle: "Smart Delivery Organization and Sorting",
-                whatsapp_placeholder: "WhatsApp (with area code)",
-                password_placeholder: "Your Password",
+                brand_subtitle: "Logistics Platform",
+                whatsapp_label: "WhatsApp / Access",
+                password_label: "Password",
+                whatsapp_placeholder: "Number with area code",
+                password_placeholder: "Your password",
                 btn_enter: "Sign In",
-                btn_trial: "Try 3 Days Free (1x)",
-                choose_plan: "Choose Your Plan",
+                btn_trial: "Try 3 Days Free",
+                choose_plan: "Access Plans",
                 plan_weekly_name: "Weekly Plan",
                 plan_weekly_meta: "7 days full access",
                 plan_monthly_name: "Monthly Plan (1 Month)",
                 plan_monthly_meta: "30 days • Best value",
                 plan_quarterly_name: "Quarterly Plan (3 Months)",
-                plan_quarterly_meta: "90 days with super discount",
-                most_popular: "Most Popular",
+                plan_quarterly_meta: "90 days with discount",
+                most_popular: "Popular",
                 generate_pix: "Generate Pix Payment",
-                whatsapp_support: "WhatsApp Support (+55 11 99005-9547)",
-                secure_payment: "Secure Payment",
+                secure_payment: "Secure Pix Payment",
                 waiting_confirmation: "Waiting for confirmation... ⏳",
-                auto_unlock: "The app unlocks automatically after confirmation.",
+                auto_unlock: "The system unlocks automatically after payment.",
                 copy_pix: "Copy Pix Code",
                 cancel: "Cancel",
                 menu: "Menu",
-                language_label: "Language / Idioma",
+                language_label: "Language",
                 theme_label: "Color Theme",
                 voice_label: "Synthesizer Voice",
-                reset_route: "Reset Scans for This Route",
+                reset_route: "Reset Scans",
                 logout: "Log Out",
                 logistics_system: "SMART LOGISTICS SYSTEM",
                 saved_route_found: "📂 PREVIOUS ROUTE FOUND",
@@ -1230,7 +1246,7 @@
         // TEMAS
         // ==========================================
         const paletas = {
-            slate_tech: { bg_body: "#111827", surface_1: "#1f2937", surface_2: "#2b3748", border: "rgba(255, 255, 255, 0.08)", text_main: "#f9fafb", text_muted: "#9ca3af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
+            slate_tech: { bg_body: "#0b1329", surface_1: "#131c35", surface_2: "#1e293b", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#94a3b8", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
             black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
             light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
             gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
@@ -1536,7 +1552,7 @@
                 if (docZap.exists && docZap.data().jaUsouTeste) {
                     msgErro.innerText = "❌ Este WhatsApp já utilizou o teste gratuito.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
+                    btn.innerText = "🎁 Testar 3 Dias Grátis";
                     btn.disabled = false;
                     return;
                 }
@@ -1573,13 +1589,13 @@
             } catch(e) {
                 msgErro.innerText = "Erro ao ativar teste: " + e.message;
                 msgErro.style.display = 'block';
-                btn.innerText = "🎁 Testar 3 Dias Grátis (1x)";
+                btn.innerText = "🎁 Testar 3 Dias Grátis";
                 btn.disabled = false;
             }
         }
 
         // ==========================================
-        // AUTH & SESSÃO REALTIME (COM SENHA)
+        // AUTH & SESSÃO REALTIME
         // ==========================================
         async function autenticarUsuarioFirebase() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
@@ -1623,7 +1639,6 @@
                 let data = doc.data();
                 let agora = Date.now();
 
-                // Verifica a senha (se o usuário antigo não tiver senha cadastrada, aceita temporariamente e define)
                 if (data.senha && data.senha !== senha) {
                     msgErro.innerText = "❌ Senha incorreta!";
                     msgErro.style.display = 'block';
@@ -1756,7 +1771,7 @@
         }
 
         // ==========================================
-        // PAINEL ADMIN (COM VISUALIZAÇÃO E REDEFINIÇÃO DE SENHAS)
+        // PAINEL ADMIN
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -1832,16 +1847,16 @@
                     let row = `
                         <div class="user-row">
                             <div>
-                                <div style="font-weight:800; font-size:0.82rem; color:var(--text-main);">📱 ${zap}</div>
-                                <div style="font-size:0.72rem; color:#38bdf8; font-weight:800;">🔑 Senha: ${senhaUser}</div>
-                                <div style="font-size:0.68rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
+                                <div style="font-weight:800; font-size:0.8rem; color:var(--text-main);">📱 ${zap}</div>
+                                <div style="font-size:0.7rem; color:#38bdf8; font-weight:800;">🔑 Senha: ${senhaUser}</div>
+                                <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
-                                <div style="display:flex; gap:4px;">
-                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 6px; font-size:0.6rem; font-weight:800; cursor:pointer;">Nova Senha</button>
-                                    <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:6px; padding:4px 6px; font-size:0.6rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
+                            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                                <div style="display:flex; gap:3px;">
+                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#3b82f6; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer;">Nova Senha</button>
+                                    <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
                                 </div>
-                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:4px 6px; font-size:0.6rem; font-weight:800; cursor:pointer; width:100%;">Excluir</button>
+                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer; width:100%;">Excluir</button>
                             </div>
                         </div>
                     `;
@@ -1877,9 +1892,9 @@
                     htmlPagos += `
                         <div class="user-row">
                             <div>
-                                <div style="font-weight:800; font-size:0.82rem; color:#34d399;">📱 ${p.whatsapp}</div>
-                                <div style="font-size:0.7rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
-                                <div style="font-size:0.62rem; color:var(--text-muted);">🕒 ${p.data}</div>
+                                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${p.whatsapp}</div>
+                                <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
+                                <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${p.data}</div>
                             </div>
                         </div>
                     `;
@@ -1898,7 +1913,7 @@
             try {
                 await db.collection("usuarios").doc(zap).update({ 
                     senha: novaSenha.trim(),
-                    deviceId: "" // Limpa o aparelho para permitir novo login com a nova senha
+                    deviceId: ""
                 });
                 notificar(`Senha do ${zap} redefinida com sucesso para: ${novaSenha}`);
                 carregarUsuariosAdmin();
@@ -2177,7 +2192,7 @@
                 let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
                 let badgeDestaque = ehDuplo 
                     ? `<div class="tag-duplo-info">🔹 PACOTE DUPLO • ${qtd} pacotes</div>` 
-                    : `<div style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
+                    : `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
 
                 listaCards.push(`
                     <div class="parada-box-pro ${ehDuplo ? 'duplo-pro' : ''}">
@@ -2259,11 +2274,11 @@
             let viewport = document.querySelector('.camera-viewport');
             if (viewport) {
                 viewport.innerHTML = `
-                    <button class="cam-overlay-btn" style="top:12px; left:12px;" onclick="alternarCamera()">
+                    <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
                         <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
                         <span>Virar</span>
                     </button>
-                    <button class="cam-overlay-btn" id="btn-flash" style="top:12px; right:12px;" onclick="alternarFlash()">
+                    <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">
                         <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l3-8z"/></svg>
                         <span id="txt-flash">Flash</span>
                     </button>
