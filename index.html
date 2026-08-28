@@ -30,20 +30,20 @@
 
     <style>
         :root {
-            --bg-body: #090d16;
-            --surface-1: #10172a;
-            --surface-2: #1b253f;
+            --bg-body: #060913;
+            --surface-1: #0e1526;
+            --surface-2: #162038;
             --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.18);
+            --surface-border-hover: rgba(255, 255, 255, 0.16);
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #2563eb;
-            --primary-gradient: linear-gradient(135deg, #1d4ed8, #3b82f6);
-            --accent-green: #059669;
-            --accent-green-gradient: linear-gradient(135deg, #047857, #10b981);
+            --text-muted: #8a99af;
+            --primary: #1d4ed8;
+            --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
+            --accent-green: #047857;
+            --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
             --accent-blue-soft: #38bdf8;
-            --danger: #dc2626;
-            --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
+            --danger: #b91c1c;
+            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -73,13 +73,13 @@
 
         .btn-instalar-dinamico {
             width: 100%;
-            background: rgba(37, 99, 235, 0.12);
+            background: rgba(37, 99, 235, 0.1);
             color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.25);
             border-radius: 12px;
             padding: 11px 14px;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             margin-bottom: 14px;
             cursor: pointer;
             display: flex;
@@ -95,12 +95,12 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #1e293b;
+            background: #162038;
             color: #f8fafc;
             padding: 11px 20px;
             border-radius: 12px;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--surface-border);
             z-index: 1000005;
@@ -115,11 +115,11 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* TELA DE LOGIN ULTRA PROFISSIONAL E MODERNA */
+        /* TELA DE LOGIN CORPORATIVA EXECUTIVA */
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #172342 0%, #090d16 70%);
+            background: radial-gradient(circle at top center, #111c38 0%, #060913 70%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -134,7 +134,7 @@
             max-width: 410px;
             background: var(--surface-1);
             border-radius: 24px;
-            padding: 30px 24px;
+            padding: 28px 24px;
             box-shadow: var(--shadow-card);
             border: 1px solid var(--surface-border);
             text-align: left;
@@ -146,25 +146,25 @@
         }
 
         .app-logo-pro {
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             object-fit: contain;
             margin: 0 auto 10px;
             display: block;
             cursor: pointer;
-            filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.4));
+            filter: drop-shadow(0 4px 12px rgba(29, 78, 216, 0.4));
         }
 
         .brand-title-pro {
-            font-size: 1.4rem;
-            font-weight: 900;
-            letter-spacing: -0.5px;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
             color: var(--text-main);
             margin-bottom: 2px;
         }
 
         .brand-subtitle-pro {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             font-weight: 700;
             text-transform: uppercase;
@@ -173,7 +173,7 @@
 
         .form-label-pro {
             font-size: 0.72rem;
-            font-weight: 800;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -183,7 +183,7 @@
 
         .input-group {
             position: relative;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
         }
@@ -191,19 +191,19 @@
         .input-icon-left {
             position: absolute;
             left: 14px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             pointer-events: none;
-            opacity: 0.7;
+            opacity: 0.6;
         }
 
         .input-auth {
             width: 100%;
-            padding: 13px 14px 13px 42px;
+            padding: 12px 14px 12px 42px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 14px;
+            border-radius: 12px;
             color: var(--text-main);
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             font-weight: 700;
             outline: none;
             transition: all 0.2s;
@@ -211,8 +211,8 @@
 
         .input-auth:focus {
             border-color: var(--primary);
-            background: rgba(30, 41, 59, 0.9);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+            background: rgba(22, 32, 56, 0.9);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
         }
 
         .btn-action-primary {
@@ -220,13 +220,13 @@
             background: var(--primary-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 14px;
-            padding: 13px;
+            border-radius: 12px;
+            padding: 12px;
             font-weight: 800;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.15s;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -237,16 +237,16 @@
 
         .btn-action-trial {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             color: var(--text-main);
             border: 1px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 11px;
             font-weight: 700;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.15s;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -254,23 +254,22 @@
         }
         .btn-action-trial:active { transform: scale(0.98); }
 
-        /* BOTÃO DE SUPORTE NA TELA DE LOGIN */
         .btn-support-login {
             width: 100%;
-            background: rgba(5, 150, 105, 0.12);
+            background: rgba(5, 150, 105, 0.1);
             color: #34d399;
-            border: 1px solid rgba(5, 150, 105, 0.3);
-            border-radius: 14px;
+            border: 1px solid rgba(5, 150, 105, 0.25);
+            border-radius: 12px;
             padding: 11px;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
             text-decoration: none;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             transition: all 0.2s;
         }
         .btn-support-login:active { transform: scale(0.98); }
@@ -279,12 +278,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: var(--text-muted);
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            margin: 14px 0 10px;
+            margin: 12px 0 10px;
         }
         .divider-label::before, .divider-label::after {
             content: "";
@@ -296,15 +295,15 @@
         .plan-stack {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 7px;
+            margin-bottom: 10px;
         }
 
         .plan-item {
             background: var(--surface-2);
             border: 1.5px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 11px 14px;
+            border-radius: 12px;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -318,41 +317,41 @@
         .plan-item.selecionado {
             border-color: #38bdf8 !important;
             background: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
         }
 
         .plan-item.featured {
-            border-color: rgba(16, 185, 129, 0.4);
+            border-color: rgba(5, 150, 105, 0.4);
         }
 
         .plan-badge-top {
             position: absolute;
-            top: -8px;
+            top: -7px;
             right: 12px;
             background: var(--accent-green-gradient);
             color: #ffffff;
-            font-size: 0.58rem;
+            font-size: 0.55rem;
             font-weight: 800;
             padding: 2px 6px;
             border-radius: 6px;
             text-transform: uppercase;
         }
 
-        .plan-name { font-size: 0.85rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.68rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1.05rem; font-weight: 900; color: #34d399; }
+        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
+        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
 
         .btn-gerar-pix-confirm {
             width: 100%;
             background: var(--accent-green-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 14px;
-            padding: 13px;
+            border-radius: 12px;
+            padding: 12px;
             font-weight: 800;
-            font-size: 0.92rem;
+            font-size: 0.90rem;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.35);
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
             display: none;
             align-items: center;
             justify-content: center;
@@ -392,8 +391,8 @@
             background: #ffffff;
             padding: 12px;
             border-radius: 14px;
-            width: 160px;
-            height: 160px;
+            width: 155px;
+            height: 155px;
             margin: 12px auto;
             display: flex;
             align-items: center;
@@ -430,8 +429,8 @@
             font-weight: 700;
             padding: 5px 10px;
             border-radius: 20px;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(5, 150, 105, 0.3);
+            background: rgba(5, 150, 105, 0.1);
             color: #34d399;
         }
 
@@ -447,12 +446,12 @@
         }
 
         .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(56, 189, 248, 0.05));
+            background: linear-gradient(135deg, rgba(29, 78, 216, 0.12), rgba(56, 189, 248, 0.05));
             border: 1.5px solid var(--primary);
             border-radius: 18px;
             padding: 14px;
             margin-bottom: 12px;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.2);
             display: none;
             text-align: center;
         }
@@ -477,7 +476,7 @@
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -522,7 +521,7 @@
         .cam-overlay-btn {
             position: absolute;
             z-index: 99;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(14, 21, 38, 0.8);
             backdrop-filter: blur(8px);
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -551,18 +550,18 @@
             background: var(--surface-1);
             padding: 16px;
             border-radius: 16px;
-            border: 1.5px solid #3b82f6;
+            border: 1.5px solid var(--primary);
             margin-bottom: 14px;
             text-align: center;
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 8px 24px rgba(29, 78, 216, 0.15);
             display: none;
         }
         .stop-number { font-size: 3.5rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
         
         .result-panel.error-state {
             border-color: var(--danger);
-            background: rgba(220, 38, 38, 0.08);
-            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15);
+            background: rgba(185, 28, 28, 0.08);
+            box-shadow: 0 8px 24px rgba(185, 28, 28, 0.15);
         }
         .result-panel.error-state .stop-number {
             font-size: 1.5rem;
@@ -623,7 +622,7 @@
         }
 
         .parada-badge-num {
-            background: #090d16;
+            background: #060913;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 10px;
             padding: 5px 12px;
@@ -680,7 +679,7 @@
             gap: 6px;
             transition: background 0.2s;
         }
-        .btn-acao-card:active { background: rgba(59, 130, 246, 0.2); }
+        .btn-acao-card:active { background: rgba(29, 78, 216, 0.2); }
 
         .gps-option-btn {
             width: 100%;
@@ -733,7 +732,7 @@
         .segmented-btn.active {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4);
         }
 
         .admin-nav-tabs {
@@ -777,7 +776,7 @@
     <!-- TOAST NOTIFICATION -->
     <div id="toastNotificacao"></div>
 
-    <!-- TELA DE LOGIN CORPORATIVA E PROFISSIONAL -->
+    <!-- TELA DE LOGIN CORPORATIVA EXECUTIVA -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             
@@ -1274,7 +1273,7 @@
         // TEMAS
         // ==========================================
         const paletas = {
-            slate_tech: { bg_body: "#090d16", surface_1: "#10172a", surface_2: "#1b253f", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#94a3b8", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
+            slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
             black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
             light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
             gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
