@@ -17,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -39,7 +39,9 @@
             --primary: #1d4ed8;
             --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
             --accent-green: #059669;
-            --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
+            --accent-green-gradient: linear-gradient(135deg, #047857, #10b981);
+            --accent-amber: #f59e0b;
+            --accent-amber-gradient: linear-gradient(135deg, #d97706, #fbbf24);
             --accent-blue-soft: #38bdf8;
             --danger: #b91c1c;
             --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--surface-border);
@@ -114,7 +116,7 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* NOVO LAYOUT DE LOGIN ESTILO PORTAL EXECUTIVO */
+        /* TELA DE LOGIN ESTILO PORTAL EXECUTIVO */
         #telaBloqueio {
             position: fixed;
             inset: 0;
@@ -130,7 +132,7 @@
 
         .auth-wrapper-modern {
             width: 100%;
-            max-width: 410px;
+            max-width: 420px;
             background: var(--surface-1);
             border-radius: 26px;
             padding: 26px 20px;
@@ -142,7 +144,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
             background: var(--surface-2);
             padding: 12px 16px;
             border-radius: 16px;
@@ -156,24 +158,24 @@
             cursor: pointer;
         }
 
-        /* ABAS DO LOGIN (ENTRAR / ASSINAR / TESTAR) */
+        /* ABAS DO LOGIN (ENTRAR / ASSINAR) */
         .auth-tab-bar {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
+            gap: 6px;
             background: var(--surface-2);
-            padding: 4px;
+            padding: 5px;
             border-radius: 14px;
             border: 1px solid var(--surface-border);
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .auth-tab-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 10px;
-            font-size: 0.78rem;
+            padding: 11px;
+            font-size: 0.82rem;
             font-weight: 800;
             border-radius: 10px;
             cursor: pointer;
@@ -184,7 +186,7 @@
         .auth-tab-btn.active {
             background: var(--primary-gradient);
             color: #fff;
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.35);
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.4);
         }
 
         .auth-pane {
@@ -200,8 +202,8 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .form-label-modern {
-            font-size: 0.7rem;
+        .form-label-pro {
+            font-size: 0.72rem;
             font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -212,7 +214,7 @@
 
         .input-group-modern {
             position: relative;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
         }
@@ -227,12 +229,12 @@
 
         .input-auth-modern {
             width: 100%;
-            padding: 13px 14px 13px 42px;
+            padding: 14px 14px 14px 44px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             border-radius: 14px;
             color: var(--text-main);
-            font-size: 0.92rem;
+            font-size: 0.98rem;
             font-weight: 700;
             outline: none;
             transition: all 0.2s;
@@ -244,72 +246,138 @@
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
         }
 
+        /* BOTÕES GRANDES E DESTAQUE */
         .btn-main-action {
             width: 100%;
             background: var(--primary-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 14px;
-            padding: 13px;
-            font-weight: 800;
-            font-size: 0.92rem;
+            border-radius: 16px;
+            padding: 16px;
+            font-weight: 900;
+            font-size: 1.05rem;
             cursor: pointer;
-            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
+            box-shadow: 0 8px 22px rgba(29, 78, 216, 0.45);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            transition: transform 0.15s;
+            gap: 8px;
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-bottom: 10px;
         }
         .btn-main-action:active { transform: scale(0.98); }
 
+        .btn-trial-big {
+            width: 100%;
+            background: var(--accent-amber-gradient);
+            color: #000000;
+            border: none;
+            border-radius: 16px;
+            padding: 15px;
+            font-weight: 900;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.15s;
+            margin-bottom: 12px;
+        }
+        .btn-trial-big:active { transform: scale(0.98); }
+
         .btn-support-modern {
             width: 100%;
-            background: rgba(5, 150, 105, 0.1);
+            background: rgba(5, 150, 105, 0.12);
             color: #34d399;
-            border: 1px solid rgba(5, 150, 105, 0.25);
+            border: 1px solid rgba(5, 150, 105, 0.3);
             border-radius: 14px;
-            padding: 11px;
+            padding: 13px;
             font-weight: 800;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             text-decoration: none;
-            margin-top: 10px;
+            margin-top: 6px;
         }
 
-        /* GRID DE PLANOS MODERNO */
-        .plan-grid-modern {
+        /* CARDS DE PLANOS GRANDES E ESTILIZADOS */
+        .plan-stack-modern {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 14px;
         }
 
-        .plan-card-modern {
+        .plan-card-pro {
             background: var(--surface-2);
-            border: 1.5px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 12px 14px;
+            border: 2px solid var(--surface-border);
+            border-radius: 18px;
+            padding: 16px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
         }
 
-        .plan-card-modern.selecionado {
+        .plan-card-pro:active { transform: scale(0.98); }
+
+        .plan-card-pro.selecionado {
             border-color: #38bdf8 !important;
-            background: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(29, 78, 216, 0.1));
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1);
         }
 
-        .plan-card-modern.featured {
-            border-color: rgba(5, 150, 105, 0.4);
+        .plan-card-pro.featured {
+            border-color: rgba(5, 150, 105, 0.5);
+        }
+
+        .plan-badge-pro {
+            position: absolute;
+            top: -10px;
+            right: 16px;
+            background: var(--accent-green-gradient);
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 3px 9px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-name-pro { font-size: 1rem; font-weight: 900; color: var(--text-main); text-align: left; }
+        .plan-meta-pro { font-size: 0.75rem; color: var(--text-muted); text-align: left; margin-top: 3px; font-weight: 600; }
+        .plan-val-pro { font-size: 1.3rem; font-weight: 900; color: #34d399; }
+
+        .btn-pay-big {
+            width: 100%;
+            background: var(--accent-green-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            font-weight: 900;
+            font-size: 1.05rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            animation: fadeIn 0.2s ease;
+        }
+        .btn-pay-big:active { transform: scale(0.98); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .modal-backdrop {
@@ -339,8 +407,8 @@
             background: #ffffff;
             padding: 12px;
             border-radius: 14px;
-            width: 155px;
-            height: 155px;
+            width: 165px;
+            height: 165px;
             margin: 12px auto;
             display: flex;
             align-items: center;
@@ -742,7 +810,7 @@
 
             <!-- ABAS DE NAVEGAÇÃO DO LOGIN -->
             <div class="auth-tab-bar">
-                <button class="auth-tab-btn active" id="tabBtnEntrar" onclick="mudarAbaAuth('entrar')">🔑 Entrar</button>
+                <button class="auth-tab-btn active" id="tabBtnEntrar" onclick="mudarAbaAuth('entrar')">🔑 Entrar / Teste</button>
                 <button class="auth-tab-btn" id="tabBtnPlanos" onclick="mudarAbaAuth('planos')">⚡ Planos & Pix</button>
             </div>
 
@@ -760,11 +828,11 @@
                     <input type="password" id="inputSenha" class="input-auth-modern" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
                 </div>
                 
-                <button class="btn-main-action" onclick="autenticarUsuarioFirebase()" style="margin-bottom: 10px;">
+                <button class="btn-main-action" onclick="autenticarUsuarioFirebase()">
                     ⚡ <span data-i18n="btn_enter">Acessar Sistema</span>
                 </button>
-                
-                <button class="btn-action-trial" onclick="ativarTesteGratis()">
+
+                <button class="btn-trial-big" onclick="ativarTesteGratis()">
                     🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
                 </button>
 
@@ -777,45 +845,45 @@
 
             <!-- PAINEL 2: ESCOLHER PLANO E GERAR PIX -->
             <div class="auth-pane" id="panePlanos">
-                <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Selecione o plano desejado:</div>
+                <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">Escolha seu plano de acesso:</div>
                 
-                <div class="plan-grid-modern">
-                    <div class="plan-card-modern" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
+                <div class="plan-stack-modern">
+                    <div class="plan-card-pro" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
                         <div>
-                            <div class="plan-name">Plano Semanal</div>
-                            <div class="plan-meta">7 dias de acesso total</div>
+                            <div class="plan-name-pro">Plano Semanal</div>
+                            <div class="plan-meta-pro">7 dias de acesso total</div>
                         </div>
-                        <div class="plan-val">R$ 5,00</div>
+                        <div class="plan-val-pro">R$ 5,00</div>
                     </div>
 
-                    <div class="plan-card-modern featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
-                        <span class="plan-badge-top">Popular</span>
+                    <div class="plan-card-pro featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
+                        <span class="plan-badge-pro">Mais Popular</span>
                         <div>
-                            <div class="plan-name">Plano Mensal</div>
-                            <div class="plan-meta">30 dias • Melhor custo</div>
+                            <div class="plan-name-pro">Plano Mensal</div>
+                            <div class="plan-meta-pro">30 dias • Melhor custo-benefício</div>
                         </div>
-                        <div class="plan-val">R$ 10,00</div>
+                        <div class="plan-val-pro">R$ 10,00</div>
                     </div>
 
-                    <div class="plan-card-modern" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (3 Meses)', 'cardPlano90')">
+                    <div class="plan-card-pro" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (3 Meses)', 'cardPlano90')">
                         <div>
-                            <div class="plan-name">Plano Trimestral</div>
-                            <div class="plan-meta">90 dias com desconto</div>
+                            <div class="plan-name-pro">Plano Trimestral</div>
+                            <div class="plan-meta-pro">90 dias com super desconto</div>
                         </div>
-                        <div class="plan-val">R$ 25,00</div>
+                        <div class="plan-val-pro">R$ 25,00</div>
                     </div>
                 </div>
 
-                <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()" style="margin-top: 10px;">
+                <button id="btnConfirmarPagamento" class="btn-pay-big" onclick="iniciarPixPlanoSelecionado()">
                     ⚡ Gerar Pagamento Pix
                 </button>
 
-                <button class="auth-tab-btn" onclick="mudarAbaAuth('entrar')" style="width: 100%; margin-top: 8px; color: var(--text-muted);">
-                    ← Voltar ao Login
+                <button class="auth-tab-btn" onclick="mudarAbaAuth('entrar')" style="width: 100%; margin-top: 10px; color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--surface-border); border-radius: 12px; padding: 11px;">
+                    ← Voltar para Entrar
                 </button>
             </div>
             
-            <div id="msgErro" style="color:#ef4444; font-size:0.75rem; font-weight:700; margin-top:10px; display:none; text-align: center;"></div>
+            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-top:12px; display:none; text-align: center;"></div>
         </div>
     </div>
 
@@ -1382,20 +1450,20 @@
             let senha = document.getElementById('inputSenha').value.trim();
 
             if (!validarNumeroWhatsApp(zap)) {
-                notificar("⚠️ Digite um número de WhatsApp válido com DDD na aba 'Entrar' antes de escolher o plano.");
+                notificar("⚠️ Digite seu WhatsApp na aba 'Entrar / Teste' primeiro.");
                 mudarAbaAuth('entrar');
                 document.getElementById('inputTel').focus();
                 return;
             }
 
             if (!senha || senha.length < 3) {
-                notificar("⚠️ Defina uma senha pessoal na aba 'Entrar' antes de escolher o plano.");
+                notificar("⚠️ Crie uma senha pessoal na aba 'Entrar / Teste' primeiro.");
                 mudarAbaAuth('entrar');
                 document.getElementById('inputSenha').focus();
                 return;
             }
 
-            document.querySelectorAll('.plan-card-modern').forEach(el => el.classList.remove('selecionado'));
+            document.querySelectorAll('.plan-card-pro').forEach(el => el.classList.remove('selecionado'));
             document.getElementById(cardId).classList.add('selecionado');
 
             planoSelecionadoAtual = { dias, valor, nomePlano, senha };
