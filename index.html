@@ -8,7 +8,7 @@
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#060913" id="metaThemeColor">
+    <meta name="theme-color" content="#090d16" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -17,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -34,17 +34,16 @@
             --surface-1: #0e1526;
             --surface-2: #162038;
             --surface-border: rgba(255, 255, 255, 0.08);
+            --surface-border-hover: rgba(255, 255, 255, 0.16);
             --text-main: #f8fafc;
             --text-muted: #8a99af;
             --primary: #1d4ed8;
             --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
-            --accent-green: #059669;
-            --accent-green-gradient: linear-gradient(135deg, #047857, #10b981);
-            --accent-amber: #f59e0b;
-            --accent-amber-gradient: linear-gradient(135deg, #d97706, #fbbf24);
+            --accent-green: #047857;
+            --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
             --accent-blue-soft: #38bdf8;
             --danger: #b91c1c;
-            --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--surface-border);
+            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -72,6 +71,15 @@
             padding: 0 14px;
         }
 
+        /* ANIMAÇÃO PADRÃO PARA BOTÕES */
+        button, .plan-item, .nav-btn, .cam-overlay-btn, .btn-acao-card, .gps-option-btn, .segmented-btn, .admin-tab {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+
+        button:active, .plan-item:active, .nav-btn:active, .cam-overlay-btn:active, .btn-acao-card:active, .gps-option-btn:active, .segmented-btn:active, .admin-tab:active {
+            transform: scale(0.96) !important;
+        }
+
         .btn-instalar-dinamico {
             width: 100%;
             background: rgba(37, 99, 235, 0.1);
@@ -87,9 +95,11 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: all 0.2s;
         }
-        .btn-instalar-dinamico:active { transform: scale(0.98); }
+        .btn-instalar-dinamico:hover {
+            background: rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
 
         #toastNotificacao {
             position: fixed;
@@ -116,10 +126,11 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
+        /* TELA DE LOGIN CORPORATIVA EXECUTIVA */
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #131f3f 0%, #060913 75%);
+            background: radial-gradient(circle at top center, #111c38 0%, #060913 70%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -129,80 +140,55 @@
             overflow-y: auto;
         }
 
-        .auth-wrapper-modern {
+        .auth-wrapper {
             width: 100%;
-            max-width: 420px;
+            max-width: 410px;
             background: var(--surface-1);
-            border-radius: 26px;
-            padding: 26px 20px;
+            border-radius: 24px;
+            padding: 28px 24px;
             box-shadow: var(--shadow-card);
             border: 1px solid var(--surface-border);
+            text-align: left;
         }
 
-        .auth-brand-top {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            background: var(--surface-2);
-            padding: 12px 16px;
-            border-radius: 16px;
-            border: 1px solid var(--surface-border);
-        }
-
-        .app-logo-modern {
-            width: 42px;
-            height: 42px;
-            object-fit: contain;
-            cursor: pointer;
-        }
-
-        .auth-tab-bar {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            background: var(--surface-2);
-            padding: 5px;
-            border-radius: 14px;
-            border: 1px solid var(--surface-border);
-            margin-bottom: 16px;
-        }
-
-        .auth-tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 11px;
-            font-size: 0.82rem;
-            font-weight: 800;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
+        .auth-header-center {
             text-align: center;
+            margin-bottom: 22px;
         }
 
-        .auth-tab-btn.active {
-            background: var(--primary-gradient);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.4);
-        }
-
-        .auth-pane {
-            display: none;
-            animation: fadeInPane 0.25s ease;
-        }
-        .auth-pane.active {
+        .app-logo-pro {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            margin: 0 auto 10px;
             display: block;
+            cursor: pointer;
+            filter: drop-shadow(0 4px 12px rgba(29, 78, 216, 0.4));
+            transition: transform 0.3s ease;
+        }
+        .app-logo-pro:hover {
+            transform: scale(1.08);
         }
 
-        @keyframes fadeInPane {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
+        .brand-title-pro {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .brand-subtitle-pro {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .form-label-pro {
             font-size: 0.72rem;
-            font-weight: 800;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -210,14 +196,14 @@
             display: block;
         }
 
-        .input-group-modern {
+        .input-group {
             position: relative;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
         }
 
-        .input-icon-modern {
+        .input-icon-left {
             position: absolute;
             left: 14px;
             font-size: 0.95rem;
@@ -225,151 +211,178 @@
             opacity: 0.6;
         }
 
-        .input-auth-modern {
+        .input-auth {
             width: 100%;
-            padding: 14px 14px 14px 44px;
+            padding: 12px 14px 12px 42px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 14px;
+            border-radius: 12px;
             color: var(--text-main);
-            font-size: 0.98rem;
+            font-size: 0.92rem;
             font-weight: 700;
             outline: none;
             transition: all 0.2s;
         }
 
-        .input-auth-modern:focus {
+        .input-auth:focus {
             border-color: var(--primary);
             background: rgba(22, 32, 56, 0.9);
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
         }
 
-        .btn-main-action {
+        .btn-action-primary {
             width: 100%;
             background: var(--primary-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 16px;
-            padding: 16px;
-            font-weight: 900;
-            font-size: 1.05rem;
-            cursor: pointer;
-            box-shadow: 0 8px 22px rgba(29, 78, 216, 0.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: transform 0.15s, box-shadow 0.15s;
-            margin-bottom: 10px;
-        }
-        .btn-main-action:active { transform: scale(0.98); }
-
-        .btn-trial-big {
-            width: 100%;
-            background: var(--accent-amber-gradient);
-            color: #000000;
-            border: none;
-            border-radius: 16px;
-            padding: 15px;
-            font-weight: 900;
-            font-size: 1rem;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: transform 0.15s;
-            margin-bottom: 12px;
-        }
-        .btn-trial-big:active { transform: scale(0.98); }
-
-        .btn-support-modern {
-            width: 100%;
-            background: rgba(5, 150, 105, 0.12);
-            color: #34d399;
-            border: 1px solid rgba(5, 150, 105, 0.3);
-            border-radius: 14px;
-            padding: 13px;
+            border-radius: 12px;
+            padding: 12px;
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            text-decoration: none;
-            margin-top: 6px;
+            gap: 6px;
+        }
+        .btn-action-primary:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 6px 18px rgba(29, 78, 216, 0.5);
         }
 
-        .plan-stack-modern {
+        .btn-action-trial {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-action-trial:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--surface-border-hover);
+        }
+
+        .btn-support-login {
+            width: 100%;
+            background: rgba(5, 150, 105, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(5, 150, 105, 0.25);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.84rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            margin-bottom: 12px;
+        }
+        .btn-support-login:hover {
+            background: rgba(5, 150, 105, 0.2);
+        }
+
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin: 12px 0 10px;
+        }
+        .divider-label::before, .divider-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--surface-border);
+        }
+
+        .plan-stack {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 14px;
+            gap: 7px;
+            margin-bottom: 10px;
         }
 
-        .plan-card-pro {
+        .plan-item {
             background: var(--surface-2);
-            border: 2px solid var(--surface-border);
-            border-radius: 18px;
-            padding: 16px 18px;
+            border: 1.5px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
         }
+        .plan-item:hover {
+            border-color: var(--surface-border-hover);
+            background: rgba(255, 255, 255, 0.03);
+        }
 
-        .plan-card-pro:active { transform: scale(0.98); }
-
-        .plan-card-pro.selecionado {
+        .plan-item.selecionado {
             border-color: #38bdf8 !important;
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(29, 78, 216, 0.1));
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.35), inset 0 0 10px rgba(56, 189, 248, 0.1);
+            background: rgba(56, 189, 248, 0.08);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
         }
 
-        .plan-card-pro.featured {
-            border-color: rgba(5, 150, 105, 0.5);
+        .plan-item.featured {
+            border-color: rgba(5, 150, 105, 0.4);
         }
 
-        .plan-badge-pro {
+        .plan-badge-top {
             position: absolute;
-            top: -10px;
-            right: 16px;
+            top: -7px;
+            right: 12px;
             background: var(--accent-green-gradient);
             color: #ffffff;
-            font-size: 0.65rem;
-            font-weight: 900;
-            padding: 3px 9px;
-            border-radius: 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .plan-name-pro { font-size: 1rem; font-weight: 900; color: var(--text-main); text-align: left; }
-        .plan-meta-pro { font-size: 0.75rem; color: var(--text-muted); text-align: left; margin-top: 3px; font-weight: 600; }
-        .plan-val-pro { font-size: 1.3rem; font-weight: 900; color: #34d399; }
+        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
+        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
 
-        .btn-pay-big {
+        .btn-gerar-pix-confirm {
             width: 100%;
             background: var(--accent-green-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 16px;
-            padding: 16px;
-            font-weight: 900;
-            font-size: 1.05rem;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            font-size: 0.90rem;
             cursor: pointer;
-            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.45);
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
             display: none;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             animation: fadeIn 0.2s ease;
         }
-        .btn-pay-big:active { transform: scale(0.98); }
+        .btn-gerar-pix-confirm:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 6px 18px rgba(5, 150, 105, 0.5);
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
@@ -403,8 +416,8 @@
             background: #ffffff;
             padding: 12px;
             border-radius: 14px;
-            width: 165px;
-            height: 165px;
+            width: 155px;
+            height: 155px;
             margin: 12px auto;
             display: flex;
             align-items: center;
@@ -434,6 +447,9 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+        .nav-btn:hover {
+            border-color: var(--surface-border-hover);
         }
 
         .access-badge {
@@ -493,6 +509,9 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+        }
+        .btn-upload-trigger:hover {
+            filter: brightness(1.1);
         }
 
         .metrics-board {
@@ -689,9 +708,8 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: background 0.2s;
         }
-        .btn-acao-card:active { background: rgba(29, 78, 216, 0.2); }
+        .btn-acao-card:hover { background: rgba(29, 78, 216, 0.2); }
 
         .gps-option-btn {
             width: 100%;
@@ -737,7 +755,6 @@
             font-weight: 800;
             border-radius: 9px;
             cursor: pointer;
-            transition: all 0.2s ease;
             text-align: center;
         }
 
@@ -788,98 +805,80 @@
     <!-- TOAST NOTIFICATION -->
     <div id="toastNotificacao"></div>
 
-    <!-- TELA DE LOGIN ESTILO PORTAL EXECUTIVO -->
+    <!-- TELA DE LOGIN CORPORATIVA EXECUTIVA -->
     <div id="telaBloqueio">
-        <div class="auth-wrapper-modern">
+        <div class="auth-wrapper">
             
-            <div class="auth-brand-top">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-modern" onclick="registrarCliqueAdmin()">
-                <div>
-                    <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()" style="font-size: 1.15rem;">PACOTE É MATO</h1>
-                    <p class="brand-subtitle-pro" style="font-size: 0.65rem;">Plataforma de Logística</p>
-                </div>
+            <div class="auth-header-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
+                <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
+                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
             </div>
 
-            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()" style="margin-bottom: 14px;">
-                📲 <span data-i18n="download_app">Baixar App no Celular</span>
+            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
+                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+            </button>
+            
+            <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
+            <div class="input-group">
+                <span class="input-icon-left">📱</span>
+                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+            </div>
+
+            <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
+            <div class="input-group">
+                <span class="input-icon-left">🔑</span>
+                <input type="password" id="inputSenha" class="input-auth" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+            </div>
+            
+            <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
+                ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
+            </button>
+            <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
+                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
             </button>
 
-            <!-- ABAS DE NAVEGAÇÃO DO LOGIN -->
-            <div class="auth-tab-bar">
-                <button class="auth-tab-btn active" id="tabBtnEntrar" onclick="mudarAbaAuth('entrar')">🔑 Entrar / Teste</button>
-                <button class="auth-tab-btn" id="tabBtnPlanos" onclick="mudarAbaAuth('planos')">⚡ Planos & Pix</button>
-            </div>
-
-            <!-- PAINEL 1: ENTRAR / TESTAR -->
-            <div class="auth-pane active" id="paneEntrar">
-                <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
-                <div class="input-group-modern">
-                    <span class="input-icon-modern">📱</span>
-                    <input type="tel" id="inputTel" class="input-auth-modern" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
-                </div>
-
-                <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
-                <div class="input-group-modern">
-                    <span class="input-icon-modern">🔑</span>
-                    <input type="password" id="inputSenha" class="input-auth-modern" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
-                </div>
-                
-                <button class="btn-main-action" onclick="autenticarUsuarioFirebase()">
-                    ⚡ <span data-i18n="btn_enter">Acessar Sistema</span>
+            <!-- BOTÃO DE SUPORTE NA TELA DE LOGIN -->
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+                <button class="btn-support-login">
+                    💬 Suporte
                 </button>
-
-                <button class="btn-trial-big" onclick="ativarTesteGratis()">
-                    🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
-                </button>
-
-                <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                    <button class="btn-support-modern">
-                        💬 Falar com Suporte
-                    </button>
-                </a>
-            </div>
-
-            <!-- PAINEL 2: ESCOLHER PLANO E GERAR PIX (COM VALORES DE CREDIBILIDADE) -->
-            <div class="auth-pane" id="panePlanos">
-                <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">Escolha seu plano de acesso:</div>
-                
-                <div class="plan-stack-modern">
-                    <div class="plan-card-pro" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
-                        <div>
-                            <div class="plan-name-pro">Plano Semanal</div>
-                            <div class="plan-meta-pro">7 dias de acesso total</div>
-                        </div>
-                        <div class="plan-val-pro">R$ 4,99</div>
-                    </div>
-
-                    <div class="plan-card-pro featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
-                        <span class="plan-badge-pro">Mais Popular</span>
-                        <div>
-                            <div class="plan-name-pro">Plano Mensal</div>
-                            <div class="plan-meta-pro">30 dias • Melhor custo-benefício</div>
-                        </div>
-                        <div class="plan-val-pro">R$ 9,99</div>
-                    </div>
-
-                    <div class="plan-card-pro" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
-                        <div>
-                            <div class="plan-name-pro">Plano Trimestral</div>
-                            <div class="plan-meta-pro">90 dias com super desconto</div>
-                        </div>
-                        <div class="plan-val-pro">R$ 24,99</div>
-                    </div>
-                </div>
-
-                <button id="btnConfirmarPagamento" class="btn-pay-big" onclick="iniciarPixPlanoSelecionado()">
-                    ⚡ Gerar Pagamento Pix
-                </button>
-
-                <button class="auth-tab-btn" onclick="mudarAbaAuth('entrar')" style="width: 100%; margin-top: 10px; color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--surface-border); border-radius: 14px; padding: 13px;">
-                    ← Voltar para Entrar
-                </button>
-            </div>
+            </a>
             
-            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-top:12px; display:none; text-align: center;"></div>
+            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
+
+            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
+            
+            <div class="plan-stack">
+                <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
+                    <div>
+                        <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
+                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
+                    </div>
+                    <div class="plan-val">R$ 4,99</div>
+                </div>
+
+                <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
+                    <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
+                    <div>
+                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
+                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
+                    </div>
+                    <div class="plan-val">R$ 9,99</div>
+                </div>
+
+                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
+                    <div>
+                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
+                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
+                    </div>
+                    <div class="plan-val">R$ 24,99</div>
+                </div>
+            </div>
+
+            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
+                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
+            </button>
         </div>
     </div>
 
@@ -896,7 +895,7 @@
 
             <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-size:0.68rem; text-align:center; outline:none;">
             
-            <button class="btn-main-action" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
+            <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
                 📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
             </button>
             <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
@@ -920,7 +919,7 @@
 
             <div class="modal-rota-conteudo" id="listaParadasModal"></div>
 
-            <button onclick="fecharModalRota()" class="btn-main-action" style="margin-top:14px;">Fechar</button>
+            <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
         </div>
     </div>
 
@@ -952,8 +951,8 @@
             </div>
             
             <div id="areaLoginAdmin">
-                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth-modern" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-main-action" style="background:#d97706; color:#000;">Entrar</button>
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
+                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:#d97706; color:#000;">Entrar</button>
             </div>
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
@@ -972,15 +971,15 @@
                 <div id="viewAdminPagos" style="max-height:250px; overflow-y:auto; display:none;"></div>
 
                 <div id="viewAdminAdd" style="display:none;">
-                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth-modern" style="margin-bottom:8px; padding-left:14px;">
-                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth-modern" style="margin-bottom:8px; padding-left:14px;">
+                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
+                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
                     <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
                         <option value="3">3 Dias</option>
                         <option value="7">7 Dias (Semanal)</option>
                         <option value="30" selected>30 Dias (1 Mês)</option>
                         <option value="90">90 Dias (3 Meses)</option>
                     </select>
-                    <button onclick="liberarClienteManual()" class="btn-main-action" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
+                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
                 </div>
             </div>
         </div>
@@ -1008,7 +1007,7 @@
         <!-- BOTÃO DE SUPORTE NA LATERAL -->
         <div style="margin-bottom:16px;">
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-main-action" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
+                <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
                     💬 Suporte
                 </button>
             </a>
@@ -1047,10 +1046,10 @@
         </div>
 
         <div style="margin-top:24px;">
-            <button onclick="zerarRota()" class="btn-main-action" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
+            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
                 🔄 <span data-i18n="reset_route">Zerar Bipagens</span>
             </button>
-            <button onclick="sairDoApp()" class="btn-main-action" style="background:rgba(185, 28, 28, 0.15); color:#ef4444; border:1px solid rgba(185, 28, 28, 0.3); font-size:0.8rem;">
+            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(220, 38, 38, 0.15); color:#ef4444; border:1px solid rgba(220, 38, 38, 0.3); font-size:0.8rem;">
                 🔒 <span data-i18n="logout">Desconectar Conta</span>
             </button>
         </div>
@@ -1072,7 +1071,7 @@
         <div class="card-retomar-rota" id="cardRetomarRota">
             <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
-            <button class="btn-main-action" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
+            <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
                 ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
             </button>
         </div>
@@ -1086,7 +1085,7 @@
             </button>
 
             <!-- BOTÃO PARA VER AS PARADAS -->
-            <button class="btn-main-action" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
+            <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
                 👀 Visualizar Paradas da Rota
             </button>
 
@@ -1131,35 +1130,13 @@
 
             <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
-            <input type="text" class="input-auth-modern" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
+            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
 
         </div>
 
     </div>
 
     <script>
-        // ==========================================
-        // SISTEMA DE ABAS DO LOGIN MODERNO
-        // ==========================================
-        function mudarAbaAuth(aba) {
-            let btnEntrar = document.getElementById('tabBtnEntrar');
-            let btnPlanos = document.getElementById('tabBtnPlanos');
-            let paneEntrar = document.getElementById('paneEntrar');
-            let panePlanos = document.getElementById('panePlanos');
-
-            if (aba === 'entrar') {
-                btnEntrar.classList.add('active');
-                btnPlanos.classList.remove('active');
-                paneEntrar.classList.add('active');
-                panePlanos.classList.remove('active');
-            } else {
-                btnPlanos.classList.add('active');
-                btnEntrar.classList.remove('active');
-                panePlanos.classList.add('active');
-                paneEntrar.classList.remove('active');
-            }
-        }
-
         // ==========================================
         // SISTEMA MULTI-IDIOMA
         // ==========================================
@@ -1237,7 +1214,7 @@
                 reset_route: "Reiniciar Escaneos",
                 logout: "Cerrar Sesión",
                 logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
-                saved_route_found: "📂 RUTA ANTERIOR ENCONTRADA",
+                saved_route_found: "📂 ROTA ANTERIOR ENCONTRADA",
                 resume_route: "Reanudar Ruta Donde Me Quedé",
                 load_pdf_title: "Cargar Ruta en PDF",
                 load_pdf_subtitle: "Importa la hoja de tu ruta para sincronizar las paradas",
@@ -1437,7 +1414,7 @@
         const MEU_DEVICE_ID = obterDeviceId();
 
         // ==========================================
-        // SELEÇÃO DE PLANO ANTES DO PIX (VALORES R$ 4,99 | 9,99 | 24,99)
+        // SELEÇÃO DE PLANO ANTES DO PIX
         // ==========================================
         let planoSelecionadoAtual = null;
 
@@ -1446,20 +1423,18 @@
             let senha = document.getElementById('inputSenha').value.trim();
 
             if (!validarNumeroWhatsApp(zap)) {
-                notificar("⚠️ Digite seu WhatsApp na aba 'Entrar / Teste' primeiro.");
-                mudarAbaAuth('entrar');
+                notificar("⚠️ Digite um número de WhatsApp válido com DDD antes de escolher o plano.");
                 document.getElementById('inputTel').focus();
                 return;
             }
 
             if (!senha || senha.length < 3) {
-                notificar("⚠️ Crie uma senha pessoal na aba 'Entrar / Teste' primeiro.");
-                mudarAbaAuth('entrar');
+                notificar("⚠️ Defina uma senha pessoal (mínimo 3 dígitos) antes de escolher o plano.");
                 document.getElementById('inputSenha').focus();
                 return;
             }
 
-            document.querySelectorAll('.plan-card-pro').forEach(el => el.classList.remove('selecionado'));
+            document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
             document.getElementById(cardId).classList.add('selecionado');
 
             planoSelecionadoAtual = { dias, valor, nomePlano, senha };
@@ -1683,7 +1658,7 @@
         }
 
         // ==========================================
-        // AUTH & SESSÃO REALTIME (CORRIGIDO PARA CADASTRO AUTOMÁTICO DE SENHA SE NÃO HOUVER)
+        // AUTH & SESSÃO REALTIME
         // ==========================================
         async function autenticarUsuarioFirebase() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
@@ -1704,7 +1679,7 @@
             }
 
             if (!senha) {
-                msgErro.innerText = "❌ Digite ou crie sua senha de acesso.";
+                msgErro.innerText = "❌ Digite sua senha de acesso.";
                 msgErro.style.display = 'block';
                 document.getElementById('inputSenha').focus();
                 return;
@@ -1714,14 +1689,12 @@
             btn.disabled = true;
 
             try {
-                let docRef = db.collection("usuarios").doc(zap);
-                let doc = await docRef.get();
+                let doc = await db.collection("usuarios").doc(zap).get();
 
-                // Se a conta não existe mas o número é válido, cria automaticamente um acesso padrão de 1 dia ou avisa para assinar
                 if (!doc.exists) {
-                    msgErro.innerText = "Conta não encontrada. Escolha um plano na aba 'Planos & Pix' ou teste grátis.";
+                    msgErro.innerText = "Número não localizado. Escolha um plano ou ative o teste.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Acessar Sistema";
+                    btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
                     return;
                 }
@@ -1729,16 +1702,10 @@
                 let data = doc.data();
                 let agora = Date.now();
 
-                // Se a conta existe mas ainda não tinha senha gravada, grava agora a senha informada
-                if (!data.senha) {
-                    await docRef.update({ senha: senha, deviceId: MEU_DEVICE_ID });
-                    data.senha = senha;
-                }
-
-                if (data.senha !== senha) {
+                if (data.senha && data.senha !== senha) {
                     msgErro.innerText = "❌ Senha incorreta!";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Acessar Sistema";
+                    btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
                     return;
                 }
@@ -1746,20 +1713,23 @@
                 if (data.bloqueado) {
                     msgErro.innerText = "❌ Este número foi bloqueado temporariamente pelo suporte.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Acessar Sistema";
+                    btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
                     return;
                 }
 
                 if (!data.ativo || agora > data.expiraEm) {
-                    msgErro.innerText = "Acesso expirado. Selecione um plano na aba 'Planos & Pix' para renovar.";
+                    msgErro.innerText = "Acesso expirado. Selecione um plano abaixo para renovar.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Acessar Sistema";
+                    btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
                     return;
                 }
 
-                await docRef.update({ deviceId: MEU_DEVICE_ID });
+                await db.collection("usuarios").doc(zap).update({ 
+                    deviceId: MEU_DEVICE_ID,
+                    senha: data.senha || senha 
+                });
 
                 localStorage.setItem('usuario_zap_salvo', zap);
                 msgErro.style.display = 'none';
@@ -1771,7 +1741,7 @@
                 msgErro.style.display = 'block';
             }
 
-            btn.innerText = "⚡ Acessar Sistema";
+            btn.innerText = "⚡ Entrar no Sistema";
             btn.disabled = false;
         }
 
