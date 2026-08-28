@@ -115,7 +115,6 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* TELA DE LOGIN CORPORATIVA E LIMPA */
         #telaBloqueio {
             position: fixed;
             inset: 0;
@@ -767,7 +766,7 @@
             </div>
 
             <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+                📲 <span data-i18n="download_app">Baixar App no Celular</span>
             </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
@@ -776,10 +775,10 @@
                 <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
             </div>
 
-            <label class="form-label-pro" data-i18n="password_label">Senha Pessoal</label>
+            <label class="form-label-pro" data-i18n="password_label">Defina sua Senha Pessoal</label>
             <div class="input-group">
                 <span class="input-icon-left">🔑</span>
-                <input type="password" id="inputSenha" class="input-auth" placeholder="••••••••" data-i18n-placeholder="password_placeholder">
+                <input type="password" id="inputSenha" class="input-auth" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
             </div>
             
             <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
@@ -916,7 +915,7 @@
 
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial (Ex: 1234)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
+                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
                     <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
                         <option value="3">3 Dias</option>
                         <option value="7">7 Dias (Semanal)</option>
@@ -1089,9 +1088,9 @@
                 download_app: "Baixar App no Celular",
                 brand_subtitle: "Plataforma de Logística",
                 whatsapp_label: "WhatsApp / Acesso",
-                password_label: "Senha Pessoal",
+                password_label: "Sua Senha Pessoal",
                 whatsapp_placeholder: "Número com DDD",
-                password_placeholder: "Sua senha",
+                password_placeholder: "Crie ou digite sua senha",
                 btn_enter: "Entrar no Sistema",
                 btn_trial: "Testar 3 Dias Grátis",
                 choose_plan: "Planos de Acesso",
@@ -1132,9 +1131,9 @@
                 download_app: "Descargar App en el Móvil",
                 brand_subtitle: "Plataforma de Logística",
                 whatsapp_label: "WhatsApp / Acceso",
-                password_label: "Contraseña",
+                password_label: "Tu Contraseña",
                 whatsapp_placeholder: "Número con código de área",
-                password_placeholder: "Tu contraseña",
+                password_placeholder: "Crea o escribe tu contraseña",
                 btn_enter: "Entrar al Sistema",
                 btn_trial: "Probar 3 Días Gratis",
                 choose_plan: "Planes de Acceso",
@@ -1175,9 +1174,9 @@
                 download_app: "Download App on Phone",
                 brand_subtitle: "Logistics Platform",
                 whatsapp_label: "WhatsApp / Access",
-                password_label: "Password",
+                password_label: "Your Password",
                 whatsapp_placeholder: "Number with area code",
-                password_placeholder: "Your password",
+                password_placeholder: "Create or type your password",
                 btn_enter: "Sign In",
                 btn_trial: "Try 3 Days Free",
                 choose_plan: "Access Plans",
@@ -1364,16 +1363,24 @@
 
         function selecionarPlano(dias, valor, nomePlano, cardId) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+
             if (!validarNumeroWhatsApp(zap)) {
                 notificar("⚠️ Digite um número de WhatsApp válido com DDD antes de escolher o plano.");
                 document.getElementById('inputTel').focus();
                 return;
             }
 
+            if (!senha || senha.length < 3) {
+                notificar("⚠️ Defina uma senha pessoal (mínimo 3 dígitos) antes de escolher o plano.");
+                document.getElementById('inputSenha').focus();
+                return;
+            }
+
             document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
             document.getElementById(cardId).classList.add('selecionado');
 
-            planoSelecionadoAtual = { dias, valor, nomePlano };
+            planoSelecionadoAtual = { dias, valor, nomePlano, senha };
 
             let btn = document.getElementById('btnConfirmarPagamento');
             btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
@@ -1387,13 +1394,13 @@
                 notificar("Selecione um plano acima primeiro.");
                 return;
             }
-            gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano);
+            gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano, planoSelecionadoAtual.senha);
         }
 
         // ==========================================
         // GERADOR PIX AUTOMATIZADO
         // ==========================================
-        async function gerarPixAutomatico(dias, valor, nomePlano) {
+        async function gerarPixAutomatico(dias, valor, nomePlano, senha) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             if (!validarNumeroWhatsApp(zap)) {
                 notificar("⚠️ Número de WhatsApp inválido.");
@@ -1432,7 +1439,7 @@
                         correctLevel: QRCode.CorrectLevel.M
                     });
 
-                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor);
+                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha);
                 } else {
                     notificar("Não foi possível gerar a cobrança Pix. Tente novamente.");
                     fecharModalPix();
@@ -1444,7 +1451,7 @@
             }
         }
 
-        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor) {
+        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha) {
             clearInterval(timerVerificadorPix);
             
             timerVerificadorPix = setInterval(async () => {
@@ -1456,11 +1463,10 @@
                         clearInterval(timerVerificadorPix);
                         
                         let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
-                        let senhaPadrao = "1234";
                         
                         await db.collection("usuarios").doc(zap).set({
                             whatsapp: zap,
-                            senha: senhaPadrao,
+                            senha: senha,
                             expiraEm: expiraEm,
                             ativo: true,
                             bloqueado: false,
@@ -1485,7 +1491,7 @@
 
                         fecharModalPix();
                         localStorage.setItem('usuario_zap_salvo', zap);
-                        notificar("🎉 Pagamento Aprovado! Senha padrão: 1234");
+                        notificar("🎉 Pagamento Aprovado! Senha cadastrada com sucesso.");
                         iniciarMonitoramentoSessao(zap);
                     }
                 } catch(e) {}
@@ -1522,7 +1528,7 @@
             }
 
             if (!senha || senha.length < 3) {
-                msgErro.innerText = "❌ Digite uma senha válida (mínimo 3 dígitos).";
+                msgErro.innerText = "❌ Defina uma senha pessoal (mínimo 3 dígitos).";
                 msgErro.style.display = 'block';
                 document.getElementById('inputSenha').focus();
                 return;
@@ -1832,7 +1838,7 @@
                 snapshot.forEach(doc => {
                     let u = doc.data();
                     let zap = u.whatsapp || doc.id;
-                    let senhaUser = u.senha || "1234";
+                    let senhaUser = u.senha || "Não definida";
                     let expira = u.expiraEm || 0;
                     let bloqueado = u.bloqueado === true;
                     let ativo = u.ativo && agora <= expira && !bloqueado;
