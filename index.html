@@ -8,7 +8,7 @@
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#090d16" id="metaThemeColor">
+    <meta name="theme-color" content="#060913" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -34,16 +34,15 @@
             --surface-1: #0e1526;
             --surface-2: #162038;
             --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.16);
             --text-main: #f8fafc;
             --text-muted: #8a99af;
             --primary: #1d4ed8;
             --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
-            --accent-green: #047857;
+            --accent-green: #059669;
             --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
             --accent-blue-soft: #38bdf8;
             --danger: #b91c1c;
-            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
+            --shadow-card: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -115,11 +114,11 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* TELA DE LOGIN CORPORATIVA EXECUTIVA */
+        /* NOVO LAYOUT DE LOGIN ESTILO PORTAL EXECUTIVO */
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #111c38 0%, #060913 70%);
+            background: radial-gradient(circle at top center, #131f3f 0%, #060913 75%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -129,51 +128,81 @@
             overflow-y: auto;
         }
 
-        .auth-wrapper {
+        .auth-wrapper-modern {
             width: 100%;
             max-width: 410px;
             background: var(--surface-1);
-            border-radius: 24px;
-            padding: 28px 24px;
+            border-radius: 26px;
+            padding: 26px 20px;
             box-shadow: var(--shadow-card);
             border: 1px solid var(--surface-border);
-            text-align: left;
         }
 
-        .auth-header-center {
-            text-align: center;
-            margin-bottom: 22px;
+        .auth-brand-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            background: var(--surface-2);
+            padding: 12px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--surface-border);
         }
 
-        .app-logo-pro {
-            width: 56px;
-            height: 56px;
+        .app-logo-modern {
+            width: 42px;
+            height: 42px;
             object-fit: contain;
-            margin: 0 auto 10px;
-            display: block;
             cursor: pointer;
-            filter: drop-shadow(0 4px 12px rgba(29, 78, 216, 0.4));
         }
 
-        .brand-title-pro {
-            font-size: 1.35rem;
-            font-weight: 800;
-            letter-spacing: -0.3px;
-            color: var(--text-main);
-            margin-bottom: 2px;
+        /* ABAS DO LOGIN (ENTRAR / ASSINAR / TESTAR) */
+        .auth-tab-bar {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid var(--surface-border);
+            margin-bottom: 18px;
         }
 
-        .brand-subtitle-pro {
-            font-size: 0.7rem;
+        .auth-tab-btn {
+            background: transparent;
+            border: none;
             color: var(--text-muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            padding: 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
         }
 
-        .form-label-pro {
-            font-size: 0.72rem;
-            font-weight: 700;
+        .auth-tab-btn.active {
+            background: var(--primary-gradient);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.35);
+        }
+
+        .auth-pane {
+            display: none;
+            animation: fadeInPane 0.25s ease;
+        }
+        .auth-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeInPane {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-label-modern {
+            font-size: 0.7rem;
+            font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -181,14 +210,14 @@
             display: block;
         }
 
-        .input-group {
+        .input-group-modern {
             position: relative;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
         }
 
-        .input-icon-left {
+        .input-icon-modern {
             position: absolute;
             left: 14px;
             font-size: 0.95rem;
@@ -196,12 +225,12 @@
             opacity: 0.6;
         }
 
-        .input-auth {
+        .input-auth-modern {
             width: 100%;
-            padding: 12px 14px 12px 42px;
+            padding: 13px 14px 13px 42px;
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            border-radius: 12px;
+            border-radius: 14px;
             color: var(--text-main);
             font-size: 0.92rem;
             font-weight: 700;
@@ -209,101 +238,62 @@
             transition: all 0.2s;
         }
 
-        .input-auth:focus {
+        .input-auth-modern:focus {
             border-color: var(--primary);
             background: rgba(22, 32, 56, 0.9);
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
         }
 
-        .btn-action-primary {
+        .btn-main-action {
             width: 100%;
             background: var(--primary-gradient);
             color: #ffffff;
             border: none;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 13px;
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             cursor: pointer;
-            transition: all 0.15s;
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
-            margin-bottom: 8px;
+            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
+            transition: transform 0.15s;
         }
-        .btn-action-primary:active { transform: scale(0.98); }
+        .btn-main-action:active { transform: scale(0.98); }
 
-        .btn-action-trial {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text-main);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 11px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.15s;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-action-trial:active { transform: scale(0.98); }
-
-        .btn-support-login {
+        .btn-support-modern {
             width: 100%;
             background: rgba(5, 150, 105, 0.1);
             color: #34d399;
             border: 1px solid rgba(5, 150, 105, 0.25);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 11px;
-            font-weight: 700;
-            font-size: 0.84rem;
+            font-weight: 800;
+            font-size: 0.85rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
             text-decoration: none;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-        }
-        .btn-support-login:active { transform: scale(0.98); }
-
-        .divider-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin: 12px 0 10px;
-        }
-        .divider-label::before, .divider-label::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--surface-border);
+            margin-top: 10px;
         }
 
-        .plan-stack {
+        /* GRID DE PLANOS MODERNO */
+        .plan-grid-modern {
             display: flex;
             flex-direction: column;
-            gap: 7px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 14px;
         }
 
-        .plan-item {
+        .plan-card-modern {
             background: var(--surface-2);
             border: 1.5px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 14px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -312,56 +302,14 @@
             position: relative;
         }
 
-        .plan-item:active { transform: scale(0.98); }
-
-        .plan-item.selecionado {
+        .plan-card-modern.selecionado {
             border-color: #38bdf8 !important;
             background: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
         }
 
-        .plan-item.featured {
+        .plan-card-modern.featured {
             border-color: rgba(5, 150, 105, 0.4);
-        }
-
-        .plan-badge-top {
-            position: absolute;
-            top: -7px;
-            right: 12px;
-            background: var(--accent-green-gradient);
-            color: #ffffff;
-            font-size: 0.55rem;
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 6px;
-            text-transform: uppercase;
-        }
-
-        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
-
-        .btn-gerar-pix-confirm {
-            width: 100%;
-            background: var(--accent-green-gradient);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            padding: 12px;
-            font-weight: 800;
-            font-size: 0.90rem;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            animation: fadeIn 0.2s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .modal-backdrop {
@@ -776,80 +724,98 @@
     <!-- TOAST NOTIFICATION -->
     <div id="toastNotificacao"></div>
 
-    <!-- TELA DE LOGIN CORPORATIVA EXECUTIVA -->
+    <!-- TELA DE LOGIN ESTILO PORTAL EXECUTIVO -->
     <div id="telaBloqueio">
-        <div class="auth-wrapper">
+        <div class="auth-wrapper-modern">
             
-            <div class="auth-header-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
-                <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
-                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
+            <div class="auth-brand-top">
+                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-modern" onclick="registrarCliqueAdmin()">
+                <div>
+                    <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()" style="font-size: 1.15rem;">PACOTE É MATO</h1>
+                    <p class="brand-subtitle-pro" style="font-size: 0.65rem;">Plataforma de Logística</p>
+                </div>
             </div>
 
-            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
-            </button>
-            
-            <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
-            <div class="input-group">
-                <span class="input-icon-left">📱</span>
-                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
-            </div>
-
-            <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
-            <div class="input-group">
-                <span class="input-icon-left">🔑</span>
-                <input type="password" id="inputSenha" class="input-auth" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
-            </div>
-            
-            <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
-                ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
-            </button>
-            <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
-                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
+            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()" style="margin-bottom: 14px;">
+                📲 <span data-i18n="download_app">Baixar App no Celular</span>
             </button>
 
-            <!-- BOTÃO DE SUPORTE NA TELA DE LOGIN -->
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-support-login">
-                    💬 Suporte
+            <!-- ABAS DE NAVEGAÇÃO DO LOGIN -->
+            <div class="auth-tab-bar">
+                <button class="auth-tab-btn active" id="tabBtnEntrar" onclick="mudarAbaAuth('entrar')">🔑 Entrar</button>
+                <button class="auth-tab-btn" id="tabBtnPlanos" onclick="mudarAbaAuth('planos')">⚡ Planos & Pix</button>
+            </div>
+
+            <!-- PAINEL 1: ENTRAR / TESTAR -->
+            <div class="auth-pane active" id="paneEntrar">
+                <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
+                <div class="input-group-modern">
+                    <span class="input-icon-modern">📱</span>
+                    <input type="tel" id="inputTel" class="input-auth-modern" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+                </div>
+
+                <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
+                <div class="input-group-modern">
+                    <span class="input-icon-modern">🔑</span>
+                    <input type="password" id="inputSenha" class="input-auth-modern" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+                </div>
+                
+                <button class="btn-main-action" onclick="autenticarUsuarioFirebase()" style="margin-bottom: 10px;">
+                    ⚡ <span data-i18n="btn_enter">Acessar Sistema</span>
                 </button>
-            </a>
-            
-            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
+                
+                <button class="btn-action-trial" onclick="ativarTesteGratis()">
+                    🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
+                </button>
 
-            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
-            
-            <div class="plan-stack">
-                <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
-                    <div>
-                        <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
-                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
-                    </div>
-                    <div class="plan-val">R$ 5,00</div>
-                </div>
-
-                <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
-                    <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
-                    <div>
-                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
-                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
-                    </div>
-                    <div class="plan-val">R$ 10,00</div>
-                </div>
-
-                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (3 Meses)', 'cardPlano90')">
-                    <div>
-                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
-                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
-                    </div>
-                    <div class="plan-val">R$ 25,00</div>
-                </div>
+                <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+                    <button class="btn-support-modern">
+                        💬 Falar com Suporte
+                    </button>
+                </a>
             </div>
 
-            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
-                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
-            </button>
+            <!-- PAINEL 2: ESCOLHER PLANO E GERAR PIX -->
+            <div class="auth-pane" id="panePlanos">
+                <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Selecione o plano desejado:</div>
+                
+                <div class="plan-grid-modern">
+                    <div class="plan-card-modern" id="cardPlano7" onclick="selecionarPlano(7, 5.00, '7 Dias (Semanal)', 'cardPlano7')">
+                        <div>
+                            <div class="plan-name">Plano Semanal</div>
+                            <div class="plan-meta">7 dias de acesso total</div>
+                        </div>
+                        <div class="plan-val">R$ 5,00</div>
+                    </div>
+
+                    <div class="plan-card-modern featured" id="cardPlano30" onclick="selecionarPlano(30, 10.00, '30 Dias (Mensal)', 'cardPlano30')">
+                        <span class="plan-badge-top">Popular</span>
+                        <div>
+                            <div class="plan-name">Plano Mensal</div>
+                            <div class="plan-meta">30 dias • Melhor custo</div>
+                        </div>
+                        <div class="plan-val">R$ 10,00</div>
+                    </div>
+
+                    <div class="plan-card-modern" id="cardPlano90" onclick="selecionarPlano(90, 25.00, '90 Dias (3 Meses)', 'cardPlano90')">
+                        <div>
+                            <div class="plan-name">Plano Trimestral</div>
+                            <div class="plan-meta">90 dias com desconto</div>
+                        </div>
+                        <div class="plan-val">R$ 25,00</div>
+                    </div>
+                </div>
+
+                <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()" style="margin-top: 10px;">
+                    ⚡ Gerar Pagamento Pix
+                </button>
+
+                <button class="auth-tab-btn" onclick="mudarAbaAuth('entrar')" style="width: 100%; margin-top: 8px; color: var(--text-muted);">
+                    ← Voltar ao Login
+                </button>
+            </div>
+            
+            <div id="msgErro" style="color:#ef4444; font-size:0.75rem; font-weight:700; margin-top:10px; display:none; text-align: center;"></div>
         </div>
     </div>
 
@@ -866,7 +832,7 @@
 
             <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-size:0.68rem; text-align:center; outline:none;">
             
-            <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
+            <button class="btn-main-action" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
                 📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
             </button>
             <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
@@ -890,7 +856,7 @@
 
             <div class="modal-rota-conteudo" id="listaParadasModal"></div>
 
-            <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
+            <button onclick="fecharModalRota()" class="btn-main-action" style="margin-top:14px;">Fechar</button>
         </div>
     </div>
 
@@ -922,8 +888,8 @@
             </div>
             
             <div id="areaLoginAdmin">
-                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:#d97706; color:#000;">Entrar</button>
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth-modern" style="margin-bottom:10px; padding-left:14px;">
+                <button onclick="autenticarAdmin()" class="btn-main-action" style="background:#d97706; color:#000;">Entrar</button>
             </div>
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
@@ -942,15 +908,15 @@
                 <div id="viewAdminPagos" style="max-height:250px; overflow-y:auto; display:none;"></div>
 
                 <div id="viewAdminAdd" style="display:none;">
-                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
+                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth-modern" style="margin-bottom:8px; padding-left:14px;">
+                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth-modern" style="margin-bottom:8px; padding-left:14px;">
                     <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
                         <option value="3">3 Dias</option>
                         <option value="7">7 Dias (Semanal)</option>
                         <option value="30" selected>30 Dias (1 Mês)</option>
                         <option value="90">90 Dias (3 Meses)</option>
                     </select>
-                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
+                    <button onclick="liberarClienteManual()" class="btn-main-action" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
                 </div>
             </div>
         </div>
@@ -978,7 +944,7 @@
         <!-- BOTÃO DE SUPORTE NA LATERAL -->
         <div style="margin-bottom:16px;">
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
+                <button class="btn-main-action" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
                     💬 Suporte
                 </button>
             </a>
@@ -1017,10 +983,10 @@
         </div>
 
         <div style="margin-top:24px;">
-            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
+            <button onclick="zerarRota()" class="btn-main-action" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
                 🔄 <span data-i18n="reset_route">Zerar Bipagens</span>
             </button>
-            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(220, 38, 38, 0.15); color:#ef4444; border:1px solid rgba(220, 38, 38, 0.3); font-size:0.8rem;">
+            <button onclick="sairDoApp()" class="btn-main-action" style="background:rgba(185, 28, 28, 0.15); color:#ef4444; border:1px solid rgba(185, 28, 28, 0.3); font-size:0.8rem;">
                 🔒 <span data-i18n="logout">Desconectar Conta</span>
             </button>
         </div>
@@ -1042,7 +1008,7 @@
         <div class="card-retomar-rota" id="cardRetomarRota">
             <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
-            <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
+            <button class="btn-main-action" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
                 ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
             </button>
         </div>
@@ -1056,7 +1022,7 @@
             </button>
 
             <!-- BOTÃO PARA VER AS PARADAS -->
-            <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
+            <button class="btn-main-action" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
                 👀 Visualizar Paradas da Rota
             </button>
 
@@ -1101,13 +1067,35 @@
 
             <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
+            <input type="text" class="input-auth-modern" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
 
         </div>
 
     </div>
 
     <script>
+        // ==========================================
+        // SISTEMA DE ABAS DO LOGIN MODERNO
+        // ==========================================
+        function mudarAbaAuth(aba) {
+            let btnEntrar = document.getElementById('tabBtnEntrar');
+            let btnPlanos = document.getElementById('tabBtnPlanos');
+            let paneEntrar = document.getElementById('paneEntrar');
+            let panePlanos = document.getElementById('panePlanos');
+
+            if (aba === 'entrar') {
+                btnEntrar.classList.add('active');
+                btnPlanos.classList.remove('active');
+                paneEntrar.classList.add('active');
+                panePlanos.classList.remove('active');
+            } else {
+                btnPlanos.classList.add('active');
+                btnEntrar.classList.remove('active');
+                panePlanos.classList.add('active');
+                paneEntrar.classList.remove('active');
+            }
+        }
+
         // ==========================================
         // SISTEMA MULTI-IDIOMA
         // ==========================================
@@ -1394,18 +1382,20 @@
             let senha = document.getElementById('inputSenha').value.trim();
 
             if (!validarNumeroWhatsApp(zap)) {
-                notificar("⚠️ Digite um número de WhatsApp válido com DDD antes de escolher o plano.");
+                notificar("⚠️ Digite um número de WhatsApp válido com DDD na aba 'Entrar' antes de escolher o plano.");
+                mudarAbaAuth('entrar');
                 document.getElementById('inputTel').focus();
                 return;
             }
 
             if (!senha || senha.length < 3) {
-                notificar("⚠️ Defina uma senha pessoal (mínimo 3 dígitos) antes de escolher o plano.");
+                notificar("⚠️ Defina uma senha pessoal na aba 'Entrar' antes de escolher o plano.");
+                mudarAbaAuth('entrar');
                 document.getElementById('inputSenha').focus();
                 return;
             }
 
-            document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
+            document.querySelectorAll('.plan-card-modern').forEach(el => el.classList.remove('selecionado'));
             document.getElementById(cardId).classList.add('selecionado');
 
             planoSelecionadoAtual = { dias, valor, nomePlano, senha };
@@ -1665,7 +1655,7 @@
                 if (!doc.exists) {
                     msgErro.innerText = "Número não localizado. Escolha um plano ou ative o teste.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.innerText = "⚡ Acessar Sistema";
                     btn.disabled = false;
                     return;
                 }
@@ -1676,7 +1666,7 @@
                 if (data.senha && data.senha !== senha) {
                     msgErro.innerText = "❌ Senha incorreta!";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.innerText = "⚡ Acessar Sistema";
                     btn.disabled = false;
                     return;
                 }
@@ -1684,15 +1674,15 @@
                 if (data.bloqueado) {
                     msgErro.innerText = "❌ Este número foi bloqueado temporariamente pelo suporte.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.innerText = "⚡ Acessar Sistema";
                     btn.disabled = false;
                     return;
                 }
 
                 if (!data.ativo || agora > data.expiraEm) {
-                    msgErro.innerText = "Acesso expirado. Selecione um plano abaixo para renovar.";
+                    msgErro.innerText = "Acesso expirado. Selecione um plano na aba 'Planos & Pix' para renovar.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.innerText = "⚡ Acessar Sistema";
                     btn.disabled = false;
                     return;
                 }
@@ -1712,7 +1702,7 @@
                 msgErro.style.display = 'block';
             }
 
-            btn.innerText = "⚡ Entrar no Sistema";
+            btn.innerText = "⚡ Acessar Sistema";
             btn.disabled = false;
         }
 
