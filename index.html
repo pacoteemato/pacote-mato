@@ -1034,18 +1034,19 @@
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
             <div class="segmented-control-grid4">
                 <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Slate Tech</button>
+                <button class="segmented-btn" id="theme_yellow_tatico" onclick="mudarTema('yellow_tatico')">Amarelo Tático</button>
                 <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
                 <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
-                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza Metálico</button>
+                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')" style="grid-column: span 2;">Cinza Metálico</button>
             </div>
         </div>
 
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
             <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Rápida</button>
-                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">👩 Feminina</button>
-                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">👨 Masculina</button>
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Tática Turbo</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Walkie Rádio</button>
+                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">🗣️ Natural HD</button>
                 <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
             </div>
         </div>
@@ -1271,7 +1272,7 @@
                 flash_txt: "Flash",
                 manual_placeholder: "Type code manually...",
                 same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: ",
-                pdf_erro: "Could not read this PDF. Check that the file isn't corrupted and try again.",
+                pdf_erro: "❌ Could not read this PDF. Check that the file isn't corrupted and try again.",
                 login_bloqueado: "🔒 Too many failed attempts. Wait 30 seconds and try again."
             }
         };
@@ -1304,6 +1305,7 @@
 
         const paletas = {
             slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
+            yellow_tatico: { bg_body: "#050507", surface_1: "#0f1015", surface_2: "#161820", border: "rgba(250, 204, 21, 0.25)", text_main: "#f8fafc", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(250, 204, 21, 0.2), 0 0 0 1px rgba(250, 204, 21, 0.25)" },
             black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
             light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
             gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
@@ -1324,7 +1326,7 @@
 
             localStorage.setItem('tema_preferido', tipo);
 
-            ['slate_tech', 'black_oled', 'light', 'gray'].forEach(t => {
+            ['slate_tech', 'yellow_tatico', 'black_oled', 'light', 'gray'].forEach(t => {
                 let btn = document.getElementById('theme_' + t);
                 if (btn) {
                     if (t === tipo) btn.classList.add('active');
@@ -1335,7 +1337,7 @@
 
         function salvarVoz(tipo) {
             localStorage.setItem('voz_preferida', tipo);
-            ['rapida', 'normal', 'grave', 'mudo'].forEach(v => {
+            ['rapida', 'grave', 'normal', 'mudo'].forEach(v => {
                 let btn = document.getElementById('voice_' + v);
                 if (btn) {
                     if (v === tipo) btn.classList.add('active');
@@ -1413,8 +1415,7 @@
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
         
         // HASH SEGURO DA SENHA (SHA-256 COM SALT TÁTICO)
-        // A senha real digitada no prompt é "121212".
-        // Quem inspecionar o código fonte só verá este Hash criptografado impossível de descriptografar.
+        // Senha para autenticação: 121212
         const HASH_DONO_SEGURO = "460cf649ad9a18d18471138b36fa2a63204db6e6900f684813589b917032ea85";
 
         async function verificarHashSenhaDono(senhaDigitada) {
@@ -2750,14 +2751,14 @@
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
                 
                 if (tipo === "grave") {
-                    msg.pitch = 0.6;
-                    msg.rate = 1.1;
+                    msg.pitch = 0.5;
+                    msg.rate = 1.15;
                 } else if (tipo === "normal") {
-                    msg.pitch = 1.2;
-                    msg.rate = 1.0;
+                    msg.pitch = 1.0;
+                    msg.rate = 1.1;
                 } else {
-                    msg.pitch = 1.05;
-                    msg.rate = 1.45;
+                    msg.pitch = 1.1;
+                    msg.rate = 1.55;
                 }
 
                 window.speechSynthesis.speak(msg);
