@@ -71,7 +71,6 @@
             padding: 0 14px;
         }
 
-        /* ANIMAÇÃO PADRÃO PARA BOTÕES */
         button, .plan-item, .nav-btn, .cam-overlay-btn, .btn-acao-card, .gps-option-btn, .segmented-btn, .admin-tab {
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
@@ -126,7 +125,6 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* TELA DE LOGIN CORPORATIVA EXECUTIVA */
         #telaBloqueio {
             position: fixed;
             inset: 0;
@@ -211,6 +209,16 @@
             opacity: 0.6;
         }
 
+        .input-icon-right {
+            position: absolute;
+            right: 14px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            opacity: 0.7;
+            user-select: none;
+        }
+        .input-icon-right:hover { opacity: 1; }
+
         .input-auth {
             width: 100%;
             padding: 12px 14px 12px 42px;
@@ -222,6 +230,10 @@
             font-weight: 700;
             outline: none;
             transition: all 0.2s;
+        }
+
+        .input-auth.com-icone-direita {
+            padding-right: 40px;
         }
 
         .input-auth:focus {
@@ -250,6 +262,11 @@
         .btn-action-primary:hover {
             filter: brightness(1.1);
             box-shadow: 0 6px 18px rgba(29, 78, 216, 0.5);
+        }
+        .btn-action-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            filter: none;
         }
 
         .btn-action-trial {
@@ -798,47 +815,12 @@
             margin-bottom: 8px;
             text-align: left;
         }
-    
-/* ==========================================================
-   V2 - PLANEJADOR / MAPA / MODO NAVEGAÇÃO MOBILE
-   ========================================================== */
-.route-suite{margin-top:14px;margin-bottom:16px;background:var(--surface-1);border:1px solid var(--surface-border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-card)}
-.route-suite-head{padding:14px 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.route-suite-title{font-size:.92rem;font-weight:900}.route-suite-sub{font-size:.68rem;color:var(--text-muted);margin-top:2px}
-.route-file-row{padding:0 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.route-btn{border:0;border-radius:11px;padding:11px 8px;font-weight:900;font-size:.75rem;cursor:pointer;min-height:44px}
-.route-btn.primary{background:var(--primary-gradient);color:#fff}.route-btn.dark{background:var(--surface-2);color:var(--text-main);border:1px solid var(--surface-border)}
-.route-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 14px 12px}
-.route-statbar{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 14px 12px}
-.route-stat{background:var(--surface-2);border:1px solid var(--surface-border);border-radius:10px;padding:8px 4px;text-align:center}.route-stat b{display:block;font-size:.92rem}.route-stat span{font-size:.6rem;color:var(--text-muted);font-weight:800;text-transform:uppercase}
-#routeMap{height:62vh;min-height:420px;background:#e5e7eb;position:relative;z-index:1}
-.nav-top-card{position:absolute;z-index:500;top:12px;left:12px;right:12px;background:rgba(8,13,28,.94);color:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.35);pointer-events:none}
-.nav-turn{display:flex;align-items:center;gap:10px}.nav-arrow{width:46px;height:46px;border-radius:13px;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900}.nav-distance{font-size:1.15rem;font-weight:900}.nav-instruction{font-size:.78rem;color:#dbeafe;font-weight:800}.nav-street{font-size:.68rem;color:#7dd3fc;margin-top:2px}
-.nav-bottom-card{position:absolute;z-index:500;left:12px;right:12px;bottom:12px;background:rgba(255,255,255,.97);color:#111827;border-radius:17px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.nav-bottom-main{display:flex;justify-content:space-between;gap:10px;align-items:center}.nav-stop-label{font-size:.68rem;font-weight:900;color:#2563eb;text-transform:uppercase}.nav-stop-address{font-size:.88rem;font-weight:900;line-height:1.2}.nav-stop-meta{font-size:.68rem;color:#64748b;margin-top:3px}
-.nav-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:9px}.nav-actions button{border:0;border-radius:10px;padding:10px 6px;font-size:.72rem;font-weight:900;min-height:42px;cursor:pointer}.btn-center{background:#eef2ff;color:#1d4ed8}.btn-no{background:#fee2e2;color:#b91c1c}.btn-yes{background:#16a34a;color:#fff}
-.driver-marker{width:34px;height:34px;border-radius:50%;background:#2563eb;border:4px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px;transform-origin:center}
-.route-stop-marker{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #2563eb;color:#111827;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.route-stop-marker.active{background:#16a34a;color:#fff;border-color:#fff;box-shadow:0 0 0 3px #16a34a}
-.route-stop-marker.done{background:#64748b;color:#fff;border-color:#fff}
-.map-legend{padding:8px 14px;color:var(--text-muted);font-size:.64rem;font-weight:700;background:var(--surface-1)}
-.mobile-safe{padding-bottom:max(12px,env(safe-area-inset-bottom))}
-@media(max-width:440px){#routeMap{height:calc(100svh - 170px);min-height:480px}.route-suite{border-radius:14px}.route-suite-head{padding:11px}.route-file-row,.route-controls,.route-statbar{padding-left:11px;padding-right:11px}.nav-top-card{top:8px;left:8px;right:8px}.nav-bottom-card{left:8px;right:8px;bottom:8px}.nav-actions button{font-size:.68rem}}
-
     </style>
-
-    <!-- V2: MAPA / XLSX / NAVEGAÇÃO -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3Y1s6y5Gf4X5JQ1Z0d5bF0c2jG4nM=" crossorigin="">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 </head>
 <body>
 
-    <!-- TOAST NOTIFICATION -->
     <div id="toastNotificacao"></div>
 
-    <!-- TELA DE LOGIN CORPORATIVA EXECUTIVA -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             
@@ -861,7 +843,8 @@
             <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
             <div class="input-group">
                 <span class="input-icon-left">🔑</span>
-                <input type="password" id="inputSenha" class="input-auth" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+                <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+                <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">👁️</span>
             </div>
             
             <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
@@ -871,7 +854,6 @@
                 🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
             </button>
 
-            <!-- BOTÃO DE SUPORTE NA TELA DE LOGIN -->
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
                 <button class="btn-support-login">
                     💬 Suporte
@@ -915,7 +897,6 @@
         </div>
     </div>
 
-    <!-- MODAL PIX -->
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
             <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
@@ -937,7 +918,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE VISUALIZAÇÃO DE PARADAS E ROTA -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -956,7 +936,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE ESCOLHA DE GPS -->
     <div id="modalEscolhaGps" class="modal-backdrop">
         <div class="modal-card" style="max-width:330px;">
             <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
@@ -975,7 +954,6 @@
         </div>
     </div>
 
-    <!-- MODAL ADMIN -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1018,7 +996,6 @@
         </div>
     </div>
 
-    <!-- APP PRINCIPAL -->
     <div class="top-nav">
         <button class="nav-btn" onclick="toggleSidebar()">
             <span>☰</span> <span data-i18n="menu">Menu</span>
@@ -1028,7 +1005,6 @@
 
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- MENU LATERAL COM BOTÃO DE SUPORTE -->
     <div class="drawer-panel" id="sidebar">
         <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
         <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
@@ -1037,7 +1013,6 @@
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
-        <!-- BOTÃO DE SUPORTE NA LATERAL -->
         <div style="margin-bottom:16px;">
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
                 <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
@@ -1046,7 +1021,6 @@
             </a>
         </div>
 
-        <!-- SELETOR DE IDIOMA -->
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span data-i18n="language_label">Idioma</span></label>
             <div class="segmented-control">
@@ -1056,7 +1030,6 @@
             </div>
         </div>
 
-        <!-- SELETOR DE TEMAS -->
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
             <div class="segmented-control-grid4">
@@ -1067,7 +1040,6 @@
             </div>
         </div>
 
-        <!-- SELETOR DE VOZ -->
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
             <div class="segmented-control-grid4">
@@ -1100,7 +1072,6 @@
             <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
-        <!-- RETOMAR ROTA SALVA -->
         <div class="card-retomar-rota" id="cardRetomarRota">
             <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
@@ -1110,14 +1081,13 @@
         </div>
 
         <div class="upload-section">
-            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF ou XLSX</div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe PDF ou XLSX; o XLSX alimenta o mapa, as paradas e a otimização.</div>
+            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
             
             <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
                 📄 Escolher Arquivo PDF
             </button>
 
-            <!-- BOTÃO PARA VER AS PARADAS -->
             <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
                 👀 Visualizar Paradas da Rota
             </button>
@@ -1142,7 +1112,6 @@
                 </div>
             </div>
 
-            <!-- CAMERA -->
             <div class="camera-viewport">
                 <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
                     <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
@@ -1155,7 +1124,6 @@
                 <div id="reader"></div>
             </div>
 
-            <!-- SCAN RESULT -->
             <div class="result-panel" id="cardResult">
                 <div class="stop-number" id="resStop">P1</div>
                 <div id="resPacote" style="font-size:0.82rem; font-weight:800; color:var(--text-muted);">📍 Pacote: BR...</div>
@@ -1171,8 +1139,17 @@
 
     <script>
         // ==========================================
-        // SISTEMA MULTI-IDIOMA
+        // AVISO DE SEGURANÇA (leia antes de editar)
         // ==========================================
+        // A senha mestre do admin (SENHA_DONO) e toda a lógica de
+        // autenticação abaixo rodam no NAVEGADOR do usuário. Isso
+        // significa que qualquer pessoa pode abrir "Ver código-fonte"
+        // e ler a senha e a lógica. O ideal, a médio prazo, é mover
+        // TODA validação sensível (login de admin, checagem de senha
+        // de entregador, liberação de dias de acesso, trava de
+        // dispositivo) para o seu Worker/backend, que já existe
+        // (CLOUDFLARE_WORKER_URL) e hoje só cuida do Pix.
+
         const traducoes = {
             pt: {
                 download_app: "Baixar App no Celular",
@@ -1215,7 +1192,9 @@
                 cam_flip: "Virar",
                 flash_txt: "Flash",
                 manual_placeholder: "Digite o código manualmente...",
-                same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: "
+                same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
+                pdf_erro: "❌ Não consegui ler este PDF. Verifique se o arquivo não está corrompido e tente novamente.",
+                login_bloqueado: "🔒 Muitas tentativas erradas. Aguarde 30 segundos e tente de novo."
             },
             es: {
                 download_app: "Descargar App en el Móvil",
@@ -1258,7 +1237,9 @@
                 cam_flip: "Girar",
                 flash_txt: "Flash",
                 manual_placeholder: "Escribe el código manualmente...",
-                same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paquetes en este punto: "
+                same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paquetes en este punto: ",
+                pdf_erro: "❌ No pude leer este PDF. Verifica que el archivo no esté dañado e intenta de nuevo.",
+                login_bloqueado: "🔒 Demasiados intentos fallidos. Espera 30 segundos e intenta de nuevo."
             },
             en: {
                 download_app: "Download App on Phone",
@@ -1301,7 +1282,9 @@
                 cam_flip: "Flip",
                 flash_txt: "Flash",
                 manual_placeholder: "Type code manually...",
-                same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: "
+                same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: ",
+                pdf_erro: "❌ Could not read this PDF. Check that the file isn't corrupted and try again.",
+                login_bloqueado: "🔒 Too many failed attempts. Wait 30 seconds and try again."
             }
         };
 
@@ -1331,9 +1314,6 @@
             });
         }
 
-        // ==========================================
-        // TEMAS
-        // ==========================================
         const paletas = {
             slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
             black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
@@ -1391,6 +1371,19 @@
             return true;
         }
 
+        // NOVO: toggle de mostrar/ocultar senha
+        function alternarVisibilidadeSenha() {
+            let campo = document.getElementById('inputSenha');
+            let icone = document.getElementById('toggleSenhaVisivel');
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icone.innerText = '🙈';
+            } else {
+                campo.type = 'password';
+                icone.innerText = '👁️';
+            }
+        }
+
         function carregarConfiguracoesSalvas() {
             let lang = localStorage.getItem('idioma_preferido') || 'pt';
             mudarIdioma(lang);
@@ -1431,6 +1424,8 @@
         const db = firebase.firestore();
 
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
+        // ATENÇÃO: esta senha fica visível no código-fonte do navegador.
+        // Recomenda-se mover essa validação para o Worker assim que possível.
         const SENHA_DONO = "121212";
         
         let timerVerificadorPix = null;
@@ -1446,9 +1441,6 @@
         }
         const MEU_DEVICE_ID = obterDeviceId();
 
-        // ==========================================
-        // SELEÇÃO DE PLANO ANTES DO PIX
-        // ==========================================
         let planoSelecionadoAtual = null;
 
         function selecionarPlano(dias, valor, nomePlano, cardId) {
@@ -1487,9 +1479,6 @@
             gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano, planoSelecionadoAtual.senha);
         }
 
-        // ==========================================
-        // GERADOR PIX AUTOMATIZADO
-        // ==========================================
         async function gerarPixAutomatico(dias, valor, nomePlano, senha) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             if (!validarNumeroWhatsApp(zap)) {
@@ -1601,9 +1590,6 @@
             notificar("📋 Código Pix Copiado com sucesso!");
         }
 
-        // ==========================================
-        // TESTE 3 DIAS
-        // ==========================================
         async function ativarTesteGratis() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
@@ -1693,14 +1679,30 @@
         // ==========================================
         // AUTH & SESSÃO REALTIME
         // ==========================================
+        // NOVO: rate limit simples de tentativas de login (paliativo client-side)
+        let tentativasLoginFalhas = 0;
+        let loginBloqueadoAte = 0;
+
         async function autenticarUsuarioFirebase() {
-            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
-            let senha = document.getElementById('inputSenha').value.trim();
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            let dict = traducoes[lang] || traducoes.pt;
             let msgErro = document.getElementById('msgErro');
             let btn = document.getElementById('btnEntrarAuth');
 
+            if (Date.now() < loginBloqueadoAte) {
+                msgErro.innerText = dict.login_bloqueado;
+                msgErro.style.display = 'block';
+                return;
+            }
+
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+
             if (!validarNumeroWhatsApp(zap)) {
-                if(zap === "121212") {
+                // CORRIGIDO: o "backdoor" do dono agora também exige a senha mestre.
+                // Antes, digitar 121212 no campo de WhatsApp liberava acesso de
+                // dono sem checar nenhuma senha.
+                if (zap === "121212" && senha === SENHA_DONO) {
                     localStorage.setItem('usuario_zap_salvo', zap);
                     document.getElementById('telaBloqueio').style.display = 'none';
                     document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
@@ -1736,12 +1738,15 @@
                 let agora = Date.now();
 
                 if (data.senha && data.senha !== senha) {
+                    registrarTentativaLoginFalha(dict);
                     msgErro.innerText = "❌ Senha incorreta!";
                     msgErro.style.display = 'block';
                     btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
                     return;
                 }
+
+                tentativasLoginFalhas = 0;
 
                 if (data.bloqueado) {
                     msgErro.innerText = "❌ Este número foi bloqueado temporariamente pelo suporte.";
@@ -1776,6 +1781,15 @@
 
             btn.innerText = "⚡ Entrar no Sistema";
             btn.disabled = false;
+        }
+
+        function registrarTentativaLoginFalha(dict) {
+            tentativasLoginFalhas++;
+            if (tentativasLoginFalhas >= 5) {
+                loginBloqueadoAte = Date.now() + 30000;
+                tentativasLoginFalhas = 0;
+                notificar(dict.login_bloqueado);
+            }
         }
 
         function iniciarMonitoramentoSessao(zap) {
@@ -2458,51 +2472,73 @@
             let file = e.target.files[0];
             if (!file) return;
 
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            let dict = traducoes[lang] || traducoes.pt;
+
             document.getElementById('cardResult').style.display = 'none';
             document.getElementById('cardResult').classList.remove('error-state');
             document.getElementById('boxAviso').style.display = 'none';
             document.getElementById('inputManual').value = "";
-            document.getElementById('btnUploadTxt').innerHTML = "📄 " + file.name.substring(0, 20) + "...";
-            document.getElementById('btnVerParadasModal').style.display = 'flex';
+            document.getElementById('btnUploadTxt').innerHTML = "⏳ Lendo " + file.name.substring(0, 20) + "...";
 
             chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
 
             let reader = new FileReader();
+
+            // NOVO: tratamento de erro de leitura de arquivo
+            reader.onerror = function() {
+                notificar(dict.pdf_erro);
+                document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+            };
+
             reader.onload = async function() {
-                let typedarray = new Uint8Array(this.result);
-                let pdf = await pdfjsLib.getDocument(typedarray).promise;
-                let linhasPdf = [];
+                try {
+                    let typedarray = new Uint8Array(this.result);
+                    let pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let linhasPdf = [];
 
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    let page = await pdf.getPage(i);
-                    let content = await page.getTextContent();
-                    
-                    let gruposY = {};
-                    content.items.forEach(item => {
-                        let y = Math.round(item.transform[5]);
-                        let achouGrupo = null;
-                        for (let k in gruposY) {
-                            if (Math.abs(k - y) <= 4) {
-                                achouGrupo = k;
-                                break;
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        let page = await pdf.getPage(i);
+                        let content = await page.getTextContent();
+                        
+                        let gruposY = {};
+                        content.items.forEach(item => {
+                            let y = Math.round(item.transform[5]);
+                            let achouGrupo = null;
+                            for (let k in gruposY) {
+                                if (Math.abs(k - y) <= 4) {
+                                    achouGrupo = k;
+                                    break;
+                                }
                             }
-                        }
-                        if (achouGrupo !== null) {
-                            gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
-                        } else {
-                            gruposY[y] = [{ x: item.transform[4], str: item.str }];
-                        }
-                    });
+                            if (achouGrupo !== null) {
+                                gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
+                            } else {
+                                gruposY[y] = [{ x: item.transform[4], str: item.str }];
+                            }
+                        });
 
-                    let chaves = Object.keys(gruposY).sort((a, b) => b - a);
-                    chaves.forEach(k => {
-                        gruposY[k].sort((a, b) => a.x - b.x);
-                        let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
-                        if (linhaTexto) linhasPdf.push(linhaTexto);
-                    });
+                        let chaves = Object.keys(gruposY).sort((a, b) => b - a);
+                        chaves.forEach(k => {
+                            gruposY[k].sort((a, b) => a.x - b.x);
+                            let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
+                            if (linhaTexto) linhasPdf.push(linhaTexto);
+                        });
+                    }
+
+                    if (linhasPdf.length === 0) {
+                        throw new Error("PDF sem texto reconhecível.");
+                    }
+
+                    processarLinhasExatas(linhasPdf, file.name);
+
+                } catch (err) {
+                    // NOVO: feedback ao usuário quando o PDF não pode ser processado,
+                    // em vez de a tela travar silenciosamente.
+                    notificar(dict.pdf_erro);
+                    document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+                    document.getElementById('btnVerParadasModal').style.display = 'none';
                 }
-
-                processarLinhasExatas(linhasPdf, file.name);
             };
             reader.readAsArrayBuffer(file);
         });
@@ -2557,6 +2593,14 @@
                 }
             });
 
+            if (todosPacotes.size === 0) {
+                let lang = localStorage.getItem('idioma_preferido') || 'pt';
+                let dict = traducoes[lang] || traducoes.pt;
+                notificar(dict.pdf_erro);
+                document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+                return;
+            }
+
             if (chaveStorageAtual) {
                 let salvos = localStorage.getItem(chaveStorageAtual);
                 if (salvos) {
@@ -2564,6 +2608,8 @@
                 }
             }
 
+            document.getElementById('btnUploadTxt').innerHTML = "📄 " + nomeArquivo.substring(0, 20) + "...";
+            document.getElementById('btnVerParadasModal').style.display = 'flex';
             document.getElementById('areaExecucao').style.display = 'block';
             document.getElementById('cardRetomarRota').style.display = 'none';
 
@@ -2733,241 +2779,6 @@
             toggleSidebar();
             notificar("Bipagens desta rota foram zeradas.");
         }
-
-
-
-        // ==========================================================
-        // V2 - MAPA / XLSX / OTIMIZAÇÃO / NAVEGAÇÃO
-        // ==========================================================
-        const ROUTE_V2 = {
-            map: null, routeLayer: null, remainingLayer: null, driverMarker: null,
-            stopMarkers: [], stops: [], currentIndex: 0, currentPosition: null,
-            watchId: null, following: true, navigating: false, currentHeading: 0,
-            routeGeometry: [], routeSteps: [], currentStep: 0, startPoint: null,
-            optimized: false, routeDistanceM: 0, routeDurationS: 0, routeMatrix: null
-        };
-
-        function routeInitMapV2() {
-            if (ROUTE_V2.map) return;
-            ROUTE_V2.map = L.map('routeMap', { zoomControl:false, attributionControl:true, preferCanvas:true }).setView([-23.55,-46.63], 12);
-            L.control.zoom({position:'topright'}).addTo(ROUTE_V2.map);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap contributors'}).addTo(ROUTE_V2.map);
-            ROUTE_V2.map.on('dragstart', () => { if (ROUTE_V2.navigating) { ROUTE_V2.following = false; } });
-        }
-
-        function routeShowMapV2() {
-            document.getElementById('routeMapWrap').style.display = 'block';
-            routeInitMapV2();
-            setTimeout(() => ROUTE_V2.map.invalidateSize(), 80);
-        }
-
-        function routeSetStatusV2(text){ const e=document.getElementById('routeStatusV2'); if(e)e.textContent=text; }
-        function routeSetStatsV2(){
-            document.getElementById('routeCountV2').textContent = ROUTE_V2.stops.length;
-            document.getElementById('routeKmV2').textContent = ROUTE_V2.routeDistanceM ? (ROUTE_V2.routeDistanceM/1000).toFixed(1)+' km' : '—';
-        }
-
-        function normKeyV2(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-        function pickColV2(headers, candidates){
-            const hs=headers.map(normKeyV2);
-            for(const c of candidates){ const i=hs.indexOf(normKeyV2(c)); if(i>=0)return headers[i]; }
-            for(const c of candidates){ const k=normKeyV2(c); const i=hs.findIndex(h=>h.includes(k)||k.includes(h)); if(i>=0)return headers[i]; }
-            return null;
-        }
-        function strV2(v){ return v==null?'':String(v).trim(); }
-        function buildAddressV2(row, headers){
-            const direct=pickColV2(headers,['address','endereco','endereço','logradouro','delivery address','shipping address']);
-            if(direct && strV2(row[direct])) return strV2(row[direct]);
-            const street=pickColV2(headers,['street','rua','logradouro','address line 1']);
-            const number=pickColV2(headers,['number','numero','número','house number']);
-            const district=pickColV2(headers,['bairro','district','neighborhood']);
-            const city=pickColV2(headers,['city','cidade','municipio','município']);
-            const state=pickColV2(headers,['state','estado','uf']);
-            const zip=pickColV2(headers,['zip','zipcode','cep','postal code']);
-            let parts=[]; if(street)parts.push(strV2(row[street])); if(number&&strV2(row[number]))parts.push(strV2(row[number]));
-            let line=parts.join(', '); if(district&&strV2(row[district]))line+=(line?' - ':'')+strV2(row[district]);
-            let cityState=[city&&strV2(row[city]),state&&strV2(row[state])].filter(Boolean).join(' - '); if(cityState)line+=(line?', ':'')+cityState;
-            if(zip&&strV2(row[zip]))line+=(line?', ':'')+strV2(row[zip]);
-            return line || Object.values(row).map(strV2).filter(Boolean).slice(0,5).join(', ');
-        }
-        function extractCoordsV2(row, headers){
-            const lat=pickColV2(headers,['latitude','lat']); const lon=pickColV2(headers,['longitude','lon','lng','long']);
-            if(lat&&lon){const a=parseFloat(String(row[lat]).replace(',','.'));const b=parseFloat(String(row[lon]).replace(',','.'));if(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180)return [a,b];}
-            return null;
-        }
-
-        document.getElementById('xlsxInputV2').addEventListener('change', async e=>{
-            const file=e.target.files?.[0]; if(!file)return;
-            routeSetStatusV2('Lendo XLSX…');
-            try{
-                const data=await file.arrayBuffer(); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]];
-                const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-                if(!rows.length) throw new Error('A primeira aba está vazia.');
-                const headers=Object.keys(rows[0]);
-                const routeCol=pickColV2(headers,['route','rota','route number','numero rota','número rota']);
-                const packageCol=pickColV2(headers,['package','pacote','pedido','order','tracking','tracking number','codigo','código']);
-                ROUTE_V2.stops=rows.map((r,i)=>({
-                    id:i+1, route:routeCol?strV2(r[routeCol]):'1', package:packageCol?strV2(r[packageCol]):'',
-                    address:buildAddressV2(r,headers), coords:extractCoordsV2(r,headers), status:'pendente'
-                })).filter(s=>s.address||s.coords);
-                ROUTE_V2.currentIndex=0; ROUTE_V2.optimized=false; ROUTE_V2.routeDistanceM=0;
-                routeShowMapV2(); renderStopsV2(); routeSetStatsV2(); routeSetStatusV2(`${ROUTE_V2.stops.length} paradas carregadas`);
-                await routeGeocodeMissingV2();
-                renderStopsV2();
-                routeSetStatusV2('Endereços prontos');
-                if(ROUTE_V2.stops.length) ROUTE_V2.map.fitBounds(L.latLngBounds(ROUTE_V2.stops.map(s=>s.coords)));
-            }catch(err){ console.error(err); routeSetStatusV2('Erro no XLSX'); notificar('❌ Não foi possível ler o XLSX: '+err.message); }
-        });
-
-        async function routeGeocodeMissingV2(){
-            for(let i=0;i<ROUTE_V2.stops.length;i++){
-                if(ROUTE_V2.stops[i].coords) continue;
-                const q=encodeURIComponent(ROUTE_V2.stops[i].address + ', Brasil');
-                try{
-                    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&q=${q}`,{headers:{'Accept-Language':'pt-BR'}});
-                    const j=await r.json();
-                    if(j?.[0]) ROUTE_V2.stops[i].coords=[parseFloat(j[0].lat),parseFloat(j[0].lon)];
-                }catch(e){ console.warn('Geocode',ROUTE_V2.stops[i].address,e); }
-                routeSetStatusV2(`Localizando ${i+1}/${ROUTE_V2.stops.length}…`);
-                await new Promise(r=>setTimeout(r,900));
-            }
-        }
-
-        function renderStopsV2(){
-            if(!ROUTE_V2.map)return;
-            ROUTE_V2.stopMarkers.forEach(m=>m.remove()); ROUTE_V2.stopMarkers=[];
-            ROUTE_V2.stops.forEach((s,i)=>{
-                if(!s.coords)return;
-                const cls=s.status==='entregue'?' done':(i===ROUTE_V2.currentIndex?' active':'');
-                const icon=L.divIcon({className:'',html:`<div class="route-stop-marker${cls}">${i+1}</div>`,iconSize:[30,30],iconAnchor:[15,15]});
-                const m=L.marker(s.coords,{icon}).addTo(ROUTE_V2.map).bindPopup(`<b>Parada ${i+1}</b><br>${escapeHtmlV2(s.package||'')}${s.package?'<br>':''}${escapeHtmlV2(s.address)}`);
-                ROUTE_V2.stopMarkers.push(m);
-            });
-            updateStopCardV2();
-        }
-        function escapeHtmlV2(s){return String(s||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-
-        async function routeGetMatrixV2(coords){
-            const c=coords.map(p=>`${p[1]},${p[0]}`).join(';');
-            const r=await fetch(`https://router.project-osrm.org/table/v1/driving/${c}?annotations=distance,duration`); const j=await r.json();
-            if(j.code!=='Ok')throw new Error(j.message||'Falha na matriz de rotas'); return j;
-        }
-        function nearestOrderV2(matrix){
-            const n=ROUTE_V2.stops.length, unused=new Set(Array.from({length:n},(_,i)=>i)), order=[]; let cur=0; order.push(cur); unused.delete(cur);
-            while(unused.size){let best=null,bestD=Infinity; for(const i of unused){const d=matrix.distances[cur][i]??Infinity;if(d<bestD){bestD=d;best=i;}} if(best==null)break;order.push(best);unused.delete(best);cur=best;}
-            return order;
-        }
-        function twoOptV2(order,matrix){
-            const dist=(a,b)=>matrix.distances[a][b]??Infinity; let improved=true,guard=0;
-            while(improved&&guard++<80){improved=false;for(let i=1;i<order.length-2;i++){for(let k=i+1;k<order.length-1;k++){const a=order[i-1],b=order[i],c=order[k],d=order[k+1];const gain=(dist(a,b)+dist(c,d))-(dist(a,c)+dist(b,d));if(gain>1){const rev=order.slice(i,k+1).reverse();order.splice(i,k-i+1,...rev);improved=true;}}}}
-            return order;
-        }
-        async function routeOptimizeV2(){
-            if(ROUTE_V2.stops.length<2){notificar('Importe pelo menos 2 paradas.');return;}
-            if(ROUTE_V2.stops.some(s=>!s.coords)){notificar('Ainda existem endereços sem localização.');return;}
-            routeSetStatusV2('Calculando otimização…');
-            try{
-                const matrix=await routeGetMatrixV2(ROUTE_V2.stops.map(s=>s.coords)); ROUTE_V2.routeMatrix=matrix;
-                let order=twoOptV2(nearestOrderV2(matrix),matrix);
-                ROUTE_V2.stops=order.map(i=>ROUTE_V2.stops[i]); ROUTE_V2.currentIndex=0; ROUTE_V2.optimized=true;
-                await routeBuildGeometryV2(); renderStopsV2(); routeSetStatsV2(); routeSetStatusV2('Rota otimizada'); routeFitAll();
-                notificar(`⚡ Rota otimizada: ${(ROUTE_V2.routeDistanceM/1000).toFixed(1)} km`);
-            }catch(e){console.error(e);routeSetStatusV2('Falha na otimização');notificar('❌ Falha ao calcular a rota pelas ruas. Tente novamente.');}
-        }
-
-        async function routeBuildGeometryV2(){
-            if(ROUTE_V2.stops.length<2)return;
-            const coords=ROUTE_V2.stops.map(s=>`${s.coords[1]},${s.coords[0]}`).join(';');
-            const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=true`); const j=await r.json();
-            if(j.code!=='Ok')throw new Error(j.message||'Falha na rota'); const rt=j.routes[0];
-            ROUTE_V2.routeDistanceM=rt.distance; ROUTE_V2.routeDurationS=rt.duration; ROUTE_V2.routeGeometry=rt.geometry.coordinates.map(c=>[c[1],c[0]]); ROUTE_V2.routeSteps=rt.legs.flatMap(l=>l.steps||[]);
-            if(ROUTE_V2.routeLayer)ROUTE_V2.routeLayer.remove();
-            ROUTE_V2.routeLayer=L.polyline(ROUTE_V2.routeGeometry,{color:'#2563eb',weight:7,opacity:.85,lineCap:'round',lineJoin:'round'}).addTo(ROUTE_V2.map);
-            if(ROUTE_V2.remainingLayer)ROUTE_V2.remainingLayer.remove(); ROUTE_V2.remainingLayer=null;
-        }
-
-        function routeFitAll(){
-            routeShowMapV2();
-            const pts=ROUTE_V2.stops.filter(s=>s.coords).map(s=>s.coords); if(ROUTE_V2.currentPosition)pts.push(ROUTE_V2.currentPosition);
-            if(pts.length) ROUTE_V2.map.fitBounds(L.latLngBounds(pts),{padding:[30,120]});
-            ROUTE_V2.following=false;
-        }
-
-        function routeUseCurrentLocation(){
-            if(!navigator.geolocation){notificar('GPS não disponível neste navegador.');return;}
-            navigator.geolocation.getCurrentPosition(p=>{ROUTE_V2.currentPosition=[p.coords.latitude,p.coords.longitude];routeShowMapV2();routeEnsureDriverMarkerV2();ROUTE_V2.map.setView(ROUTE_V2.currentPosition,16);ROUTE_V2.following=true;notificar('📍 Localização atualizada.');},e=>notificar('⚠️ Não foi possível obter sua localização: '+e.message),{enableHighAccuracy:true,timeout:12000,maximumAge:5000});
-        }
-
-        function routeStartNavigationV2(){
-            if(!ROUTE_V2.stops.length){notificar('Importe uma rota primeiro.');return;}
-            if(ROUTE_V2.stops.some(s=>!s.coords)){notificar('Existem paradas sem coordenadas.');return;}
-            routeShowMapV2(); ROUTE_V2.navigating=true; ROUTE_V2.following=true; ROUTE_V2.currentIndex=Math.min(ROUTE_V2.currentIndex,ROUTE_V2.stops.length-1);
-            if(!ROUTE_V2.routeLayer) routeBuildGeometryV2().catch(()=>{});
-            routeStartWatchV2(); routeEnsureDriverMarkerV2(); routeUpdateRemainingV2(); routeUpdateNavigationStepV2();
-            routeSetStatusV2('Navegando');
-        }
-        function routeStartWatchV2(){
-            if(ROUTE_V2.watchId!=null)navigator.geolocation.clearWatch(ROUTE_V2.watchId);
-            if(!navigator.geolocation){notificar('GPS não disponível.');return;}
-            ROUTE_V2.watchId=navigator.geolocation.watchPosition(routeGpsUpdateV2,e=>{console.warn(e);routeSetStatusV2('GPS indisponível');},{enableHighAccuracy:true,maximumAge:1500,timeout:10000});
-        }
-        function routeEnsureDriverMarkerV2(){
-            if(!ROUTE_V2.map)return;
-            if(!ROUTE_V2.driverMarker){
-                const icon=L.divIcon({className:'',html:'<div id="driverArrowV2" class="driver-marker">➤</div>',iconSize:[34,34],iconAnchor:[17,17]});
-                ROUTE_V2.driverMarker=L.marker(ROUTE_V2.currentPosition||[-23.55,-46.63],{icon,zIndexOffset:1000}).addTo(ROUTE_V2.map);
-            }
-        }
-        function bearingV2(a,b){const la=a[0]*Math.PI/180,lb=b[0]*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180;const y=Math.sin(dLon)*Math.cos(lb);const x=Math.cos(la)*Math.sin(lb)-Math.sin(la)*Math.cos(lb)*Math.cos(dLon);return (Math.atan2(y,x)*180/Math.PI+360)%360;}
-        function routeGpsUpdateV2(pos){
-            const p=[pos.coords.latitude,pos.coords.longitude]; const prev=ROUTE_V2.currentPosition; ROUTE_V2.currentPosition=p;
-            if(pos.coords.heading!=null&&pos.coords.heading>=0)ROUTE_V2.currentHeading=pos.coords.heading; else if(prev)ROUTE_V2.currentHeading=bearingV2(prev,p);
-            routeEnsureDriverMarkerV2(); ROUTE_V2.driverMarker.setLatLng(p);
-            const el=document.getElementById('driverArrowV2'); if(el)el.style.transform=`rotate(${ROUTE_V2.currentHeading}deg)`;
-            if(ROUTE_V2.following)ROUTE_V2.map.setView(p,Math.max(16,ROUTE_V2.map.getZoom()),{animate:true,duration:.35});
-            routeUpdateRemainingV2(); routeUpdateNavigationStepV2(); routeAutoAdvanceStopV2(p);
-        }
-        function distanceHaversineV2(a,b){const R=6371000,la=a[0]*Math.PI/180,lb=b[0]*Math.PI/180,dla=(b[0]-a[0])*Math.PI/180,dl=(b[1]-a[1])*Math.PI/180;const x=Math.sin(dla/2)**2+Math.cos(la)*Math.cos(lb)*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
-        function routeAutoAdvanceStopV2(p){const s=ROUTE_V2.stops[ROUTE_V2.currentIndex];if(!s?.coords)return;if(distanceHaversineV2(p,s.coords)<55){routeSetStopStatusV2('entregue',true);}}
-        function routeUpdateRemainingV2(){
-            if(!ROUTE_V2.routeGeometry?.length||!ROUTE_V2.currentPosition||!ROUTE_V2.map)return;
-            let idx=0,best=Infinity; for(let i=0;i<ROUTE_V2.routeGeometry.length;i++){const d=distanceHaversineV2(ROUTE_V2.currentPosition,ROUTE_V2.routeGeometry[i]);if(d<best){best=d;idx=i;}}
-            const remaining=ROUTE_V2.routeGeometry.slice(idx); if(ROUTE_V2.remainingLayer)ROUTE_V2.remainingLayer.remove();
-            if(remaining.length>1)ROUTE_V2.remainingLayer=L.polyline(remaining,{color:'#1d4ed8',weight:8,opacity:1,lineCap:'round',lineJoin:'round'}).addTo(ROUTE_V2.map);
-        }
-        function routeUpdateNavigationStepV2(){
-            const s=ROUTE_V2.stops[ROUTE_V2.currentIndex]; if(!s)return;
-            const addr=s.address||'Próxima parada'; const dist=ROUTE_V2.currentPosition&&s.coords?distanceHaversineV2(ROUTE_V2.currentPosition,s.coords):0;
-            document.getElementById('navDistanceV2').textContent=dist?formatDistanceV2(dist):'—';
-            document.getElementById('navInstructionV2').textContent='Siga pela rota otimizada';
-            document.getElementById('navStreetV2').textContent=addr;
-            document.getElementById('navStopLabelV2').textContent=`Parada ${ROUTE_V2.currentIndex+1} de ${ROUTE_V2.stops.length}`;
-            document.getElementById('navStopAddressV2').textContent=addr;
-            document.getElementById('navStopMetaV2').textContent=s.package?`Pacote/Pedido: ${s.package}`:'';
-            const a=document.getElementById('navArrowV2');a.textContent=ROUTE_V2.currentHeading>=315||ROUTE_V2.currentHeading<45?'↑':(ROUTE_V2.currentHeading<135?'→':(ROUTE_V2.currentHeading<225?'↓':'←'));
-            renderStopsV2();
-        }
-        function formatDistanceV2(m){return m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';}
-        function updateStopCardV2(){
-            const s=ROUTE_V2.stops[ROUTE_V2.currentIndex]; if(!s)return;
-            document.getElementById('navStopLabelV2').textContent=`Parada ${ROUTE_V2.currentIndex+1} de ${ROUTE_V2.stops.length}`;
-            document.getElementById('navStopAddressV2').textContent=s.address||'Endereço não informado';
-            document.getElementById('navStopMetaV2').textContent=s.package?`Pacote/Pedido: ${s.package}`:'';
-        }
-        function routeSetStopStatusV2(status,auto=false){
-            const s=ROUTE_V2.stops[ROUTE_V2.currentIndex]; if(!s)return;
-            s.status=status; if(!auto)notificar(status==='entregue'?'✓ Entrega registrada.':'✕ Parada marcada como não entregue.');
-            if(status==='entregue'||status==='nao_entregue'){
-                if(ROUTE_V2.currentIndex<ROUTE_V2.stops.length-1){ROUTE_V2.currentIndex++;}else{ROUTE_V2.navigating=false;routeSetStatusV2('Rota concluída');notificar('🏁 Todas as paradas foram processadas.');}
-            }
-            renderStopsV2(); updateStopCardV2(); routeUpdateRemainingV2(); routeUpdateNavigationStepV2();
-        }
-        function routeRecenterV2(){
-            if(!ROUTE_V2.currentPosition){routeUseCurrentLocation();return;}
-            ROUTE_V2.following=true; ROUTE_V2.map.setView(ROUTE_V2.currentPosition,Math.max(16,ROUTE_V2.map.getZoom()),{animate:true,duration:.45});
-            const el=document.getElementById('driverArrowV2');if(el)el.style.transform=`rotate(${ROUTE_V2.currentHeading}deg)`;
-        }
-
 
         window.addEventListener('DOMContentLoaded', carregarConfiguracoesSalvas);
     </script>
