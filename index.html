@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PACOTE É MATO</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e1526'/><path d='M50 20 L80 35 L80 65 L50 80 L20 65 L20 35 Z' fill='%231d4ed8' stroke='%2338bdf8' stroke-width='3'/><path d='M50 20 L50 80 M20 35 L80 65 M80 35 L20 65' stroke='%230b1120' stroke-width='2'/><path d='M25 75 Q15 60 28 48 Q35 62 25 75 Z' fill='%2310b981'/><path d='M75 75 Q85 60 72 48 Q65 62 75 75 Z' fill='%2310b981'/><path d='M50 82 Q42 68 50 55 Q58 68 50 82 Z' fill='%2334d399'/></svg>">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
@@ -12,12 +12,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -155,13 +154,12 @@
         }
 
         .app-logo-pro {
-            width: 56px;
-            height: 56px;
-            object-fit: contain;
+            width: 68px;
+            height: 68px;
             margin: 0 auto 10px;
             display: block;
             cursor: pointer;
-            filter: drop-shadow(0 4px 12px rgba(29, 78, 216, 0.4));
+            filter: drop-shadow(0 4px 14px rgba(16, 185, 129, 0.35));
             transition: transform 0.3s ease;
         }
         .app-logo-pro:hover {
@@ -178,8 +176,8 @@
 
         .brand-subtitle-pro {
             font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 700;
+            color: #34d399;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -815,23 +813,95 @@
             margin-bottom: 8px;
             text-align: left;
         }
+
+        /* TUTORIAL MOCKUPS & MODAL */
+        .tutorial-step-card {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+        .tutorial-step-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--accent-blue-soft);
+            margin-bottom: 6px;
+        }
+        .tutorial-badge {
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 900;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tutorial-mockup {
+            background: #060913;
+            border: 1px dashed var(--surface-border-hover);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
 
     <div id="toastNotificacao"></div>
 
+    <!-- TELA DE LOGIN / BLOQUEIO -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             
             <div class="auth-header-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
+                <!-- LOGO PACOTE É MATO (SVG VETORIAL EMBUTIDO) -->
+                <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
+                    <defs>
+                        <linearGradient id="logoBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#2563eb"/>
+                            <stop offset="100%" stop-color="#1e3a8a"/>
+                        </linearGradient>
+                        <linearGradient id="logoPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#34d399"/>
+                            <stop offset="100%" stop-color="#059669"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" rx="24" fill="#0e1526" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+                    <!-- Folhas do Fundo -->
+                    <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGrad)"/>
+                    <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGrad)"/>
+                    <!-- Caixa de Encomenda Isométrica -->
+                    <polygon points="50,22 78,36 50,50 22,36" fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
+                    <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGrad)" stroke="#1d4ed8" stroke-width="1.5"/>
+                    <polygon points="78,36 50,50 50,78 78,64" fill="#1d4ed8" stroke="#1e40af" stroke-width="1.5"/>
+                    <!-- Fita da Caixa -->
+                    <path d="M50 22 L50 50 M36 43 L64 43" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+                    <!-- Broto / Mato crescendo no centro -->
+                    <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#10b981"/>
+                    <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#34d399"/>
+                    <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#34d399"/>
+                </svg>
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
                 <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
             </div>
 
             <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
                 📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+            </button>
+
+            <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom:12px; border-color:rgba(56, 189, 248, 0.3); color:#38bdf8;">
+                📖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Iniciante)</span>
             </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
@@ -897,6 +967,79 @@
         </div>
     </div>
 
+    <!-- MODAL TUTORIAL / COMO USAR -->
+    <div id="modalTutorial" class="modal-backdrop">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:var(--accent-blue-soft); font-weight:800; font-size:1.1rem;">📖 Guia Rápido do Entregador</h3>
+                <span onclick="fecharModalTutorial()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.1rem;">✕</span>
+            </div>
+            
+            <div style="max-height:60vh; overflow-y:auto; padding-right:4px;">
+                
+                <div class="tutorial-step-card">
+                    <div class="tutorial-step-header">
+                        <span class="tutorial-badge">1</span>
+                        <span>Carregar sua Rota em PDF</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">
+                        Toque no botão <b>"📄 Escolher Arquivo PDF"</b> e selecione o manifesto de entrega gerado pela transportadora. O sistema processa todos os pacotes e endereços na hora.
+                    </div>
+                    <div class="tutorial-mockup">
+                        <span style="color:#60a5fa; font-weight:800;">[📄 Escolher Arquivo PDF]</span>
+                        <div style="font-size:0.65rem; margin-top:2px;">Suporta Circuit, Shopee, Mercado Livre e transportadoras parceiras</div>
+                    </div>
+                </div>
+
+                <div class="tutorial-step-card">
+                    <div class="tutorial-step-header">
+                        <span class="tutorial-badge">2</span>
+                        <span>Personalizar Cores e Voz</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">
+                        Abra o <b>Menu</b> no canto superior esquerdo para escolher a paleta (Amarelo Tático, Slate, OLED Puro) e o tipo de voz que fala as paradas no seu fone.
+                    </div>
+                    <div class="tutorial-mockup">
+                        <span style="color:#34d399; font-weight:800;">🎙️ Voz: ⚡ Tática Turbo | 📻 Walkie Rádio</span>
+                    </div>
+                </div>
+
+                <div class="tutorial-step-card">
+                    <div class="tutorial-step-header">
+                        <span class="tutorial-badge">3</span>
+                        <span>Apontar a Câmera e Bipar</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">
+                        Aponte a câmera para o código de barras ou QR Code da etiqueta do pacote. Pode ligar o <b>Flash</b> à noite ou alternar para a câmera frontal.
+                    </div>
+                    <div class="tutorial-mockup">
+                        📷 <b>Scanner Ativo:</b> [ QR / Código de Barras ] ⚡
+                    </div>
+                </div>
+
+                <div class="tutorial-step-card">
+                    <div class="tutorial-step-header">
+                        <span class="tutorial-badge">4</span>
+                        <span>Identificação Imediata da Parada</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">
+                        O app exibe o número gigante da parada, fala no alto-falante/fone e emite um alerta se houver mais de 1 pacote no mesmo endereço!
+                    </div>
+                    <div class="tutorial-mockup" style="border-color:#38bdf8; background:rgba(56,189,248,0.08);">
+                        <div style="font-size:1.4rem; font-weight:900; color:#38bdf8;">P12</div>
+                        <div style="font-size:0.68rem; color:#fbbf24; font-weight:800;">⚠️ MESMO ENDEREÇO DA PARADA P13!</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <button onclick="fecharModalTutorial()" class="btn-action-primary" style="margin-top:14px;">
+                Entendido! Começar
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL PIX -->
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
             <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
@@ -918,6 +1061,7 @@
         </div>
     </div>
 
+    <!-- MODAL VISUALIZAR ROTA -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -936,6 +1080,7 @@
         </div>
     </div>
 
+    <!-- MODAL GPS -->
     <div id="modalEscolhaGps" class="modal-backdrop">
         <div class="modal-card" style="max-width:330px;">
             <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
@@ -954,6 +1099,7 @@
         </div>
     </div>
 
+    <!-- MODAL ADMIN -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -996,6 +1142,7 @@
         </div>
     </div>
 
+    <!-- NAVEGAÇÃO SUPERIOR -->
     <div class="top-nav">
         <button class="nav-btn" onclick="toggleSidebar()">
             <span>☰</span> <span data-i18n="menu">Menu</span>
@@ -1005,12 +1152,17 @@
 
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
+    <!-- MENU LATERAL -->
     <div class="drawer-panel" id="sidebar">
         <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
-        <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
+        <div style="font-size:0.68rem; color:#34d399; font-weight:800; margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
 
-        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:16px;" onclick="dispararInstalacaoPWA()">
+        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:10px;" onclick="dispararInstalacaoPWA()">
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
+        </button>
+
+        <button class="btn-action-primary" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.3); margin-bottom:14px;" onclick="abrirModalTutorial(); toggleSidebar();">
+            📖 <span>Guia & Tutorial</span>
         </button>
 
         <div style="margin-bottom:16px;">
@@ -1061,6 +1213,7 @@
         </div>
     </div>
 
+    <!-- CONTAINER PRINCIPAL -->
     <div class="container">
 
         <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
@@ -1068,9 +1221,21 @@
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:55px; margin-bottom:4px;">
+            <!-- LOGO PACOTE É MATO NO BANNER -->
+            <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:58px; height:58px; margin:0 auto 4px;">
+                <rect width="100" height="100" rx="24" fill="#0e1526" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+                <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="#059669"/>
+                <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="#059669"/>
+                <polygon points="50,22 78,36 50,50 22,36" fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
+                <polygon points="22,36 50,50 50,78 22,64" fill="#1e3a8a" stroke="#1d4ed8" stroke-width="1.5"/>
+                <polygon points="78,36 50,50 50,78 78,64" fill="#1d4ed8" stroke="#1e40af" stroke-width="1.5"/>
+                <path d="M50 22 L50 50 M36 43 L64 43" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+                <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#10b981"/>
+                <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#34d399"/>
+                <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#34d399"/>
+            </svg>
             <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+            <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
         <div class="card-retomar-rota" id="cardRetomarRota">
@@ -1183,7 +1348,8 @@
                 manual_placeholder: "Digite o código manualmente...",
                 same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
                 pdf_erro: "❌ Não consegui ler este PDF. Verifique se o arquivo não está corrompido e tente novamente.",
-                login_bloqueado: "🔒 Muitas tentativas erradas. Aguarde 30 segundos e tente de novo."
+                login_bloqueado: "🔒 Muitas tentativas erradas. Aguarde 30 segundos e tente de novo.",
+                tutorial_btn: "Como Usar (Tutorial Iniciante)"
             },
             es: {
                 download_app: "Descargar App en el Móvil",
@@ -1200,7 +1366,7 @@
                 plan_monthly_name: "Plan Mensual (1 Mes)",
                 plan_monthly_meta: "30 días • Mejor relación calidad-precio",
                 plan_quarterly_name: "Plan Trimestral (3 Meses)",
-                plan_quarterly_meta: "90 días con descuento",
+                plan_quarterly_meta: "90 días con desconto",
                 most_popular: "Popular",
                 generate_pix: "Generar Pago Pix",
                 secure_payment: "Pago Seguro Pix",
@@ -1222,13 +1388,14 @@
                 choose_pdf: "Elegir Archivo PDF",
                 metric_scanned: "Escaneados",
                 metric_stops: "Paradas",
-                metric_remaining: "Faltan",
+                metric_remaining: "Faltam",
                 cam_flip: "Girar",
                 flash_txt: "Flash",
                 manual_placeholder: "Escribe el código manualmente...",
                 same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paquetes en este punto: ",
                 pdf_erro: "❌ No pude leer este PDF. Verifica que el archivo no esté dañado e intenta de nuevo.",
-                login_bloqueado: "🔒 Demasiados intentos fallidos. Espera 30 segundos e intenta de nuevo."
+                login_bloqueado: "🔒 Demasiados intentos fallidos. Espera 30 segundos e intenta de nuevo.",
+                tutorial_btn: "Cómo Usar (Tutorial)"
             },
             en: {
                 download_app: "Download App on Phone",
@@ -1272,8 +1439,9 @@
                 flash_txt: "Flash",
                 manual_placeholder: "Type code manually...",
                 same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: ",
-                pdf_erro: "❌ Could not read this PDF. Check that the file isn't corrupted and try again.",
-                login_bloqueado: "🔒 Too many failed attempts. Wait 30 seconds and try again."
+                pdf_erro: "Could not read this PDF. Check that the file isn't corrupted and try again.",
+                login_bloqueado: "🔒 Too many failed attempts. Wait 30 seconds and try again.",
+                tutorial_btn: "How to Use (Tutorial)"
             }
         };
 
@@ -1371,6 +1539,14 @@
                 campo.type = 'password';
                 icone.innerText = '👁️';
             }
+        }
+
+        function abrirModalTutorial() {
+            document.getElementById('modalTutorial').style.display = 'flex';
+        }
+
+        function fecharModalTutorial() {
+            document.getElementById('modalTutorial').style.display = 'none';
         }
 
         function carregarConfiguracoesSalvas() {
@@ -2750,13 +2926,13 @@
                 let msg = new SpeechSynthesisUtterance(frase);
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
                 
-                if (tipo === "grave") {
+                if (tipo === "grave") { // Walkie Rádio
                     msg.pitch = 0.5;
                     msg.rate = 1.15;
-                } else if (tipo === "normal") {
+                } else if (tipo === "normal") { // Natural HD
                     msg.pitch = 1.0;
                     msg.rate = 1.1;
-                } else {
+                } else { // Tática Turbo
                     msg.pitch = 1.1;
                     msg.rate = 1.55;
                 }
