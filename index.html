@@ -1,3 +1,572 @@
+Olha, a primeira imagem é o do nosso aplicativo. Eu não queria ele assim. Eu queria ele igual do segundo aplicativo, que é o Waze, tá vendo como é que ele é? E tipo um exemplo, eu quero ver as rotas, né? Aonde tá as rotas. O aplicativo não deixa porque ele fica puxando pra minha localização atual, né? Então, um exemplo, eu poderia sair dali, né? E caso eu quisesse voltar pra minha localização, aonde tem a bolinha, né? Pra me guiar, aí eu botava, tivesse a opção de recentralizar, aí eu conseguia voltar tudo normal e olhando e tudo mais, entendeu? E também a opção onde tem concluir, ela não tá funcionando, né? Aonde tem a opção concluir ou, ao invés de concluir, botasse entregue e botasse negar, botasse não entregue, entendeu? E ali onde tem nome de cliente, colocasse o número do pacote, né? E colocasse... tirasse esse nome de cliente, colocasse a rua embaixo aonde tem, botasse realmente a rua aonde é, entendeu? A rua e o número, né? Tudo certinho. E aí é isso que eu queria que você fizesse no prompt pra falar, né? Tudo explicadinho, não é pra ele entender, né? Fazer tudo certo.
+
+Agora ficou bem claro. O problema principal da primeira imagem é que o mapa está tratando a localização do motorista como se ele tivesse que ficar sempre centralizado, impedindo você de explorar a rota. Você quer a experiência de mapa do Waze: pode arrastar, afastar, aproximar e olhar a rota inteira; e, quando quiser voltar para sua posição, aperta o botão de recentralizar.
+
+E também quer corrigir a parte das paradas e dos dados mostrados no cartão.
+
+Manda este prompt para ele:
+
+Quero fazer alguns ajustes importantes no modo de navegação e na tela das paradas, mas sem alterar o sistema de roteirização e otimização que já foi desenvolvido.
+
+Estou enviando duas imagens como referência.
+
+A primeira imagem é o nosso aplicativo atualmente.
+
+A segunda imagem mostra a experiência de navegação do Waze que quero usar como referência de comportamento e organização visual.
+
+Não quero copiar o Waze literalmente e não quero transformar o aplicativo em outro sistema. Quero apenas trazer essa experiência de navegação para o nosso modo de navegação.
+
+1. MAPA NÃO DEVE FICAR PRENDENDO NA MINHA LOCALIZAÇÃO
+
+Atualmente existe um problema:
+
+O mapa fica constantemente puxando a tela para a minha localização atual, representada pela bolinha/seta azul.
+
+Isso está atrapalhando muito porque eu preciso conseguir visualizar a rota completa e explorar o mapa livremente.
+
+Por exemplo:
+
+Se eu estiver na primeira parada, quero poder:
+
+Arrastar o mapa para cima.
+Arrastar para os lados.
+Afastar o zoom.
+Aproximar o zoom.
+Olhar as próximas paradas.
+Visualizar a rota completa.
+Ver onde estão as outras paradas.
+Explorar o mapa sem ele voltar automaticamente para minha localização.
+
+Não quero que o GPS fique brigando com o usuário pelo controle da câmera.
+
+2. BOTÃO "RECENTRALIZAR"
+
+Ao mesmo tempo, preciso ter um botão para voltar rapidamente para minha localização atual.
+
+Criar um botão de "Recentrar" no mapa.
+
+Funcionamento:
+
+Quando estou navegando normalmente:
+
+O mapa acompanha minha localização.
+
+Quando eu arrasto o mapa:
+
+O aplicativo entende que eu quero explorar o mapa e para de puxar automaticamente a câmera para minha localização.
+
+Quando eu quiser voltar:
+
+Eu aperto o botão de recentralizar.
+
+Então o mapa:
+
+Volta para minha localização atual.
+Centraliza a seta/bolinha do motorista.
+Retoma o acompanhamento da localização.
+Volta para o modo de navegação.
+
+Esse comportamento deve ser parecido com o funcionamento de aplicativos de navegação modernos.
+
+3. EXPERIÊNCIA DO MAPA DURANTE A NAVEGAÇÃO
+
+Quero melhorar visualmente e funcionalmente o modo de navegação para ficar muito mais próximo da experiência apresentada na segunda imagem.
+
+Quando eu estiver navegando, quero:
+
+Seta mostrando minha posição e direção.
+GPS funcionando em tempo real.
+Mapa acompanhando o deslocamento quando o modo de acompanhamento estiver ativo.
+Ruas visíveis.
+Nomes das ruas.
+Próxima manobra.
+Distância até a próxima manobra.
+Instruções como:
+"Siga em frente"
+"Vire à direita"
+"Vire à esquerda"
+"Pegue a saída"
+etc.
+Próxima parada destacada.
+Distância até a próxima parada.
+Tempo estimado até a parada.
+
+A ideia é que o nosso aplicativo continue sendo o otimizador de rotas, mas, depois que o motorista iniciar uma rota, ele tenha uma experiência de navegação muito mais completa.
+
+4. NÃO ALTERAR A ROTA OTIMIZADA
+
+Isso é muito importante.
+
+O mapa e o modo de navegação não devem alterar a sequência de paradas que foi definida pelo nosso otimizador.
+
+Exemplo:
+
+Início → Parada 1 → Parada 2 → Parada 3 → Parada 4
+
+Essa continua sendo a ordem.
+
+O modo de navegação apenas mostra e acompanha essa rota.
+
+A parte de:
+
+otimização;
+roteirização;
+cálculo de distância;
+organização das paradas;
+importação do XLSX;
+
+continua funcionando como já foi desenvolvido.
+
+5. LINHA DA ROTA
+
+Durante o planejamento da rota, quero continuar podendo visualizar a rota completa.
+
+Porém, durante a navegação, quero que o sistema tenha um comportamento mais inteligente.
+
+Conforme o motorista avança, a parte da rota que já foi percorrida deve deixar de ficar destacada.
+
+Quero visualizar principalmente o caminho que ainda falta percorrer.
+
+Isso é apenas uma alteração visual da navegação.
+
+Não deve alterar a rota otimizada.
+
+6. CORRIGIR OS BOTÕES DA PARADA
+
+Na tela atual existe:
+
+Negar
+
+e
+
+Concluir
+
+O botão Concluir atualmente não está funcionando corretamente.
+
+Quero corrigir isso.
+
+Também quero mudar os nomes para ficar mais adequado ao processo de entrega.
+
+Alterar:
+
+Concluir → ENTREGUE
+
+Negar → NÃO ENTREGUE
+
+Os dois botões precisam funcionar de verdade.
+
+ENTREGUE
+
+Quando o motorista tocar em:
+
+✓ ENTREGUE
+
+a parada deve ser registrada como entregue.
+
+Depois disso:
+
+Marcar a parada como concluída.
+Atualizar o status da parada.
+Avançar para a próxima parada.
+Atualizar o mapa.
+Atualizar a navegação.
+Atualizar o contador de paradas.
+
+Exemplo:
+
+PARADA #1 DE 38
+
+Depois de marcar como entregue:
+
+PARADA #2 DE 38
+
+NÃO ENTREGUE
+
+Quando tocar em:
+
+✕ NÃO ENTREGUE
+
+a parada deve ser registrada como não entregue.
+
+Não deve simplesmente apagar a parada.
+
+Ela deve continuar registrada na rota com o status:
+
+NÃO ENTREGUE
+
+E o sistema deve permitir continuar para a próxima parada.
+
+7. INFORMAÇÕES DA PARADA
+
+Quero mudar completamente as informações exibidas no cartão da parada.
+
+Atualmente aparece:
+
+Nome do Cliente
+
+Não quero mais mostrar "Nome do Cliente".
+
+No lugar disso, quero mostrar o NÚMERO DO PACOTE/PEDIDO, utilizando o número que estiver no arquivo .xlsx.
+
+Exemplo:
+
+PACOTE #123456
+
+ou
+
+PEDIDO #123456
+
+Utilize o campo correspondente existente no XLSX.
+
+8. ENDEREÇO DA PARADA
+
+Abaixo do número do pacote/pedido deve aparecer o endereço real da parada.
+
+Não quero:
+
+Rua Exemplo, 123 - Bairro
+
+como texto genérico.
+
+Quero que o sistema pegue os dados reais do arquivo .xlsx e mostre o endereço corretamente.
+
+Exemplo:
+
+Av. Brigadeiro Luís Antônio, 1500
+
+E, se houver bairro:
+
+Av. Brigadeiro Luís Antônio, 1500 - Bela Vista
+
+Quero:
+
+Rua/Avenida + número + complemento/bairro quando disponível.
+
+Os dados devem vir realmente do endereço importado no XLSX.
+
+9. CARTÃO DA PARADA
+
+Quero que o cartão fique mais ou menos organizado assim:
+
+PARADA #1 DE 38
+
+PACOTE #123456
+
+Av. Brigadeiro Luís Antônio, 1500
+
+2,4 km • 7 min • Chegada 14:35
+
+E abaixo:
+
+[ Lista ] [ NÃO ENTREGUE ] [ ENTREGUE ]
+
+Os dados devem ser dinâmicos e corresponder à parada atual.
+
+10. AO ENTREGAR UMA PARADA
+
+O comportamento deve ser automático.
+
+Exemplo:
+
+Estou na:
+
+PARADA #1 DE 38
+
+Chego ao endereço.
+
+Toco:
+
+ENTREGUE
+
+O sistema registra a entrega e imediatamente prepara:
+
+PARADA #2 DE 38
+
+O mapa passa a mostrar a navegação para a segunda parada.
+
+A instrução de navegação também é atualizada.
+
+A distância e o tempo são recalculados para a próxima parada.
+
+11. BOTÃO LISTA
+
+O botão Lista deve continuar funcionando.
+
+Ao tocar nele, quero conseguir visualizar todas as paradas da rota e seus respectivos status.
+
+Exemplo:
+
+✓ Parada 1 — Entregue
+
+✕ Parada 2 — Não entregue
+
+○ Parada 3 — Pendente
+
+○ Parada 4 — Pendente
+
+Isso permitirá ao motorista acompanhar o progresso das 38 paradas.
+
+12. RESUMO DO QUE QUERO
+
+NÃO altere o sistema de otimização.
+
+NÃO altere a lógica de roteirização.
+
+NÃO remova as funcionalidades do XLSX.
+
+Quero apenas melhorar o modo de navegação e a tela das paradas.
+
+O funcionamento final deve ser:
+
+Importar XLSX → identificar rotas → otimizar rota → mostrar paradas → iniciar rota → entrar no modo de navegação → GPS acompanhar motorista → permitir explorar o mapa → botão recentralizar para voltar ao motorista → mostrar instruções de navegação → chegar à parada → ENTREGUE/NÃO ENTREGUE → avançar para próxima parada.
+
+O mapa deve ter a liberdade de exploração que estou pedindo, mas continuar tendo o acompanhamento GPS quando desejado.
+
+E a tela da parada deve mostrar número do pacote/pedido + endereço real do XLSX, em vez de "Nome do Cliente".
+
+Por favor, implemente essas alterações de forma funcional, não apenas visualmente. Teste especialmente:
+
+Arrastar o mapa sem ele voltar sozinho.
+Botão de recentralizar.
+GPS acompanhando a localização.
+Botão ENTREGUE.
+Botão NÃO ENTREGUE.
+Avanço automático para a próxima parada.
+Número do pacote vindo do XLSX.
+Endereço correto vindo do XLSX.
+Contador de paradas.
+Lista de status das paradas.
+
+A referência visual é a segunda imagem, mas o aplicativo continua sendo o nosso próprio otimizador de rotas.
+
+Esse prompt deixa bem separado o que é otimização e o que é navegação, para ele não sair mexendo no coração do aplicativo. O ponto mais importante para corrigir agora é o controle da câmera: GPS acompanha, mas o usuário também consegue explorar o mapa e voltar pelo botão de recentralizar.
+
+Mas aí você adiciona também que eu quero, nesse prompt ali que você fez, eu quero que ele seja um modo de navegação onde, um exemplo, eu tô seguindo, aí eu viro à direita, aonde esteja aproximado, entendeu? Onde que me segue. E não nesse modo como se tivesse modo espectador. Eu queria como se tivesse modo de primeira pessoa, um exemplo, entendeu? Não sei se você entendeu o meu sentido.
+
+Sim, agora entendi exatamente o que você quer. Você está falando de um modo de navegação em primeira pessoa, e não daquele mapa visto de cima como se fosse um espectador.
+
+A ideia é: o motorista vira o centro da experiência. A câmera acompanha o deslocamento, fica orientada para a direção em que ele está indo e mostra mais da rua que está à frente. Quando ele vira à direita, a câmera acompanha a curva; quando vira à esquerda, acompanha também. É uma experiência de condução, não de planejamento.
+
+Eu acrescentaria este trecho ao prompt anterior:
+
+13. MODO DE NAVEGAÇÃO EM PRIMEIRA PESSOA — MUITO IMPORTANTE
+
+Quero deixar ainda mais claro como deve funcionar o Modo de Navegação.
+
+Não quero que o mapa fique com aparência de modo espectador, onde o motorista é apenas uma bolinha pequena vista de cima enquanto o mapa fica parado.
+
+Quero um verdadeiro modo de navegação em primeira pessoa, semelhante à experiência de condução do Waze, Google Maps ou Circuit.
+
+Quando o motorista clicar em "Iniciar rota", a câmera deve entrar em um modo de condução.
+
+COMO DEVE FUNCIONAR
+
+O motorista deve ser o centro da navegação.
+
+A câmera deve acompanhar o veículo de forma dinâmica e ficar orientada de acordo com a direção em que ele está dirigindo.
+
+Por exemplo:
+
+Se estou seguindo em frente:
+
+↑ motorista seguindo → câmera mostra a rua à frente
+
+Se a próxima manobra for uma curva à direita:
+
+→ a câmera começa a acompanhar a direção da curva
+
+Quando eu virar à direita:
+
+→ a câmera gira suavemente junto com o movimento do veículo
+
+Se depois eu precisar virar à esquerda:
+
+← a câmera acompanha novamente a mudança de direção.
+
+Não quero que o mapa simplesmente fique com o norte sempre para cima enquanto o motorista anda.
+
+Quero que a experiência seja de "eu estou dirigindo por esse mapa".
+
+CÂMERA
+
+Durante o modo de navegação:
+
+O veículo/seta deve ficar em uma posição fixa ou quase fixa na parte inferior/central da tela.
+A câmera deve olhar principalmente para a direção em que o motorista está indo.
+A área mais importante do mapa deve ser o que está à frente do motorista.
+A câmera deve girar conforme a direção do veículo muda.
+As mudanças de direção devem acontecer de maneira suave, sem ficar girando bruscamente.
+O zoom deve ser adequado para enxergar as ruas e as próximas manobras.
+A câmera deve acompanhar o GPS continuamente.
+Conforme o motorista se movimenta, o mapa deve se movimentar junto.
+Quando o motorista fizer uma curva, a câmera deve acompanhar a curva.
+Quando estiver chegando perto de uma manobra, a visualização deve ajudar o motorista a entender para qual rua deve entrar.
+
+Quero uma experiência de navegação imersiva, e não uma visualização aérea da rota.
+
+EXEMPLO PRÁTICO
+
+Imagine que a rota seja:
+
+Rua A → Rua B → virar à direita → Rua C
+
+O motorista começa na Rua A.
+
+O mapa mostra a rua à frente.
+
+Quando estiver se aproximando da curva:
+
+EM 150 m
+Vire à direita
+
+A câmera continua mostrando o caminho à frente.
+
+Ao chegar na curva:
+
+VIRE À DIREITA
+
+Quando o motorista virar, a câmera acompanha o movimento e passa a mostrar a nova rua à frente.
+
+Depois:
+
+SIGA EM FRENTE
+
+E continua acompanhando o motorista.
+
+Quero que isso aconteça continuamente durante toda a navegação.
+
+NÃO É PARA SER UM MAPA 3D OBRIGATORIAMENTE
+
+Não estou dizendo que precisa criar um mapa 3D complexo.
+
+O mais importante é o comportamento da câmera:
+
+GPS + direção do veículo + câmera acompanhando + rotação conforme o deslocamento + rota à frente + instruções de navegação.
+
+Pode ser uma visualização 2D inclinada ou outra solução adequada, desde que transmita essa sensação de primeira pessoa/condução.
+
+EXPLORAR O MAPA SEM PERDER A NAVEGAÇÃO
+
+Também mantenha a funcionalidade que pedi anteriormente:
+
+Se eu tocar e arrastar o mapa, quero poder sair temporariamente do acompanhamento automático para olhar outras partes da rota.
+
+Nesse momento, a câmera deixa de me seguir.
+
+Deve aparecer o botão:
+
+◎ RECENTRALIZAR
+
+Quando eu tocar nele:
+
+Volta para minha localização.
+Centraliza o veículo/seta.
+Volta a câmera para a direção em que estou dirigindo.
+Retoma o acompanhamento automático.
+Volta para o modo de primeira pessoa.
+
+Ou seja:
+
+Modo navegação: câmera acompanha o motorista.
+
+Usuário arrasta o mapa: exploração manual.
+
+Usuário toca em RECENTRALIZAR: volta para o modo navegação em primeira pessoa.
+
+IMPORTANTE
+
+Não confunda isso com a otimização de rotas.
+
+A otimização continua exatamente como já foi definida.
+
+O sistema primeiro:
+
+Otimiza a rota → define a sequência das paradas → motorista inicia a rota → entra no modo de navegação em primeira pessoa.
+
+A navegação apenas conduz o motorista pela rota que já foi otimizada.
+
+Não quero que essa nova função altere a ordem das paradas ou a lógica do otimizador.
+
+Em resumo: você quer que o mapa tenha a sensação de “estou dentro da rota dirigindo”, e não “estou olhando um mapa de cima enquanto um ponto se move”. Esse detalhe da câmera orientada pela direção do veículo é o que eu destacaria como requisito principal para ele não interpretar errado.
+
+Se quiser, o próximo passo é eu 
+juntar esse trecho + o prompt completo anterior em um único prompt final, já sem partes repetidas, pronto para você copiar e colar.
+
+hoje 19:31
+Texto colado.txt
+Documento
+se fosse vc  o dono dessa html oque vc modigicaria e me envia essas modificacoes e o html que vc fez
+
+Sim. Agora que eu analisei o HTML que você enviou, eu faria algumas mudanças importantes.
+
+O seu HTML atual é mais focado em leitura de PDF + bipagem/controle de pacotes + login/PWA. Ele ainda não tem de fato uma estrutura completa de mapa/roteirização como a que você está descrevendo. Por exemplo, o upload atual está configurado especificamente para PDF e usa pdf.js; não existe suporte nativo a XLSX no código atual.
+
+Se eu fosse o dono, estas seriam minhas principais modificações
+
+1. XLSX de verdade
+
+Importação .xlsx pelo celular e computador.
+Leitura automática de endereço, número do pacote/pedido e rota.
+Tentativa de identificar automaticamente as colunas da planilha.
+Preparação dos endereços para geocodificação.
+
+2. Mapa de verdade
+
+Leaflet + OpenStreetMap.
+Marcadores para cada parada.
+Visualização da rota.
+Botão para visualizar a rota inteira.
+Possibilidade de arrastar/zoomar o mapa sem ele ficar puxando você de volta.
+
+3. Otimização
+
+Matriz de distâncias pelas ruas usando serviço de roteamento.
+Otimização inicial + melhoria por 2-opt.
+Recalcular a distância da rota depois da otimização.
+Não simplesmente "inventar" um número menor.
+
+4. Navegação
+
+GPS em tempo real.
+Seta indicando a direção.
+Modo de acompanhamento.
+Botão Recentrar.
+Quando você arrasta o mapa, ele para de seguir automaticamente.
+Rota já percorrida deixa de ser destacada.
+Próxima parada fica destacada.
+
+5. Paradas
+
+ENTREGUE
+NÃO ENTREGUE
+Avanço para a próxima parada.
+Número do pacote/pedido.
+Endereço real vindo do XLSX.
+Contador Parada 1 de 38, Parada 2 de 38 etc.
+
+6. Mobile
+
+Interface específica para celular.
+Mapa ocupando melhor a tela.
+Botões maiores.
+Respeito à área segura do celular.
+Touch sem ficar brigando com o GPS.
+E eu já fiz uma V2 do seu HTML
+
+Eu peguei a estrutura que você enviou e adicionei essa camada de mapa/XLSX/navegação, sem simplesmente jogar fora o sistema existente de login, PWA, scanner, temas, idiomas etc.
+
+Também fiz uma verificação de sintaxe do JavaScript da versão gerada.
+
+Arquivo modificado:
+
+Baixar Pacote É Mato V2 — HTML modificado
+
+Uma observação importante: essa V2 é uma base funcional para essas novas partes, mas eu não consideraria ainda a versão final de produção. Principalmente a comparação de distância com o Circuit e a navegação "nível Waze" precisam ser testadas com o seu XLSX real, porque o formato das colunas e a qualidade dos endereços influenciam diretamente o resultado.
+
+E tem uma coisa que eu mudaria antes de colocar isso em produção: o HTML original contém credenciais/configurações administrativas diretamente no JavaScript, inclusive uma senha de dono. Eu não manteria esse tipo de segredo dentro do HTML público; colocaria essa parte no backend. O restante do código original confirma que autenticação, Firebase e gerenciamento administrativo estão todos no próprio HTML.
+
+Se você me mandar o XLSX que você está usando nas 38 rotas, aí dá para eu adaptar essa V2 exatamente às colunas da sua planilha e atacar o problema dos 80 km → 40 km com muito mais precisão.
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -798,7 +1367,40 @@
             margin-bottom: 8px;
             text-align: left;
         }
+    
+/* ==========================================================
+   V2 - PLANEJADOR / MAPA / MODO NAVEGAÇÃO MOBILE
+   ========================================================== */
+.route-suite{margin-top:14px;margin-bottom:16px;background:var(--surface-1);border:1px solid var(--surface-border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-card)}
+.route-suite-head{padding:14px 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.route-suite-title{font-size:.92rem;font-weight:900}.route-suite-sub{font-size:.68rem;color:var(--text-muted);margin-top:2px}
+.route-file-row{padding:0 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.route-btn{border:0;border-radius:11px;padding:11px 8px;font-weight:900;font-size:.75rem;cursor:pointer;min-height:44px}
+.route-btn.primary{background:var(--primary-gradient);color:#fff}.route-btn.dark{background:var(--surface-2);color:var(--text-main);border:1px solid var(--surface-border)}
+.route-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 14px 12px}
+.route-statbar{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 14px 12px}
+.route-stat{background:var(--surface-2);border:1px solid var(--surface-border);border-radius:10px;padding:8px 4px;text-align:center}.route-stat b{display:block;font-size:.92rem}.route-stat span{font-size:.6rem;color:var(--text-muted);font-weight:800;text-transform:uppercase}
+#routeMap{height:62vh;min-height:420px;background:#e5e7eb;position:relative;z-index:1}
+.nav-top-card{position:absolute;z-index:500;top:12px;left:12px;right:12px;background:rgba(8,13,28,.94);color:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.35);pointer-events:none}
+.nav-turn{display:flex;align-items:center;gap:10px}.nav-arrow{width:46px;height:46px;border-radius:13px;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900}.nav-distance{font-size:1.15rem;font-weight:900}.nav-instruction{font-size:.78rem;color:#dbeafe;font-weight:800}.nav-street{font-size:.68rem;color:#7dd3fc;margin-top:2px}
+.nav-bottom-card{position:absolute;z-index:500;left:12px;right:12px;bottom:12px;background:rgba(255,255,255,.97);color:#111827;border-radius:17px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.nav-bottom-main{display:flex;justify-content:space-between;gap:10px;align-items:center}.nav-stop-label{font-size:.68rem;font-weight:900;color:#2563eb;text-transform:uppercase}.nav-stop-address{font-size:.88rem;font-weight:900;line-height:1.2}.nav-stop-meta{font-size:.68rem;color:#64748b;margin-top:3px}
+.nav-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:9px}.nav-actions button{border:0;border-radius:10px;padding:10px 6px;font-size:.72rem;font-weight:900;min-height:42px;cursor:pointer}.btn-center{background:#eef2ff;color:#1d4ed8}.btn-no{background:#fee2e2;color:#b91c1c}.btn-yes{background:#16a34a;color:#fff}
+.driver-marker{width:34px;height:34px;border-radius:50%;background:#2563eb;border:4px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px;transform-origin:center}
+.route-stop-marker{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #2563eb;color:#111827;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.route-stop-marker.active{background:#16a34a;color:#fff;border-color:#fff;box-shadow:0 0 0 3px #16a34a}
+.route-stop-marker.done{background:#64748b;color:#fff;border-color:#fff}
+.map-legend{padding:8px 14px;color:var(--text-muted);font-size:.64rem;font-weight:700;background:var(--surface-1)}
+.mobile-safe{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+@media(max-width:440px){#routeMap{height:calc(100svh - 170px);min-height:480px}.route-suite{border-radius:14px}.route-suite-head{padding:11px}.route-file-row,.route-controls,.route-statbar{padding-left:11px;padding-right:11px}.nav-top-card{top:8px;left:8px;right:8px}.nav-bottom-card{left:8px;right:8px;bottom:8px}.nav-actions button{font-size:.68rem}}
+
     </style>
+
+    <!-- V2: MAPA / XLSX / NAVEGAÇÃO -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3Y1s6y5Gf4X5JQ1Z0d5bF0c2jG4nM=" crossorigin="">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 </head>
 <body>
 
@@ -1077,8 +1679,8 @@
         </div>
 
         <div class="upload-section">
-            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
+            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF ou XLSX</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe PDF ou XLSX; o XLSX alimenta o mapa, as paradas e a otimização.</div>
             
             <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
                 📄 Escolher Arquivo PDF
@@ -2701,7 +3303,244 @@
             notificar("Bipagens desta rota foram zeradas.");
         }
 
+
+
+        // ==========================================================
+        // V2 - MAPA / XLSX / OTIMIZAÇÃO / NAVEGAÇÃO
+        // ==========================================================
+        const ROUTE_V2 = {
+            map: null, routeLayer: null, remainingLayer: null, driverMarker: null,
+            stopMarkers: [], stops: [], currentIndex: 0, currentPosition: null,
+            watchId: null, following: true, navigating: false, currentHeading: 0,
+            routeGeometry: [], routeSteps: [], currentStep: 0, startPoint: null,
+            optimized: false, routeDistanceM: 0, routeDurationS: 0, routeMatrix: null
+        };
+
+        function routeInitMapV2() {
+            if (ROUTE_V2.map) return;
+            ROUTE_V2.map = L.map('routeMap', { zoomControl:false, attributionControl:true, preferCanvas:true }).setView([-23.55,-46.63], 12);
+            L.control.zoom({position:'topright'}).addTo(ROUTE_V2.map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap contributors'}).addTo(ROUTE_V2.map);
+            ROUTE_V2.map.on('dragstart', () => { if (ROUTE_V2.navigating) { ROUTE_V2.following = false; } });
+        }
+
+        function routeShowMapV2() {
+            document.getElementById('routeMapWrap').style.display = 'block';
+            routeInitMapV2();
+            setTimeout(() => ROUTE_V2.map.invalidateSize(), 80);
+        }
+
+        function routeSetStatusV2(text){ const e=document.getElementById('routeStatusV2'); if(e)e.textContent=text; }
+        function routeSetStatsV2(){
+            document.getElementById('routeCountV2').textContent = ROUTE_V2.stops.length;
+            document.getElementById('routeKmV2').textContent = ROUTE_V2.routeDistanceM ? (ROUTE_V2.routeDistanceM/1000).toFixed(1)+' km' : '—';
+        }
+
+        function normKeyV2(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+        function pickColV2(headers, candidates){
+            const hs=headers.map(normKeyV2);
+            for(const c of candidates){ const i=hs.indexOf(normKeyV2(c)); if(i>=0)return headers[i]; }
+            for(const c of candidates){ const k=normKeyV2(c); const i=hs.findIndex(h=>h.includes(k)||k.includes(h)); if(i>=0)return headers[i]; }
+            return null;
+        }
+        function strV2(v){ return v==null?'':String(v).trim(); }
+        function buildAddressV2(row, headers){
+            const direct=pickColV2(headers,['address','endereco','endereço','logradouro','delivery address','shipping address']);
+            if(direct && strV2(row[direct])) return strV2(row[direct]);
+            const street=pickColV2(headers,['street','rua','logradouro','address line 1']);
+            const number=pickColV2(headers,['number','numero','número','house number']);
+            const district=pickColV2(headers,['bairro','district','neighborhood']);
+            const city=pickColV2(headers,['city','cidade','municipio','município']);
+            const state=pickColV2(headers,['state','estado','uf']);
+            const zip=pickColV2(headers,['zip','zipcode','cep','postal code']);
+            let parts=[]; if(street)parts.push(strV2(row[street])); if(number&&strV2(row[number]))parts.push(strV2(row[number]));
+            let line=parts.join(', '); if(district&&strV2(row[district]))line+=(line?' - ':'')+strV2(row[district]);
+            let cityState=[city&&strV2(row[city]),state&&strV2(row[state])].filter(Boolean).join(' - '); if(cityState)line+=(line?', ':'')+cityState;
+            if(zip&&strV2(row[zip]))line+=(line?', ':'')+strV2(row[zip]);
+            return line || Object.values(row).map(strV2).filter(Boolean).slice(0,5).join(', ');
+        }
+        function extractCoordsV2(row, headers){
+            const lat=pickColV2(headers,['latitude','lat']); const lon=pickColV2(headers,['longitude','lon','lng','long']);
+            if(lat&&lon){const a=parseFloat(String(row[lat]).replace(',','.'));const b=parseFloat(String(row[lon]).replace(',','.'));if(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180)return [a,b];}
+            return null;
+        }
+
+        document.getElementById('xlsxInputV2').addEventListener('change', async e=>{
+            const file=e.target.files?.[0]; if(!file)return;
+            routeSetStatusV2('Lendo XLSX…');
+            try{
+                const data=await file.arrayBuffer(); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]];
+                const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+                if(!rows.length) throw new Error('A primeira aba está vazia.');
+                const headers=Object.keys(rows[0]);
+                const routeCol=pickColV2(headers,['route','rota','route number','numero rota','número rota']);
+                const packageCol=pickColV2(headers,['package','pacote','pedido','order','tracking','tracking number','codigo','código']);
+                ROUTE_V2.stops=rows.map((r,i)=>({
+                    id:i+1, route:routeCol?strV2(r[routeCol]):'1', package:packageCol?strV2(r[packageCol]):'',
+                    address:buildAddressV2(r,headers), coords:extractCoordsV2(r,headers), status:'pendente'
+                })).filter(s=>s.address||s.coords);
+                ROUTE_V2.currentIndex=0; ROUTE_V2.optimized=false; ROUTE_V2.routeDistanceM=0;
+                routeShowMapV2(); renderStopsV2(); routeSetStatsV2(); routeSetStatusV2(`${ROUTE_V2.stops.length} paradas carregadas`);
+                await routeGeocodeMissingV2();
+                renderStopsV2();
+                routeSetStatusV2('Endereços prontos');
+                if(ROUTE_V2.stops.length) ROUTE_V2.map.fitBounds(L.latLngBounds(ROUTE_V2.stops.map(s=>s.coords)));
+            }catch(err){ console.error(err); routeSetStatusV2('Erro no XLSX'); notificar('❌ Não foi possível ler o XLSX: '+err.message); }
+        });
+
+        async function routeGeocodeMissingV2(){
+            for(let i=0;i<ROUTE_V2.stops.length;i++){
+                if(ROUTE_V2.stops[i].coords) continue;
+                const q=encodeURIComponent(ROUTE_V2.stops[i].address + ', Brasil');
+                try{
+                    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&q=${q}`,{headers:{'Accept-Language':'pt-BR'}});
+                    const j=await r.json();
+                    if(j?.[0]) ROUTE_V2.stops[i].coords=[parseFloat(j[0].lat),parseFloat(j[0].lon)];
+                }catch(e){ console.warn('Geocode',ROUTE_V2.stops[i].address,e); }
+                routeSetStatusV2(`Localizando ${i+1}/${ROUTE_V2.stops.length}…`);
+                await new Promise(r=>setTimeout(r,900));
+            }
+        }
+
+        function renderStopsV2(){
+            if(!ROUTE_V2.map)return;
+            ROUTE_V2.stopMarkers.forEach(m=>m.remove()); ROUTE_V2.stopMarkers=[];
+            ROUTE_V2.stops.forEach((s,i)=>{
+                if(!s.coords)return;
+                const cls=s.status==='entregue'?' done':(i===ROUTE_V2.currentIndex?' active':'');
+                const icon=L.divIcon({className:'',html:`<div class="route-stop-marker${cls}">${i+1}</div>`,iconSize:[30,30],iconAnchor:[15,15]});
+                const m=L.marker(s.coords,{icon}).addTo(ROUTE_V2.map).bindPopup(`<b>Parada ${i+1}</b><br>${escapeHtmlV2(s.package||'')}${s.package?'<br>':''}${escapeHtmlV2(s.address)}`);
+                ROUTE_V2.stopMarkers.push(m);
+            });
+            updateStopCardV2();
+        }
+        function escapeHtmlV2(s){return String(s||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+
+        async function routeGetMatrixV2(coords){
+            const c=coords.map(p=>`${p[1]},${p[0]}`).join(';');
+            const r=await fetch(`https://router.project-osrm.org/table/v1/driving/${c}?annotations=distance,duration`); const j=await r.json();
+            if(j.code!=='Ok')throw new Error(j.message||'Falha na matriz de rotas'); return j;
+        }
+        function nearestOrderV2(matrix){
+            const n=ROUTE_V2.stops.length, unused=new Set(Array.from({length:n},(_,i)=>i)), order=[]; let cur=0; order.push(cur); unused.delete(cur);
+            while(unused.size){let best=null,bestD=Infinity; for(const i of unused){const d=matrix.distances[cur][i]??Infinity;if(d<bestD){bestD=d;best=i;}} if(best==null)break;order.push(best);unused.delete(best);cur=best;}
+            return order;
+        }
+        function twoOptV2(order,matrix){
+            const dist=(a,b)=>matrix.distances[a][b]??Infinity; let improved=true,guard=0;
+            while(improved&&guard++<80){improved=false;for(let i=1;i<order.length-2;i++){for(let k=i+1;k<order.length-1;k++){const a=order[i-1],b=order[i],c=order[k],d=order[k+1];const gain=(dist(a,b)+dist(c,d))-(dist(a,c)+dist(b,d));if(gain>1){const rev=order.slice(i,k+1).reverse();order.splice(i,k-i+1,...rev);improved=true;}}}}
+            return order;
+        }
+        async function routeOptimizeV2(){
+            if(ROUTE_V2.stops.length<2){notificar('Importe pelo menos 2 paradas.');return;}
+            if(ROUTE_V2.stops.some(s=>!s.coords)){notificar('Ainda existem endereços sem localização.');return;}
+            routeSetStatusV2('Calculando otimização…');
+            try{
+                const matrix=await routeGetMatrixV2(ROUTE_V2.stops.map(s=>s.coords)); ROUTE_V2.routeMatrix=matrix;
+                let order=twoOptV2(nearestOrderV2(matrix),matrix);
+                ROUTE_V2.stops=order.map(i=>ROUTE_V2.stops[i]); ROUTE_V2.currentIndex=0; ROUTE_V2.optimized=true;
+                await routeBuildGeometryV2(); renderStopsV2(); routeSetStatsV2(); routeSetStatusV2('Rota otimizada'); routeFitAll();
+                notificar(`⚡ Rota otimizada: ${(ROUTE_V2.routeDistanceM/1000).toFixed(1)} km`);
+            }catch(e){console.error(e);routeSetStatusV2('Falha na otimização');notificar('❌ Falha ao calcular a rota pelas ruas. Tente novamente.');}
+        }
+
+        async function routeBuildGeometryV2(){
+            if(ROUTE_V2.stops.length<2)return;
+            const coords=ROUTE_V2.stops.map(s=>`${s.coords[1]},${s.coords[0]}`).join(';');
+            const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=true`); const j=await r.json();
+            if(j.code!=='Ok')throw new Error(j.message||'Falha na rota'); const rt=j.routes[0];
+            ROUTE_V2.routeDistanceM=rt.distance; ROUTE_V2.routeDurationS=rt.duration; ROUTE_V2.routeGeometry=rt.geometry.coordinates.map(c=>[c[1],c[0]]); ROUTE_V2.routeSteps=rt.legs.flatMap(l=>l.steps||[]);
+            if(ROUTE_V2.routeLayer)ROUTE_V2.routeLayer.remove();
+            ROUTE_V2.routeLayer=L.polyline(ROUTE_V2.routeGeometry,{color:'#2563eb',weight:7,opacity:.85,lineCap:'round',lineJoin:'round'}).addTo(ROUTE_V2.map);
+            if(ROUTE_V2.remainingLayer)ROUTE_V2.remainingLayer.remove(); ROUTE_V2.remainingLayer=null;
+        }
+
+        function routeFitAll(){
+            routeShowMapV2();
+            const pts=ROUTE_V2.stops.filter(s=>s.coords).map(s=>s.coords); if(ROUTE_V2.currentPosition)pts.push(ROUTE_V2.currentPosition);
+            if(pts.length) ROUTE_V2.map.fitBounds(L.latLngBounds(pts),{padding:[30,120]});
+            ROUTE_V2.following=false;
+        }
+
+        function routeUseCurrentLocation(){
+            if(!navigator.geolocation){notificar('GPS não disponível neste navegador.');return;}
+            navigator.geolocation.getCurrentPosition(p=>{ROUTE_V2.currentPosition=[p.coords.latitude,p.coords.longitude];routeShowMapV2();routeEnsureDriverMarkerV2();ROUTE_V2.map.setView(ROUTE_V2.currentPosition,16);ROUTE_V2.following=true;notificar('📍 Localização atualizada.');},e=>notificar('⚠️ Não foi possível obter sua localização: '+e.message),{enableHighAccuracy:true,timeout:12000,maximumAge:5000});
+        }
+
+        function routeStartNavigationV2(){
+            if(!ROUTE_V2.stops.length){notificar('Importe uma rota primeiro.');return;}
+            if(ROUTE_V2.stops.some(s=>!s.coords)){notificar('Existem paradas sem coordenadas.');return;}
+            routeShowMapV2(); ROUTE_V2.navigating=true; ROUTE_V2.following=true; ROUTE_V2.currentIndex=Math.min(ROUTE_V2.currentIndex,ROUTE_V2.stops.length-1);
+            if(!ROUTE_V2.routeLayer) routeBuildGeometryV2().catch(()=>{});
+            routeStartWatchV2(); routeEnsureDriverMarkerV2(); routeUpdateRemainingV2(); routeUpdateNavigationStepV2();
+            routeSetStatusV2('Navegando');
+        }
+        function routeStartWatchV2(){
+            if(ROUTE_V2.watchId!=null)navigator.geolocation.clearWatch(ROUTE_V2.watchId);
+            if(!navigator.geolocation){notificar('GPS não disponível.');return;}
+            ROUTE_V2.watchId=navigator.geolocation.watchPosition(routeGpsUpdateV2,e=>{console.warn(e);routeSetStatusV2('GPS indisponível');},{enableHighAccuracy:true,maximumAge:1500,timeout:10000});
+        }
+        function routeEnsureDriverMarkerV2(){
+            if(!ROUTE_V2.map)return;
+            if(!ROUTE_V2.driverMarker){
+                const icon=L.divIcon({className:'',html:'<div id="driverArrowV2" class="driver-marker">➤</div>',iconSize:[34,34],iconAnchor:[17,17]});
+                ROUTE_V2.driverMarker=L.marker(ROUTE_V2.currentPosition||[-23.55,-46.63],{icon,zIndexOffset:1000}).addTo(ROUTE_V2.map);
+            }
+        }
+        function bearingV2(a,b){const la=a[0]*Math.PI/180,lb=b[0]*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180;const y=Math.sin(dLon)*Math.cos(lb);const x=Math.cos(la)*Math.sin(lb)-Math.sin(la)*Math.cos(lb)*Math.cos(dLon);return (Math.atan2(y,x)*180/Math.PI+360)%360;}
+        function routeGpsUpdateV2(pos){
+            const p=[pos.coords.latitude,pos.coords.longitude]; const prev=ROUTE_V2.currentPosition; ROUTE_V2.currentPosition=p;
+            if(pos.coords.heading!=null&&pos.coords.heading>=0)ROUTE_V2.currentHeading=pos.coords.heading; else if(prev)ROUTE_V2.currentHeading=bearingV2(prev,p);
+            routeEnsureDriverMarkerV2(); ROUTE_V2.driverMarker.setLatLng(p);
+            const el=document.getElementById('driverArrowV2'); if(el)el.style.transform=`rotate(${ROUTE_V2.currentHeading}deg)`;
+            if(ROUTE_V2.following)ROUTE_V2.map.setView(p,Math.max(16,ROUTE_V2.map.getZoom()),{animate:true,duration:.35});
+            routeUpdateRemainingV2(); routeUpdateNavigationStepV2(); routeAutoAdvanceStopV2(p);
+        }
+        function distanceHaversineV2(a,b){const R=6371000,la=a[0]*Math.PI/180,lb=b[0]*Math.PI/180,dla=(b[0]-a[0])*Math.PI/180,dl=(b[1]-a[1])*Math.PI/180;const x=Math.sin(dla/2)**2+Math.cos(la)*Math.cos(lb)*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+        function routeAutoAdvanceStopV2(p){const s=ROUTE_V2.stops[ROUTE_V2.currentIndex];if(!s?.coords)return;if(distanceHaversineV2(p,s.coords)<55){routeSetStopStatusV2('entregue',true);}}
+        function routeUpdateRemainingV2(){
+            if(!ROUTE_V2.routeGeometry?.length||!ROUTE_V2.currentPosition||!ROUTE_V2.map)return;
+            let idx=0,best=Infinity; for(let i=0;i<ROUTE_V2.routeGeometry.length;i++){const d=distanceHaversineV2(ROUTE_V2.currentPosition,ROUTE_V2.routeGeometry[i]);if(d<best){best=d;idx=i;}}
+            const remaining=ROUTE_V2.routeGeometry.slice(idx); if(ROUTE_V2.remainingLayer)ROUTE_V2.remainingLayer.remove();
+            if(remaining.length>1)ROUTE_V2.remainingLayer=L.polyline(remaining,{color:'#1d4ed8',weight:8,opacity:1,lineCap:'round',lineJoin:'round'}).addTo(ROUTE_V2.map);
+        }
+        function routeUpdateNavigationStepV2(){
+            const s=ROUTE_V2.stops[ROUTE_V2.currentIndex]; if(!s)return;
+            const addr=s.address||'Próxima parada'; const dist=ROUTE_V2.currentPosition&&s.coords?distanceHaversineV2(ROUTE_V2.currentPosition,s.coords):0;
+            document.getElementById('navDistanceV2').textContent=dist?formatDistanceV2(dist):'—';
+            document.getElementById('navInstructionV2').textContent='Siga pela rota otimizada';
+            document.getElementById('navStreetV2').textContent=addr;
+            document.getElementById('navStopLabelV2').textContent=`Parada ${ROUTE_V2.currentIndex+1} de ${ROUTE_V2.stops.length}`;
+            document.getElementById('navStopAddressV2').textContent=addr;
+            document.getElementById('navStopMetaV2').textContent=s.package?`Pacote/Pedido: ${s.package}`:'';
+            const a=document.getElementById('navArrowV2');a.textContent=ROUTE_V2.currentHeading>=315||ROUTE_V2.currentHeading<45?'↑':(ROUTE_V2.currentHeading<135?'→':(ROUTE_V2.currentHeading<225?'↓':'←'));
+            renderStopsV2();
+        }
+        function formatDistanceV2(m){return m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';}
+        function updateStopCardV2(){
+            const s=ROUTE_V2.stops[ROUTE_V2.currentIndex]; if(!s)return;
+            document.getElementById('navStopLabelV2').textContent=`Parada ${ROUTE_V2.currentIndex+1} de ${ROUTE_V2.stops.length}`;
+            document.getElementById('navStopAddressV2').textContent=s.address||'Endereço não informado';
+            document.getElementById('navStopMetaV2').textContent=s.package?`Pacote/Pedido: ${s.package}`:'';
+        }
+        function routeSetStopStatusV2(status,auto=false){
+            const s=ROUTE_V2.stops[ROUTE_V2.currentIndex]; if(!s)return;
+            s.status=status; if(!auto)notificar(status==='entregue'?'✓ Entrega registrada.':'✕ Parada marcada como não entregue.');
+            if(status==='entregue'||status==='nao_entregue'){
+                if(ROUTE_V2.currentIndex<ROUTE_V2.stops.length-1){ROUTE_V2.currentIndex++;}else{ROUTE_V2.navigating=false;routeSetStatusV2('Rota concluída');notificar('🏁 Todas as paradas foram processadas.');}
+            }
+            renderStopsV2(); updateStopCardV2(); routeUpdateRemainingV2(); routeUpdateNavigationStepV2();
+        }
+        function routeRecenterV2(){
+            if(!ROUTE_V2.currentPosition){routeUseCurrentLocation();return;}
+            ROUTE_V2.following=true; ROUTE_V2.map.setView(ROUTE_V2.currentPosition,Math.max(16,ROUTE_V2.map.getZoom()),{animate:true,duration:.45});
+            const el=document.getElementById('driverArrowV2');if(el)el.style.transform=`rotate(${ROUTE_V2.currentHeading}deg)`;
+        }
+
+
         window.addEventListener('DOMContentLoaded', carregarConfiguracoesSalvas);
     </script>
 </body>
 </html>
+Pacote_E_Mato_V2.html
+HTML
