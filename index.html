@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PACOTE É MATO</title>
+    <title>PACOTE É MATO // PRO</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
     
-    <!-- PWA Setup -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#090d16" id="metaThemeColor">
+    <meta name="theme-color" content="#050505" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -17,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -30,27 +30,31 @@
 
     <style>
         :root {
-            --bg-body: #060913;
-            --surface-1: #0e1526;
-            --surface-2: #162038;
+            --bg-body: #050507;
+            --surface-1: #0f1015;
+            --surface-2: #161820;
             --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.16);
+            --surface-border-hover: rgba(255, 255, 255, 0.2);
             --text-main: #f8fafc;
-            --text-muted: #8a99af;
-            --primary: #1d4ed8;
-            --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
-            --accent-green: #047857;
-            --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
-            --accent-blue-soft: #38bdf8;
-            --danger: #b91c1c;
-            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
+            --text-muted: #737c8e;
+            --primary: #facc15;
+            --primary-gradient: linear-gradient(135deg, #eab308, #facc15);
+            --primary-text: #000000;
+            --accent-blue: #38bdf8;
+            --accent-green: #10b981;
+            --accent-green-gradient: linear-gradient(135deg, #059669, #10b981);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.12);
+            --font-display: 'Chakra Petch', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --shadow-glow: 0 0 25px rgba(250, 204, 21, 0.2);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -62,7 +66,7 @@
             align-items: center;
             min-height: 100vh;
             padding-bottom: 2rem;
-            transition: background-color 0.25s, color 0.25s;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
         .container {
@@ -71,53 +75,51 @@
             padding: 0 14px;
         }
 
-        button, .plan-item, .nav-btn, .cam-overlay-btn, .btn-acao-card, .gps-option-btn, .segmented-btn, .admin-tab {
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        button, .plan-item, .nav-btn, .cam-action-btn, .btn-acao-card, .segmented-btn, .admin-tab {
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease, background-color 0.2s ease;
+            cursor: pointer;
         }
 
-        button:active, .plan-item:active, .nav-btn:active, .cam-overlay-btn:active, .btn-acao-card:active, .gps-option-btn:active, .segmented-btn:active, .admin-tab:active {
-            transform: scale(0.96) !important;
+        button:active, .plan-item:active, .nav-btn:active, .cam-action-btn:active, .segmented-btn:active {
+            transform: scale(0.95) !important;
         }
 
         .btn-instalar-dinamico {
             width: 100%;
-            background: rgba(37, 99, 235, 0.1);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(250, 204, 21, 0.08);
+            color: var(--primary);
+            border: 1px dashed rgba(250, 204, 21, 0.35);
             border-radius: 12px;
-            padding: 11px 14px;
-            font-weight: 700;
-            font-size: 0.84rem;
-            margin-bottom: 14px;
-            cursor: pointer;
+            padding: 10px 14px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-        }
-        .btn-instalar-dinamico:hover {
-            background: rgba(37, 99, 235, 0.2);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         #toastNotificacao {
             position: fixed;
-            top: 20px;
+            top: 18px;
             left: 50%;
             transform: translateX(-50%);
-            background: #162038;
-            color: #f8fafc;
-            padding: 11px 20px;
+            background: #1e222d;
+            color: #ffffff;
+            padding: 12px 22px;
             border-radius: 12px;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 0.84rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7);
             border: 1px solid var(--surface-border);
             z-index: 1000005;
             display: none;
-            animation: slideDown 0.25s ease;
             text-align: center;
             max-width: 90%;
+            animation: slideDown 0.25s ease;
         }
 
         @keyframes slideDown {
@@ -125,10 +127,11 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
+        /* --- TELA BLOQUEIO / LOGIN --- */
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #111c38 0%, #060913 70%);
+            background: radial-gradient(circle at top, #14161f 0%, #050507 80%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -143,53 +146,40 @@
             max-width: 410px;
             background: var(--surface-1);
             border-radius: 24px;
-            padding: 28px 24px;
-            box-shadow: var(--shadow-card);
+            padding: 26px 22px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
             border: 1px solid var(--surface-border);
             text-align: left;
         }
 
         .auth-header-center {
             text-align: center;
-            margin-bottom: 22px;
-        }
-
-        .app-logo-pro {
-            width: 56px;
-            height: 56px;
-            object-fit: contain;
-            margin: 0 auto 10px;
-            display: block;
-            cursor: pointer;
-            filter: drop-shadow(0 4px 12px rgba(29, 78, 216, 0.4));
-            transition: transform 0.3s ease;
-        }
-        .app-logo-pro:hover {
-            transform: scale(1.08);
+            margin-bottom: 20px;
         }
 
         .brand-title-pro {
-            font-size: 1.35rem;
-            font-weight: 800;
-            letter-spacing: -0.3px;
+            font-family: var(--font-display);
+            font-size: 1.45rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
             color: var(--text-main);
             margin-bottom: 2px;
         }
 
         .brand-subtitle-pro {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 700;
+            font-size: 0.68rem;
+            color: var(--primary);
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
         .form-label-pro {
-            font-size: 0.72rem;
-            font-weight: 700;
+            font-size: 0.7rem;
+            font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             margin-bottom: 6px;
             display: block;
         }
@@ -206,7 +196,7 @@
             left: 14px;
             font-size: 0.95rem;
             pointer-events: none;
-            opacity: 0.6;
+            opacity: 0.5;
         }
 
         .input-icon-right {
@@ -217,7 +207,6 @@
             opacity: 0.7;
             user-select: none;
         }
-        .input-icon-right:hover { opacity: 1; }
 
         .input-auth {
             width: 100%;
@@ -229,77 +218,62 @@
             font-size: 0.92rem;
             font-weight: 700;
             outline: none;
-            transition: all 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .input-auth.com-icone-direita {
-            padding-right: 40px;
-        }
+        .input-auth.com-icone-direita { padding-right: 40px; }
 
         .input-auth:focus {
             border-color: var(--primary);
-            background: rgba(22, 32, 56, 0.9);
-            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
         }
 
         .btn-action-primary {
             width: 100%;
             background: var(--primary-gradient);
-            color: #ffffff;
+            color: var(--primary-text);
             border: none;
             border-radius: 12px;
-            padding: 12px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
+            padding: 13px;
+            font-weight: 900;
+            font-size: 0.88rem;
+            box-shadow: 0 6px 18px rgba(250, 204, 21, 0.25);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .btn-action-primary:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 6px 18px rgba(29, 78, 216, 0.5);
-        }
-        .btn-action-primary:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-            filter: none;
-        }
+
+        .btn-action-primary:hover { filter: brightness(1.1); }
 
         .btn-action-trial {
             width: 100%;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.03);
             color: var(--text-main);
             border: 1px solid var(--surface-border);
             border-radius: 12px;
             padding: 11px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.82rem;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
         }
-        .btn-action-trial:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--surface-border-hover);
-        }
 
         .btn-support-login {
             width: 100%;
-            background: rgba(5, 150, 105, 0.1);
+            background: rgba(16, 185, 129, 0.08);
             color: #34d399;
-            border: 1px solid rgba(5, 150, 105, 0.25);
+            border: 1px solid rgba(16, 185, 129, 0.2);
             border-radius: 12px;
             padding: 11px;
-            font-weight: 700;
-            font-size: 0.84rem;
-            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.82rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -307,106 +281,223 @@
             text-decoration: none;
             margin-bottom: 12px;
         }
-        .btn-support-login:hover {
-            background: rgba(5, 150, 105, 0.2);
-        }
-
-        .divider-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin: 12px 0 10px;
-        }
-        .divider-label::before, .divider-label::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--surface-border);
-        }
-
-        .plan-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            margin-bottom: 10px;
-        }
 
         .plan-item {
             background: var(--surface-2);
             border: 1.5px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 14px;
+            padding: 11px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            cursor: pointer;
             position: relative;
-        }
-        .plan-item:hover {
-            border-color: var(--surface-border-hover);
-            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 7px;
         }
 
         .plan-item.selecionado {
-            border-color: #38bdf8 !important;
-            background: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
-        }
-
-        .plan-item.featured {
-            border-color: rgba(5, 150, 105, 0.4);
+            border-color: var(--primary) !important;
+            background: rgba(250, 204, 21, 0.06);
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.15);
         }
 
         .plan-badge-top {
             position: absolute;
             top: -7px;
             right: 12px;
-            background: var(--accent-green-gradient);
-            color: #ffffff;
+            background: var(--primary);
+            color: #000;
             font-size: 0.55rem;
-            font-weight: 800;
-            padding: 2px 6px;
+            font-weight: 900;
+            padding: 2px 7px;
             border-radius: 6px;
             text-transform: uppercase;
         }
 
-        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
+        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); }
+        .plan-meta { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
+        .plan-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 900; color: var(--primary); }
 
-        .btn-gerar-pix-confirm {
+        /* --- DASHBOARD & CÂMERA COMPACTA --- */
+        .top-nav {
             width: 100%;
-            background: var(--accent-green-gradient);
-            color: #ffffff;
-            border: none;
+            max-width: 440px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 14px 10px;
+        }
+
+        .nav-btn {
+            background: var(--surface-1);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
             border-radius: 12px;
-            padding: 12px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
             font-weight: 800;
-            font-size: 0.90rem;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
-            display: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .access-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+        }
+
+        .metrics-board {
+            background: var(--surface-1);
+            border-radius: 16px;
+            padding: 10px 8px;
+            border: 1px solid var(--surface-border);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .metric-cell {
+            padding: 6px 4px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .metric-val { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 900; color: var(--text-main); }
+        .metric-lbl { font-size: 0.62rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+        /* Visor de câmera ultra-otimizado */
+        .camera-viewport {
+            position: relative;
+            width: 100%;
+            height: 230px;
+            border-radius: 18px;
+            border: 1.5px solid var(--surface-border);
+            background: #000000;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        #reader { width: 100% !important; height: 100% !important; }
+        #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+
+        .cam-controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .cam-action-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 10px;
+            color: var(--text-main);
+            font-size: 0.78rem;
+            font-weight: 800;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            animation: fadeIn 0.2s ease;
-        }
-        .btn-gerar-pix-confirm:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 6px 18px rgba(5, 150, 105, 0.5);
+            text-transform: uppercase;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
+        .cam-action-btn.active-flash {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
         }
 
-        .modal-backdrop {
+        /* CARD DE RESULTADO ULTRA GIGANTE */
+        .result-panel {
+            background: var(--surface-1);
+            padding: 20px 16px;
+            border-radius: 20px;
+            border: 2px solid var(--primary);
+            margin-bottom: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-glow);
+            display: none;
+            animation: pulseGlow 0.25s ease;
+        }
+
+        @keyframes pulseGlow {
+            from { transform: scale(0.97); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .stop-number {
+            font-family: var(--font-display);
+            font-size: 4.8rem;
+            font-weight: 900;
+            color: var(--primary);
+            line-height: 0.95;
+            margin-bottom: 6px;
+            letter-spacing: -1px;
+        }
+
+        .result-panel.error-state {
+            border-color: var(--danger);
+            background: var(--danger-bg);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
+        }
+
+        .result-panel.error-state .stop-number {
+            font-size: 2rem;
+            color: var(--danger);
+        }
+
+        /* FITA DE HISTÓRICO RÁPIDO */
+        .history-ribbon-container {
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-ribbon-title {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .history-ribbon {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .history-ribbon::-webkit-scrollbar { display: none; }
+
+        .history-chip {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--text-main);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .history-chip b { color: var(--primary); }
+
+        /* MODAIS, SIDEBAR & DRAWERS */
+        .modal-backdrop, .drawer-mask {
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.85);
@@ -420,400 +511,80 @@
 
         .modal-card {
             width: 100%;
-            max-width: 380px;
+            max-width: 390px;
             background: var(--surface-1);
             border: 1px solid var(--surface-border);
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 22px;
             text-align: center;
-            box-shadow: var(--shadow-card);
-        }
-
-        .qr-placeholder {
-            background: #ffffff;
-            padding: 12px;
-            border-radius: 14px;
-            width: 155px;
-            height: 155px;
-            margin: 12px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .top-nav {
-            width: 100%;
-            max-width: 440px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 14px 8px;
-        }
-
-        .nav-btn {
-            background: var(--surface-1);
-            color: var(--text-main);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 8px 14px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .nav-btn:hover {
-            border-color: var(--surface-border-hover);
-        }
-
-        .access-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(5, 150, 105, 0.3);
-            background: rgba(5, 150, 105, 0.1);
-            color: #34d399;
-        }
-
-        .hero-banner {
-            background: var(--surface-1);
-            padding: 18px 16px;
-            border-radius: 18px;
-            border: 1px solid var(--surface-border);
-            text-align: center;
-            box-shadow: var(--shadow-card);
-            margin-bottom: 12px;
-            cursor: pointer;
-        }
-
-        .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(29, 78, 216, 0.12), rgba(56, 189, 248, 0.05));
-            border: 1.5px solid var(--primary);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 12px;
-            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.2);
-            display: none;
-            text-align: center;
-        }
-
-        .upload-section {
-            background: var(--surface-1);
-            padding: 20px 16px;
-            border-radius: 18px;
-            border: 1px dashed rgba(59, 130, 246, 0.3);
-            text-align: center;
-            margin-bottom: 14px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .btn-upload-trigger {
-            width: 100%;
-            background: var(--primary-gradient);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            padding: 13px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-upload-trigger:hover {
-            filter: brightness(1.1);
-        }
-
-        .metrics-board {
-            background: var(--surface-1);
-            border-radius: 16px;
-            padding: 12px 8px;
-            border: 1px solid var(--surface-border);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            text-align: center;
-            margin-bottom: 14px;
-            box-shadow: var(--shadow-card);
-        }
-        .metric-cell {
-            padding: 6px 4px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.02);
-        }
-        .metric-val { font-size: 1.35rem; font-weight: 900; color: var(--text-main); }
-        .metric-lbl { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
-
-        .camera-viewport {
-            position: relative;
-            width: 100%;
-            height: 420px;
-            border-radius: 20px;
-            border: 1px solid var(--surface-border);
-            background: #000000;
-            margin-bottom: 14px;
-            overflow: hidden;
-            box-shadow: var(--shadow-card);
-        }
-
-        #reader { width: 100% !important; height: 100% !important; }
-        #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-
-        .cam-overlay-btn {
-            position: absolute;
-            z-index: 99;
-            background: rgba(14, 21, 38, 0.8);
-            backdrop-filter: blur(8px);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.72rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-        }
-        .cam-overlay-btn svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-        }
-        .cam-overlay-btn.active-flash {
-            background: rgba(245, 158, 11, 0.85);
-            border-color: rgba(251, 191, 36, 0.5);
-            color: #000000;
-        }
-
-        .result-panel {
-            background: var(--surface-1);
-            padding: 16px;
-            border-radius: 16px;
-            border: 1.5px solid var(--primary);
-            margin-bottom: 14px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(29, 78, 216, 0.15);
-            display: none;
-        }
-        .stop-number { font-size: 3.5rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
-        
-        .result-panel.error-state {
-            border-color: var(--danger);
-            background: rgba(185, 28, 28, 0.08);
-            box-shadow: 0 8px 24px rgba(185, 28, 28, 0.15);
-        }
-        .result-panel.error-state .stop-number {
-            font-size: 1.5rem;
-            color: var(--danger);
-        }
-
-        .drawer-mask {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 99998;
-            display: none;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
         }
 
         .drawer-panel {
             position: fixed;
             top: 0;
             left: -320px;
-            width: 280px;
+            width: 290px;
             height: 100%;
             background: var(--surface-1);
             border-right: 1px solid var(--surface-border);
             z-index: 99999;
-            padding: 22px 16px;
+            padding: 24px 16px;
             transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-y: auto;
         }
         .drawer-panel.active { left: 0; }
 
-        .modal-rota-conteudo {
-            max-height: 60vh;
-            overflow-y: auto;
-            text-align: left;
-            margin-top: 10px;
-            padding-right: 4px;
-        }
-
-        .parada-box-pro {
-            background: var(--surface-2);
-            border: 1px solid var(--surface-border);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-        }
-
-        .parada-box-pro.duplo-pro {
-            border-color: rgba(56, 189, 248, 0.4);
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), var(--surface-2));
-        }
-
-        .parada-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-
-        .parada-badge-num {
-            background: #060913;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 10px;
-            padding: 5px 12px;
-            font-weight: 800;
-            font-size: 0.88rem;
-            color: var(--text-main);
-            letter-spacing: 0.5px;
-        }
-
-        .parada-badge-num.destaque-duplo {
-            background: #1e3a8a;
-            border-color: #38bdf8;
-            color: #e0f2fe;
-        }
-
-        .tag-duplo-info {
-            font-size: 0.68rem;
-            font-weight: 800;
-            color: var(--accent-blue-soft);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .endereco-texto-pro {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 10px;
-            line-height: 1.3;
-        }
-
-        .acoes-footer-pro {
-            display: flex;
-            justify-content: flex-end;
-            border-top: 1px solid var(--surface-border);
-            padding-top: 8px;
-        }
-
-        .btn-acao-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--surface-border);
-            border-radius: 10px;
-            padding: 8px 14px;
-            color: var(--text-main);
-            font-weight: 700;
-            font-size: 0.75rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-acao-card:hover { background: rgba(29, 78, 216, 0.2); }
-
-        .gps-option-btn {
-            width: 100%;
-            padding: 11px;
-            border-radius: 11px;
-            border: 1px solid var(--surface-border);
-            font-weight: 800;
-            font-size: 0.88rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .segmented-control {
+        .segmented-control, .segmented-control-grid4 {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
             gap: 4px;
             background: var(--surface-2);
             padding: 4px;
             border-radius: 12px;
             border: 1px solid var(--surface-border);
         }
-
-        .segmented-control-grid4 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-            background: var(--surface-2);
-            padding: 4px;
-            border-radius: 12px;
-            border: 1px solid var(--surface-border);
-        }
+        .segmented-control { grid-template-columns: repeat(3, 1fr); }
+        .segmented-control-grid4 { grid-template-columns: repeat(2, 1fr); }
 
         .segmented-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
             padding: 8px 4px;
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             font-weight: 800;
-            border-radius: 9px;
-            cursor: pointer;
+            border-radius: 8px;
             text-align: center;
         }
 
         .segmented-btn.active {
             background: var(--primary);
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4);
+            color: var(--primary-text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
-        .admin-nav-tabs {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
-            margin-bottom: 12px;
-        }
-        .admin-tab {
-            padding: 7px 4px;
+        .parada-box-pro {
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
-            color: var(--text-muted);
-            border-radius: 8px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            cursor: pointer;
-            text-align: center;
-        }
-        .admin-tab.active {
-            background: #d97706;
-            color: #000000;
-            border-color: transparent;
-        }
-
-        .user-row {
-            background: var(--surface-2);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            border-radius: 14px;
+            padding: 12px;
             margin-bottom: 8px;
-            text-align: left;
+        }
+
+        .parada-box-pro.duplo-pro {
+            border-color: rgba(56, 189, 248, 0.4);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), var(--surface-2));
+        }
+
+        .parada-badge-num {
+            font-family: var(--font-display);
+            background: #000;
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            color: var(--primary);
         }
     </style>
 </head>
@@ -821,29 +592,29 @@
 
     <div id="toastNotificacao"></div>
 
+    <!-- TELA DE AUTENTICAÇÃO -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
-            
             <div class="auth-header-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
+                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:50px; margin-bottom:6px; cursor:pointer;" onclick="registrarCliqueAdmin()">
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
-                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
+                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</p>
             </div>
 
             <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+                📲 <span data-i18n="download_app">Instalar App no Celular</span>
             </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
             <div class="input-group">
                 <span class="input-icon-left">📱</span>
-                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15">
             </div>
 
             <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
             <div class="input-group">
                 <span class="input-icon-left">🔑</span>
-                <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+                <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Crie ou digite sua senha">
                 <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">👁️</span>
             </div>
             
@@ -855,20 +626,18 @@
             </button>
 
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-support-login">
-                    💬 Suporte
-                </button>
+                <button class="btn-support-login">💬 Suporte Direto WhatsApp</button>
             </a>
             
-            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
+            <div id="msgErro" style="color:var(--danger); font-size:0.75rem; font-weight:800; margin-bottom:12px; display:none;"></div>
 
-            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
+            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin:12px 0 8px;" data-i18n="choose_plan">Planos de Acesso</div>
             
             <div class="plan-stack">
                 <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
                     <div>
                         <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
-                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
+                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de rota liberada</div>
                     </div>
                     <div class="plan-val">R$ 4,99</div>
                 </div>
@@ -876,138 +645,67 @@
                 <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
                     <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
                     <div>
-                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
-                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
+                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal</div>
+                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Recomendado</div>
                     </div>
                     <div class="plan-val">R$ 9,99</div>
                 </div>
 
                 <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
                     <div>
-                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
-                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
+                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral</div>
+                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com super desconto</div>
                     </div>
                     <div class="plan-val">R$ 24,99</div>
                 </div>
             </div>
 
-            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
-                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
+            <button id="btnConfirmarPagamento" class="btn-action-primary" style="background:var(--accent-green-gradient); color:#fff; display:none; margin-top:8px;" onclick="iniciarPixPlanoSelecionado()">
+                ⚡ <span data-i18n="generate_pix">Gerar Pix Agora</span>
             </button>
         </div>
     </div>
 
+    <!-- MODAL PIX -->
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
-            <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
-            <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 9,99</h3>
+            <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Pix Instantâneo</div>
+            <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin:4px 0 10px;" id="pixPlanoNome">Plano Mensal - R$ 9,99</h3>
             
-            <div class="qr-placeholder" id="qrContainer"></div>
+            <div class="qr-placeholder" id="qrContainer" style="background:#fff; padding:10px; border-radius:12px; width:150px; height:150px; margin:0 auto 10px; display:flex; align-items:center; justify-content:center;"></div>
             
-            <div style="font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
-            <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O sistema destrava sozinho após o pagamento.</div>
+            <div style="font-size:0.78rem; font-weight:800; color:var(--text-main);" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O sistema libera automaticamente após o pagamento.</div>
 
-            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-size:0.68rem; text-align:center; outline:none;">
+            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:9px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-family:var(--font-mono); font-size:0.65rem; text-align:center; outline:none;">
             
-            <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
+            <button class="btn-action-primary" style="background:var(--accent-green-gradient); color:#fff; margin-top:10px;" onclick="copiarPixCopiaCola()">
                 📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
             </button>
-            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
-                Cancelar
-            </button>
+            <button onclick="fecharModalPix()" style="margin-top:8px; background:none; border:none; color:var(--text-muted); font-size:0.75rem; font-weight:800; cursor:pointer;" data-i18n="cancel">Cancelar</button>
         </div>
     </div>
 
+    <!-- MODAL PARADAS -->
     <div id="modalVisualizarRota" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📋 Paradas & Endereços</h3>
-                <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="color:var(--primary); font-family:var(--font-display); font-weight:900; font-size:1.15rem;">📋 PARADAS DA ROTA</h3>
+                <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:900; font-size:1.1rem;">✕</span>
             </div>
             
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:10px;">
                 <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Todos (<span id="contadorTodos">0</span>)</button>
-                <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
+                <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Duplos (<span id="contadorDuplos">0</span>)</button>
             </div>
 
-            <div class="modal-rota-conteudo" id="listaParadasModal"></div>
+            <div style="max-height:55vh; overflow-y:auto; padding-right:4px;" id="listaParadasModal"></div>
 
-            <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
+            <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:12px;">Fechar Lista</button>
         </div>
     </div>
 
-    <div id="modalDebugPdf" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <h3 style="color:#ef4444; font-weight:800; font-size:1.05rem;">⚠️ Diagnóstico do PDF</h3>
-                <span onclick="fecharModalDebugPdf()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
-            </div>
-            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Nenhum pacote foi reconhecido automaticamente. Abaixo está o texto bruto extraído:</p>
-            <div id="conteudoDebugPdf" style="max-height:220px; overflow-y:auto; font-family:monospace; font-size:0.7rem; background:var(--surface-2); padding:10px; border-radius:10px; color:#f8fafc; white-space:pre-wrap; word-break:break-all;"></div>
-            <button onclick="fecharModalDebugPdf()" class="btn-action-primary" style="margin-top:12px;">Fechar</button>
-        </div>
-    </div>
-
-    <div id="modalEscolhaGps" class="modal-backdrop">
-        <div class="modal-card" style="max-width:330px;">
-            <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
-            <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
-            
-            <button class="gps-option-btn" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">
-                🚗 Abrir no Waze
-            </button>
-            <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">
-                🗺️ Abrir no Google Maps
-            </button>
-            
-            <button onclick="fecharModalGps()" style="margin-top:6px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;">
-                Cancelar
-            </button>
-        </div>
-    </div>
-
-    <div id="modalAdmin" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#d97706; font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
-                <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
-            </div>
-            
-            <div id="areaLoginAdmin">
-                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:#d97706; color:#000;">Entrar</button>
-            </div>
-
-            <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
-                
-                <div class="admin-nav-tabs">
-                    <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
-                    <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
-                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes</button>
-                    <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar Acesso</button>
-                </div>
-
-                <div id="viewAdmin30d" style="max-height:250px; overflow-y:auto;"></div>
-                <div id="viewAdmin90d" style="max-height:250px; overflow-y:auto; display:none;"></div>
-                <div id="viewAdminTeste" style="max-height:250px; overflow-y:auto; display:none;"></div>
-                <div id="viewAdminPagos" style="max-height:250px; overflow-y:auto; display:none;"></div>
-
-                <div id="viewAdminAdd" style="display:none;">
-                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <select id="selDiasAdmin" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
-                        <option value="3">3 Dias</option>
-                        <option value="7">7 Dias (Semanal)</option>
-                        <option value="30" selected>30 Dias (1 Mês)</option>
-                        <option value="90">90 Dias (3 Meses)</option>
-                    </select>
-                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- NAVEGAÇÃO SUPERIOR -->
     <div class="top-nav">
         <button class="nav-btn" onclick="toggleSidebar()">
             <span>☰</span> <span data-i18n="menu">Menu</span>
@@ -1015,26 +713,25 @@
         <span class="access-badge" id="diasRestantes">Acesso Ativo</span>
     </div>
 
+    <!-- MENU LATERAL (DRAWER) -->
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
     <div class="drawer-panel" id="sidebar">
-        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
-        <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
+        <div style="font-family:var(--font-display); font-weight:900; font-size:1.2rem; margin-bottom:2px; color:var(--text-main);">PACOTE É MATO</div>
+        <div style="font-size:0.65rem; color:var(--primary); font-weight:800; letter-spacing:1px; margin-bottom:16px;">SISTEMA DE ROTA V4.0</div>
 
-        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:16px;" onclick="dispararInstalacaoPWA()">
-            📲 <span data-i18n="download_app">Baixar App no Celular</span>
+        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" onclick="dispararInstalacaoPWA()">
+            📲 <span data-i18n="download_app">Instalar no Celular</span>
         </button>
 
         <div style="margin-bottom:16px;">
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
-                    💬 Suporte
-                </button>
+                <button class="btn-action-primary" style="background:var(--accent-green-gradient); color:#fff; font-size:0.8rem; padding:10px;">💬 Chamar Suporte</button>
             </a>
         </div>
 
         <div style="margin-bottom:14px;">
-            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span data-i18n="language_label">Idioma</span></label>
+            <label class="form-label-pro">🌐 <span data-i18n="language_label">Idioma</span></label>
             <div class="segmented-control">
                 <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
                 <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
@@ -1043,22 +740,22 @@
         </div>
 
         <div style="margin-bottom:14px;">
-            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
+            <label class="form-label-pro">🎨 <span data-i18n="theme_label">Paleta Tática</span></label>
             <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Slate Tech</button>
-                <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
-                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
-                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza Metálico</button>
+                <button class="segmented-btn active" id="theme_carbon_yellow" onclick="mudarTema('carbon_yellow')">Carbon Pro</button>
+                <button class="segmented-btn" id="theme_cyber_neon" onclick="mudarTema('cyber_neon')">Cyber Neon</button>
+                <button class="segmented-btn" id="theme_matrix_emerald" onclick="mudarTema('matrix_emerald')">Esmeralda</button>
+                <button class="segmented-btn" id="theme_formula_amber" onclick="mudarTema('formula_amber')">Fórmula</button>
             </div>
         </div>
 
         <div style="margin-bottom:14px;">
-            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
+            <label class="form-label-pro">🎙️ <span data-i18n="voice_label">Sintetizador de Voz</span></label>
             <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Rápida</button>
-                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">👩 Feminina</button>
-                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">👨 Masculina</button>
-                <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Tática Turbo</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Walkie Rádio</button>
+                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">🗣️ Natural HD</button>
+                <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:var(--danger);">🔇 Mudo</button>
             </div>
         </div>
 
@@ -1066,47 +763,44 @@
             <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
                 🔄 <span data-i18n="reset_route">Zerar Bipagens</span>
             </button>
-            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(220, 38, 38, 0.15); color:#ef4444; border:1px solid rgba(220, 38, 38, 0.3); font-size:0.8rem;">
+            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(239, 68, 68, 0.12); color:var(--danger); border:1px solid rgba(239, 68, 68, 0.3); font-size:0.8rem;">
                 🔒 <span data-i18n="logout">Desconectar Conta</span>
             </button>
         </div>
     </div>
 
+    <!-- CONTEÚDO PRINCIPAL -->
     <div class="container">
 
         <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
-            📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+            📲 <span data-i18n="download_app">Instalar Aplicativo no Celular</span>
         </button>
-        
-        <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:55px; margin-bottom:4px;">
-            <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
-        </div>
 
-        <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
-            <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
-            <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
-                ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
+        <div class="card-retomar-rota" id="cardRetomarRota" style="background:var(--surface-1); border:1.5px solid var(--primary); border-radius:16px; padding:14px; margin-bottom:12px; display:none; text-align:center;">
+            <div style="font-size:0.68rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div id="txtNomeRotaSalva" style="font-size:0.85rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
+            <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
+                ⚡ <span data-i18n="resume_route">Continuar Rota</span>
             </button>
         </div>
 
-        <div class="upload-section">
-            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
+        <!-- UPLOAD SECTION -->
+        <div class="upload-section" style="background:var(--surface-1); padding:16px; border-radius:18px; border:1px dashed var(--surface-border); text-align:center; margin-bottom:12px;">
+            <div style="font-family:var(--font-display); font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">CARREGAR ROTA (PDF)</div>
+            <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="load_pdf_subtitle">Importe a folha da sua transportadora</div>
             
-            <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
+            <button class="btn-action-primary" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:6px;">
                 📄 Escolher Arquivo PDF
             </button>
 
             <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
-                👀 Visualizar Paradas da Rota
+                👀 Ver Paradas e Endereços
             </button>
 
             <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
         </div>
 
+        <!-- ÁREA HUD DE BIPAGEM NA RUA -->
         <div id="areaExecucao" style="display:none;">
             
             <div class="metrics-board">
@@ -1115,176 +809,268 @@
                     <div class="metric-lbl" data-i18n="metric_scanned">Bipados</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valParadas" style="color:#38bdf8;">0</div>
+                    <div class="metric-val" id="valParadas" style="color:var(--accent-blue);">0</div>
                     <div class="metric-lbl" data-i18n="metric_stops">Paradas</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valFaltam" style="color:#f59e0b;">0</div>
+                    <div class="metric-val" id="valFaltam" style="color:var(--primary);">0</div>
                     <div class="metric-lbl" data-i18n="metric_remaining">Faltam</div>
                 </div>
             </div>
 
+            <!-- RESULT DISPLAY ULTRA VISÍVEL -->
+            <div class="result-panel" id="cardResult">
+                <div class="stop-number" id="resStop">P1</div>
+                <div id="resPacote" style="font-family:var(--font-mono); font-size:0.8rem; font-weight:800; color:var(--text-muted);">📍 BR...</div>
+            </div>
+
+            <div id="boxAviso" style="background:rgba(250, 204, 21, 0.1); border:1px solid var(--primary); color:var(--primary); border-radius:12px; padding:10px; font-size:0.75rem; font-weight:800; text-align:center; margin-bottom:10px; display:none;"></div>
+
+            <!-- VISOR DE CÂMERA COMPACTO -->
             <div class="camera-viewport">
-                <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
-                    <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
-                    <span data-i18n="cam_flip">Virar</span>
-                </button>
-                <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">
-                    <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l3-8z"/></svg>
-                    <span id="txt-flash">Flash</span>
-                </button>
                 <div id="reader"></div>
             </div>
 
-            <div class="result-panel" id="cardResult">
-                <div class="stop-number" id="resStop">P1</div>
-                <div id="resPacote" style="font-size:0.82rem; font-weight:800; color:var(--text-muted);">📍 Pacote: BR...</div>
+            <!-- CONTROLES NA THUMB-ZONE -->
+            <div class="cam-controls-row">
+                <button class="cam-action-btn" onclick="alternarCamera()">
+                    🔄 <span data-i18n="cam_flip">Virar Câmera</span>
+                </button>
+                <button class="cam-action-btn" id="btn-flash" onclick="alternarFlash()">
+                    ⚡ <span id="txt-flash">Flash Off</span>
+                </button>
             </div>
 
-            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid #f59e0b; color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+            <!-- HISTÓRICO RÁPIDO -->
+            <div class="history-ribbon-container">
+                <span class="history-ribbon-title">Últimos Bipados:</span>
+                <div class="history-ribbon" id="historyRibbon">
+                    <div style="font-size:0.68rem; color:var(--text-muted);">Nenhum pacote bipado ainda.</div>
+                </div>
+            </div>
 
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
+            <input type="text" class="input-auth" id="inputManual" placeholder="Digitar código manual..." style="margin-bottom:12px; font-family:var(--font-mono); font-size:0.82rem; padding-left:14px;" onchange="processarCodigo(this.value)">
 
         </div>
 
     </div>
 
+    <!-- MODAL ESCOLHA GPS -->
+    <div id="modalEscolhaGps" class="modal-backdrop">
+        <div class="modal-card" style="max-width:330px;">
+            <div style="font-size:0.68rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
+            <h3 style="font-size:1rem; font-weight:900; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
+            
+            <button class="btn-action-primary" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">
+                🚗 Abrir no Waze
+            </button>
+            <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">
+                🗺️ Abrir no Google Maps
+            </button>
+            
+            <button onclick="fecharModalGps()" style="margin-top:6px; background:none; border:none; color:var(--text-muted); font-size:0.75rem; font-weight:800; cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+
     <script>
+        // ==========================================
+        // PALETAS & TEMAS TÁTICOS
+        // ==========================================
+        const paletas = {
+            carbon_yellow: {
+                bg_body: "#050507",
+                surface_1: "#0f1015",
+                surface_2: "#161820",
+                border: "rgba(255, 255, 255, 0.08)",
+                text_main: "#f8fafc",
+                text_muted: "#737c8e",
+                primary: "#facc15",
+                primary_grad: "linear-gradient(135deg, #eab308, #facc15)",
+                primary_text: "#000000",
+                shadow: "0 0 25px rgba(250, 204, 21, 0.2)"
+            },
+            cyber_neon: {
+                bg_body: "#06060c",
+                surface_1: "#10101f",
+                surface_2: "#181830",
+                border: "rgba(168, 85, 247, 0.2)",
+                text_main: "#ffffff",
+                text_muted: "#8b8da6",
+                primary: "#38bdf8",
+                primary_grad: "linear-gradient(135deg, #8b5cf6, #38bdf8)",
+                primary_text: "#000000",
+                shadow: "0 0 25px rgba(56, 189, 248, 0.25)"
+            },
+            matrix_emerald: {
+                bg_body: "#030805",
+                surface_1: "#08140c",
+                surface_2: "#0d2215",
+                border: "rgba(16, 185, 129, 0.2)",
+                text_main: "#f0fdf4",
+                text_muted: "#6ee7b7",
+                primary: "#10b981",
+                primary_grad: "linear-gradient(135deg, #059669, #10b981)",
+                primary_text: "#000000",
+                shadow: "0 0 25px rgba(16, 185, 129, 0.25)"
+            },
+            formula_amber: {
+                bg_body: "#0c0a09",
+                surface_1: "#1c1917",
+                surface_2: "#292524",
+                border: "rgba(249, 115, 22, 0.2)",
+                text_main: "#fafaf9",
+                text_muted: "#a8a29e",
+                primary: "#f97316",
+                primary_grad: "linear-gradient(135deg, #ea580c, #f97316)",
+                primary_text: "#ffffff",
+                shadow: "0 0 25px rgba(249, 115, 22, 0.25)"
+            }
+        };
+
+        function mudarTema(tipo) {
+            let p = paletas[tipo] || paletas.carbon_yellow;
+            document.documentElement.style.setProperty('--bg-body', p.bg_body);
+            document.documentElement.style.setProperty('--surface-1', p.surface_1);
+            document.documentElement.style.setProperty('--surface-2', p.surface_2);
+            document.documentElement.style.setProperty('--surface-border', p.border);
+            document.documentElement.style.setProperty('--text-main', p.text_main);
+            document.documentElement.style.setProperty('--text-muted', p.text_muted);
+            document.documentElement.style.setProperty('--primary', p.primary);
+            document.documentElement.style.setProperty('--primary-gradient', p.primary_grad);
+            document.documentElement.style.setProperty('--primary-text', p.primary_text);
+            document.documentElement.style.setProperty('--shadow-glow', p.shadow);
+            
+            let metaColor = document.getElementById('metaThemeColor');
+            if (metaColor) metaColor.setAttribute('content', p.bg_body);
+
+            localStorage.setItem('tema_preferido_v4', tipo);
+
+            ['carbon_yellow', 'cyber_neon', 'matrix_emerald', 'formula_amber'].forEach(t => {
+                let btn = document.getElementById('theme_' + t);
+                if (btn) {
+                    if (t === tipo) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
+
+        // ==========================================
+        // TRADUÇÕES E IDIOMAS
+        // ==========================================
         const traducoes = {
             pt: {
-                download_app: "Baixar App no Celular",
-                brand_subtitle: "Plataforma de Logística",
+                download_app: "Instalar App no Celular",
+                brand_subtitle: "SISTEMA INTELIGENTE DE LOGÍSTICA",
                 whatsapp_label: "WhatsApp / Acesso",
                 password_label: "Sua Senha Pessoal",
-                whatsapp_placeholder: "Número com DDD",
-                password_placeholder: "Crie ou digite sua senha",
                 btn_enter: "Entrar no Sistema",
                 btn_trial: "Testar 3 Dias Grátis",
                 choose_plan: "Planos de Acesso",
                 plan_weekly_name: "Plano Semanal",
-                plan_weekly_meta: "7 dias de acesso total",
-                plan_monthly_name: "Plano Mensal (1 Mês)",
-                plan_monthly_meta: "30 dias • Melhor custo-benefício",
-                plan_quarterly_name: "Plano Trimestral (3 Meses)",
-                plan_quarterly_meta: "90 dias com desconto",
+                plan_weekly_meta: "7 dias de rota liberada",
+                plan_monthly_name: "Plano Mensal",
+                plan_monthly_meta: "30 dias • Recomendado",
+                plan_quarterly_name: "Plano Trimestral",
+                plan_quarterly_meta: "90 dias com super desconto",
                 most_popular: "Popular",
-                generate_pix: "Gerar Pagamento Pix",
-                secure_payment: "Pagamento Seguro Pix",
+                generate_pix: "Gerar Pix Agora",
+                secure_payment: "Pagamento Pix Instantâneo",
                 waiting_confirmation: "Aguardando confirmação... ⏳",
-                auto_unlock: "O sistema destrava sozinho após o pagamento.",
+                auto_unlock: "O sistema libera automaticamente após o pagamento.",
                 copy_pix: "Copiar Código Pix",
                 cancel: "Cancelar",
                 menu: "Menu",
                 language_label: "Idioma",
-                theme_label: "Tema de Cor",
-                voice_label: "Voz do Sintetizador",
+                theme_label: "Paleta Tática",
+                voice_label: "Sintetizador de Voz",
                 reset_route: "Zerar Bipagens",
                 logout: "Desconectar Conta",
-                logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
                 saved_route_found: "📂 ROTA ANTERIOR IDENTIFICADA",
-                resume_route: "Retomar Rota Onde Parei",
-                load_pdf_title: "Carregar Rota em PDF",
-                load_pdf_subtitle: "Importe a folha da sua rota para sincronizar as paradas",
-                choose_pdf: "Escolher Arquivo PDF",
+                resume_route: "Continuar Rota",
+                load_pdf_title: "CARREGAR ROTA (PDF)",
+                load_pdf_subtitle: "Importe a folha da sua transportadora",
                 metric_scanned: "Bipados",
                 metric_stops: "Paradas",
                 metric_remaining: "Faltam",
-                cam_flip: "Virar",
-                flash_txt: "Flash",
-                manual_placeholder: "Digite o código manualmente...",
-                same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
-                pdf_erro: "❌ Não consegui ler este PDF. Verifique se o arquivo não está corrompido e tente novamente.",
-                login_bloqueado: "🔒 Muitas tentativas erradas. Aguarde 30 segundos e tente de novo."
+                cam_flip: "Virar Câmera",
+                same_address_alert: "⚠️ MESMO ENDEREÇO! Paradas juntas: ",
+                pdf_erro: "❌ Não consegui ler este PDF. Verifique o arquivo."
             },
             es: {
-                download_app: "Descargar App en el Móvil",
-                brand_subtitle: "Plataforma de Logística",
+                download_app: "Instalar App en el Móvil",
+                brand_subtitle: "SISTEMA INTELIGENTE DE LOGÍSTICA",
                 whatsapp_label: "WhatsApp / Acceso",
                 password_label: "Tu Contraseña",
-                whatsapp_placeholder: "Número con código de área",
-                password_placeholder: "Crea o escribe tu contraseña",
                 btn_enter: "Entrar al Sistema",
                 btn_trial: "Probar 3 Días Gratis",
                 choose_plan: "Planes de Acceso",
                 plan_weekly_name: "Plan Semanal",
-                plan_weekly_meta: "7 días de acceso total",
-                plan_monthly_name: "Plan Mensual (1 Mes)",
-                plan_monthly_meta: "30 días • Mejor relación calidad-precio",
-                plan_quarterly_name: "Plan Trimestral (3 Meses)",
+                plan_weekly_meta: "7 días de acceso",
+                plan_monthly_name: "Plan Mensual",
+                plan_monthly_meta: "30 días • Recomendado",
+                plan_quarterly_name: "Plan Trimestral",
                 plan_quarterly_meta: "90 días con descuento",
                 most_popular: "Popular",
                 generate_pix: "Generar Pago Pix",
                 secure_payment: "Pago Seguro Pix",
                 waiting_confirmation: "Esperando confirmación... ⏳",
-                auto_unlock: "El sistema se desbloquea solo tras el pago.",
+                auto_unlock: "El sistema se desbloquea tras el pago.",
                 copy_pix: "Copiar Código Pix",
                 cancel: "Cancelar",
                 menu: "Menú",
                 language_label: "Idioma",
-                theme_label: "Tema de Color",
-                voice_label: "Voz del Sintetizador",
+                theme_label: "Paleta Táctica",
+                voice_label: "Sintetizador de Voz",
                 reset_route: "Reiniciar Escaneos",
                 logout: "Cerrar Sesión",
-                logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
-                saved_route_found: "📂 ROTA ANTERIOR ENCONTRADA",
-                resume_route: "Reanudar Ruta Donde Me Quedé",
-                load_pdf_title: "Cargar Ruta en PDF",
-                load_pdf_subtitle: "Importa la hoja de tu ruta para sincronizar las paradas",
-                choose_pdf: "Elegir Archivo PDF",
+                saved_route_found: "📂 RUTA ANTERIOR ENCONTRADA",
+                resume_route: "Continuar Ruta",
+                load_pdf_title: "CARGAR RUTA (PDF)",
+                load_pdf_subtitle: "Importa tu hoja de ruta",
                 metric_scanned: "Escaneados",
                 metric_stops: "Paradas",
-                metric_remaining: "Faltam",
-                cam_flip: "Girar",
-                flash_txt: "Flash",
-                manual_placeholder: "Escribe el código manualmente...",
-                same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paquetes en este punto: ",
-                pdf_erro: "❌ No pude leer este PDF. Verifica que el archivo no esté dañado e intenta de nuevo.",
-                login_bloqueado: "🔒 Demasiados intentos fallidos. Espera 30 segundos e intenta de nuevo."
+                metric_remaining: "Faltan",
+                cam_flip: "Girar Cámara",
+                same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paradas juntas: ",
+                pdf_erro: "❌ Error al leer este PDF."
             },
             en: {
-                download_app: "Download App on Phone",
-                brand_subtitle: "Logistics Platform",
+                download_app: "Install App on Phone",
+                brand_subtitle: "SMART LOGISTICS SYSTEM",
                 whatsapp_label: "WhatsApp / Access",
                 password_label: "Your Password",
-                whatsapp_placeholder: "Number with area code",
-                password_placeholder: "Create or type your password",
                 btn_enter: "Sign In",
                 btn_trial: "Try 3 Days Free",
                 choose_plan: "Access Plans",
                 plan_weekly_name: "Weekly Plan",
                 plan_weekly_meta: "7 days full access",
-                plan_monthly_name: "Monthly Plan (1 Month)",
+                plan_monthly_name: "Monthly Plan",
                 plan_monthly_meta: "30 days • Best value",
-                plan_quarterly_name: "Quarterly Plan (3 Months)",
-                plan_quarterly_meta: "90 days with discount",
+                plan_quarterly_name: "Quarterly Plan",
+                plan_quarterly_meta: "90 days discounted",
                 most_popular: "Popular",
-                generate_pix: "Generate Pix Payment",
-                secure_payment: "Secure Pix Payment",
+                generate_pix: "Generate Pix Now",
+                secure_payment: "Instant Pix Payment",
                 waiting_confirmation: "Waiting for confirmation... ⏳",
-                auto_unlock: "The system unlocks automatically after payment.",
+                auto_unlock: "System unlocks automatically after payment.",
                 copy_pix: "Copy Pix Code",
                 cancel: "Cancel",
                 menu: "Menu",
                 language_label: "Language",
-                theme_label: "Color Theme",
-                voice_label: "Synthesizer Voice",
+                theme_label: "Tactical Theme",
+                voice_label: "Voice Synthesizer",
                 reset_route: "Reset Scans",
                 logout: "Log Out",
-                logistics_system: "SMART LOGISTICS SYSTEM",
                 saved_route_found: "📂 PREVIOUS ROUTE FOUND",
-                resume_route: "Resume Route Where I Left",
-                load_pdf_title: "Upload Route PDF",
-                load_pdf_subtitle: "Import your route sheet to sync stops",
-                choose_pdf: "Choose PDF File",
+                resume_route: "Resume Route",
+                load_pdf_title: "LOAD ROUTE (PDF)",
+                load_pdf_subtitle: "Import your logistics sheet",
                 metric_scanned: "Scanned",
                 metric_stops: "Stops",
-                metric_remaining: "Remaining",
-                cam_flip: "Flip",
-                flash_txt: "Flash",
-                manual_placeholder: "Type code manually...",
-                same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: ",
-                pdf_erro: "❌ Could not read this PDF. Check that the file isn't corrupted and try again.",
-                login_bloqueado: "🔒 Too many failed attempts. Wait 30 seconds and try again."
+                metric_remaining: "Left",
+                cam_flip: "Flip Camera",
+                same_address_alert: "⚠️ SAME ADDRESS! Grouped stops: ",
+                pdf_erro: "❌ Could not parse this PDF."
             }
         };
 
@@ -1297,14 +1083,6 @@
                 if (dict[key]) el.innerText = dict[key];
             });
 
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                let key = el.getAttribute('data-i18n-placeholder');
-                if (dict[key]) el.setAttribute('placeholder', dict[key]);
-            });
-
-            let txtFlash = document.getElementById('txt-flash');
-            if (txtFlash && !flashLigado) txtFlash.innerText = dict.flash_txt;
-
             ['pt', 'es', 'en'].forEach(l => {
                 let btn = document.getElementById('lang_' + l);
                 if (btn) {
@@ -1314,40 +1092,12 @@
             });
         }
 
-        const paletas = {
-            slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
-            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
-        };
-
-        function mudarTema(tipo) {
-            let p = paletas[tipo] || paletas.slate_tech;
-            document.documentElement.style.setProperty('--bg-body', p.bg_body);
-            document.documentElement.style.setProperty('--surface-1', p.surface_1);
-            document.documentElement.style.setProperty('--surface-2', p.surface_2);
-            document.documentElement.style.setProperty('--surface-border', p.border);
-            document.documentElement.style.setProperty('--text-main', p.text_main);
-            document.documentElement.style.setProperty('--text-muted', p.text_muted);
-            document.documentElement.style.setProperty('--shadow-card', p.shadow);
-            
-            let metaColor = document.getElementById('metaThemeColor');
-            if (metaColor) metaColor.setAttribute('content', p.bg_body);
-
-            localStorage.setItem('tema_preferido', tipo);
-
-            ['slate_tech', 'black_oled', 'light', 'gray'].forEach(t => {
-                let btn = document.getElementById('theme_' + t);
-                if (btn) {
-                    if (t === tipo) btn.classList.add('active');
-                    else btn.classList.remove('active');
-                }
-            });
-        }
-
+        // ==========================================
+        // SINTETIZADOR DE VOZ AVANÇADO
+        // ==========================================
         function salvarVoz(tipo) {
-            localStorage.setItem('voz_preferida', tipo);
-            ['rapida', 'normal', 'grave', 'mudo'].forEach(v => {
+            localStorage.setItem('voz_preferida_v4', tipo);
+            ['rapida', 'grave', 'normal', 'mudo'].forEach(v => {
                 let btn = document.getElementById('voice_' + v);
                 if (btn) {
                     if (v === tipo) btn.classList.add('active');
@@ -1356,59 +1106,61 @@
             });
         }
 
-        function notificar(msg) {
-            let t = document.getElementById('toastNotificacao');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => { t.style.display = 'none'; }, 3500);
-        }
+        function falarParada(num, ehDuplo, stopOutro) {
+            let tipo = localStorage.getItem('voz_preferida_v4') || 'rapida';
+            if (tipo === 'mudo') return;
 
-        function validarNumeroWhatsApp(zap) {
-            let limpo = zap.replace(/\D/g, '');
-            if (limpo.length < 10 || limpo.length > 11) return false;
-            let ddd = parseInt(limpo.substring(0, 2));
-            if (ddd < 11 || ddd > 99) return false;
-            return true;
-        }
+            try {
+                window.speechSynthesis.cancel();
+                let lang = localStorage.getItem('idioma_preferido') || 'pt';
+                let frase = "" + num;
+                
+                if (ehDuplo) {
+                    let outroFormatado = stopOutro ? stopOutro.replace('P','') : '';
+                    if (lang === 'en') frase += ". Attention! Same address as stop " + outroFormatado;
+                    else if (lang === 'es') frase += ". ¡Atención! Misma dirección que parada " + outroFormatado;
+                    else frase += ". Atenção! Mesmo endereço da parada " + outroFormatado;
+                }
 
-        function alternarVisibilidadeSenha() {
-            let campo = document.getElementById('inputSenha');
-            let icone = document.getElementById('toggleSenhaVisivel');
-            if (campo.type === 'password') {
-                campo.type = 'text';
-                icone.innerText = '🙈';
-            } else {
-                campo.type = 'password';
-                icone.innerText = '👁️';
-            }
-        }
+                let msg = new SpeechSynthesisUtterance(frase);
+                msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
+                
+                if (tipo === "grave") { // Rádio / Walkie
+                    msg.pitch = 0.5;
+                    msg.rate = 1.15;
+                } else if (tipo === "normal") { // HD Clara
+                    msg.pitch = 1.0;
+                    msg.rate = 1.1;
+                } else { // Tática Turbo
+                    msg.pitch = 1.1;
+                    msg.rate = 1.55;
+                }
 
-        function carregarConfiguracoesSalvas() {
-            let lang = localStorage.getItem('idioma_preferido') || 'pt';
-            mudarIdioma(lang);
-
-            let tema = localStorage.getItem('tema_preferido') || 'slate_tech';
-            mudarTema(tema);
-
-            let voz = localStorage.getItem('voz_preferida') || 'rapida';
-            salvarVoz(voz);
-            
-            verificarRotaSalvaAnterior();
-            verificarStatusInstalacaoPWA();
-
-            let zapSalvo = localStorage.getItem('usuario_zap_salvo');
-            if (!zapSalvo) {
-                document.getElementById('telaBloqueio').style.display = 'flex';
-            }
-
-            if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
-                let btnTeste = document.getElementById('btnTesteGratis');
-                if (btnTeste) btnTeste.style.display = 'none';
-            }
+                window.speechSynthesis.speak(msg);
+            } catch(e) {}
         }
 
         // ==========================================
-        // FIREBASE SETUP
+        // HISTÓRICO VISUAL DE BIPAGEM
+        // ==========================================
+        let ultimosPacotesBipados = [];
+
+        function registrarHistoricoBip(stopNum, pacoteId) {
+            ultimosPacotesBipados.unshift({ stop: stopNum, id: pacoteId });
+            if (ultimosPacotesBipados.length > 5) ultimosPacotesBipados.pop();
+
+            let ribbon = document.getElementById('historyRibbon');
+            if (!ribbon) return;
+
+            ribbon.innerHTML = ultimosPacotesBipados.map(item => `
+                <div class="history-chip">
+                    <b>P${item.stop}</b> <span>${item.id.substring(item.id.length - 6)}</span>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // FIREBASE SETUP & LÓGICA DE DADOS
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
@@ -1423,8 +1175,6 @@
         const db = firebase.firestore();
 
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
-        let tokenAdminSessao = null;
-        
         let timerVerificadorPix = null;
         let listenerSessaoRealtime = null;
 
@@ -1440,18 +1190,44 @@
 
         let planoSelecionadoAtual = null;
 
+        function notificar(msg) {
+            let t = document.getElementById('toastNotificacao');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3500);
+        }
+
+        function validarNumeroWhatsApp(zap) {
+            let limpo = zap.replace(/\D/g, '');
+            if (limpo.length < 10 || limpo.length > 11) return false;
+            let ddd = parseInt(limpo.substring(0, 2));
+            return ddd >= 11 && ddd <= 99;
+        }
+
+        function alternarVisibilidadeSenha() {
+            let campo = document.getElementById('inputSenha');
+            let icone = document.getElementById('toggleSenhaVisivel');
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icone.innerText = '🙈';
+            } else {
+                campo.type = 'password';
+                icone.innerText = '👁️';
+            }
+        }
+
         function selecionarPlano(dias, valor, nomePlano, cardId) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
 
             if (!validarNumeroWhatsApp(zap)) {
-                notificar("⚠️ Digite um número de WhatsApp válido com DDD antes de escolher o plano.");
+                notificar("⚠️ Digite seu WhatsApp com DDD primeiro.");
                 document.getElementById('inputTel').focus();
                 return;
             }
 
             if (!senha || senha.length < 3) {
-                notificar("⚠️ Defina uma senha pessoal (mínimo 3 dígitos) antes de escolher o plano.");
+                notificar("⚠️ Digite uma senha pessoal.");
                 document.getElementById('inputSenha').focus();
                 return;
             }
@@ -1462,41 +1238,27 @@
             planoSelecionadoAtual = { dias, valor, nomePlano, senha };
 
             let btn = document.getElementById('btnConfirmarPagamento');
-            btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
+            btn.innerText = `⚡ Gerar Pix: ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
             btn.style.display = 'flex';
-
-            notificar(`Plano ${nomePlano} selecionado. Clique abaixo para gerar o Pix.`);
         }
 
         function iniciarPixPlanoSelecionado() {
-            if (!planoSelecionadoAtual) {
-                notificar("Selecione um plano acima primeiro.");
-                return;
-            }
+            if (!planoSelecionadoAtual) return;
             gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano, planoSelecionadoAtual.senha);
         }
 
         async function gerarPixAutomatico(dias, valor, nomePlano, senha) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
-            if (!validarNumeroWhatsApp(zap)) {
-                notificar("⚠️ Número de WhatsApp inválido.");
-                return;
-            }
-
             document.getElementById('pixPlanoNome').innerText = `${nomePlano} • R$ ${valor.toFixed(2).replace('.', ',')}`;
             document.getElementById('modalPix').style.display = 'flex';
-            document.getElementById('qrContainer').innerHTML = "<div style='color:#000; font-weight:800; font-size:0.8rem;'>Gerando QR Code Pix...</div>";
+            document.getElementById('qrContainer').innerHTML = "<div style='color:#000; font-weight:800; font-size:0.75rem;'>Gerando QR Code...</div>";
             document.getElementById('pixCopiaColaOut').value = "";
 
             try {
                 const response = await fetch(`${CLOUDFLARE_WORKER_URL}/criar-pix`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        valor: valor,
-                        descricao: `Pacote É Mato - ${nomePlano}`,
-                        zap: zap
-                    })
+                    body: JSON.stringify({ valor, descricao: `Pacote É Mato - ${nomePlano}`, zap })
                 });
 
                 const data = await response.json();
@@ -1506,30 +1268,24 @@
                     const paymentId = String(data.id);
 
                     document.getElementById('pixCopiaColaOut').value = copiaCola;
-
                     document.getElementById('qrContainer').innerHTML = "";
                     new QRCode(document.getElementById('qrContainer'), {
                         text: copiaCola,
-                        width: 150,
-                        height: 150,
+                        width: 140,
+                        height: 140,
                         correctLevel: QRCode.CorrectLevel.M
                     });
 
                     iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha);
-                } else {
-                    notificar("Não foi possível gerar a cobrança Pix. Tente novamente.");
-                    fecharModalPix();
                 }
-
             } catch (err) {
-                notificar("Erro de conexão com o Pix.");
+                notificar("Erro ao gerar Pix.");
                 fecharModalPix();
             }
         }
 
         function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha) {
             clearInterval(timerVerificadorPix);
-            
             timerVerificadorPix = setInterval(async () => {
                 try {
                     const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentId}`);
@@ -1537,7 +1293,6 @@
 
                     if (payData && payData.status === "approved") {
                         clearInterval(timerVerificadorPix);
-                        
                         let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
                         
                         await db.collection("usuarios").doc(zap).set({
@@ -1553,21 +1308,9 @@
                             atualizadoEm: Date.now()
                         }, { merge: true });
 
-                        let docPagamentoRef = db.collection("pagamentos_concluidos").doc(paymentId);
-                        let docCheck = await docPagamentoRef.get();
-                        if (!docCheck.exists) {
-                            await docPagamentoRef.set({
-                                whatsapp: zap,
-                                plano: nomePlano,
-                                valor: valor,
-                                data: new Date().toLocaleString('pt-BR'),
-                                timestamp: Date.now()
-                            });
-                        }
-
                         fecharModalPix();
                         localStorage.setItem('usuario_zap_salvo', zap);
-                        notificar("🎉 Pagamento Aprovado! Senha cadastrada com sucesso.");
+                        notificar("🎉 Pagamento Aprovado!");
                         iniciarMonitoramentoSessao(zap);
                     }
                 } catch(e) {}
@@ -1584,55 +1327,25 @@
             if (!campo.value) return;
             campo.select();
             navigator.clipboard.writeText(campo.value);
-            notificar("📋 Código Pix Copiado com sucesso!");
+            notificar("📋 Código Pix Copiado!");
         }
 
         async function ativarTesteGratis() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
             let msgErro = document.getElementById('msgErro');
-            let btn = document.getElementById('btnTesteGratis');
 
-            if (!validarNumeroWhatsApp(zap)) {
-                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
+            if (!validarNumeroWhatsApp(zap) || !senha) {
+                msgErro.innerText = "❌ Digite WhatsApp com DDD e crie uma senha.";
                 msgErro.style.display = 'block';
-                document.getElementById('inputTel').focus();
                 return;
             }
-
-            if (!senha || senha.length < 3) {
-                msgErro.innerText = "❌ Defina uma senha pessoal (mínimo 3 dígitos).";
-                msgErro.style.display = 'block';
-                document.getElementById('inputSenha').focus();
-                return;
-            }
-
-            if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
-                msgErro.innerText = "❌ Este celular já utilizou o teste grátis!";
-                msgErro.style.display = 'block';
-                if (btn) btn.style.display = 'none';
-                return;
-            }
-
-            btn.innerText = "Validando...";
-            btn.disabled = true;
 
             try {
                 let docAparelho = await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).get();
                 if (docAparelho.exists) {
-                    localStorage.setItem('teste_gratis_bloqueado_local', 'true');
-                    msgErro.innerText = "❌ Este celular já utilizou o teste grátis anteriormente!";
+                    msgErro.innerText = "❌ Este celular já utilizou o teste grátis.";
                     msgErro.style.display = 'block';
-                    btn.style.display = 'none';
-                    return;
-                }
-
-                let docZap = await db.collection("usuarios").doc(zap).get();
-                if (docZap.exists && docZap.data().jaUsouTeste) {
-                    msgErro.innerText = "❌ Este WhatsApp já utilizou o teste gratuito.";
-                    msgErro.style.display = 'block';
-                    btn.innerText = "🎁 Testar 3 Dias Grátis";
-                    btn.disabled = false;
                     return;
                 }
 
@@ -1657,125 +1370,52 @@
                     bloqueadoEm: Date.now()
                 });
 
-                localStorage.setItem('teste_gratis_bloqueado_local', 'true');
-                if (btn) btn.style.display = 'none';
                 localStorage.setItem('usuario_zap_salvo', zap);
-                
-                msgErro.style.display = 'none';
-                notificar("🎉 Teste de 3 Dias Ativado com Sucesso!");
                 iniciarMonitoramentoSessao(zap);
-
             } catch(e) {
                 msgErro.innerText = "Erro ao ativar teste: " + e.message;
                 msgErro.style.display = 'block';
-                btn.innerText = "🎁 Testar 3 Dias Grátis";
-                btn.disabled = false;
             }
         }
 
-        // ==========================================
-        // AUTH & SESSÃO REALTIME
-        // ==========================================
-        let tentativasLoginFalhas = 0;
-        let loginBloqueadoAte = 0;
-
         async function autenticarUsuarioFirebase() {
-            let lang = localStorage.getItem('idioma_preferido') || 'pt';
-            let dict = traducoes[lang] || traducoes.pt;
-            let msgErro = document.getElementById('msgErro');
-            let btn = document.getElementById('btnEntrarAuth');
-
-            if (Date.now() < loginBloqueadoAte) {
-                msgErro.innerText = dict.login_bloqueado;
-                msgErro.style.display = 'block';
-                return;
-            }
-
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
+            let msgErro = document.getElementById('msgErro');
 
-            if (!validarNumeroWhatsApp(zap)) {
-                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
+            if (!validarNumeroWhatsApp(zap) || !senha) {
+                msgErro.innerText = "❌ Preencha WhatsApp e senha corretamente.";
                 msgErro.style.display = 'block';
                 return;
             }
-
-            if (!senha) {
-                msgErro.innerText = "❌ Digite sua senha de acesso.";
-                msgErro.style.display = 'block';
-                document.getElementById('inputSenha').focus();
-                return;
-            }
-
-            btn.innerText = "Verificando...";
-            btn.disabled = true;
 
             try {
                 let doc = await db.collection("usuarios").doc(zap).get();
-
                 if (!doc.exists) {
-                    msgErro.innerText = "Número não localizado. Escolha um plano ou ative o teste.";
+                    msgErro.innerText = "Conta não encontrada. Escolha um plano ou ative o teste.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
-                    btn.disabled = false;
                     return;
                 }
 
                 let data = doc.data();
-                let agora = Date.now();
-
                 if (data.senha && data.senha !== senha) {
-                    registrarTentativaLoginFalha(dict);
                     msgErro.innerText = "❌ Senha incorreta!";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
-                    btn.disabled = false;
                     return;
                 }
 
-                tentativasLoginFalhas = 0;
-
-                if (data.bloqueado) {
-                    msgErro.innerText = "❌ Este número foi bloqueado temporariamente pelo suporte.";
+                if (!data.ativo || Date.now() > data.expiraEm) {
+                    msgErro.innerText = "Acesso expirado. Renove seu plano abaixo.";
                     msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
-                    btn.disabled = false;
                     return;
                 }
 
-                if (!data.ativo || agora > data.expiraEm) {
-                    msgErro.innerText = "Acesso expirado. Selecione um plano abaixo para renovar.";
-                    msgErro.style.display = 'block';
-                    btn.innerText = "⚡ Entrar no Sistema";
-                    btn.disabled = false;
-                    return;
-                }
-
-                await db.collection("usuarios").doc(zap).update({ 
-                    deviceId: MEU_DEVICE_ID,
-                    senha: data.senha || senha 
-                });
-
+                await db.collection("usuarios").doc(zap).update({ deviceId: MEU_DEVICE_ID });
                 localStorage.setItem('usuario_zap_salvo', zap);
-                msgErro.style.display = 'none';
-                notificar("⚡ Bem-vindo de volta!");
                 iniciarMonitoramentoSessao(zap);
-
             } catch(e) {
-                msgErro.innerText = "Erro ao conectar ao banco de dados.";
+                msgErro.innerText = "Erro ao autenticar.";
                 msgErro.style.display = 'block';
-            }
-
-            btn.innerText = "⚡ Entrar no Sistema";
-            btn.disabled = false;
-        }
-
-        function registrarTentativaLoginFalha(dict) {
-            tentativasLoginFalhas++;
-            if (tentativasLoginFalhas >= 5) {
-                loginBloqueadoAte = Date.now() + 30000;
-                tentativasLoginFalhas = 0;
-                notificar(dict.login_bloqueado);
             }
         }
 
@@ -1784,594 +1424,45 @@
 
             listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
                 if (!doc.exists) {
-                    desconectarForcado("Conta não encontrada.");
+                    sairDoApp();
                     return;
                 }
 
                 let data = doc.data();
                 let agora = Date.now();
 
-                if (data.bloqueado) {
-                    desconectarForcado("❌ Acesso bloqueado pelo administrador.");
-                    return;
-                }
-
-                if (!data.ativo || agora > data.expiraEm) {
-                    desconectarForcado("Assinatura expirada.");
-                    return;
-                }
-
-                if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
-                    desconectarForcado("⚠️ Esta conta foi conectada em outro aparelho!");
+                if (data.bloqueado || !data.ativo || agora > data.expiraEm || (data.deviceId && data.deviceId !== MEU_DEVICE_ID)) {
+                    sairDoApp();
                     return;
                 }
 
                 let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
-                document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
+                document.getElementById('diasRestantes').innerText = `Ativo (${dias}d)`;
                 document.getElementById('telaBloqueio').style.display = 'none';
             });
         }
 
-        function desconectarForcado(motivo) {
-            if (listenerSessaoRealtime) {
-                listenerSessaoRealtime();
-                listenerSessaoRealtime = null;
-            }
-            
-            let sb = document.getElementById('sidebar');
-            if (sb) sb.classList.remove('active');
-            let ov = document.getElementById('overlay');
-            if (ov) ov.style.display = 'none';
-
-            finalizarCameraHardware();
-
-            localStorage.removeItem('usuario_zap_salvo');
-            let msgErro = document.getElementById('msgErro');
-            msgErro.innerText = motivo;
-            msgErro.style.display = 'block';
-            document.getElementById('telaBloqueio').style.display = 'flex';
-        }
-
         function sairDoApp() {
-            if (listenerSessaoRealtime) {
-                listenerSessaoRealtime();
-                listenerSessaoRealtime = null;
-            }
-
-            let sb = document.getElementById('sidebar');
-            if (sb) sb.classList.remove('active');
-            let ov = document.getElementById('overlay');
-            if (ov) ov.style.display = 'none';
-
-            finalizarCameraHardware();
-
+            if (listenerSessaoRealtime) listenerSessaoRealtime();
             localStorage.removeItem('usuario_zap_salvo');
-            document.getElementById('inputTel').value = "";
-            document.getElementById('inputSenha').value = "";
-            document.getElementById('areaExecucao').style.display = 'none';
-            
-            document.getElementById('telaBloqueio').style.display = 'flex';
-            notificar("🔒 Você foi desconectado.");
-        }
-
-        let zapSalvoInicial = localStorage.getItem('usuario_zap_salvo');
-        if (zapSalvoInicial) {
-            iniciarMonitoramentoSessao(zapSalvoInicial);
-        } else {
+            finalizarCameraHardware();
             document.getElementById('telaBloqueio').style.display = 'flex';
         }
 
         // ==========================================
-        // PAINEL ADMIN COM AUTENTICAÇÃO NO WORKER
+        // SCANNER & PROCESSAMENTO DE ROTAS
         // ==========================================
-        let cliquesAdmin = 0;
-        let timerCliques = null;
-
-        function registrarCliqueAdmin() {
-            cliquesAdmin++;
-            clearTimeout(timerCliques);
-            timerCliques = setTimeout(() => { cliquesAdmin = 0; }, 2000);
-
-            if (cliquesAdmin >= 5) {
-                cliquesAdmin = 0;
-                document.getElementById('modalAdmin').style.display = 'flex';
-            }
-        }
-
-        function fecharModalAdmin() {
-            document.getElementById('modalAdmin').style.display = 'none';
-        }
-
-        async function autenticarAdmin() {
-            let pass = document.getElementById('passAdmin').value;
-            if (!pass) return;
-
-            try {
-                const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ senha: pass })
-                });
-                const data = await res.json();
-                
-                if (data.sucesso && data.token) {
-                    tokenAdminSessao = data.token;
-                    document.getElementById('areaLoginAdmin').style.display = 'none';
-                    document.getElementById('areaGeradorAdmin').style.display = 'flex';
-                    carregarUsuariosAdmin();
-                    carregarPagamentosAdmin();
-                } else {
-                    notificar("Senha master incorreta.");
-                }
-            } catch (err) {
-                notificar("Erro ao validar acesso master.");
-            }
-        }
-
-        function alternarTabAdmin(tab) {
-            ['30d', '90d', 'teste', 'pagos', 'add'].forEach(t => {
-                let btn = document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1)));
-                let view = document.getElementById('viewAdmin' + (t.charAt(0).toUpperCase() + t.slice(1)));
-                if(btn) btn.classList.remove('active');
-                if(view) view.style.display = 'none';
-            });
-
-            document.getElementById('tab' + (tab.charAt(0).toUpperCase() + tab.slice(1))).classList.add('active');
-            document.getElementById('viewAdmin' + (tab.charAt(0).toUpperCase() + tab.slice(1))).style.display = 'block';
-        }
-
-        async function carregarUsuariosAdmin() {
-            let view30d = document.getElementById('viewAdmin30d');
-            let view90d = document.getElementById('viewAdmin90d');
-            let viewTeste = document.getElementById('viewAdminTeste');
-            
-            view30d.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
-            view90d.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
-            viewTeste.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
-
-            try {
-                let snapshot = await db.collection("usuarios").get();
-                let html30 = "", html90 = "", htmlTeste = "";
-                let agora = Date.now();
-
-                snapshot.forEach(doc => {
-                    let u = doc.data();
-                    let zap = u.whatsapp || doc.id;
-                    let senhaUser = u.senha || "Não definida";
-                    let expira = u.expiraEm || 0;
-                    let bloqueado = u.bloqueado === true;
-                    let ativo = u.ativo && agora <= expira && !bloqueado;
-                    let duracao = u.duracaoDias || 30;
-                    
-                    let dias = Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
-                    let statusLabel = bloqueado ? `<span style="color:#ef4444; font-weight:800;">Bloqueado ⛔</span>` : (ativo ? `<span style="color:#10b981;">Ativo (${dias}d)</span>` : `<span style="color:#f59e0b;">Expirado</span>`);
-
-                    let btnBloqueioTexto = bloqueado ? "Desbloquear" : "Bloquear";
-                    let btnBloqueioCor = bloqueado ? "#10b981" : "#f59e0b";
-
-                    let row = `
-                        <div class="user-row">
-                            <div>
-                                <div style="font-weight:800; font-size:0.8rem; color:var(--text-main);">📱 ${zap}</div>
-                                <div style="font-size:0.7rem; color:#38bdf8; font-weight:800;">🔑 Senha: ${senhaUser}</div>
-                                <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
-                            </div>
-                            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
-                                <div style="display:flex; gap:3px;">
-                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#3b82f6; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer;">Nova Senha</button>
-                                    <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
-                                </div>
-                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer; width:100%;">Excluir</button>
-                            </div>
-                        </div>
-                    `;
-
-                    if (duracao === 90) {
-                        html90 += row;
-                    } else if (duracao === 30) {
-                        html30 += row;
-                    } else {
-                        htmlTeste += row;
-                    }
-                });
-
-                view30d.innerHTML = html30 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 1 Mês.</div>";
-                view90d.innerHTML = html90 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 3 Meses.</div>";
-                viewTeste.innerHTML = htmlTeste || "<div style='font-size:0.75rem; color:#888;'>Nenhum teste ou plano semanal.</div>";
-
-            } catch(e) {
-                view30d.innerHTML = "Erro ao buscar dados.";
-            }
-        }
-
-        async function carregarPagamentosAdmin() {
-            let viewPagos = document.getElementById('viewAdminPagos');
-            viewPagos.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando pagamentos...</div>";
-
-            try {
-                let snapshot = await db.collection("pagamentos_concluidos").orderBy("timestamp", "desc").get();
-                let htmlPagos = "";
-
-                snapshot.forEach(doc => {
-                    let p = doc.data();
-                    htmlPagos += `
-                        <div class="user-row">
-                            <div>
-                                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${p.whatsapp}</div>
-                                <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
-                                <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${p.data}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento concluído registrado ainda.</div>";
-            } catch(e) {
-                viewPagos.innerHTML = "Erro ao carregar histórico de pagamentos.";
-            }
-        }
-
-        async function redefinirSenhaAdmin(zap) {
-            let novaSenha = prompt(`Digite a nova senha para o número ${zap}:`);
-            if (!novaSenha) return;
-
-            try {
-                await db.collection("usuarios").doc(zap).update({ 
-                    senha: novaSenha.trim(),
-                    deviceId: ""
-                });
-                notificar(`Senha do ${zap} redefinida com sucesso.`);
-                carregarUsuariosAdmin();
-            } catch(e) {
-                notificar("Erro ao redefinir senha.");
-            }
-        }
-
-        async function alternarBloqueioUsuario(zap, statusBloqueio) {
-            await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
-            notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'}!`);
-            carregarUsuariosAdmin();
-        }
-
-        async function deletarUsuarioAdmin(zap) {
-            await db.collection("usuarios").doc(zap).delete();
-            notificar(`Acesso de ${zap} removido.`);
-            carregarUsuariosAdmin();
-        }
-
-        async function liberarClienteManual() {
-            let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
-            let senha = document.getElementById('inputClienteSenha').value.trim();
-            let dias = parseInt(document.getElementById('selDiasAdmin').value);
-
-            if (!validarNumeroWhatsApp(zap)) {
-                notificar("⚠️ Digite um WhatsApp válido com DDD.");
-                return;
-            }
-
-            if (!senha) {
-                notificar("⚠️ Digite uma senha inicial para o entregador.");
-                return;
-            }
-
-            let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
-            let nomePlanoManual = dias === 3 ? "3 Dias" : (dias === 7 ? "7 Dias (Semanal)" : (dias === 30 ? "30 Dias (1 Mês)" : "90 Dias (3 Meses)"));
-
-            try {
-                await db.collection("usuarios").doc(zap).set({
-                    whatsapp: zap,
-                    senha: senha,
-                    expiraEm: expiraEm,
-                    ativo: true,
-                    bloqueado: false,
-                    deviceId: "",
-                    tipo: "pago",
-                    plano: `${nomePlanoManual} (Manual)`,
-                    duracaoDias: dias,
-                    atualizadoEm: Date.now()
-                }, { merge: true });
-
-                notificar(`WhatsApp ${zap} liberado por ${dias} dias.`);
-                document.getElementById('inputClienteZap').value = "";
-                document.getElementById('inputClienteSenha').value = "";
-                alternarTabAdmin('30d');
-                carregarUsuariosAdmin();
-            } catch(e) {
-                notificar("Erro ao salvar no banco.");
-            }
-        }
-
-        // ==========================================
-        // SISTEMA DE INSTALAÇÃO PWA
-        // ==========================================
-        let deferredPrompt = null;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            verificarStatusInstalacaoPWA();
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            verificarStatusInstalacaoPWA();
-            notificar("🎉 Aplicativo instalado com sucesso!");
-        });
-
-        function verificarStatusInstalacaoPWA() {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-            
-            const btnAuth = document.getElementById('btnDownloadAuth');
-            const btnPrincipal = document.getElementById('btnDownloadPrincipal');
-            const btnSidebar = document.getElementById('btnDownloadSidebar');
-
-            if (isStandalone) {
-                if (btnAuth) btnAuth.style.display = 'none';
-                if (btnPrincipal) btnPrincipal.style.display = 'none';
-                if (btnSidebar) btnSidebar.style.display = 'none';
-            } else {
-                if (btnAuth) btnAuth.style.display = 'flex';
-                if (btnPrincipal) btnPrincipal.style.display = 'flex';
-                if (btnSidebar) btnSidebar.style.display = 'flex';
-            }
-        }
-
-        async function dispararInstalacaoPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    verificarStatusInstalacaoPWA();
-                }
-                deferredPrompt = null;
-            } else {
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                if (isIOS) {
-                    notificar("📲 Toque em Compartilhar e selecione 'Adicionar à Tela de Início'.");
-                } else {
-                    notificar("📲 Toque nos 3 pontos do navegador e selecione 'Instalar Aplicativo'.");
-                }
-            }
-        }
-
-        // ==========================================
-        // PROCESSAMENTO DE ROTAS & LEITURA PDF
-        // ==========================================
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript;charset=utf-8,+encodeURIComponent("self.addEventListener(\'fetch\', function(event) {});")').catch(() => {});
-        }
-
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
         let html5QrCode = null;
         let sensorAtual = "environment";
         let flashLigado = false;
-        let processandoTroca = false;
-
         let mapaRotas = {};
         let stopCorrespondente = {};
         let nomeExibicao = {};
         let todosPacotes = new Set();
         let pacotesBipados = new Set();
         let chaveStorageAtual = null;
-        let enderecoSelecionadoGps = "";
-        let filtroAtualModal = 'todos';
 
-        let audioCtx = null;
-        function getAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            return audioCtx;
-        }
-
-        function verificarRotaSalvaAnterior() {
-            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
-            let cardRetomar = document.getElementById('cardRetomarRota');
-            if (dadosSalvos) {
-                try {
-                    let parsed = JSON.parse(dadosSalvos);
-                    if (parsed.todosPacotes && parsed.todosPacotes.length > 0) {
-                        document.getElementById('txtNomeRotaSalva').innerText = `${parsed.nomeArquivo || 'Rota'} (${parsed.pacotesBipados.length}/${parsed.todosPacotes.length} bipados)`;
-                        cardRetomar.style.display = 'block';
-                        document.getElementById('btnVerParadasModal').style.display = 'flex';
-                        return;
-                    }
-                } catch(e) {}
-            }
-            cardRetomar.style.display = 'none';
-        }
-
-        function salvarEstadoCompletoRota(nomeArquivo) {
-            let dados = {
-                nomeArquivo: nomeArquivo || (chaveStorageAtual ? chaveStorageAtual.replace('bipados_', '') : 'Rota Salva'),
-                chaveStorage: chaveStorageAtual,
-                mapaRotas: mapaRotas,
-                stopCorrespondente: stopCorrespondente,
-                nomeExibicao: nomeExibicao,
-                todosPacotes: Array.from(todosPacotes),
-                pacotesBipados: Array.from(pacotesBipados),
-                salvoEm: Date.now()
-            };
-            localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
-        }
-
-        function retomarRotaAnterior() {
-            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
-            if (!dadosSalvos) return;
-
-            try {
-                let parsed = JSON.parse(dadosSalvos);
-                mapaRotas = parsed.mapaRotas || {};
-                stopCorrespondente = parsed.stopCorrespondente || {};
-                nomeExibicao = parsed.nomeExibicao || {};
-                todosPacotes = new Set(parsed.todosPacotes || []);
-                pacotesBipados = new Set(parsed.pacotesBipados || []);
-                chaveStorageAtual = parsed.chaveStorage;
-
-                document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
-                document.getElementById('btnVerParadasModal').style.display = 'flex';
-
-                document.getElementById('areaExecucao').style.display = 'block';
-                document.getElementById('cardRetomarRota').style.display = 'none';
-
-                atualizarStats();
-                iniciarScanner();
-                notificar("⚡ Rota anterior retomada!");
-
-            } catch(e) {
-                notificar("Erro ao carregar a rota anterior.");
-            }
-        }
-
-        function abrirModalRota() {
-            filtroAtualModal = 'todos';
-            document.getElementById('filtroTabTodos').classList.add('active');
-            document.getElementById('filtroTabDuplos').classList.remove('active');
-            renderizarListaParadasModal();
-            document.getElementById('modalVisualizarRota').style.display = 'flex';
-        }
-
-        function fecharModalRota() {
-            document.getElementById('modalVisualizarRota').style.display = 'none';
-        }
-
-        function exibirModalDebugPdf(linhas) {
-            document.getElementById('conteudoDebugPdf').innerText = linhas.join('\n');
-            document.getElementById('modalDebugPdf').style.display = 'flex';
-        }
-
-        function fecharModalDebugPdf() {
-            document.getElementById('modalDebugPdf').style.display = 'none';
-        }
-
-        function filtrarParadasModal(filtro) {
-            filtroAtualModal = filtro;
-            if (filtro === 'todos') {
-                document.getElementById('filtroTabTodos').classList.add('active');
-                document.getElementById('filtroTabDuplos').classList.remove('active');
-            } else {
-                document.getElementById('filtroTabDuplos').classList.add('active');
-                document.getElementById('filtroTabTodos').classList.remove('active');
-            }
-            renderizarListaParadasModal();
-        }
-
-        function renderizarListaParadasModal() {
-            let container = document.getElementById('listaParadasModal');
-            container.innerHTML = "";
-
-            if (Object.keys(mapaRotas).length === 0) {
-                container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center;'>Nenhuma rota carregada no momento.</div>";
-                return;
-            }
-
-            let enderecosUnificados = {};
-            let totalDuplosCount = 0;
-            let totalTodosCount = 0;
-
-            for (let end in mapaRotas) {
-                let pacs = mapaRotas[end];
-                if (end.startsWith("pacote_isolado_")) continue;
-                
-                let nomeEnd = nomeExibicao[end] || end;
-                let stopsDesteEnd = [];
-                pacs.forEach(p => {
-                    let st = stopCorrespondente[p] || 1;
-                    if (!stopsDesteEnd.includes(st)) stopsDesteEnd.push(st);
-                });
-                stopsDesteEnd.sort((a,b) => a - b);
-
-                if (!enderecosUnificados[end]) {
-                    enderecosUnificados[end] = { endereco: nomeEnd, stops: stopsDesteEnd, pacotes: pacs };
-                }
-            }
-
-            let chavesEnderecos = Object.keys(enderecosUnificados);
-            let listaCards = [];
-
-            chavesEnderecos.forEach(end => {
-                let dados = enderecosUnificados[end];
-                let qtd = dados.pacotes.length;
-                let ehDuplo = qtd > 1;
-
-                totalTodosCount++;
-                if (ehDuplo) totalDuplosCount++;
-
-                if (filtroAtualModal === 'duplos' && !ehDuplo) return;
-
-                let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
-                let badgeDestaque = ehDuplo 
-                    ? `<div class="tag-duplo-info">🔹 PACOTE DUPLO • ${qtd} pacotes</div>` 
-                    : `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
-
-                listaCards.push(`
-                    <div class="parada-box-pro ${ehDuplo ? 'duplo-pro' : ''}">
-                        <div class="parada-header-row">
-                            <div class="parada-badge-num ${ehDuplo ? 'destaque-duplo' : ''}">PARADA ${paradaFormatada}</div>
-                            ${badgeDestaque}
-                        </div>
-                        
-                        <div class="endereco-texto-pro">📍 ${dados.endereco}</div>
-
-                        <div class="acoes-footer-pro">
-                            <button class="btn-acao-card" onclick="perguntarGps('${dados.endereco}', '${paradaFormatada}')">
-                                🚗 Waze / Maps
-                            </button>
-                        </div>
-                    </div>
-                `);
-            });
-
-            document.getElementById('contadorTodos').innerText = totalTodosCount;
-            document.getElementById('contadorDuplos').innerText = totalDuplosCount;
-
-            if (listaCards.length === 0) {
-                container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;'>Nenhum pacote duplo encontrado nesta rota.</div>";
-            } else {
-                container.innerHTML = listaCards.join('');
-            }
-        }
-
-        function perguntarGps(endereco, paradaNome) {
-            enderecoSelecionadoGps = endereco;
-            document.getElementById('tituloGpsParada').innerText = `Navegar para Parada ${paradaNome}`;
-            document.getElementById('modalEscolhaGps').style.display = 'flex';
-        }
-
-        function fecharModalGps() {
-            document.getElementById('modalEscolhaGps').style.display = 'none';
-        }
-
-        function abrirGpsSelecionado(app) {
-            let query = encodeURIComponent(enderecoSelecionadoGps);
-            if (app === 'waze') {
-                window.open(`https://waze.com/ul?q=${query}&navigate=yes`, '_blank');
-            } else {
-                window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
-            }
-            fecharModalGps();
-        }
-
-        function toggleSidebar() {
-            let sb = document.getElementById('sidebar');
-            let ov = document.getElementById('overlay');
-            if (sb.classList.contains('active')) {
-                sb.classList.remove('active');
-                ov.style.display = 'none';
-            } else {
-                sb.classList.add('active');
-                ov.style.display = 'block';
-            }
-        }
-
-        async function ativarWakeLock() {
-            try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e) {}
-        }
-        ativarWakeLock();
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         async function finalizarCameraHardware() {
             if (html5QrCode) {
@@ -2381,87 +1472,94 @@
                 } catch(e) {}
                 html5QrCode = null;
             }
-            let videoEl = document.querySelector('#reader video');
-            if (videoEl && videoEl.srcObject) {
-                try { videoEl.srcObject.getTracks().forEach(t => t.stop()); } catch(e) {}
-            }
-            let viewport = document.querySelector('.camera-viewport');
-            if (viewport) {
-                viewport.innerHTML = `
-                    <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
-                        <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
-                        <span>Virar</span>
-                    </button>
-                    <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">
-                        <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l3-8z"/></svg>
-                        <span id="txt-flash">Flash</span>
-                    </button>
-                    <div id="reader"></div>
-                `;
-            }
         }
 
         async function iniciarScanner() {
-            if (processandoTroca) return;
-            processandoTroca = true;
-
             await finalizarCameraHardware();
-            await new Promise(r => setTimeout(r, 150));
-
             html5QrCode = new Html5Qrcode("reader");
-
-            const config = {
-                fps: 30,
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0
-            };
-
             try {
-                await html5QrCode.start({ facingMode: sensorAtual }, config, (txt) => { processarCodigo(txt); }, (err) => {});
-                processandoTroca = false;
-            } catch (e) {
-                processandoTroca = false;
-            }
+                await html5QrCode.start(
+                    { facingMode: sensorAtual },
+                    { fps: 30, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 },
+                    (txt) => { processarCodigo(txt); },
+                    (err) => {}
+                );
+            } catch(e) {}
         }
 
         async function alternarCamera() {
-            if (processandoTroca) return;
             sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
-            let btnFlash = document.getElementById('btn-flash');
-            if (sensorAtual === "user") {
-                btnFlash.style.display = 'none';
-            } else {
-                btnFlash.style.display = 'flex';
-                btnFlash.classList.remove('active-flash');
-                flashLigado = false;
-                document.getElementById('txt-flash').innerText = "Flash";
-            }
             await iniciarScanner();
         }
 
         async function alternarFlash() {
-            if (sensorAtual === "user" || !html5QrCode) return;
+            if (!html5QrCode || sensorAtual === "user") return;
             try {
                 flashLigado = !flashLigado;
                 await html5QrCode.applyVideoConstraints({ advanced: [{ torch: flashLigado }] });
-                let btnFlash = document.getElementById('btn-flash');
+                let btn = document.getElementById('btn-flash');
+                let txt = document.getElementById('txt-flash');
                 if (flashLigado) {
-                    btnFlash.classList.add('active-flash');
-                    document.getElementById('txt-flash').innerText = "On";
+                    btn.classList.add('active-flash');
+                    txt.innerText = "Flash On";
                 } else {
-                    btnFlash.classList.remove('active-flash');
-                    document.getElementById('txt-flash').innerText = "Flash";
+                    btn.classList.remove('active-flash');
+                    txt.innerText = "Flash Off";
                 }
             } catch(e) {}
         }
+
+        document.getElementById('pdfInput').addEventListener('change', async function(e) {
+            let file = e.target.files[0];
+            if (!file) return;
+
+            chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
+            let reader = new FileReader();
+            
+            reader.onload = async function() {
+                try {
+                    let typedarray = new Uint8Array(this.result);
+                    let pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let linhasPdf = [];
+
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        let page = await pdf.getPage(i);
+                        let content = await page.getTextContent();
+                        let gruposY = {};
+                        
+                        content.items.forEach(item => {
+                            let y = Math.round(item.transform[5]);
+                            let achouGrupo = null;
+                            for (let k in gruposY) {
+                                if (Math.abs(k - y) <= 4) {
+                                    achouGrupo = k;
+                                    break;
+                                }
+                            }
+                            if (achouGrupo !== null) gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
+                            else gruposY[y] = [{ x: item.transform[4], str: item.str }];
+                        });
+
+                        Object.keys(gruposY).sort((a, b) => b - a).forEach(k => {
+                            gruposY[k].sort((a, b) => a.x - b.x);
+                            let linha = gruposY[k].map(it => it.str).join(" ").trim();
+                            if (linha) linhasPdf.push(linha);
+                        });
+                    }
+
+                    processarLinhasExatas(linhasPdf, file.name);
+                } catch(e) {
+                    notificar("Erro ao ler PDF.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
 
         function normalizarEndereco(texto) {
             if (!texto) return "";
             let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop|package)\b/gi, '').trim();
             let m = t.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa|rod(?:ovia)?\.?)\s+([^,]+?)\s*,\s*(\d+)/i);
             if (m) return m[1].toLowerCase().replace(/[^a-z0-9]/g, '') + "_" + m[2].trim();
-            let m2 = t.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
-            if (m2) return m2[1].toLowerCase().replace(/[^a-z0-9]/g, '') + "_" + m2[2].trim();
             return "";
         }
 
@@ -2472,78 +1570,6 @@
             return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
         }
 
-        document.getElementById('pdfInput').addEventListener('change', async function(e) {
-            let file = e.target.files[0];
-            if (!file) return;
-
-            let lang = localStorage.getItem('idioma_preferido') || 'pt';
-            let dict = traducoes[lang] || traducoes.pt;
-
-            document.getElementById('cardResult').style.display = 'none';
-            document.getElementById('cardResult').classList.remove('error-state');
-            document.getElementById('boxAviso').style.display = 'none';
-            document.getElementById('inputManual').value = "";
-            document.getElementById('btnUploadTxt').innerHTML = "⏳ Lendo " + file.name.substring(0, 20) + "...";
-
-            chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
-
-            let reader = new FileReader();
-
-            reader.onerror = function() {
-                notificar(dict.pdf_erro);
-                document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
-            };
-
-            reader.onload = async function() {
-                try {
-                    let typedarray = new Uint8Array(this.result);
-                    let pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    let linhasPdf = [];
-
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        let page = await pdf.getPage(i);
-                        let content = await page.getTextContent();
-                        
-                        let gruposY = {};
-                        content.items.forEach(item => {
-                            let y = Math.round(item.transform[5]);
-                            let achouGrupo = null;
-                            for (let k in gruposY) {
-                                if (Math.abs(k - y) <= 4) {
-                                    achouGrupo = k;
-                                    break;
-                                }
-                            }
-                            if (achouGrupo !== null) {
-                                gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
-                            } else {
-                                gruposY[y] = [{ x: item.transform[4], str: item.str }];
-                            }
-                        });
-
-                        let chaves = Object.keys(gruposY).sort((a, b) => b - a);
-                        chaves.forEach(k => {
-                            gruposY[k].sort((a, b) => a.x - b.x);
-                            let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
-                            if (linhaTexto) linhasPdf.push(linhaTexto);
-                        });
-                    }
-
-                    if (linhasPdf.length === 0) {
-                        throw new Error("PDF sem texto reconhecível.");
-                    }
-
-                    processarLinhasExatas(linhasPdf, file.name);
-
-                } catch (err) {
-                    notificar(dict.pdf_erro);
-                    document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
-                    document.getElementById('btnVerParadasModal').style.display = 'none';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        });
-
         function processarLinhasExatas(linhas, nomeArquivo) {
             mapaRotas = {};
             stopCorrespondente = {};
@@ -2551,71 +1577,34 @@
             todosPacotes = new Set();
             pacotesBipados = new Set();
 
-            let seqStopAuto = 0;
-            let termosIgnorar = ["ADDRESS", "NOTES", "CIRCUIT", "OPTIMIZED", "STOP", "DELIVERY", "ROUTE", "DISPATCH", "TOTAL", "PACKAGE", "POWERED BY"];
-
-            linhas.forEach((linhaStr, idx) => {
-                linhaStr = linhaStr.trim();
-                if (!linhaStr) return;
-
-                let codsValidos = linhaStr.match(/BR[A-Za-z0-9]{10,20}/gi) || [];
-
-                if (codsValidos.length === 0) {
-                    let candidatos = linhaStr.match(/\b[A-Za-z0-9]{10,22}\b/g) || [];
-                    candidatos.forEach(c => {
-                        let cUp = c.toUpperCase();
-                        let ehNum = /^\d+$/.test(c);
-                        let ehAlpha = /^[A-Za-z]+$/.test(c);
-                        let temIgnorar = termosIgnorar.some(t => cUp.includes(t));
-                        if (!ehNum && !ehAlpha && !temIgnorar) codsValidos.push(c);
-                    });
-                }
-
-                codsValidos = codsValidos.map(c => c.toUpperCase());
-
-                if (codsValidos.length > 0) {
-                    seqStopAuto++;
-                    let stopNum = seqStopAuto;
+            let seq = 0;
+            linhas.forEach(linhaStr => {
+                let cods = linhaStr.match(/BR[A-Za-z0-9]{10,20}/gi) || [];
+                if (cods.length > 0) {
+                    seq++;
+                    let stopNum = seq;
                     let mNum = linhaStr.match(/^(\d{1,3})\b/);
                     if (mNum) stopNum = parseInt(mNum[1]);
 
-                    let endKey = normalizarEndereco(linhaStr) || ("pacote_isolado_" + codsValidos[0]);
-
+                    let endKey = normalizarEndereco(linhaStr) || ("isolado_" + cods[0]);
                     if (!mapaRotas[endKey]) {
                         mapaRotas[endKey] = [];
                         nomeExibicao[endKey] = linhaStr.substring(0, 45);
                     }
 
-                    codsValidos.forEach(c => {
-                        todosPacotes.add(c);
-                        if (!mapaRotas[endKey].includes(c)) mapaRotas[endKey].push(c);
-                        stopCorrespondente[c] = stopNum;
+                    cods.forEach(c => {
+                        let cup = c.toUpperCase();
+                        todosPacotes.add(cup);
+                        if (!mapaRotas[endKey].includes(cup)) mapaRotas[endKey].push(cup);
+                        stopCorrespondente[cup] = stopNum;
                     });
                 }
             });
 
-            if (todosPacotes.size === 0) {
-                let lang = localStorage.getItem('idioma_preferido') || 'pt';
-                let dict = traducoes[lang] || traducoes.pt;
-                notificar(dict.pdf_erro);
-                document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
-                exibirModalDebugPdf(linhas);
-                return;
-            }
-
-            if (chaveStorageAtual) {
-                let salvos = localStorage.getItem(chaveStorageAtual);
-                if (salvos) {
-                    try { pacotesBipados = new Set(JSON.parse(salvos)); } catch (e) {}
-                }
-            }
-
-            document.getElementById('btnUploadTxt').innerHTML = "📄 " + nomeArquivo.substring(0, 20) + "...";
+            document.getElementById('btnUploadTxt').innerText = "📄 " + nomeArquivo.substring(0, 18) + "...";
             document.getElementById('btnVerParadasModal').style.display = 'flex';
             document.getElementById('areaExecucao').style.display = 'block';
-            document.getElementById('cardRetomarRota').style.display = 'none';
 
-            salvarEstadoCompletoRota(nomeArquivo);
             atualizarStats();
             iniciarScanner();
         }
@@ -2631,9 +1620,6 @@
             if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 1200)) return;
 
             let identificado = null;
-            let lang = localStorage.getItem('idioma_preferido') || 'pt';
-            let dict = traducoes[lang] || traducoes.pt;
-
             for (let c of todosPacotes) {
                 if (c === codLimpo || codigoBruto.toUpperCase().includes(c) || c.includes(codLimpo)) {
                     identificado = c;
@@ -2649,14 +1635,12 @@
             if (identificado) {
                 ultimoCodigoBipado = identificado;
                 tempoUltimoBip = agora;
-
                 pacotesBipados.add(identificado);
-                if (chaveStorageAtual) localStorage.setItem(chaveStorageAtual, JSON.stringify(Array.from(pacotesBipados)));
-                salvarEstadoCompletoRota();
 
                 let numP = stopCorrespondente[identificado] || "?";
-                let endMatch = "";
                 let listaDuplos = [];
+                let endMatch = "";
+
                 for (let end in mapaRotas) {
                     if (mapaRotas[end].includes(identificado)) {
                         endMatch = end;
@@ -2665,35 +1649,34 @@
                     }
                 }
 
-                playFeedbackSucesso();
+                if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
                 card.classList.remove('error-state');
                 card.style.display = 'block';
                 resStop.innerText = "P" + numP;
-                resPacote.innerText = "📍 Pacote: " + identificado;
+                resPacote.innerText = "📍 " + identificado;
 
                 let outrosStops = listaDuplos.filter(p => p !== identificado).map(p => "P" + stopCorrespondente[p]);
 
-                if (outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_")) {
+                if (outrosStops.length > 0 && !endMatch.startsWith("isolado_")) {
                     aviso.style.display = 'block';
-                    aviso.innerText = dict.same_address_alert + outrosStops.join(", ");
+                    aviso.innerText = "⚠️ MESMO ENDEREÇO! Também na parada: " + outrosStops.join(", ");
                 } else {
                     aviso.style.display = 'none';
                 }
 
-                falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
+                falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("isolado_"), outrosStops[0]);
+                registrarHistoricoBip(numP, identificado);
                 atualizarStats();
                 document.getElementById('inputManual').value = "";
             } else {
                 if (agora - tempoUltimoBip > 1500) {
                     tempoUltimoBip = agora;
-                    playFeedbackErro();
-
+                    if (navigator.vibrate) navigator.vibrate([180]);
                     card.classList.add('error-state');
                     card.style.display = 'block';
-                    resStop.innerText = lang === 'en' ? "NOT FOUND" : (lang === 'es' ? "NO ENCONTRADO" : "NÃO LOCALIZADO");
+                    resStop.innerText = "NÃO ACHOU";
                     resPacote.innerText = "Código: " + (codLimpo || codigoBruto);
                     aviso.style.display = 'none';
-                    document.getElementById('inputManual').value = "";
                 }
             }
         }
@@ -2701,90 +1684,98 @@
         function atualizarStats() {
             let bip = pacotesBipados.size;
             let tot = todosPacotes.size;
-            let paradas = Object.keys(mapaRotas).length;
-
             document.getElementById('valPacotes').innerText = `${bip} / ${tot}`;
-            document.getElementById('valParadas').innerText = paradas;
+            document.getElementById('valParadas').innerText = Object.keys(mapaRotas).length;
             document.getElementById('valFaltam').innerText = Math.max(0, tot - bip);
         }
 
-        function playFeedbackSucesso() {
-            try {
-                if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
-                let ctx = getAudioContext();
-                let osc = ctx.createOscillator();
-                let gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(950, ctx.currentTime);
-                gain.gain.setValueAtTime(0.12, ctx.currentTime);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.08);
-            } catch(e) {}
+        function abrirModalRota() {
+            renderizarListaParadasModal();
+            document.getElementById('modalVisualizarRota').style.display = 'flex';
         }
 
-        function playFeedbackErro() {
-            try {
-                if (navigator.vibrate) navigator.vibrate([180]);
-                let ctx = getAudioContext();
-                let osc = ctx.createOscillator();
-                let gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(200, ctx.currentTime);
-                gain.gain.setValueAtTime(0.18, ctx.currentTime);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.22);
-            } catch(e) {}
+        function fecharModalRota() {
+            document.getElementById('modalVisualizarRota').style.display = 'none';
         }
 
-        function falarParada(num, ehDuplo, stopOutro) {
-            let tipo = localStorage.getItem('voz_preferida') || 'rapida';
-            if (tipo === 'mudo') return;
+        function renderizarListaParadasModal() {
+            let container = document.getElementById('listaParadasModal');
+            container.innerHTML = "";
+            let html = [];
 
-            try {
-                window.speechSynthesis.cancel();
-                let lang = localStorage.getItem('idioma_preferido') || 'pt';
-                let frase = "" + num;
-                if (ehDuplo) {
-                    if (lang === 'en') frase += ". Attention! Same address as stop " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-                    else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-                    else frase += ". Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-                }
+            for (let end in mapaRotas) {
+                if (end.startsWith("isolado_")) continue;
+                let pacs = mapaRotas[end];
+                let stops = pacs.map(p => stopCorrespondente[p] || 1).sort((a,b) => a - b);
+                let ehDuplo = pacs.length > 1;
 
-                let msg = new SpeechSynthesisUtterance(frase);
-                msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
-                
-                if (tipo === "grave") {
-                    msg.pitch = 0.6;
-                    msg.rate = 1.1;
-                } else if (tipo === "normal") {
-                    msg.pitch = 1.2;
-                    msg.rate = 1.0;
-                } else {
-                    msg.pitch = 1.05;
-                    msg.rate = 1.45;
-                }
+                html.push(`
+                    <div class="parada-box-pro ${ehDuplo ? 'duplo-pro' : ''}">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span class="parada-badge-num">P${stops[0]}</span>
+                            ${ehDuplo ? '<span style="font-size:0.65rem; font-weight:800; color:var(--accent-blue);">🔹 ' + pacs.length + ' PACOTES</span>' : ''}
+                        </div>
+                        <div style="font-size:0.84rem; font-weight:700; color:var(--text-main); margin-bottom:6px;">📍 ${nomeExibicao[end]}</div>
+                        <button class="btn-action-primary" style="padding:6px; font-size:0.7rem; margin-bottom:0;" onclick="perguntarGps('${nomeExibicao[end]}', '${stops[0]}')">Abrir GPS</button>
+                    </div>
+                `);
+            }
 
-                window.speechSynthesis.speak(msg);
-            } catch(e) {}
+            container.innerHTML = html.join('') || "<div style='color:var(--text-muted); font-size:0.75rem;'>Nenhuma parada carregada.</div>";
+        }
+
+        function perguntarGps(end, pNum) {
+            enderecoGpsTemp = end;
+            document.getElementById('tituloGpsParada').innerText = "Parada P" + pNum;
+            document.getElementById('modalEscolhaGps').style.display = 'flex';
+        }
+
+        let enderecoGpsTemp = "";
+        function fecharModalGps() { document.getElementById('modalEscolhaGps').style.display = 'none'; }
+        function abrirGpsSelecionado(tipo) {
+            let q = encodeURIComponent(enderecoGpsTemp);
+            if (tipo === 'waze') window.open(`https://waze.com/ul?q=${q}&navigate=yes`, '_blank');
+            else window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
+            fecharModalGps();
+        }
+
+        function toggleSidebar() {
+            let sb = document.getElementById('sidebar');
+            let ov = document.getElementById('overlay');
+            if (sb.classList.contains('active')) {
+                sb.classList.remove('active');
+                ov.style.display = 'none';
+            } else {
+                sb.classList.add('active');
+                ov.style.display = 'block';
+            }
         }
 
         function zerarRota() {
             pacotesBipados.clear();
-            if (chaveStorageAtual) localStorage.removeItem(chaveStorageAtual);
-            salvarEstadoCompletoRota();
-            atualizarStats();
+            ultimosPacotesBipados = [];
+            document.getElementById('historyRibbon').innerHTML = "<div style='font-size:0.68rem; color:var(--text-muted);'>Nenhum pacote bipado ainda.</div>";
             document.getElementById('cardResult').style.display = 'none';
-            document.getElementById('cardResult').classList.remove('error-state');
-            document.getElementById('boxAviso').style.display = 'none';
+            atualizarStats();
             toggleSidebar();
-            notificar("Bipagens desta rota foram zeradas.");
+            notificar("Bipagens zeradas.");
         }
 
-        window.addEventListener('DOMContentLoaded', carregarConfiguracoesSalvas);
+        function dispararInstalacaoPWA() {
+            notificar("📲 Para instalar: Toque nos 3 pontos do navegador e selecione 'Adicionar à tela inicial'.");
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let tema = localStorage.getItem('tema_preferido_v4') || 'carbon_yellow';
+            mudarTema(tema);
+
+            let voz = localStorage.getItem('voz_preferida_v4') || 'rapida';
+            salvarVoz(voz);
+
+            let zap = localStorage.getItem('usuario_zap_salvo');
+            if (zap) iniciarMonitoramentoSessao(zap);
+            else document.getElementById('telaBloqueio').style.display = 'flex';
+        });
     </script>
 </body>
 </html>
