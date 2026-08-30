@@ -936,6 +936,18 @@
         </div>
     </div>
 
+    <div id="modalDebugPdf" class="modal-backdrop">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h3 style="color:#ef4444; font-weight:800; font-size:1.05rem;">⚠️ Diagnóstico do PDF</h3>
+                <span onclick="fecharModalDebugPdf()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Nenhum pacote foi reconhecido automaticamente. Abaixo está o texto bruto extraído:</p>
+            <div id="conteudoDebugPdf" style="max-height:220px; overflow-y:auto; font-family:monospace; font-size:0.7rem; background:var(--surface-2); padding:10px; border-radius:10px; color:#f8fafc; white-space:pre-wrap; word-break:break-all;"></div>
+            <button onclick="fecharModalDebugPdf()" class="btn-action-primary" style="margin-top:12px;">Fechar</button>
+        </div>
+    </div>
+
     <div id="modalEscolhaGps" class="modal-backdrop">
         <div class="modal-card" style="max-width:330px;">
             <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
@@ -984,7 +996,7 @@
                 <div id="viewAdminAdd" style="display:none;">
                     <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
                     <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
+                    <select id="selDiasAdmin" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
                         <option value="3">3 Dias</option>
                         <option value="7">7 Dias (Semanal)</option>
                         <option value="30" selected>30 Dias (1 Mês)</option>
@@ -1107,7 +1119,7 @@
                     <div class="metric-lbl" data-i18n="metric_stops">Paradas</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valFaltam" style="color:var(--accent-amber);">0</div>
+                    <div class="metric-val" id="valFaltam" style="color:#f59e0b;">0</div>
                     <div class="metric-lbl" data-i18n="metric_remaining">Faltam</div>
                 </div>
             </div>
@@ -1129,7 +1141,7 @@
                 <div id="resPacote" style="font-size:0.82rem; font-weight:800; color:var(--text-muted);">📍 Pacote: BR...</div>
             </div>
 
-            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid #f59e0b; color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
             <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
 
@@ -1138,18 +1150,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // AVISO DE SEGURANÇA (leia antes de editar)
-        // ==========================================
-        // A senha mestre do admin (SENHA_DONO) e toda a lógica de
-        // autenticação abaixo rodam no NAVEGADOR do usuário. Isso
-        // significa que qualquer pessoa pode abrir "Ver código-fonte"
-        // e ler a senha e a lógica. O ideal, a médio prazo, é mover
-        // TODA validação sensível (login de admin, checagem de senha
-        // de entregador, liberação de dias de acesso, trava de
-        // dispositivo) para o seu Worker/backend, que já existe
-        // (CLOUDFLARE_WORKER_URL) e hoje só cuida do Pix.
-
         const traducoes = {
             pt: {
                 download_app: "Baixar App no Celular",
@@ -1233,7 +1233,7 @@
                 choose_pdf: "Elegir Archivo PDF",
                 metric_scanned: "Escaneados",
                 metric_stops: "Paradas",
-                metric_remaining: "Faltan",
+                metric_remaining: "Faltam",
                 cam_flip: "Girar",
                 flash_txt: "Flash",
                 manual_placeholder: "Escribe el código manualmente...",
@@ -1371,7 +1371,6 @@
             return true;
         }
 
-        // NOVO: toggle de mostrar/ocultar senha
         function alternarVisibilidadeSenha() {
             let campo = document.getElementById('inputSenha');
             let icone = document.getElementById('toggleSenhaVisivel');
@@ -1424,9 +1423,7 @@
         const db = firebase.firestore();
 
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
-        // ATENÇÃO: esta senha fica visível no código-fonte do navegador.
-        // Recomenda-se mover essa validação para o Worker assim que possível.
-        const SENHA_DONO = "121212";
+        let tokenAdminSessao = null;
         
         let timerVerificadorPix = null;
         let listenerSessaoRealtime = null;
@@ -1679,7 +1676,6 @@
         // ==========================================
         // AUTH & SESSÃO REALTIME
         // ==========================================
-        // NOVO: rate limit simples de tentativas de login (paliativo client-side)
         let tentativasLoginFalhas = 0;
         let loginBloqueadoAte = 0;
 
@@ -1699,15 +1695,6 @@
             let senha = document.getElementById('inputSenha').value.trim();
 
             if (!validarNumeroWhatsApp(zap)) {
-                // CORRIGIDO: o "backdoor" do dono agora também exige a senha mestre.
-                // Antes, digitar 121212 no campo de WhatsApp liberava acesso de
-                // dono sem checar nenhuma senha.
-                if (zap === "121212" && senha === SENHA_DONO) {
-                    localStorage.setItem('usuario_zap_salvo', zap);
-                    document.getElementById('telaBloqueio').style.display = 'none';
-                    document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
-                    return;
-                }
                 msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
                 msgErro.style.display = 'block';
                 return;
@@ -1795,12 +1782,6 @@
         function iniciarMonitoramentoSessao(zap) {
             if (listenerSessaoRealtime) listenerSessaoRealtime();
 
-            if (zap === "121212") {
-                document.getElementById('telaBloqueio').style.display = 'none';
-                document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
-                return;
-            }
-
             listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
                 if (!doc.exists) {
                     desconectarForcado("Conta não encontrada.");
@@ -1881,7 +1862,7 @@
         }
 
         // ==========================================
-        // PAINEL ADMIN
+        // PAINEL ADMIN COM AUTENTICAÇÃO NO WORKER
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -1901,15 +1882,29 @@
             document.getElementById('modalAdmin').style.display = 'none';
         }
 
-        function autenticarAdmin() {
+        async function autenticarAdmin() {
             let pass = document.getElementById('passAdmin').value;
-            if (pass === SENHA_DONO) {
-                document.getElementById('areaLoginAdmin').style.display = 'none';
-                document.getElementById('areaGeradorAdmin').style.display = 'flex';
-                carregarUsuariosAdmin();
-                carregarPagamentosAdmin();
-            } else {
-                notificar("Senha incorreta.");
+            if (!pass) return;
+
+            try {
+                const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: pass })
+                });
+                const data = await res.json();
+                
+                if (data.sucesso && data.token) {
+                    tokenAdminSessao = data.token;
+                    document.getElementById('areaLoginAdmin').style.display = 'none';
+                    document.getElementById('areaGeradorAdmin').style.display = 'flex';
+                    carregarUsuariosAdmin();
+                    carregarPagamentosAdmin();
+                } else {
+                    notificar("Senha master incorreta.");
+                }
+            } catch (err) {
+                notificar("Erro ao validar acesso master.");
             }
         }
 
@@ -2025,7 +2020,7 @@
                     senha: novaSenha.trim(),
                     deviceId: ""
                 });
-                notificar(`Senha do ${zap} redefinida com sucesso para: ${novaSenha}`);
+                notificar(`Senha do ${zap} redefinida com sucesso.`);
                 carregarUsuariosAdmin();
             } catch(e) {
                 notificar("Erro ao redefinir senha.");
@@ -2034,7 +2029,7 @@
 
         async function alternarBloqueioUsuario(zap, statusBloqueio) {
             await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
-            notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
+            notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'}!`);
             carregarUsuariosAdmin();
         }
 
@@ -2076,7 +2071,7 @@
                     atualizadoEm: Date.now()
                 }, { merge: true });
 
-                notificar(`WhatsApp ${zap} liberado com senha ${senha} por ${dias} dias.`);
+                notificar(`WhatsApp ${zap} liberado por ${dias} dias.`);
                 document.getElementById('inputClienteZap').value = "";
                 document.getElementById('inputClienteSenha').value = "";
                 alternarTabAdmin('30d');
@@ -2087,7 +2082,7 @@
         }
 
         // ==========================================
-        // SISTEMA INTELIGENTE DE INSTALAÇÃO PWA
+        // SISTEMA DE INSTALAÇÃO PWA
         // ==========================================
         let deferredPrompt = null;
 
@@ -2132,15 +2127,15 @@
             } else {
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 if (isIOS) {
-                    notificar("📲 Para instalar no iPhone: Toque no ícone de Compartilhar (quadrado com seta) e escolha 'Adicionar à Tela de Início'.");
+                    notificar("📲 Toque em Compartilhar e selecione 'Adicionar à Tela de Início'.");
                 } else {
-                    notificar("📲 Para instalar: Toque nos 3 pontinhos do navegador e selecione 'Instalar Aplicativo' ou 'Adicionar à Tela Inicial'.");
+                    notificar("📲 Toque nos 3 pontos do navegador e selecione 'Instalar Aplicativo'.");
                 }
             }
         }
 
         // ==========================================
-        // SISTEMA DE ROTAS, PARADAS E LEITURA
+        // PROCESSAMENTO DE ROTAS & LEITURA PDF
         // ==========================================
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('data:text/javascript;charset=utf-8,+encodeURIComponent("self.addEventListener(\'fetch\', function(event) {});")').catch(() => {});
@@ -2242,6 +2237,15 @@
 
         function fecharModalRota() {
             document.getElementById('modalVisualizarRota').style.display = 'none';
+        }
+
+        function exibirModalDebugPdf(linhas) {
+            document.getElementById('conteudoDebugPdf').innerText = linhas.join('\n');
+            document.getElementById('modalDebugPdf').style.display = 'flex';
+        }
+
+        function fecharModalDebugPdf() {
+            document.getElementById('modalDebugPdf').style.display = 'none';
         }
 
         function filtrarParadasModal(filtro) {
@@ -2485,7 +2489,6 @@
 
             let reader = new FileReader();
 
-            // NOVO: tratamento de erro de leitura de arquivo
             reader.onerror = function() {
                 notificar(dict.pdf_erro);
                 document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
@@ -2533,8 +2536,6 @@
                     processarLinhasExatas(linhasPdf, file.name);
 
                 } catch (err) {
-                    // NOVO: feedback ao usuário quando o PDF não pode ser processado,
-                    // em vez de a tela travar silenciosamente.
                     notificar(dict.pdf_erro);
                     document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
                     document.getElementById('btnVerParadasModal').style.display = 'none';
@@ -2598,6 +2599,7 @@
                 let dict = traducoes[lang] || traducoes.pt;
                 notificar(dict.pdf_erro);
                 document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+                exibirModalDebugPdf(linhas);
                 return;
             }
 
@@ -2663,7 +2665,7 @@
                     }
                 }
 
-                playBeepSucesso();
+                playFeedbackSucesso();
                 card.classList.remove('error-state');
                 card.style.display = 'block';
                 resStop.innerText = "P" + numP;
@@ -2684,7 +2686,7 @@
             } else {
                 if (agora - tempoUltimoBip > 1500) {
                     tempoUltimoBip = agora;
-                    playBeepErro();
+                    playFeedbackErro();
 
                     card.classList.add('error-state');
                     card.style.display = 'block';
@@ -2706,8 +2708,9 @@
             document.getElementById('valFaltam').innerText = Math.max(0, tot - bip);
         }
 
-        function playBeepSucesso() {
+        function playFeedbackSucesso() {
             try {
+                if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
                 let ctx = getAudioContext();
                 let osc = ctx.createOscillator();
                 let gain = ctx.createGain();
@@ -2721,8 +2724,9 @@
             } catch(e) {}
         }
 
-        function playBeepErro() {
+        function playFeedbackErro() {
             try {
+                if (navigator.vibrate) navigator.vibrate([180]);
                 let ctx = getAudioContext();
                 let osc = ctx.createOscillator();
                 let gain = ctx.createGain();
