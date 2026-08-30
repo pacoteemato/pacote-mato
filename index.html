@@ -973,7 +973,6 @@
     <div id="splashScreenPs2">
         <div class="ps2-bg-radial"></div>
         <div class="ps2-box-wrapper">
-            <!-- CAIXA 3D GIRATÓRIA -->
             <svg class="ps2-cube-rotating" viewBox="0 0 100 100">
                 <defs>
                     <linearGradient id="splashBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1444,7 +1443,6 @@
                 let ctx = getAudioContext();
                 let now = ctx.currentTime;
 
-                // Som grave ressonante de fundo (boot)
                 let oscBase = ctx.createOscillator();
                 let gainBase = ctx.createGain();
                 oscBase.type = 'sine';
@@ -1458,7 +1456,6 @@
                 oscBase.start(now);
                 oscBase.stop(now + 2.5);
 
-                // Harmônico estilo GTA/PS2
                 let oscHarm = ctx.createOscillator();
                 let gainHarm = ctx.createGain();
                 oscHarm.type = 'triangle';
@@ -1544,7 +1541,7 @@
                 btn_trial: "Probar 3 Días Gratis",
                 choose_plan: "Planes de Acceso",
                 plan_weekly_name: "Plan Semanal",
-                plan_weekly_meta: "7 días de acceso total",
+                plan_weekly_meta: "7 días de acesso total",
                 plan_monthly_name: "Plan Mensual (1 Mes)",
                 plan_monthly_meta: "30 días • Melhor relação qualidade-preço",
                 plan_quarterly_name: "Plan Trimestral (3 Meses)",
@@ -1782,21 +1779,12 @@
 
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
         
-        // HASH CRIPTOGRÁFICO SEGURO (SHA-256) PARA SENHA "121212"
-        const HASH_DONO_SEGURO = "55f4625b597c8d9cda52a514d0f6244ab94f72db7bbfbe45a19ef59b8eb6a7c8";
-
-        async function verificarHashSenhaDono(senhaDigitada) {
+        // VALIDADOR DIRETO E SEGURO DE SENHA ADMIN (121212)
+        function verificarSenhaAdminSegura(senhaDigitada) {
             if (!senhaDigitada) return false;
-            try {
-                const encoder = new TextEncoder();
-                const data = encoder.encode(senhaDigitada.trim());
-                const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-                return hashHex === HASH_DONO_SEGURO;
-            } catch (e) {
-                return senhaDigitada.trim() === "121212";
-            }
+            let limpa = senhaDigitada.trim();
+            // Aceita diretamente a senha mestre 121212
+            return limpa === "121212" || btoa(limpa) === "MTIxMjEy";
         }
         
         let timerVerificadorPix = null;
@@ -2065,7 +2053,7 @@
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
 
-            let ehDono = (zap === "121212") && (await verificarHashSenhaDono(senha));
+            let ehDono = (zap === "121212") && verificarSenhaAdminSegura(senha);
             if (ehDono) {
                 localStorage.setItem('usuario_zap_salvo', "121212");
                 document.getElementById('telaBloqueio').style.display = 'none';
@@ -2265,9 +2253,9 @@
             document.getElementById('modalAdmin').style.display = 'none';
         }
 
-        async function autenticarAdmin() {
+        function autenticarAdmin() {
             let pass = document.getElementById('passAdmin').value;
-            let autenticado = await verificarHashSenhaDono(pass);
+            let autenticado = verificarSenhaAdminSegura(pass);
             
             if (autenticado) {
                 document.getElementById('areaLoginAdmin').style.display = 'none';
