@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PACOTE É MATO</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e1526'/><path d='M50 20 L80 35 L80 65 L50 80 L20 65 L20 35 Z' fill='%231d4ed8' stroke='%2338bdf8' stroke-width='3'/><path d='M50 20 L50 80 M20 35 L80 65 M80 35 L20 65' stroke='%230b1120' stroke-width='2'/><path d='M25 75 Q15 60 28 48 Q35 62 25 75 Z' fill='%2310b981'/><path d='M75 75 Q85 60 72 48 Q65 62 75 75 Z' fill='%2310b981'/><path d='M50 82 Q42 68 50 55 Q58 68 50 82 Z' fill='%2334d399'/></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23050807'/><path d='M50 20 L80 35 L80 65 L50 80 L20 65 L20 35 Z' fill='%23047857' stroke='%2334d399' stroke-width='3'/><path d='M25 75 Q15 60 28 48 Q35 62 25 75 Z' fill='%2310b981'/><path d='M75 75 Q85 60 72 48 Q65 62 75 75 Z' fill='%2310b981'/><path d='M50 82 Q42 68 50 55 Q58 68 50 82 Z' fill='%2334d399'/></svg>">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#090d16" id="metaThemeColor">
+    <meta name="theme-color" content="#050807" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
@@ -29,20 +29,21 @@
 
     <style>
         :root {
-            --bg-body: #060913;
-            --surface-1: #0e1526;
-            --surface-2: #162038;
-            --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.16);
+            --bg-body: #050807;
+            --surface-1: #0b120e;
+            --surface-2: #121c16;
+            --surface-border: rgba(16, 185, 129, 0.16);
+            --surface-border-hover: rgba(52, 211, 153, 0.4);
             --text-main: #f8fafc;
-            --text-muted: #8a99af;
-            --primary: #1d4ed8;
-            --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
+            --text-muted: #859c8e;
+            --primary: #10b981;
+            --primary-gradient: linear-gradient(135deg, #059669, #10b981);
             --accent-green: #047857;
             --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
-            --accent-blue-soft: #38bdf8;
-            --danger: #b91c1c;
-            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
+            --accent-green-soft: #34d399;
+            --danger: #ef4444;
+            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--surface-border);
+            --glow-green: 0 0 20px rgba(16, 185, 129, 0.35);
         }
 
         * {
@@ -70,22 +71,47 @@
             padding: 0 14px;
         }
 
+        /* ANIMAÇÃO DE BOTÕES INTERATIVOS */
         button, .plan-item, .nav-btn, .cam-overlay-btn, .btn-acao-card, .gps-option-btn, .segmented-btn, .admin-tab {
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         button:active, .plan-item:active, .nav-btn:active, .cam-overlay-btn:active, .btn-acao-card:active, .gps-option-btn:active, .segmented-btn:active, .admin-tab:active {
-            transform: scale(0.96) !important;
+            transform: scale(0.95) !important;
+            filter: brightness(1.15);
+        }
+
+        /* ANIMAÇÃO DA LOGO PACOTE É MATO */
+        .app-logo-pro {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 10px;
+            display: block;
+            cursor: pointer;
+            animation: floatLogo 3.8s ease-in-out infinite, pulseGlow 2.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatLogo {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(1.5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.3)); }
+            100% { filter: drop-shadow(0 8px 22px rgba(52, 211, 153, 0.65)); }
         }
 
         .btn-instalar-dinamico {
             width: 100%;
-            background: rgba(37, 99, 235, 0.1);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
             border-radius: 12px;
             padding: 11px 14px;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 0.84rem;
             margin-bottom: 14px;
             cursor: pointer;
@@ -93,10 +119,12 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
         }
         .btn-instalar-dinamico:hover {
-            background: rgba(37, 99, 235, 0.2);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
         }
 
         #toastNotificacao {
@@ -104,14 +132,14 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #162038;
+            background: #121c16;
             color: #f8fafc;
             padding: 11px 20px;
             border-radius: 12px;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 0.84rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--surface-border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary);
             z-index: 1000005;
             display: none;
             animation: slideDown 0.25s ease;
@@ -127,7 +155,7 @@
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #111c38 0%, #060913 70%);
+            background: radial-gradient(circle at top center, #0f1c14 0%, #050807 75%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -153,22 +181,9 @@
             margin-bottom: 22px;
         }
 
-        .app-logo-pro {
-            width: 68px;
-            height: 68px;
-            margin: 0 auto 10px;
-            display: block;
-            cursor: pointer;
-            filter: drop-shadow(0 4px 14px rgba(16, 185, 129, 0.35));
-            transition: transform 0.3s ease;
-        }
-        .app-logo-pro:hover {
-            transform: scale(1.08);
-        }
-
         .brand-title-pro {
             font-size: 1.35rem;
-            font-weight: 800;
+            font-weight: 900;
             letter-spacing: -0.3px;
             color: var(--text-main);
             margin-bottom: 2px;
@@ -236,8 +251,8 @@
 
         .input-auth:focus {
             border-color: var(--primary);
-            background: rgba(22, 32, 56, 0.9);
-            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
+            background: rgba(18, 28, 22, 0.95);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
         }
 
         .btn-action-primary {
@@ -250,7 +265,7 @@
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -258,8 +273,9 @@
             gap: 6px;
         }
         .btn-action-primary:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 6px 18px rgba(29, 78, 216, 0.5);
+            filter: brightness(1.12);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+            transform: translateY(-1px);
         }
         .btn-action-primary:disabled {
             opacity: 0.55;
@@ -269,7 +285,7 @@
 
         .btn-action-trial {
             width: 100%;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.03);
             color: var(--text-main);
             border: 1px solid var(--surface-border);
             border-radius: 12px;
@@ -284,15 +300,16 @@
             gap: 6px;
         }
         .btn-action-trial:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(16, 185, 129, 0.08);
             border-color: var(--surface-border-hover);
+            transform: translateY(-1px);
         }
 
         .btn-support-login {
             width: 100%;
-            background: rgba(5, 150, 105, 0.1);
+            background: rgba(16, 185, 129, 0.08);
             color: #34d399;
-            border: 1px solid rgba(5, 150, 105, 0.25);
+            border: 1px solid rgba(16, 185, 129, 0.25);
             border-radius: 12px;
             padding: 11px;
             font-weight: 700;
@@ -306,7 +323,7 @@
             margin-bottom: 12px;
         }
         .btn-support-login:hover {
-            background: rgba(5, 150, 105, 0.2);
+            background: rgba(16, 185, 129, 0.18);
         }
 
         .divider-label {
@@ -347,17 +364,18 @@
         }
         .plan-item:hover {
             border-color: var(--surface-border-hover);
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(16, 185, 129, 0.06);
+            transform: translateY(-1px);
         }
 
         .plan-item.selecionado {
-            border-color: #38bdf8 !important;
-            background: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+            border-color: #34d399 !important;
+            background: rgba(16, 185, 129, 0.12);
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
         }
 
         .plan-item.featured {
-            border-color: rgba(5, 150, 105, 0.4);
+            border-color: rgba(16, 185, 129, 0.45);
         }
 
         .plan-badge-top {
@@ -407,7 +425,7 @@
         .modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.88);
             backdrop-filter: blur(8px);
             z-index: 1000010;
             display: none;
@@ -458,7 +476,7 @@
             font-size: 0.82rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             gap: 6px;
@@ -472,8 +490,8 @@
             font-weight: 700;
             padding: 5px 10px;
             border-radius: 20px;
-            border: 1px solid rgba(5, 150, 105, 0.3);
-            background: rgba(5, 150, 105, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.12);
             color: #34d399;
         }
 
@@ -486,15 +504,19 @@
             box-shadow: var(--shadow-card);
             margin-bottom: 12px;
             cursor: pointer;
+            transition: border-color 0.25s ease;
+        }
+        .hero-banner:hover {
+            border-color: var(--primary);
         }
 
         .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(29, 78, 216, 0.12), rgba(56, 189, 248, 0.05));
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
             border: 1.5px solid var(--primary);
             border-radius: 18px;
             padding: 14px;
             margin-bottom: 12px;
-            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.2);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
             display: none;
             text-align: center;
         }
@@ -503,7 +525,7 @@
             background: var(--surface-1);
             padding: 20px 16px;
             border-radius: 18px;
-            border: 1px dashed rgba(59, 130, 246, 0.3);
+            border: 1px dashed rgba(16, 185, 129, 0.35);
             text-align: center;
             margin-bottom: 14px;
             box-shadow: var(--shadow-card);
@@ -519,14 +541,15 @@
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
         .btn-upload-trigger:hover {
-            filter: brightness(1.1);
+            filter: brightness(1.12);
+            transform: translateY(-1px);
         }
 
         .metrics-board {
@@ -567,10 +590,10 @@
         .cam-overlay-btn {
             position: absolute;
             z-index: 99;
-            background: rgba(14, 21, 38, 0.8);
+            background: rgba(11, 18, 14, 0.85);
             backdrop-filter: blur(8px);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             padding: 8px 12px;
             border-radius: 12px;
             font-weight: 700;
@@ -579,7 +602,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
         .cam-overlay-btn svg {
             width: 14px;
@@ -587,8 +610,8 @@
             fill: currentColor;
         }
         .cam-overlay-btn.active-flash {
-            background: rgba(245, 158, 11, 0.85);
-            border-color: rgba(251, 191, 36, 0.5);
+            background: var(--primary);
+            border-color: #34d399;
             color: #000000;
         }
 
@@ -599,15 +622,15 @@
             border: 1.5px solid var(--primary);
             margin-bottom: 14px;
             text-align: center;
-            box-shadow: 0 8px 24px rgba(29, 78, 216, 0.15);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
             display: none;
         }
-        .stop-number { font-size: 3.5rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
+        .stop-number { font-size: 3.5rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 4px; }
         
         .result-panel.error-state {
             border-color: var(--danger);
-            background: rgba(185, 28, 28, 0.08);
-            box-shadow: 0 8px 24px rgba(185, 28, 28, 0.15);
+            background: rgba(239, 68, 68, 0.08);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
         }
         .result-panel.error-state .stop-number {
             font-size: 1.5rem;
@@ -656,8 +679,8 @@
         }
 
         .parada-box-pro.duplo-pro {
-            border-color: rgba(56, 189, 248, 0.4);
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), var(--surface-2));
+            border-color: rgba(52, 211, 153, 0.4);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), var(--surface-2));
         }
 
         .parada-header-row {
@@ -669,25 +692,25 @@
 
         .parada-badge-num {
             background: #060913;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 10px;
             padding: 5px 12px;
             font-weight: 800;
             font-size: 0.88rem;
-            color: var(--text-main);
+            color: #34d399;
             letter-spacing: 0.5px;
         }
 
         .parada-badge-num.destaque-duplo {
-            background: #1e3a8a;
-            border-color: #38bdf8;
-            color: #e0f2fe;
+            background: #064e3b;
+            border-color: #34d399;
+            color: #ecfdf5;
         }
 
         .tag-duplo-info {
             font-size: 0.68rem;
             font-weight: 800;
-            color: var(--accent-blue-soft);
+            color: #34d399;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             display: flex;
@@ -724,7 +747,7 @@
             justify-content: center;
             gap: 6px;
         }
-        .btn-acao-card:hover { background: rgba(29, 78, 216, 0.2); }
+        .btn-acao-card:hover { background: rgba(16, 185, 129, 0.2); }
 
         .gps-option-btn {
             width: 100%;
@@ -776,7 +799,7 @@
         .segmented-btn.active {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
 
         .admin-nav-tabs {
@@ -797,8 +820,8 @@
             text-align: center;
         }
         .admin-tab.active {
-            background: #d97706;
-            color: #000000;
+            background: var(--primary);
+            color: #ffffff;
             border-color: transparent;
         }
 
@@ -829,7 +852,7 @@
             gap: 8px;
             font-size: 0.85rem;
             font-weight: 800;
-            color: var(--accent-blue-soft);
+            color: #34d399;
             margin-bottom: 6px;
         }
         .tutorial-badge {
@@ -865,32 +888,32 @@
         <div class="auth-wrapper">
             
             <div class="auth-header-center">
-                <!-- LOGO PACOTE É MATO (SVG VETORIAL EMBUTIDO) -->
+                <!-- LOGO PACOTE É MATO COM ANIMAÇÃO -->
                 <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
                     <defs>
                         <linearGradient id="logoBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#2563eb"/>
-                            <stop offset="100%" stop-color="#1e3a8a"/>
+                            <stop offset="0%" stop-color="#059669"/>
+                            <stop offset="100%" stop-color="#047857"/>
                         </linearGradient>
                         <linearGradient id="logoPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#34d399"/>
-                            <stop offset="100%" stop-color="#059669"/>
+                            <stop offset="100%" stop-color="#10b981"/>
                         </linearGradient>
                     </defs>
-                    <rect width="100" height="100" rx="24" fill="#0e1526" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-                    <!-- Folhas do Fundo -->
+                    <rect width="100" height="100" rx="24" fill="#0b120e" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                    <!-- Folhas laterais de mato -->
                     <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGrad)"/>
                     <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGrad)"/>
-                    <!-- Caixa de Encomenda Isométrica -->
-                    <polygon points="50,22 78,36 50,50 22,36" fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
-                    <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGrad)" stroke="#1d4ed8" stroke-width="1.5"/>
-                    <polygon points="78,36 50,50 50,78 78,64" fill="#1d4ed8" stroke="#1e40af" stroke-width="1.5"/>
+                    <!-- Caixa de Encomenda -->
+                    <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                    <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGrad)" stroke="#047857" stroke-width="1.5"/>
+                    <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
                     <!-- Fita da Caixa -->
-                    <path d="M50 22 L50 50 M36 43 L64 43" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
-                    <!-- Broto / Mato crescendo no centro -->
-                    <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#10b981"/>
-                    <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#34d399"/>
-                    <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#34d399"/>
+                    <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+                    <!-- Broto / Mato central -->
+                    <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+                    <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+                    <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
                 </svg>
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
                 <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
@@ -900,7 +923,7 @@
                 📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
             </button>
 
-            <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom:12px; border-color:rgba(56, 189, 248, 0.3); color:#38bdf8;">
+            <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
                 📖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Iniciante)</span>
             </button>
             
@@ -971,7 +994,7 @@
     <div id="modalTutorial" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:var(--accent-blue-soft); font-weight:800; font-size:1.1rem;">📖 Guia Rápido do Entregador</h3>
+                <h3 style="color:#34d399; font-weight:800; font-size:1.1rem;">📖 Guia Rápido do Entregador</h3>
                 <span onclick="fecharModalTutorial()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.1rem;">✕</span>
             </div>
             
@@ -983,21 +1006,21 @@
                         <span>Carregar sua Rota em PDF</span>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">
-                        Toque no botão <b>"📄 Escolher Arquivo PDF"</b> e selecione o manifesto de entrega gerado pela transportadora. O sistema processa todos os pacotes e endereços na hora.
+                        Toque no botão <b>"📄 Escolher Arquivo PDF"</b> e selecione o manifesto de entrega da sua transportadora. O sistema sincroniza todos os pacotes e paradas instantaneamente.
                     </div>
                     <div class="tutorial-mockup">
-                        <span style="color:#60a5fa; font-weight:800;">[📄 Escolher Arquivo PDF]</span>
-                        <div style="font-size:0.65rem; margin-top:2px;">Suporta Circuit, Shopee, Mercado Livre e transportadoras parceiras</div>
+                        <span style="color:#34d399; font-weight:800;">[📄 Escolher Arquivo PDF]</span>
+                        <div style="font-size:0.65rem; margin-top:2px;">Compatível com Circuit, Shopee, Mercado Livre e transportadoras</div>
                     </div>
                 </div>
 
                 <div class="tutorial-step-card">
                     <div class="tutorial-step-header">
                         <span class="tutorial-badge">2</span>
-                        <span>Personalizar Cores e Voz</span>
+                        <span>Configurar Voz e Estilo</span>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">
-                        Abra o <b>Menu</b> no canto superior esquerdo para escolher a paleta (Amarelo Tático, Slate, OLED Puro) e o tipo de voz que fala as paradas no seu fone.
+                        Abra o <b>Menu</b> para escolher o tipo de voz que fala as paradas no fone ou alto-falante (Turbo, Walkie Rádio, Natural).
                     </div>
                     <div class="tutorial-mockup">
                         <span style="color:#34d399; font-weight:800;">🎙️ Voz: ⚡ Tática Turbo | 📻 Walkie Rádio</span>
@@ -1010,7 +1033,7 @@
                         <span>Apontar a Câmera e Bipar</span>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">
-                        Aponte a câmera para o código de barras ou QR Code da etiqueta do pacote. Pode ligar o <b>Flash</b> à noite ou alternar para a câmera frontal.
+                        Aponte a câmera para a etiqueta do pacote. Você pode acionar o <b>Flash</b> à noite ou alternar para a câmera frontal.
                     </div>
                     <div class="tutorial-mockup">
                         📷 <b>Scanner Ativo:</b> [ QR / Código de Barras ] ⚡
@@ -1023,11 +1046,11 @@
                         <span>Identificação Imediata da Parada</span>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">
-                        O app exibe o número gigante da parada, fala no alto-falante/fone e emite um alerta se houver mais de 1 pacote no mesmo endereço!
+                        O app mostra o número da parada em verde gigante e avisa se existirem outros pacotes para entregar no mesmo local!
                     </div>
-                    <div class="tutorial-mockup" style="border-color:#38bdf8; background:rgba(56,189,248,0.08);">
-                        <div style="font-size:1.4rem; font-weight:900; color:#38bdf8;">P12</div>
-                        <div style="font-size:0.68rem; color:#fbbf24; font-weight:800;">⚠️ MESMO ENDEREÇO DA PARADA P13!</div>
+                    <div class="tutorial-mockup" style="border-color:#10b981; background:rgba(16,185,129,0.08);">
+                        <div style="font-size:1.4rem; font-weight:900; color:#34d399;">P12</div>
+                        <div style="font-size:0.68rem; color:#34d399; font-weight:800;">⚠️ MESMO ENDEREÇO DA PARADA P13!</div>
                     </div>
                 </div>
 
@@ -1086,7 +1109,7 @@
             <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
             <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
             
-            <button class="gps-option-btn" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">
+            <button class="gps-option-btn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff;" onclick="abrirGpsSelecionado('waze')">
                 🚗 Abrir no Waze
             </button>
             <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">
@@ -1103,13 +1126,13 @@
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#d97706; font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
                 <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             
             <div id="areaLoginAdmin">
                 <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:#d97706; color:#000;">Entrar</button>
+                <button onclick="autenticarAdmin()" class="btn-action-primary">Entrar</button>
             </div>
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
@@ -1154,14 +1177,14 @@
 
     <!-- MENU LATERAL -->
     <div class="drawer-panel" id="sidebar">
-        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
+        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px; color:var(--text-main);">PACOTE É MATO</div>
         <div style="font-size:0.68rem; color:#34d399; font-weight:800; margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
 
         <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:10px;" onclick="dispararInstalacaoPWA()">
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
-        <button class="btn-action-primary" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.3); margin-bottom:14px;" onclick="abrirModalTutorial(); toggleSidebar();">
+        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:14px;" onclick="abrirModalTutorial(); toggleSidebar();">
             📖 <span>Guia & Tutorial</span>
         </button>
 
@@ -1185,11 +1208,8 @@
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
             <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Slate Tech</button>
-                <button class="segmented-btn" id="theme_yellow_tatico" onclick="mudarTema('yellow_tatico')">Amarelo Tático</button>
-                <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
-                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
-                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')" style="grid-column: span 2;">Cinza Metálico</button>
+                <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Verde Esmeralda</button>
+                <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">Verde OLED Puro</button>
             </div>
         </div>
 
@@ -1221,27 +1241,37 @@
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <!-- LOGO PACOTE É MATO NO BANNER -->
-            <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:58px; height:58px; margin:0 auto 4px;">
-                <rect width="100" height="100" rx="24" fill="#0e1526" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-                <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="#059669"/>
-                <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="#059669"/>
-                <polygon points="50,22 78,36 50,50 22,36" fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
-                <polygon points="22,36 50,50 50,78 22,64" fill="#1e3a8a" stroke="#1d4ed8" stroke-width="1.5"/>
-                <polygon points="78,36 50,50 50,78 78,64" fill="#1d4ed8" stroke="#1e40af" stroke-width="1.5"/>
-                <path d="M50 22 L50 50 M36 43 L64 43" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
-                <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#10b981"/>
-                <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#34d399"/>
-                <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#34d399"/>
+            <!-- LOGO ANIMADA NO BANNER -->
+            <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:62px; height:62px; margin:0 auto 4px;">
+                <defs>
+                    <linearGradient id="logoBoxGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#059669"/>
+                        <stop offset="100%" stop-color="#047857"/>
+                    </linearGradient>
+                    <linearGradient id="logoPlantGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#34d399"/>
+                        <stop offset="100%" stop-color="#10b981"/>
+                    </linearGradient>
+                </defs>
+                <rect width="100" height="100" rx="24" fill="#0b120e" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGradBanner)"/>
+                <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGradBanner)"/>
+                <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGradBanner)" stroke="#047857" stroke-width="1.5"/>
+                <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+                <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+                <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+                <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+                <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
             </svg>
             <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
             <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
         <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
-            <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
+            <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
                 ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
             </button>
         </div>
@@ -1269,11 +1299,11 @@
                     <div class="metric-lbl" data-i18n="metric_scanned">Bipados</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valParadas" style="color:#38bdf8;">0</div>
+                    <div class="metric-val" id="valParadas" style="color:#34d399;">0</div>
                     <div class="metric-lbl" data-i18n="metric_stops">Paradas</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valFaltam" style="color:var(--accent-amber);">0</div>
+                    <div class="metric-val" id="valFaltam" style="color:#10b981;">0</div>
                     <div class="metric-lbl" data-i18n="metric_remaining">Faltam</div>
                 </div>
             </div>
@@ -1295,7 +1325,7 @@
                 <div id="resPacote" style="font-size:0.82rem; font-weight:800; color:var(--text-muted);">📍 Pacote: BR...</div>
             </div>
 
-            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+            <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
             <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
 
@@ -1388,7 +1418,7 @@
                 choose_pdf: "Elegir Archivo PDF",
                 metric_scanned: "Escaneados",
                 metric_stops: "Paradas",
-                metric_remaining: "Faltam",
+                metric_remaining: "Faltan",
                 cam_flip: "Girar",
                 flash_txt: "Flash",
                 manual_placeholder: "Escribe el código manualmente...",
@@ -1472,11 +1502,24 @@
         }
 
         const paletas = {
-            slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
-            yellow_tatico: { bg_body: "#050507", surface_1: "#0f1015", surface_2: "#161820", border: "rgba(250, 204, 21, 0.25)", text_main: "#f8fafc", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(250, 204, 21, 0.2), 0 0 0 1px rgba(250, 204, 21, 0.25)" },
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
-            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
+            slate_tech: { 
+                bg_body: "#050807", 
+                surface_1: "#0b120e", 
+                surface_2: "#121c16", 
+                border: "rgba(16, 185, 129, 0.16)", 
+                text_main: "#f8fafc", 
+                text_muted: "#859c8e", 
+                shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(16, 185, 129, 0.16)" 
+            },
+            black_oled: { 
+                bg_body: "#000000", 
+                surface_1: "#050a07", 
+                surface_2: "#0b120d", 
+                border: "rgba(52, 211, 153, 0.2)", 
+                text_main: "#ffffff", 
+                text_muted: "#7d9487", 
+                shadow: "0 16px 36px -10px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(52, 211, 153, 0.2)" 
+            }
         };
 
         function mudarTema(tipo) {
@@ -1494,7 +1537,7 @@
 
             localStorage.setItem('tema_preferido', tipo);
 
-            ['slate_tech', 'yellow_tatico', 'black_oled', 'light', 'gray'].forEach(t => {
+            ['slate_tech', 'black_oled'].forEach(t => {
                 let btn = document.getElementById('theme_' + t);
                 if (btn) {
                     if (t === tipo) btn.classList.add('active');
@@ -2134,12 +2177,12 @@
                         <div class="user-row">
                             <div>
                                 <div style="font-weight:800; font-size:0.8rem; color:var(--text-main);">📱 ${zap}</div>
-                                <div style="font-size:0.7rem; color:#38bdf8; font-weight:800;">🔑 Senha: ${senhaUser}</div>
+                                <div style="font-size:0.7rem; color:#34d399; font-weight:800;">🔑 Senha: ${senhaUser}</div>
                                 <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
                                 <div style="display:flex; gap:3px;">
-                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#3b82f6; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer;">Nova Senha</button>
+                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#10b981; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer;">Nova Senha</button>
                                     <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
                                 </div>
                                 <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer; width:100%;">Excluir</button>
@@ -2926,13 +2969,13 @@
                 let msg = new SpeechSynthesisUtterance(frase);
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
                 
-                if (tipo === "grave") { // Walkie Rádio
+                if (tipo === "grave") {
                     msg.pitch = 0.5;
                     msg.rate = 1.15;
-                } else if (tipo === "normal") { // Natural HD
+                } else if (tipo === "normal") {
                     msg.pitch = 1.0;
                     msg.rate = 1.1;
-                } else { // Tática Turbo
+                } else {
                     msg.pitch = 1.1;
                     msg.rate = 1.55;
                 }
