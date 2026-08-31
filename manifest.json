@@ -1,26 +1,18 @@
 {
-  "id": "br.com.pacoteemato.app.v6",
-  "name": "PACOTE É MATO",
+  "name": "Pacote É Mato",
   "short_name": "PacoteÉMato",
   "description": "Sistema Inteligente de Logística para Entregadores",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='14'/%3E%3Cpath d='M110 350 Q50 240 140 170 Q190 260 110 350 Z' fill='%23059669'/%3E%3Cpath d='M402 350 Q462 240 372 170 Q322 260 402 350 Z' fill='%23059669'/%3E%3Cpolygon points='256,110 400,180 256,250 112,180' fill='%2310b981' stroke='%2334d399' stroke-width='10'/%3E%3Cpolygon points='112,180 256,250 256,390 112,320' fill='%23059669' stroke='%23047857' stroke-width='10'/%3E%3Cpolygon points='400,180 256,250 256,390 400,320' fill='%23047857' stroke='%23065f46' stroke-width='10'/%3E%3Cpath d='M256,110 L256,250 M184,215 L328,215' stroke='%23a7f3d0' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M256 390 Q200 300 256 190 Q312 300 256 390 Z' fill='%2334d399'/%3E%3Cpath d='M256 280 Q225 240 195 260 Q215 300 256 280 Z' fill='%236ee7b7'/%3E%3Cpath d='M256 250 Q285 210 315 230 Q295 270 256 250 Z' fill='%236ee7b7'/%3E%3C/svg%3E",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='14'/%3E%3Cpath d='M110 350 Q50 240 140 170 Q190 260 110 350 Z' fill='%23059669'/%3E%3Cpath d='M402 350 Q462 240 372 170 Q322 260 402 350 Z' fill='%23059669'/%3E%3Cpolygon points='256,110 400,180 256,250 112,180' fill='%2310b981' stroke='%2334d399' stroke-width='10'/%3E%3Cpolygon points='112,180 256,250 256,390 112,320' fill='%23059669' stroke='%23047857' stroke-width='10'/%3E%3Cpolygon points='400,180 256,250 256,390 400,320' fill='%23047857' stroke='%23065f46' stroke-width='10'/%3E%3Cpath d='M256,110 L256,250 M184,215 L328,215' stroke='%23a7f3d0' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M256 390 Q200 300 256 190 Q312 300 256 390 Z' fill='%2334d399'/%3E%3Cpath d='M256 280 Q225 240 195 260 Q215 300 256 280 Z' fill='%236ee7b7'/%3E%3Cpath d='M256 250 Q285 210 315 230 Q295 270 256 250 Z' fill='%236ee7b7'/%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='10'/%3E%3Cpath d='M112 348 Q50 235 142 164 Q192 255 112 348 Z' fill='%2310b981'/%3E%3Cpath d='M400 348 Q462 235 370 164 Q320 255 400 348 Z' fill='%2310b981'/%3E%3Cpolygon points='256,112 400,184 256,256 112,184' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpolygon points='112,184 256,256 256,400 112,328' fill='%23059669' stroke='%23047857' stroke-width='8'/%3E%3Cpolygon points='400,184 256,256 256,400 400,328' fill='%23047857' stroke='%23065f46' stroke-width='8'/%3E%3Cpath d='M256 112 L256 256 M184 220 L328 220' stroke='%23a7f3d0' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M256 400 Q205 306 256 214 Q307 306 256 400 Z' fill='%2334d399'/%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
