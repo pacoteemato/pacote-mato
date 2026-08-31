@@ -46,13 +46,7 @@
             --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--surface-border);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg-body);
@@ -62,10 +56,8 @@
             align-items: center;
             min-height: 100vh;
             padding-bottom: 2rem;
-            transition: background-color 0.25s, color 0.25s;
         }
 
-        /* ABERTURA PS2 COM A CARTINHA ANTIGA EM 3D */
         #splashScreenPs2 {
             position: fixed;
             inset: 0;
@@ -76,35 +68,18 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            transition: opacity 0.8s cubic-bezier(0.8, 0, 0.2, 1), transform 0.8s ease;
-        }
-
-        .ps2-bg-radial {
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
-            border-radius: 50%;
-            animation: pulseGlowBg 2s infinite alternate;
-        }
-
-        @keyframes pulseGlowBg {
-            0% { transform: scale(0.8); opacity: 0.4; }
-            100% { transform: scale(1.3); opacity: 0.9; }
+            transition: opacity 0.6s ease;
         }
 
         .ps2-cube-rotating {
             width: 95px;
             height: 95px;
-            animation: rotate3dBox 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            animation: rotate3dBox 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             filter: drop-shadow(0 15px 35px rgba(52, 211, 153, 0.6));
-            z-index: 2;
         }
 
         @keyframes rotate3dBox {
             0% { transform: rotateY(-180deg) scale(0.2); opacity: 0; }
-            50% { transform: rotateY(30deg) scale(1.15); opacity: 1; }
-            75% { transform: rotateY(-10deg) scale(0.95); }
             100% { transform: rotateY(0deg) scale(1); opacity: 1; }
         }
 
@@ -116,9 +91,6 @@
             color: #ffffff;
             margin-top: 24px;
             text-shadow: 0 0 20px rgba(52, 211, 153, 0.8);
-            opacity: 0;
-            animation: fadeInTitle 1s ease forwards 0.8s;
-            z-index: 2;
         }
 
         .ps2-subtitle {
@@ -128,65 +100,20 @@
             color: #34d399;
             text-transform: uppercase;
             margin-top: 6px;
-            opacity: 0;
-            animation: fadeInTitle 1s ease forwards 1.1s;
-            z-index: 2;
         }
 
-        @keyframes fadeInTitle {
-            from { opacity: 0; transform: translateY(12px); letter-spacing: 8px; }
-            to { opacity: 1; transform: translateY(0); letter-spacing: 3px; }
-        }
+        .container { width: 100%; max-width: 440px; padding: 0 14px; }
 
-        .container {
-            width: 100%;
-            max-width: 440px;
-            padding: 0 14px;
-        }
-
-        button, .plan-item, .nav-btn, .cam-overlay-btn, .btn-acao-card, .gps-option-btn, .segmented-btn, .admin-tab {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        button:active, .plan-item:active, .nav-btn:active, .cam-overlay-btn:active, .btn-acao-card:active, .gps-option-btn:active, .segmented-btn:active, .admin-tab:active {
-            transform: scale(0.95) !important;
-            filter: brightness(1.15);
-        }
+        button, .plan-item, .nav-btn, .cam-overlay-btn, .btn-acao-card { transition: all 0.2s ease; }
+        button:active { transform: scale(0.96) !important; }
 
         .app-logo-pro {
-            width: 62px;
-            height: 62px;
+            width: 58px;
+            height: 58px;
             margin: 0 auto 10px;
             display: block;
             cursor: pointer;
             filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.4));
-            animation: floatLogo 3.8s ease-in-out infinite;
-        }
-
-        @keyframes floatLogo {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .btn-instalar-dinamico {
-            width: 100%;
-            background: rgba(16, 185, 129, 0.1);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            border-radius: 12px;
-            padding: 11px 14px;
-            font-weight: 800;
-            font-size: 0.84rem;
-            margin-bottom: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
         }
 
         #toastNotificacao {
@@ -204,20 +131,14 @@
             border: 1px solid var(--primary);
             z-index: 1000005;
             display: none;
-            animation: slideDown 0.25s ease;
             text-align: center;
             max-width: 90%;
-        }
-
-        @keyframes slideDown {
-            from { transform: translate(-50%, -20px); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
         }
 
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #111c16 0%, #000000 80%);
+            background: #000000;
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -238,52 +159,6 @@
             text-align: left;
         }
 
-        .auth-header-center {
-            text-align: center;
-            margin-bottom: 22px;
-        }
-
-        .brand-title-pro {
-            font-size: 1.35rem;
-            font-weight: 900;
-            letter-spacing: -0.3px;
-            color: var(--text-main);
-            margin-bottom: 2px;
-        }
-
-        .brand-subtitle-pro {
-            font-size: 0.7rem;
-            color: #34d399;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .form-label-pro {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-icon-left {
-            position: absolute;
-            left: 14px;
-            font-size: 0.95rem;
-            pointer-events: none;
-            opacity: 0.6;
-        }
-
         .input-auth {
             width: 100%;
             padding: 12px 14px 12px 42px;
@@ -294,14 +169,9 @@
             font-size: 0.92rem;
             font-weight: 700;
             outline: none;
-            transition: all 0.2s;
+            margin-bottom: 12px;
         }
-
-        .input-auth:focus {
-            border-color: var(--primary);
-            background: rgba(20, 20, 23, 0.95);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-        }
+        .input-auth:focus { border-color: var(--primary); }
 
         .btn-action-primary {
             width: 100%;
@@ -313,392 +183,35 @@
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
         }
 
-        .btn-action-trial {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-main);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 11px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
+        .top-nav { width: 100%; max-width: 440px; display: flex; align-items: center; justify-content: space-between; padding: 14px 14px 8px; }
+        .nav-btn { background: var(--surface-1); color: var(--text-main); border: 1px solid var(--surface-border); border-radius: 12px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+        .access-badge { font-size: 0.7rem; font-weight: 700; padding: 5px 10px; border-radius: 20px; background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
 
-        .btn-support-login {
-            width: 100%;
-            background: rgba(16, 185, 129, 0.08);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            border-radius: 12px;
-            padding: 11px;
-            font-weight: 700;
-            font-size: 0.84rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-decoration: none;
-            margin-bottom: 12px;
-        }
+        .hero-banner { background: var(--surface-1); padding: 18px 16px; border-radius: 18px; border: 1px solid var(--surface-border); text-align: center; margin-bottom: 12px; cursor: pointer; }
+        .upload-section { background: var(--surface-1); padding: 20px 16px; border-radius: 18px; border: 1px dashed rgba(16, 185, 129, 0.35); text-align: center; margin-bottom: 14px; }
+        .btn-upload-trigger { width: 100%; background: var(--primary-gradient); color: #fff; border: none; border-radius: 12px; padding: 13px; font-weight: 800; cursor: pointer; }
 
-        .divider-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin: 12px 0 10px;
-        }
-        .divider-label::before, .divider-label::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--surface-border);
-        }
-
-        .plan-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            margin-bottom: 10px;
-        }
-
-        .plan-item {
-            background: var(--surface-2);
-            border: 1.5px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            position: relative;
-        }
-        .plan-item.selecionado {
-            border-color: #34d399 !important;
-            background: rgba(16, 185, 129, 0.12);
-        }
-
-        .plan-badge-top {
-            position: absolute;
-            top: -7px;
-            right: 12px;
-            background: var(--accent-green-gradient);
-            color: #ffffff;
-            font-size: 0.55rem;
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 6px;
-            text-transform: uppercase;
-        }
-
-        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
-        .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
-
-        .btn-gerar-pix-confirm {
-            width: 100%;
-            background: var(--accent-green-gradient);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            padding: 12px;
-            font-weight: 800;
-            font-size: 0.90rem;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.88);
-            backdrop-filter: blur(8px);
-            z-index: 1000010;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-        }
-
-        .modal-card {
-            width: 100%;
-            max-width: 380px;
-            background: var(--surface-1);
-            border: 1px solid var(--surface-border);
-            border-radius: 20px;
-            padding: 22px;
-            text-align: center;
-            box-shadow: var(--shadow-card);
-        }
-
-        .qr-placeholder {
-            background: #ffffff;
-            padding: 12px;
-            border-radius: 14px;
-            width: 155px;
-            height: 155px;
-            margin: 12px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .top-nav {
-            width: 100%;
-            max-width: 440px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 14px 8px;
-        }
-
-        .nav-btn {
-            background: var(--surface-1);
-            color: var(--text-main);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 8px 14px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .access-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            background: rgba(16, 185, 129, 0.12);
-            color: #34d399;
-        }
-
-        .hero-banner {
-            background: var(--surface-1);
-            padding: 18px 16px;
-            border-radius: 18px;
-            border: 1px solid var(--surface-border);
-            text-align: center;
-            box-shadow: var(--shadow-card);
-            margin-bottom: 12px;
-            cursor: pointer;
-        }
-
-        .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
-            border: 1.5px solid var(--primary);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 12px;
-            display: none;
-            text-align: center;
-        }
-
-        .upload-section {
-            background: var(--surface-1);
-            padding: 20px 16px;
-            border-radius: 18px;
-            border: 1px dashed rgba(16, 185, 129, 0.35);
-            text-align: center;
-            margin-bottom: 14px;
-        }
-
-        .btn-upload-trigger {
-            width: 100%;
-            background: var(--primary-gradient);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            padding: 13px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .metrics-board {
-            background: var(--surface-1);
-            border-radius: 16px;
-            padding: 12px 8px;
-            border: 1px solid var(--surface-border);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            text-align: center;
-            margin-bottom: 14px;
-        }
-        .metric-cell { padding: 6px 4px; border-radius: 10px; background: rgba(255, 255, 255, 0.02); }
-        .metric-val { font-size: 1.35rem; font-weight: 900; color: var(--text-main); }
-        .metric-lbl { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-top: 2px; }
-
-        .camera-viewport {
-            position: relative;
-            width: 100%;
-            height: 420px;
-            border-radius: 20px;
-            border: 1px solid var(--surface-border);
-            background: #000000;
-            margin-bottom: 14px;
-            overflow: hidden;
-        }
-
+        .camera-viewport { position: relative; width: 100%; height: 420px; border-radius: 20px; border: 1px solid var(--surface-border); background: #000000; margin-bottom: 14px; overflow: hidden; }
         #reader { width: 100% !important; height: 100% !important; }
         #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 
-        .cam-overlay-btn {
-            position: absolute;
-            z-index: 99;
-            background: rgba(11, 18, 14, 0.85);
-            backdrop-filter: blur(8px);
-            color: #ffffff;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.72rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .cam-overlay-btn svg { width: 14px; height: 14px; fill: currentColor; }
-        .cam-overlay-btn.active-flash { background: var(--primary); color: #000000; }
-
-        /* PAINEL DE RESULTADO COM PARADA E ENDEREÇO */
-        .result-panel {
-            background: var(--surface-1);
-            padding: 18px 16px;
-            border-radius: 18px;
-            border: 1.5px solid var(--primary);
-            margin-bottom: 14px;
-            text-align: center;
-            display: none;
-        }
+        .result-panel { background: var(--surface-1); padding: 18px 16px; border-radius: 18px; border: 1.5px solid var(--primary); margin-bottom: 14px; text-align: center; display: none; }
         .stop-number { font-size: 3.8rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 6px; }
-        .stop-address { font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; line-height: 1.35; }
+        .stop-address { font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
         .stop-package-id { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
         
-        .result-panel.error-state {
-            border-color: var(--danger);
-            background: rgba(239, 68, 68, 0.08);
-        }
-        .result-panel.error-state .stop-number { font-size: 1.5rem; color: var(--danger); }
-
-        .drawer-mask {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 99998;
-            display: none;
-        }
-
-        .drawer-panel {
-            position: fixed;
-            top: 0;
-            left: -320px;
-            width: 280px;
-            height: 100%;
-            background: var(--surface-1);
-            border-right: 1px solid var(--surface-border);
-            z-index: 99999;
-            padding: 22px 16px;
-            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow-y: auto;
-        }
+        .drawer-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99998; display: none; }
+        .drawer-panel { position: fixed; top: 0; left: -320px; width: 280px; height: 100%; background: var(--surface-1); z-index: 99999; padding: 22px 16px; transition: left 0.3s ease; }
         .drawer-panel.active { left: 0; }
-
-        .modal-rota-conteudo {
-            max-height: 60vh;
-            overflow-y: auto;
-            text-align: left;
-            margin-top: 10px;
-        }
-
-        .parada-box-pro {
-            background: var(--surface-2);
-            border: 1px solid var(--surface-border);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-
-        .parada-box-pro.duplo-pro {
-            border-color: rgba(52, 211, 153, 0.4);
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), var(--surface-2));
-        }
-
-        .parada-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-        .parada-badge-num { background: #000000; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 5px 12px; font-weight: 800; font-size: 0.88rem; color: #34d399; }
-        .parada-badge-num.destaque-duplo { background: #064e3b; border-color: #34d399; color: #ecfdf5; }
-        .tag-duplo-info { font-size: 0.68rem; font-weight: 800; color: #34d399; text-transform: uppercase; }
-        .endereco-texto-pro { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
-        .acoes-footer-pro { display: flex; justify-content: flex-end; border-top: 1px solid var(--surface-border); padding-top: 8px; }
-        .btn-acao-card { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--surface-border); border-radius: 10px; padding: 8px 14px; color: var(--text-main); font-weight: 700; font-size: 0.75rem; cursor: pointer; }
-
-        .gps-option-btn { width: 100%; padding: 11px; border-radius: 11px; border: 1px solid var(--surface-border); font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
-
-        .segmented-control, .segmented-control-grid3, .segmented-control-grid4 {
-            display: grid;
-            gap: 4px;
-            background: var(--surface-2);
-            padding: 4px;
-            border-radius: 12px;
-            border: 1px solid var(--surface-border);
-        }
-        .segmented-control { grid-template-columns: repeat(3, 1fr); }
-        .segmented-control-grid3 { grid-template-columns: repeat(3, 1fr); }
-        .segmented-control-grid4 { grid-template-columns: repeat(2, 1fr); }
-
-        .segmented-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 4px; font-size: 0.65rem; font-weight: 800; border-radius: 9px; cursor: pointer; text-align: center; }
-        .segmented-btn.active { background: var(--primary); color: #ffffff; }
-
-        .admin-nav-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-bottom: 12px; }
-        .admin-tab { padding: 7px 4px; background: var(--surface-2); border: 1px solid var(--surface-border); color: var(--text-muted); border-radius: 8px; font-size: 0.65rem; font-weight: 800; cursor: pointer; text-align: center; }
-        .admin-tab.active { background: var(--primary); color: #ffffff; border-color: transparent; }
-        .user-row { background: var(--surface-2); border: 1px solid var(--surface-border); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; text-align: left; }
-
-        /* TUTORIAL SIMULADOR */
-        .tutorial-sim-container { background: #000000; border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 16px; padding: 14px; margin-bottom: 12px; text-align: center; }
-        .sim-screen-box { background: #0b0b0d; border: 1px solid var(--surface-border); border-radius: 12px; padding: 12px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; }
-        .sim-laser-line { position: absolute; width: 100%; height: 2px; background: #34d399; box-shadow: 0 0 10px #34d399; top: 0; animation: scanMove 1.8s infinite ease-in-out; display: none; }
-        @keyframes scanMove { 0% { top: 10%; opacity: 0.2; } 50% { top: 90%; opacity: 1; } 100% { top: 10%; opacity: 0.2; } }
-        .sim-status-badge { display: inline-block; font-size: 0.68rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; background: rgba(16, 185, 129, 0.15); color: #34d399; margin-bottom: 8px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <!-- ABERTURA PS2 COM A CARTINHA ANTIGA EM 3D -->
+    <!-- ABERTURA COM A CARTINHA -->
     <div id="splashScreenPs2">
-        <div class="ps2-bg-radial"></div>
         <svg class="ps2-cube-rotating" viewBox="0 0 512 512">
             <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
             <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
@@ -710,481 +223,70 @@
 
     <div id="toastNotificacao"></div>
 
+    <!-- TELA DE LOGIN BLINDADA -->
     <div id="telaBloqueio">
-        <div class="auth-wrapper">
-            <div class="auth-header-center">
-                <svg class="app-logo-pro" viewBox="0 0 512 512" onclick="registrarCliqueAdmin()">
-                    <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
-                    <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
-                    <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
-                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
-            </div>
-
-            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
-            </button>
-
-            <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
-                📖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Interativo)</span>
-            </button>
-            
-            <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
-            <div class="input-group">
-                <span class="input-icon-left">📱</span>
-                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
-            </div>
-
-            <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
-            <div class="input-group">
-                <span class="input-icon-left">🔑</span>
-                <input type="password" id="inputSenha" class="input-auth" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
-            </div>
-            
-            <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
-                ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
-            </button>
-            <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
-                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
-            </button>
-
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-support-login">💬 Suporte</button>
-            </a>
-            
-            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
-
-            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
-            
-            <div class="plan-stack">
-                <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
-                    <div>
-                        <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
-                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
-                    </div>
-                    <div class="plan-val">R$ 4,99</div>
-                </div>
-
-                <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
-                    <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
-                    <div>
-                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
-                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
-                    </div>
-                    <div class="plan-val">R$ 9,99</div>
-                </div>
-
-                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
-                    <div>
-                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
-                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
-                    </div>
-                    <div class="plan-val">R$ 24,99</div>
-                </div>
-            </div>
-
-            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
-                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL TUTORIAL / SIMULADOR INTERATIVO -->
-    <div id="modalTutorial" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#34d399; font-weight:800; font-size:1.1rem;">📖 Demonstração do Sistema</h3>
-                <span onclick="fecharModalTutorial()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.1rem;">✕</span>
-            </div>
-            
-            <div class="tutorial-sim-container">
-                <div class="sim-status-badge" id="simStatus">Passo 1: Carregando Rota...</div>
-                <div class="sim-screen-box" id="simScreen">
-                    <div class="sim-laser-line" id="simLaser"></div>
-                    <div id="simContent" style="font-size:0.82rem; font-weight:800; color:#ffffff;">📄 Manifesto.pdf</div>
-                </div>
-            </div>
-
-            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin-bottom:14px;">
-                <b>Como Funciona na Rua:</b><br>
-                1. Você importa a folha da transportadora.<br>
-                2. Aponta a câmera para o pacote.<br>
-                3. O app bipa, fala com voz HD e mostra a parada e o endereço completo instantaneamente!
-            </div>
-
-            <button onclick="fecharModalTutorial()" class="btn-action-primary">Entendido! Começar Agora</button>
-        </div>
-    </div>
-
-    <div id="modalPix" class="modal-backdrop">
-        <div class="modal-card">
-            <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
-            <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 9,99</h3>
-            <div class="qr-placeholder" id="qrContainer"></div>
-            <div style="font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
-            <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O sistema destrava sozinho após o pagamento.</div>
-            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-size:0.68rem; text-align:center; outline:none;">
-            <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">📋 <span data-i18n="copy_pix">Copiar Código Pix</span></button>
-            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="modalVisualizarRota" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📋 Paradas & Endereços</h3>
-                <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
-            </div>
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
-                <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Todos (<span id="contadorTodos">0</span>)</button>
-                <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
-            </div>
-            <div class="modal-rota-conteudo" id="listaParadasModal"></div>
-            <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
-        </div>
-    </div>
-
-    <div id="modalEscolhaGps" class="modal-backdrop">
-        <div class="modal-card" style="max-width:330px;">
-            <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
-            <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
-            <button class="gps-option-btn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff;" onclick="abrirGpsSelecionado('waze')">🚗 Abrir no Waze</button>
-            <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">🗺️ Abrir no Google Maps</button>
-            <button onclick="fecharModalGps()" style="margin-top:6px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="modalAdmin" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
-                <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
-            </div>
-            <div id="areaLoginAdmin">
-                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary">Entrar</button>
-            </div>
-            <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
-                <div class="admin-nav-tabs">
-                    <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
-                    <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
-                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes</button>
-                    <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar Acesso</button>
-                </div>
-                <div id="viewAdmin30d" style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column;"></div>
-                <div id="viewAdmin90d" style="max-height:250px; overflow-y:auto; display:none; flex-direction:column;"></div>
-                <div id="viewAdminTeste" style="max-height:250px; overflow-y:auto; display:none; flex-direction:column;"></div>
-                <div id="viewAdminPagos" style="max-height:250px; overflow-y:auto; display:none; flex-direction:column;"></div>
-                <div id="viewAdminAdd" style="display:none; flex-direction:column;">
-                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
-                        <option value="3">3 Dias</option>
-                        <option value="7">7 Dias (Semanal)</option>
-                        <option value="30" selected>30 Dias (1 Mês)</option>
-                        <option value="90">90 Dias (3 Meses)</option>
-                    </select>
-                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="top-nav">
-        <button class="nav-btn" onclick="toggleSidebar()"><span>☰</span> <span data-i18n="menu">Menu</span></button>
-        <span class="access-badge" id="diasRestantes">Acesso Ativo</span>
-    </div>
-
-    <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
-
-    <div class="drawer-panel" id="sidebar">
-        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px; color:var(--text-main);">PACOTE É MATO</div>
-        <div style="font-size:0.68rem; color:#34d399; font-weight:800; margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
-
-        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:10px;" onclick="dispararInstalacaoPWA()">
-            📲 <span data-i18n="download_app">Baixar App no Celular</span>
-        </button>
-
-        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:14px;" onclick="abrirModalTutorial(); toggleSidebar();">
-            📖 <span>Guia & Tutorial</span>
-        </button>
-
-        <div style="margin-bottom:16px;">
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">💬 Suporte</button>
-            </a>
-        </div>
-
-        <div style="margin-bottom:14px;">
-            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span data-i18n="language_label">Idioma</span></label>
-            <div class="segmented-control">
-                <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
-                <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
-                <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">EN</button>
-            </div>
-        </div>
-
-        <div style="margin-bottom:14px;">
-            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
-            <div class="segmented-control-grid3">
-                <button class="segmented-btn active" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
-                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
-                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button>
-            </div>
-        </div>
-
-        <div style="margin-bottom:14px;">
-            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
-            <div class="segmented-control-grid4">
-                <button class="segmented-btn" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Tática Turbo</button>
-                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Walkie Rádio</button>
-                <button class="segmented-btn active" id="voice_hd" onclick="salvarVoz('hd')">🎙️ Natural HD</button>
-                <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
-            </div>
-        </div>
-
-        <div style="margin-top:24px;">
-            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
-                🔄 <span data-i18n="reset_route">Zerar Bipagens</span>
-            </button>
-            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(220, 38, 38, 0.15); color:#ef4444; border:1px solid rgba(220, 38, 38, 0.3); font-size:0.8rem;">
-                🔒 <span data-i18n="logout">Desconectar Conta</span>
-            </button>
-        </div>
-    </div>
-
-    <div class="container">
-        <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
-            📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
-        </button>
-        
-        <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <svg class="app-logo-pro" viewBox="0 0 512 512" style="width:52px; height:52px; margin:0 auto 4px;">
+        <div class="auth-wrapper" style="text-align: center;">
+            <svg class="app-logo-pro" viewBox="0 0 512 512" style="width:64px; height:64px;">
                 <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
                 <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
                 <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
-        </div>
+            <h1 style="font-size: 1.3rem; font-weight: 900; margin-bottom: 4px;">PACOTE É MATO</h1>
+            <p style="font-size: 0.7rem; color: #34d399; font-weight: 800; margin-bottom: 20px;">ENTRAR NO SISTEMA</p>
 
-        <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
-            <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
-            <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
-                ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
-            </button>
+            <input type="tel" id="inputTel" class="input-auth" placeholder="WhatsApp (com DDD)" style="padding-left:14px;">
+            <input type="password" id="inputSenha" class="input-auth" placeholder="Sua Senha" style="padding-left:14px;">
+            
+            <button class="btn-action-primary" onclick="fazerLogin()">⚡ Entrar</button>
+            <button class="btn-action-primary" style="background:rgba(16,185,129,0.15); color:#34d399;" onclick="ativarTesteDireto()">🎁 Testar 3 Dias Grátis</button>
+        </div>
+    </div>
+
+    <div class="top-nav">
+        <button class="nav-btn" onclick="toggleSidebar()"><span>☰</span> Menu</button>
+        <span class="access-badge" id="diasRestantes">Ativo</span>
+    </div>
+
+    <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="drawer-panel" id="sidebar">
+        <div style="font-weight:900; font-size:1.05rem; margin-bottom:16px;">PACOTE É MATO</div>
+        <button class="btn-action-primary" style="background:rgba(220,38,38,0.15); color:#ef4444;" onclick="sairDoApp()">🔒 Desconectar</button>
+    </div>
+
+    <div class="container">
+        <div class="hero-banner">
+            <div style="font-size:1.2rem; font-weight:900;">PACOTE É MATO</div>
+            <div style="font-size:0.65rem; color:#34d399; font-weight:800; margin-top:2px;">SISTEMA DE LOGÍSTICA</div>
         </div>
 
         <div class="upload-section">
-            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
-            
-            <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
-                📄 Escolher Arquivo PDF
-            </button>
-
-            <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
-                👀 Visualizar Paradas da Rota
-            </button>
-
+            <div style="font-size:0.9rem; font-weight:800; margin-bottom:8px;">Carregar Rota em PDF</div>
+            <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()">📄 Escolher Arquivo PDF</button>
             <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
         </div>
 
         <div id="areaExecucao" style="display:none;">
-            <div class="metrics-board">
-                <div class="metric-cell">
-                    <div class="metric-val" id="valPacotes">0 / 0</div>
-                    <div class="metric-lbl" data-i18n="metric_scanned">Bipados</div>
-                </div>
-                <div class="metric-cell">
-                    <div class="metric-val" id="valParadas" style="color:#34d399;">0</div>
-                    <div class="metric-lbl" data-i18n="metric_stops">Paradas</div>
-                </div>
-                <div class="metric-cell">
-                    <div class="metric-val" id="valFaltam" style="color:#10b981;">0</div>
-                    <div class="metric-lbl" data-i18n="metric_remaining">Faltam</div>
-                </div>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; text-align:center; margin-bottom:14px;">
+                <div style="background:var(--surface-1); padding:8px; border-radius:10px;"><div id="valPacotes" style="font-weight:900;">0/0</div><small style="color:#888;">Bipados</small></div>
+                <div style="background:var(--surface-1); padding:8px; border-radius:10px;"><div id="valParadas" style="font-weight:900; color:#34d399;">0</div><small style="color:#888;">Paradas</small></div>
+                <div style="background:var(--surface-1); padding:8px; border-radius:10px;"><div id="valFaltam" style="font-weight:900;">0</div><small style="color:#888;">Faltam</small></div>
             </div>
 
-            <!-- CARD DE RESULTADO COM PARADA E ENDEREÇO EMBAIXO -->
             <div class="result-panel" id="cardResult">
                 <div class="stop-number" id="resStop">P1</div>
-                <div class="stop-address" id="resEndereco">📍 Carregando endereço...</div>
-                <div class="stop-package-id" id="resPacote">Pacote: BR...</div>
+                <div class="stop-address" id="resEndereco">📍 Endereço</div>
+                <div class="stop-package-id" id="resPacote">BR...</div>
             </div>
-
-            <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
             <div class="camera-viewport">
-                <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
-                    <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
-                    <span data-i18n="cam_flip">Virar</span>
-                </button>
-                <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">
-                    <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l3-8z"/></svg>
-                    <span id="txt-flash">Flash</span>
-                </button>
                 <div id="reader"></div>
             </div>
-
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
+            <input type="text" class="input-auth" id="inputManual" placeholder="Código manual..." style="padding-left:14px;" onchange="processarCodigo(this.value)">
         </div>
     </div>
 
     <script>
-        function tocarIntroPs2Audio() {
-            try {
-                let ctx = getAudioContext();
-                let now = ctx.currentTime;
-                let oscBase = ctx.createOscillator();
-                let gainBase = ctx.createGain();
-                oscBase.type = 'triangle';
-                oscBase.frequency.setValueAtTime(140, now);
-                oscBase.frequency.exponentialRampToValueAtTime(360, now + 1.5);
-                gainBase.gain.setValueAtTime(0.01, now);
-                gainBase.gain.linearRampToValueAtTime(0.18, now + 0.5);
-                gainBase.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
-                oscBase.connect(gainBase);
-                gainBase.connect(ctx.destination);
-                oscBase.start(now);
-                oscBase.stop(now + 2.3);
-            } catch (e) {}
-        }
-
-        function dispararAberturaPs2() {
-            tocarIntroPs2Audio();
-            setTimeout(() => {
-                let splash = document.getElementById('splashScreenPs2');
-                if (splash) {
-                    splash.style.opacity = '0';
-                    splash.style.transform = 'scale(1.08)';
-                    setTimeout(() => { splash.style.display = 'none'; }, 800);
-                }
-            }, 2400);
-        }
-
-        let simInterval = null;
-        function iniciarSimulacaoTutorial() {
-            let status = document.getElementById('simStatus');
-            let content = document.getElementById('simContent');
-            let laser = document.getElementById('simLaser');
-            let step = 0;
-
-            if (simInterval) clearInterval(simInterval);
-
-            function executarPasso() {
-                if (step === 0) {
-                    status.innerText = "1. Carregando Rota em PDF...";
-                    laser.style.display = "none";
-                    content.innerHTML = `<div style="font-size:2rem; margin-bottom:4px;">📄</div><div style="color:#34d399; font-weight:800;">Manifesto.pdf</div>`;
-                    step = 1;
-                } else if (step === 1) {
-                    status.innerText = "2. Escaneando Etiqueta...";
-                    laser.style.display = "block";
-                    content.innerHTML = `<div style="border:2px dashed #34d399; border-radius:8px; padding:10px 16px; background:rgba(16,185,129,0.06);"><div style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#fff;">BR994820194SP</div></div>`;
-                    step = 2;
-                } else if (step === 2) {
-                    status.innerText = "3. Parada e Endereço!";
-                    laser.style.display = "none";
-                    playBeepSucesso();
-                    content.innerHTML = `<div style="font-size:2.8rem; font-weight:900; color:#34d399; line-height:1;">P12</div><div style="font-size:0.85rem; font-weight:700; color:#ffffff; margin-top:4px;">📍 Rua das Palmeiras, 340</div>`;
-                    step = 0;
-                }
-            }
-            executarPasso();
-            simInterval = setInterval(executarPasso, 2200);
-        }
-
-        function abrirModalTutorial() {
-            document.getElementById('modalTutorial').style.display = 'flex';
-            iniciarSimulacaoTutorial();
-        }
-
-        function fecharModalTutorial() {
-            if (simInterval) clearInterval(simInterval);
-            document.getElementById('modalTutorial').style.display = 'none';
-        }
-
-        const traducoes = {
-            pt: {
-                download_app: "Baixar App no Celular",
-                brand_subtitle: "Plataforma de Logística",
-                whatsapp_label: "WhatsApp / Acesso",
-                password_label: "Sua Senha Pessoal",
-                whatsapp_placeholder: "Número com DDD",
-                password_placeholder: "Crie ou digite sua senha",
-                btn_enter: "Entrar no Sistema",
-                btn_trial: "Testar 3 Dias Grátis",
-                choose_plan: "Planos de Acesso",
-                plan_weekly_name: "Plano Semanal",
-                plan_weekly_meta: "7 dias de acesso total",
-                plan_monthly_name: "Plano Mensal (1 Mês)",
-                plan_monthly_meta: "30 dias • Melhor custo-benefício",
-                plan_quarterly_name: "Plano Trimestral (3 Meses)",
-                plan_quarterly_meta: "90 dias com desconto",
-                most_popular: "Popular",
-                generate_pix: "Gerar Pagamento Pix",
-                secure_payment: "Pagamento Seguro Pix",
-                waiting_confirmation: "Aguardando confirmação... ⏳",
-                auto_unlock: "O sistema destrava sozinho após o pagamento.",
-                copy_pix: "Copiar Código Pix",
-                cancel: "Cancelar",
-                menu: "Menu",
-                language_label: "Idioma",
-                theme_label: "Tema de Cor",
-                voice_label: "Voz do Sintetizador",
-                reset_route: "Zerar Bipagens",
-                logout: "Desconectar Conta",
-                logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
-                saved_route_found: "📂 ROTA ANTERIOR IDENTIFICADA",
-                resume_route: "Retomar Rota Onde Parei",
-                load_pdf_title: "Carregar Rota em PDF",
-                load_pdf_subtitle: "Importe a folha da sua rota para sincronizar as paradas",
-                metric_scanned: "Bipados",
-                metric_stops: "Paradas",
-                metric_remaining: "Faltam",
-                cam_flip: "Virar",
-                flash_txt: "Flash",
-                manual_placeholder: "Digite o código manualmente...",
-                same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
-                tutorial_btn: "Como Usar (Tutorial Interativo)"
-            }
-        };
-
-        function mudarIdioma(lang) {
-            let dict = traducoes[lang] || traducoes.pt;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                let key = el.getAttribute('data-i18n');
-                if (dict[key]) el.innerText = dict[key];
-            });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                let key = el.getAttribute('data-i18n-placeholder');
-                if (dict[key]) el.setAttribute('placeholder', dict[key]);
-            });
-        }
-
-        function notificar(msg) {
-            let t = document.getElementById('toastNotificacao');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => { t.style.display = 'none'; }, 3500);
-        }
-
-        function validarNumeroWhatsApp(zap) {
-            let limpo = zap.replace(/\D/g, '');
-            return limpo.length >= 10 && limpo.length <= 11;
-        }
-
-        function carregarConfiguracoesSalvas() {
-            mudarIdioma('pt');
-            if (!localStorage.getItem('usuario_zap_salvo')) {
-                document.getElementById('telaBloqueio').style.display = 'flex';
-            }
-        }
-
+        // FIREBASE SETUP BLINDADO CONTRA TRAVAMENTO
         const firebaseConfig = {
             apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
             authDomain: "pacote-e-mato.firebaseapp.com",
@@ -1193,128 +295,63 @@
             messagingSenderId: "535255652602",
             appId: "1:535255652602:web:2881a450c393d22ccc1143"
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
-        const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
-        const MEU_DEVICE_ID = 'DEV_' + Math.random().toString(36).substring(2, 12);
 
-        let planoSelecionadoAtual = null;
-        function selecionarPlano(dias, valor, nomePlano, cardId) {
+        // SPLASH SCREEN REMOVE RÁPIDO
+        setTimeout(() => {
+            let splash = document.getElementById('splashScreenPs2');
+            if (splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 600);
+            }
+        }, 1500);
+
+        function notificar(msg) {
+            let t = document.getElementById('toastNotificacao');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        async function fazerLogin() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
-            if (!validarNumeroWhatsApp(zap) || !senha) {
-                notificar("⚠️ Preencha WhatsApp e senha primeiro.");
-                return;
-            }
-            document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
-            document.getElementById(cardId).classList.add('selecionado');
-            planoSelecionadoAtual = { dias, valor, nomePlano, senha };
-            let btn = document.getElementById('btnConfirmarPagamento');
-            btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2)})`;
-            btn.style.display = 'flex';
-        }
+            if (!zap || !senha) { notificar("Digite WhatsApp e senha."); return; }
 
-        function iniciarPixPlanoSelecionado() {
-            if (planoSelecionadoAtual) gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano, planoSelecionadoAtual.senha);
-        }
-
-        async function gerarPixAutomatico(dias, valor, nomePlano, senha) {
-            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
-            document.getElementById('pixPlanoNome').innerText = `${nomePlano} • R$ ${valor.toFixed(2)}`;
-            document.getElementById('modalPix').style.display = 'flex';
             try {
-                const response = await fetch(`${CLOUDFLARE_WORKER_URL}/criar-pix`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ valor, descricao: `Pacote É Mato - ${nomePlano}`, zap })
-                });
-                const data = await response.json();
-                if (data && data.point_of_interaction) {
-                    const copiaCola = data.point_of_interaction.transaction_data.qr_code;
-                    document.getElementById('pixCopiaColaOut').value = copiaCola;
-                    document.getElementById('qrContainer').innerHTML = "";
-                    new QRCode(document.getElementById('qrContainer'), { text: copiaCola, width: 150, height: 150 });
+                let doc = await db.collection("usuarios").doc(zap).get();
+                if (doc.exists && doc.data().senha === senha) {
+                    localStorage.setItem('usuario_zap_salvo', zap);
+                    document.getElementById('telaBloqueio').style.display = 'none';
+                    notificar("⚡ Bem-vindo!");
+                } else {
+                    notificar("❌ Senha incorreta ou usuário não encontrado.");
                 }
-            } catch(e) { notificar("Erro ao gerar Pix."); }
-        }
-
-        function fecharModalPix() { document.getElementById('modalPix').style.display = 'none'; }
-        function copiarPixCopiaCola() {
-            let c = document.getElementById('pixCopiaColaOut');
-            navigator.clipboard.writeText(c.value);
-            notificar("📋 Código Pix copiado!");
-        }
-
-        async function ativarTesteGratis() {
-            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
-            let senha = document.getElementById('inputSenha').value.trim();
-            if (!validarNumeroWhatsApp(zap) || !senha) {
-                notificar("⚠️ Preencha WhatsApp e senha.");
-                return;
+            } catch(e) {
+                notificar("Erro ao conectar com o servidor.");
             }
-            let expiraEm = Date.now() + (3 * 24 * 60 * 60 * 1000);
-            await db.collection("usuarios").doc(zap).set({ whatsapp: zap, senha, expiraEm, ativo: true, duracaoDias: 3 }, { merge: true });
-            localStorage.setItem('usuario_zap_salvo', zap);
-            document.getElementById('telaBloqueio').style.display = 'none';
-            notificar("🎉 Teste de 3 Dias Ativado!");
         }
 
-        async function autenticarUsuarioFirebase() {
+        async function ativarTesteDireto() {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
-            let doc = await db.collection("usuarios").doc(zap).get();
-            if (doc.exists && doc.data().senha === senha) {
+            if (!zap || !senha) { notificar("Preencha WhatsApp e senha para testar."); return; }
+
+            try {
+                let expira = Date.now() + (3 * 24 * 60 * 60 * 1000);
+                await db.collection("usuarios").doc(zap).set({
+                    whatsapp: zap, senha, expiraEm: expira, ativo: true, duracaoDias: 3
+                }, { merge: true });
                 localStorage.setItem('usuario_zap_salvo', zap);
                 document.getElementById('telaBloqueio').style.display = 'none';
-                notificar("⚡ Bem-vindo de volta!");
-            } else {
-                notificar("❌ Senha incorreta ou usuário não encontrado.");
+                notificar("🎉 Teste de 3 dias ativado!");
+            } catch(e) {
+                notificar("Erro ao ativar teste.");
             }
-        }
-
-        let cliquesAdmin = 0;
-        function registrarCliqueAdmin() {
-            cliquesAdmin++;
-            if (cliquesAdmin >= 5) {
-                cliquesAdmin = 0;
-                document.getElementById('modalAdmin').style.display = 'flex';
-            }
-        }
-        function fecharModalAdmin() { document.getElementById('modalAdmin').style.display = 'none'; }
-        
-        async function autenticarAdmin() {
-            let pass = document.getElementById('passAdmin').value;
-            const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ senha: pass })
-            });
-            const data = await res.json();
-            if (data.sucesso) {
-                document.getElementById('areaLoginAdmin').style.display = 'none';
-                document.getElementById('areaGeradorAdmin').style.display = 'flex';
-                carregarUsuariosAdmin();
-            } else { notificar("Senha mestre incorreta."); }
-        }
-
-        async function carregarUsuariosAdmin() {
-            let view30d = document.getElementById('viewAdmin30d');
-            let snap = await db.collection("usuarios").get();
-            let html = "";
-            snap.forEach(doc => {
-                let u = doc.data();
-                html += `<div class="user-row"><div><b>📱 ${u.whatsapp}</b><br><small>Senha: ${u.senha}</small></div></div>`;
-            });
-            view30d.innerHTML = html;
-        }
-
-        function alternarTabAdmin(tab) {
-            ['30d', '90d', 'teste', 'pagos', 'add'].forEach(t => {
-                let btn = document.getElementById('tab' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : 'Add')))));
-                let view = document.getElementById('viewAdmin' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : 'Add')))));
-                if (btn) btn.classList.remove('active');
-                if (view) view.style.display = 'none';
-            });
         }
 
         function toggleSidebar() {
@@ -1324,29 +361,22 @@
             ov.style.display = sb.classList.contains('active') ? 'block' : 'none';
         }
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-        let html5QrCode = null, sensorAtual = "environment", flashLigado = false;
-        let mapaRotas = {}, stopCorrespondente = {}, nomeExibicao = {}, todosPacotes = new Set(), pacotesBipados = new Set();
+        function sairDoApp() {
+            localStorage.removeItem('usuario_zap_salvo');
+            location.reload();
+        }
 
-        function verificarRotaSalvaAnterior() {
-            let dados = localStorage.getItem('rota_ativa_completa');
-            if (dados) {
-                let parsed = JSON.parse(dados);
-                if (parsed.todosPacotes) {
-                    document.getElementById('txtNomeRotaSalva').innerText = `${parsed.nomeArquivo} (${parsed.pacotesBipados.length}/${parsed.todosPacotes.length})`;
-                    document.getElementById('cardRetomarRota').style.display = 'block';
-                }
+        // VERIFICAÇÃO DE SESSÃO AUTOMÁTICA AO ABRIR
+        window.addEventListener('DOMContentLoaded', () => {
+            let salvo = localStorage.getItem('usuario_zap_salvo');
+            if (!salvo) {
+                document.getElementById('telaBloqueio').style.display = 'flex';
             }
-        }
+        });
 
-        function retomarRotaAnterior() {
-            let parsed = JSON.parse(localStorage.getItem('rota_ativa_completa'));
-            mapaRotas = parsed.mapaRotas; stopCorrespondente = parsed.stopCorrespondente; nomeExibicao = parsed.nomeExibicao;
-            todosPacotes = new Set(parsed.todosPacotes); pacotesBipados = new Set(parsed.pacotesBipados);
-            document.getElementById('areaExecucao').style.display = 'block';
-            document.getElementById('cardRetomarRota').style.display = 'none';
-            atualizarStats(); iniciarScanner();
-        }
+        // LEITURA DE PDF E SCANNER
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        let html5QrCode = null, mapaRotas = {}, stopCorrespondente = {}, nomeExibicao = {}, todosPacotes = new Set(), pacotesBipados = new Set();
 
         document.getElementById('pdfInput').addEventListener('change', async function(e) {
             let file = e.target.files[0];
@@ -1355,18 +385,18 @@
             reader.onload = async function() {
                 let typedarray = new Uint8Array(this.result);
                 let pdf = await pdfjsLib.getDocument(typedarray).promise;
-                let linhasPdf = [];
+                let linhas = [];
                 for (let i = 1; i <= pdf.numPages; i++) {
                     let page = await pdf.getPage(i);
                     let content = await page.getTextContent();
-                    content.items.forEach(item => linhasPdf.push(item.str));
+                    content.items.forEach(item => linhas.push(item.str));
                 }
-                processarLinhasExatas(linhasPdf, file.name);
+                processarPdf(linhas);
             };
             reader.readAsArrayBuffer(file);
         });
 
-        function processarLinhasExatas(linhas, nomeArquivo) {
+        function processarPdf(linhas) {
             mapaRotas = {}; stopCorrespondente = {}; nomeExibicao = {}; todosPacotes = new Set(); pacotesBipados = new Set();
             let seq = 0;
             linhas.forEach(l => {
@@ -1381,36 +411,27 @@
                 }
             });
             document.getElementById('areaExecucao').style.display = 'block';
-            document.getElementById('btnVerParadasModal').style.display = 'flex';
-            atualizarStats(); iniciarScanner();
+            atualizarStats();
+            iniciarScanner();
+            notificar("📄 Rota carregada com sucesso!");
         }
 
         function processarCodigo(txt) {
             let cod = txt.toUpperCase().trim();
             if (todosPacotes.has(cod)) {
                 pacotesBipados.add(cod);
-                playBeepSucesso();
                 let numP = stopCorrespondente[cod];
                 let card = document.getElementById('cardResult');
                 card.style.display = 'block';
-                card.classList.remove('error-state');
                 document.getElementById('resStop').innerText = "P" + numP;
                 document.getElementById('resEndereco').innerText = "📍 " + (nomeExibicao[numP] || "Endereço sincronizado");
                 document.getElementById('resPacote').innerText = "Pacote: " + cod;
-                falarParada(numP);
                 atualizarStats();
-            } else {
-                playBeepErro();
-                let card = document.getElementById('cardResult');
-                card.style.display = 'block';
-                card.classList.add('error-state');
-                document.getElementById('resStop').innerText = "NÃO LOCALIZADO";
-                document.getElementById('resEndereco').innerText = "Verifique o código e tente novamente.";
             }
         }
 
         function atualizarStats() {
-            document.getElementById('valPacotes').innerText = `${pacotesBipados.size} / ${todosPacotes.size}`;
+            document.getElementById('valPacotes').innerText = `${pacotesBipados.size}/${todosPacotes.size}`;
             document.getElementById('valParadas').innerText = Object.keys(mapaRotas).length;
             document.getElementById('valFaltam').innerText = Math.max(0, todosPacotes.size - pacotesBipados.size);
         }
@@ -1418,73 +439,8 @@
         function iniciarScanner() {
             if (html5QrCode) return;
             html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: sensorAtual }, { fps: 30, qrbox: 250 }, (txt) => processarCodigo(txt));
+            html5QrCode.start({ facingMode: "environment" }, { fps: 30, qrbox: 250 }, (txt) => processarCodigo(txt)).catch(() => {});
         }
-
-        function alternarCamera() {
-            sensorAtual = sensorAtual === "environment" ? "user" : "environment";
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => { html5QrCode = null; iniciarScanner(); });
-            }
-        }
-
-        function alternarFlash() {
-            flashLigado = !flashLigado;
-            if (html5QrCode) html5QrCode.applyVideoConstraints({ advanced: [{ torch: flashLigado }] });
-        }
-
-        function playBeepSucesso() {
-            try {
-                let ctx = getAudioContext(), osc = ctx.createOscillator();
-                osc.frequency.setValueAtTime(950, ctx.currentTime);
-                osc.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.08);
-            } catch(e) {}
-        }
-
-        function playBeepErro() {
-            try {
-                let ctx = getAudioContext(), osc = ctx.createOscillator();
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, ctx.currentTime);
-                osc.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.22);
-            } catch(e) {}
-        }
-
-        function audioCtxManager() {
-            return new (window.AudioContext || window.webkitAudioContext)();
-        }
-        let audioCtx = null;
-        function getAudioContext() {
-            if (!audioCtx) audioCtx = audioCtxManager();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            return audioCtx;
-        }
-
-        // VOZ NATURAL HD PADRÃO
-        function falarParada(num) {
-            try {
-                window.speechSynthesis.cancel();
-                let msg = new SpeechSynthesisUtterance("Parada " + num);
-                msg.lang = 'pt-BR';
-                msg.pitch = 1.0;
-                msg.rate = 1.15;
-                window.speechSynthesis.speak(msg);
-            } catch(e) {}
-        }
-
-        function zerarRota() {
-            pacotesBipados.clear();
-            atualizarStats();
-            document.getElementById('cardResult').style.display = 'none';
-            toggleSidebar();
-            notificar("Bipagens zeradas.");
-        }
-
-        function sairDoApp() {
-            localStorage.removeItem('usuario_zap_salvo');
-            location.reload();
-        }
-
-        window.addEventListener('DOMContentLoaded', carregarConfiguracoesSalvas);
     </script>
 </body>
 </html>
