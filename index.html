@@ -672,15 +672,17 @@
 
         .result-panel {
             background: var(--surface-1);
-            padding: 16px;
-            border-radius: 16px;
+            padding: 18px 16px;
+            border-radius: 18px;
             border: 1.5px solid var(--primary);
             margin-bottom: 14px;
             text-align: center;
             box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
             display: none;
         }
-        .stop-number { font-size: 3.5rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 4px; }
+        .stop-number { font-size: 3.8rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 6px; }
+        .stop-address { font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; line-height: 1.35; }
+        .stop-package-id { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
         
         .result-panel.error-state {
             border-color: var(--danger);
@@ -889,7 +891,6 @@
             text-align: left;
         }
 
-        /* --- SIMULADOR INTERATIVO DO TUTORIAL --- */
         .tutorial-sim-container {
             background: #000000;
             border: 1.5px solid rgba(16, 185, 129, 0.35);
@@ -1098,7 +1099,7 @@
                 <b>Como Funciona na Rua:</b><br>
                 1. Você importa a folha da transportadora.<br>
                 2. Aponta a câmera para o pacote.<br>
-                3. O app bipa, fala no seu fone e mostra a parada na tela instantaneamente!
+                3. O app bipa, fala no seu fone e mostra a parada e o endereço completo instantaneamente!
             </div>
 
             <button onclick="fecharModalTutorial()" class="btn-action-primary">
@@ -1346,6 +1347,15 @@
                 </div>
             </div>
 
+            <!-- CARD DE RESULTADO COM PARADA E ENDEREÇO EMBAIXO -->
+            <div class="result-panel" id="cardResult">
+                <div class="stop-number" id="resStop">P1</div>
+                <div class="stop-address" id="resEndereco">📍 Carregando endereço...</div>
+                <div class="stop-package-id" id="resPacote">Pacote: BR...</div>
+            </div>
+
+            <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+
             <div class="camera-viewport">
                 <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
                     <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
@@ -1357,13 +1367,6 @@
                 </button>
                 <div id="reader"></div>
             </div>
-
-            <div class="result-panel" id="cardResult">
-                <div class="stop-number" id="resStop">P1</div>
-                <div id="resPacote" style="font-size:0.82rem; font-weight:800; color:var(--text-muted);">📍 Pacote: BR...</div>
-            </div>
-
-            <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
             <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
 
@@ -1446,17 +1449,18 @@
                     content.innerHTML = `
                         <div style="border:2px dashed #34d399; border-radius:8px; padding:10px 16px; background:rgba(16,185,129,0.06);">
                             <div style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#fff;">BR994820194SP</div>
-                            <div style="font-size:0.65rem; color:#888; margin-top:2px;">Rua das Flores, 120</div>
+                            <div style="font-size:0.65rem; color:#888; margin-top:2px;">Rua das Palmeiras, 340</div>
                         </div>
                     `;
                     step = 2;
                 } else if (step === 2) {
-                    status.innerText = "3. Parada Identificada!";
+                    status.innerText = "3. Parada e Endereço!";
                     laser.style.display = "none";
                     playBeepSucesso();
                     content.innerHTML = `
                         <div style="font-size:2.8rem; font-weight:900; color:#34d399; line-height:1;">P12</div>
-                        <div style="font-size:0.68rem; color:#ffffff; font-weight:800; margin-top:4px;">📍 BR994820194SP</div>
+                        <div style="font-size:0.85rem; font-weight:700; color:#ffffff; margin-top:4px;">📍 Rua das Palmeiras, 340</div>
+                        <div style="font-size:0.68rem; color:#888; font-family:'JetBrains Mono',monospace;">BR994820194SP</div>
                         <div style="font-size:0.65rem; color:#34d399; font-weight:800; margin-top:4px; background:rgba(16,185,129,0.15); padding:2px 6px; border-radius:4px;">
                             ⚠️ MESMO ENDEREÇO DA P13
                         </div>
@@ -1531,7 +1535,7 @@
                 brand_subtitle: "Plataforma de Logística",
                 whatsapp_label: "WhatsApp / Acceso",
                 password_label: "Tu Contraseña",
-                whatsapp_placeholder: "Número con código de área",
+                whatsapp_placeholder: "Número com código de área",
                 password_placeholder: "Crea o escribe tu contraseña",
                 btn_enter: "Entrar al Sistema",
                 btn_trial: "Probar 3 Días Gratis",
@@ -2927,7 +2931,7 @@
 
                     if (!mapaRotas[endKey]) {
                         mapaRotas[endKey] = [];
-                        nomeExibicao[endKey] = linhaStr.substring(0, 45);
+                        nomeExibicao[endKey] = linhaStr.substring(0, 55);
                     }
 
                     codsValidos.forEach(c => {
@@ -2986,6 +2990,7 @@
 
             let card = document.getElementById('cardResult');
             let resStop = document.getElementById('resStop');
+            let resEndereco = document.getElementById('resEndereco');
             let resPacote = document.getElementById('resPacote');
             let aviso = document.getElementById('boxAviso');
 
@@ -3012,7 +3017,11 @@
                 card.classList.remove('error-state');
                 card.style.display = 'block';
                 resStop.innerText = "P" + numP;
-                resPacote.innerText = "📍 Pacote: " + identificado;
+                
+                // Exibe o endereço completo da parada
+                let textoEndereco = nomeExibicao[endMatch] || "Endereço identificado no PDF";
+                resEndereco.innerText = "📍 " + textoEndereco;
+                resPacote.innerText = "Pacote: " + identificado;
 
                 let outrosStops = listaDuplos.filter(p => p !== identificado).map(p => "P" + stopCorrespondente[p]);
 
@@ -3034,6 +3043,7 @@
                     card.classList.add('error-state');
                     card.style.display = 'block';
                     resStop.innerText = lang === 'en' ? "NOT FOUND" : (lang === 'es' ? "NO ENCONTRADO" : "NÃO LOCALIZADO");
+                    resEndereco.innerText = "Verifique se o pacote consta no manifesto importado.";
                     resPacote.innerText = "Código: " + (codLimpo || codigoBruto);
                     aviso.style.display = 'none';
                     document.getElementById('inputManual').value = "";
