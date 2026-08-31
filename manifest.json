@@ -2,17 +2,25 @@
   "name": "Pacote É Mato",
   "short_name": "PacoteÉMato",
   "description": "Sistema Inteligente de Logística",
+  "id": "/?source=pwa",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0b0b0d",
   "theme_color": "#0b0b0d",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230b0b0d'/%3E%3Cg transform='translate(0, 0)'%3E%3Cpath d='M90 360 Q20 230 120 150 Q170 250 90 360 Z' fill='%2310b981'/%3E%3Cpath d='M422 360 Q492 230 392 150 Q342 250 422 360 Z' fill='%2310b981'/%3E%3Cpolygon points='256,90 422,170 256,250 90,170' fill='%2310b981' stroke='%2334d399' stroke-width='10'/%3E%3Cpolygon points='90,170 256,250 256,422 90,342' fill='%23059669' stroke='%23047857' stroke-width='10'/%3E%3Cpolygon points='422,170 256,250 256,422 422,342' fill='%23047857' stroke='%23065f46' stroke-width='10'/%3E%3Cpath d='M256 90 L256 250 M170 210 L342 210' stroke='%23a7f3d0' stroke-width='14' stroke-linecap='round'/%3E%3Cpath d='M256 422 Q190 310 256 198 Q322 310 256 422 Z' fill='%2334d399'/%3E%3C/g%3E%3C/svg%3E",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
