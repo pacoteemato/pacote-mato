@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PACOTE É MATO</title>
     
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <!-- Ícone Favicon SVG (Caixa + Folhas) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230e1526' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%3C/svg%3E">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#050807" id="metaThemeColor">
+    <meta name="theme-color" content="#000000" id="metaThemeColor">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230e1526' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%3C/svg%3E">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,13 +33,13 @@
 
     <style>
         :root {
-            --bg-body: #050807;
-            --surface-1: #0b120e;
-            --surface-2: #121c16;
-            --surface-border: rgba(16, 185, 129, 0.16);
-            --surface-border-hover: rgba(52, 211, 153, 0.4);
-            --text-main: #f8fafc;
-            --text-muted: #859c8e;
+            --bg-body: #000000;
+            --surface-1: #0b0b0d;
+            --surface-2: #141417;
+            --surface-border: rgba(255, 255, 255, 0.12);
+            --surface-border-hover: rgba(255, 255, 255, 0.24);
+            --text-main: #ffffff;
+            --text-muted: #888888;
             --primary: #10b981;
             --primary-gradient: linear-gradient(135deg, #059669, #10b981);
             --accent-green: #047857;
@@ -84,7 +85,7 @@
             position: absolute;
             width: 450px;
             height: 450px;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(5, 8, 7, 0) 70%);
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
             border-radius: 50%;
             animation: pulseGlowBg 2s infinite alternate;
         }
@@ -95,9 +96,8 @@
         }
 
         .ps2-cube-rotating {
-            width: 90px;
-            height: 90px;
-            object-fit: contain;
+            width: 95px;
+            height: 95px;
             animation: rotate3dBox 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             filter: drop-shadow(0 15px 35px rgba(52, 211, 153, 0.6));
             z-index: 2;
@@ -158,9 +158,8 @@
         }
 
         .app-logo-pro {
-            width: 65px;
-            height: 65px;
-            object-fit: contain;
+            width: 68px;
+            height: 68px;
             margin: 0 auto 10px;
             display: block;
             cursor: pointer;
@@ -206,7 +205,7 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #121c16;
+            background: #141417;
             color: #f8fafc;
             padding: 11px 20px;
             border-radius: 12px;
@@ -229,7 +228,7 @@
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #0f1c14 0%, #050807 75%);
+            background: radial-gradient(circle at top center, #111c16 0%, #000000 80%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -323,7 +322,7 @@
 
         .input-auth:focus {
             border-color: var(--primary);
-            background: rgba(18, 28, 22, 0.95);
+            background: rgba(20, 20, 23, 0.95);
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
         }
 
@@ -744,7 +743,7 @@
         }
 
         .parada-badge-num {
-            background: #060913;
+            background: #000000;
             border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 10px;
             padding: 5px 12px;
@@ -817,7 +816,7 @@
             margin-bottom: 8px;
         }
 
-        .segmented-control, .segmented-control-grid4 {
+        .segmented-control, .segmented-control-grid3 {
             display: grid;
             gap: 4px;
             background: var(--surface-2);
@@ -826,7 +825,16 @@
             border: 1px solid var(--surface-border);
         }
         .segmented-control { grid-template-columns: repeat(3, 1fr); }
-        .segmented-control-grid4 { grid-template-columns: repeat(2, 1fr); }
+        .segmented-control-grid3 { grid-template-columns: repeat(3, 1fr); }
+        .segmented-control-grid4 { 
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--surface-border);
+        }
 
         .segmented-btn {
             background: transparent;
@@ -911,7 +919,7 @@
             justify-content: center;
         }
         .tutorial-mockup {
-            background: #060913;
+            background: #000000;
             border: 1px dashed var(--surface-border-hover);
             border-radius: 10px;
             padding: 10px;
@@ -924,10 +932,28 @@
 </head>
 <body>
 
-    <!-- ABERTURA PS2 / GTA -->
+    <!-- ABERTURA PS2 COM A CAIXA E MATO -->
     <div id="splashScreenPs2">
         <div class="ps2-bg-radial"></div>
-        <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="ps2-cube-rotating">
+        <svg class="ps2-cube-rotating" viewBox="0 0 100 100">
+            <defs>
+                <linearGradient id="splashBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#10b981"/>
+                    <stop offset="100%" stop-color="#047857"/>
+                </linearGradient>
+                <linearGradient id="splashPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34d399"/>
+                    <stop offset="100%" stop-color="#059669"/>
+                </linearGradient>
+            </defs>
+            <path d="M18 70 Q5 45 25 30 Q35 50 18 70 Z" fill="url(#splashPlantGrad)"/>
+            <path d="M82 70 Q95 45 75 30 Q65 50 82 70 Z" fill="url(#splashPlantGrad)"/>
+            <polygon points="50,18 82,34 50,50 18,34" fill="#34d399" stroke="#6ee7b7" stroke-width="2"/>
+            <polygon points="18,34 50,50 50,82 18,66" fill="url(#splashBoxGrad)" stroke="#065f46" stroke-width="2"/>
+            <polygon points="82,34 50,50 50,82 82,66" fill="#047857" stroke="#064e3b" stroke-width="2"/>
+            <path d="M50 18 L50 50 M34 42 L66 42" stroke="#d1fae5" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M50 82 Q38 60 50 38 Q62 60 50 82 Z" fill="#34d399"/>
+        </svg>
         <h1 class="ps2-title">PACOTE É MATO</h1>
         <p class="ps2-subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</p>
     </div>
@@ -938,7 +964,28 @@
         <div class="auth-wrapper">
             
             <div class="auth-header-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
+                <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
+                    <defs>
+                        <linearGradient id="logoBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#059669"/>
+                            <stop offset="100%" stop-color="#047857"/>
+                        </linearGradient>
+                        <linearGradient id="logoPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#34d399"/>
+                            <stop offset="100%" stop-color="#10b981"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                    <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGrad)"/>
+                    <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGrad)"/>
+                    <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                    <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGrad)" stroke="#047857" stroke-width="1.5"/>
+                    <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+                    <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+                    <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+                    <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
+                </svg>
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
                 <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
             </div>
@@ -1043,7 +1090,7 @@
                         <span>Configurar Voz e Estilo</span>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">
-                        Abra o <b>Menu</b> para escolher o tipo de voz que fala as paradas no fone ou alto-falante (Turbo, Walkie Rádio, Natural).
+                        Abra o <b>Menu</b> para escolher o tipo de voz que fala as paradas no fone ou alto-falante (Turbo, Walkie Rádio, Natural) e selecione o tema de cor de sua preferência.
                     </div>
                     <div class="tutorial-mockup">
                         <span style="color:#34d399; font-weight:800;">🎙️ Voz: ⚡ Tática Turbo | 📻 Walkie Rádio</span>
@@ -1069,7 +1116,7 @@
                         <span>Identificação Imediata da Parada</span>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">
-                        O app mostra o número da parada em verde gigante e avisa se existirem outros pacotes para entregar no mesmo local!
+                        O app mostra o número da parada em destaque e avisa se existirem outros pacotes para entregar no mesmo local!
                     </div>
                     <div class="tutorial-mockup" style="border-color:#10b981; background:rgba(16,185,129,0.08);">
                         <div style="font-size:1.4rem; font-weight:900; color:#34d399;">P12</div>
@@ -1222,11 +1269,13 @@
             </div>
         </div>
 
+        <!-- TEMAS: OLED PURO, BRANCO LIGHT, CINZA METÁLICO -->
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
-            <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Verde Esmeralda</button>
-                <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">Verde OLED Puro</button>
+            <div class="segmented-control-grid3">
+                <button class="segmented-btn active" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
+                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
+                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button>
             </div>
         </div>
 
@@ -1257,7 +1306,28 @@
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" style="width:60px; height:60px; margin:0 auto 4px;">
+            <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:62px; height:62px; margin:0 auto 4px;">
+                <defs>
+                    <linearGradient id="logoBoxGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#059669"/>
+                        <stop offset="100%" stop-color="#047857"/>
+                    </linearGradient>
+                    <linearGradient id="logoPlantGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#34d399"/>
+                        <stop offset="100%" stop-color="#10b981"/>
+                    </linearGradient>
+                </defs>
+                <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGradBanner)"/>
+                <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGradBanner)"/>
+                <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGradBanner)" stroke="#047857" stroke-width="1.5"/>
+                <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+                <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+                <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+                <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+                <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
+            </svg>
             <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
             <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
@@ -1540,29 +1610,39 @@
             });
         }
 
+        // PALETAS: OLED PURO, BRANCO LIGHT, CINZA METÁLICO
         const paletas = {
-            slate_tech: { 
-                bg_body: "#050807", 
-                surface_1: "#0b120e", 
-                surface_2: "#121c16", 
-                border: "rgba(16, 185, 129, 0.16)", 
-                text_main: "#f8fafc", 
-                text_muted: "#859c8e", 
-                shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(16, 185, 129, 0.16)" 
-            },
             black_oled: { 
                 bg_body: "#000000", 
-                surface_1: "#050a07", 
-                surface_2: "#0b120d", 
-                border: "rgba(52, 211, 153, 0.2)", 
+                surface_1: "#0b0b0d", 
+                surface_2: "#141417", 
+                border: "rgba(255, 255, 255, 0.12)", 
                 text_main: "#ffffff", 
-                text_muted: "#7d9487", 
+                text_muted: "#888888", 
                 shadow: "0 16px 36px -10px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(52, 211, 153, 0.2)" 
+            },
+            light: { 
+                bg_body: "#f8fafc", 
+                surface_1: "#ffffff", 
+                surface_2: "#f1f5f9", 
+                border: "rgba(0, 0, 0, 0.08)", 
+                text_main: "#0f172a", 
+                text_muted: "#64748b", 
+                shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" 
+            },
+            gray: { 
+                bg_body: "#18181b", 
+                surface_1: "#27272a", 
+                surface_2: "#3f3f46", 
+                border: "rgba(255, 255, 255, 0.1)", 
+                text_main: "#fafafa", 
+                text_muted: "#a1a1aa", 
+                shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" 
             }
         };
 
         function mudarTema(tipo) {
-            let p = paletas[tipo] || paletas.slate_tech;
+            let p = paletas[tipo] || paletas.black_oled;
             document.documentElement.style.setProperty('--bg-body', p.bg_body);
             document.documentElement.style.setProperty('--surface-1', p.surface_1);
             document.documentElement.style.setProperty('--surface-2', p.surface_2);
@@ -1576,7 +1656,7 @@
 
             localStorage.setItem('tema_preferido', tipo);
 
-            ['slate_tech', 'black_oled'].forEach(t => {
+            ['black_oled', 'light', 'gray'].forEach(t => {
                 let btn = document.getElementById('theme_' + t);
                 if (btn) {
                     if (t === tipo) btn.classList.add('active');
@@ -1634,7 +1714,7 @@
             let lang = localStorage.getItem('idioma_preferido') || 'pt';
             mudarIdioma(lang);
 
-            let tema = localStorage.getItem('tema_preferido') || 'slate_tech';
+            let tema = localStorage.getItem('tema_preferido') || 'black_oled';
             mudarTema(tema);
 
             let voz = localStorage.getItem('voz_preferida') || 'rapida';
@@ -2377,7 +2457,6 @@
             }
         }
 
-        // SERVICE WORKER EMBUTIDO PARA VALIDAÇÃO NATIVA WEBAK
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('install', e => self.skipWaiting());
