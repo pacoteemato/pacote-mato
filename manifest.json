@@ -7,9 +7,9 @@
   "theme_color": "#050807",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3062/3062634.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23050807'/%3E%3Cpath d='M110 350 Q50 240 140 170 Q190 260 110 350 Z' fill='%23059669'/%3E%3Cpath d='M402 350 Q462 240 372 170 Q322 260 402 350 Z' fill='%23059669'/%3E%3Cpolygon points='256,110 400,180 256,250 112,180' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpolygon points='112,180 256,250 256,390 112,320' fill='%23059669' stroke='%23047857' stroke-width='8'/%3E%3Cpolygon points='400,180 256,250 256,390 400,320' fill='%23047857' stroke='%23065f46' stroke-width='8'/%3E%3Cpath d='M256,110 L256,250 M184,215 L328,215' stroke='%23a7f3d0' stroke-width='10' stroke-linecap='round'/%3E%3Cpath d='M256 390 Q200 300 256 190 Q312 300 256 390 Z' fill='%2334d399'/%3E%3Cpath d='M256 280 Q225 240 195 260 Q215 300 256 280 Z' fill='%236ee7b7'/%3E%3Cpath d='M256 250 Q285 210 315 230 Q295 270 256 250 Z' fill='%236ee7b7'/%3E%3C/svg%3E",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ]
 }
