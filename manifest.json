@@ -4,7 +4,7 @@
   "description": "Sistema Inteligente de Logística",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#060913",
+  "background_color": "#0b1526",
   "theme_color": "#060913",
   "orientation": "portrait",
   "icons": [
@@ -12,7 +12,13 @@
       "src": "https://cdn-icons-png.flaticon.com/512/3062/3062634.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3062/3062634.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
