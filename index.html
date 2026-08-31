@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PACOTE É MATO</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='10'/%3E%3Crect x='116' y='156' width='280' height='200' rx='24' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpath d='M116 180 L256 280 L396 180' fill='none' stroke='%23047857' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#090d16" id="metaThemeColor">
+    <meta name="theme-color" content="#0b0b0d" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='10'/%3E%3Crect x='116' y='156' width='280' height='200' rx='24' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpath d='M116 180 L256 280 L396 180' fill='none' stroke='%23047857' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -27,23 +27,24 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
     <style>
         :root {
-            --bg-body: #060913;
-            --surface-1: #0e1526;
-            --surface-2: #162038;
-            --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.16);
+            --bg-body: #05080e;
+            --surface-1: #0b111e;
+            --surface-2: #131c31;
+            --surface-border: rgba(52, 211, 153, 0.15);
+            --surface-border-hover: rgba(52, 211, 153, 0.35);
             --text-main: #f8fafc;
             --text-muted: #8a99af;
-            --primary: #1d4ed8;
-            --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
+            --primary: #10b981;
+            --primary-gradient: linear-gradient(135deg, #059669, #10b981);
             --accent-green: #047857;
             --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
-            --accent-blue-soft: #38bdf8;
-            --danger: #b91c1c;
-            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
+            --accent-mint: #34d399;
+            --danger: #ef4444;
+            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -81,9 +82,9 @@
 
         .btn-instalar-dinamico {
             width: 100%;
-            background: rgba(37, 99, 235, 0.1);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-mint);
+            border: 1px solid rgba(52, 211, 153, 0.3);
             border-radius: 12px;
             padding: 11px 14px;
             font-weight: 700;
@@ -96,8 +97,8 @@
             gap: 8px;
         }
         .btn-instalar-dinamico:hover {
-            background: rgba(37, 99, 235, 0.2);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
 
         #toastNotificacao {
@@ -105,14 +106,14 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #162038;
+            background: var(--surface-2);
             color: #f8fafc;
             padding: 11px 20px;
             border-radius: 12px;
             font-weight: 700;
             font-size: 0.84rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--surface-border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary);
             z-index: 1000005;
             display: none;
             animation: slideDown 0.25s ease;
@@ -128,7 +129,7 @@
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #111c38 0%, #060913 70%);
+            background: radial-gradient(circle at top center, #0b1f15 0%, #05080e 70%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -155,13 +156,13 @@
         }
 
         .app-logo-pro {
-            width: 56px;
-            height: 56px;
+            width: 58px;
+            height: 58px;
             object-fit: contain;
             margin: 0 auto 10px;
             display: block;
             cursor: pointer;
-            filter: drop-shadow(0 4px 12px rgba(29, 78, 216, 0.4));
+            filter: drop-shadow(0 4px 14px rgba(16, 185, 129, 0.4));
             transition: transform 0.3s ease;
         }
         .app-logo-pro:hover {
@@ -178,7 +179,7 @@
 
         .brand-subtitle-pro {
             font-size: 0.7rem;
-            color: var(--text-muted);
+            color: var(--accent-mint);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -224,8 +225,8 @@
 
         .input-auth:focus {
             border-color: var(--primary);
-            background: rgba(22, 32, 56, 0.9);
-            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
+            background: rgba(19, 28, 49, 0.95);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
         }
 
         .btn-action-primary {
@@ -238,7 +239,7 @@
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -247,7 +248,7 @@
         }
         .btn-action-primary:hover {
             filter: brightness(1.1);
-            box-shadow: 0 6px 18px rgba(29, 78, 216, 0.5);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
         }
 
         .btn-action-trial {
@@ -267,15 +268,15 @@
             gap: 6px;
         }
         .btn-action-trial:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(16, 185, 129, 0.08);
             border-color: var(--surface-border-hover);
         }
 
         .btn-support-login {
             width: 100%;
-            background: rgba(5, 150, 105, 0.1);
-            color: #34d399;
-            border: 1px solid rgba(5, 150, 105, 0.25);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-mint);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 12px;
             padding: 11px;
             font-weight: 700;
@@ -289,7 +290,7 @@
             margin-bottom: 12px;
         }
         .btn-support-login:hover {
-            background: rgba(5, 150, 105, 0.2);
+            background: rgba(16, 185, 129, 0.2);
         }
 
         .divider-label {
@@ -330,17 +331,17 @@
         }
         .plan-item:hover {
             border-color: var(--surface-border-hover);
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(16, 185, 129, 0.04);
         }
 
         .plan-item.selecionado {
-            border-color: #38bdf8 !important;
-            background: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+            border-color: var(--accent-mint) !important;
+            background: rgba(16, 185, 129, 0.12);
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
         }
 
         .plan-item.featured {
-            border-color: rgba(5, 150, 105, 0.4);
+            border-color: rgba(16, 185, 129, 0.4);
         }
 
         .plan-badge-top {
@@ -358,7 +359,7 @@
 
         .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
         .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
+        .plan-val { font-size: 1rem; font-weight: 900; color: var(--accent-mint); }
 
         .btn-gerar-pix-confirm {
             width: 100%;
@@ -390,7 +391,7 @@
         .modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.88);
             backdrop-filter: blur(8px);
             z-index: 1000010;
             display: none;
@@ -455,9 +456,9 @@
             font-weight: 700;
             padding: 5px 10px;
             border-radius: 20px;
-            border: 1px solid rgba(5, 150, 105, 0.3);
-            background: rgba(5, 150, 105, 0.1);
-            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-mint);
         }
 
         .hero-banner {
@@ -472,12 +473,12 @@
         }
 
         .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(29, 78, 216, 0.12), rgba(56, 189, 248, 0.05));
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.05));
             border: 1.5px solid var(--primary);
             border-radius: 18px;
             padding: 14px;
             margin-bottom: 12px;
-            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.2);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
             display: none;
             text-align: center;
         }
@@ -486,7 +487,7 @@
             background: var(--surface-1);
             padding: 20px 16px;
             border-radius: 18px;
-            border: 1px dashed rgba(59, 130, 246, 0.3);
+            border: 1px dashed rgba(52, 211, 153, 0.3);
             text-align: center;
             margin-bottom: 14px;
             box-shadow: var(--shadow-card);
@@ -502,7 +503,7 @@
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -550,10 +551,10 @@
         .cam-overlay-btn {
             position: absolute;
             z-index: 99;
-            background: rgba(14, 21, 38, 0.8);
+            background: rgba(11, 17, 30, 0.85);
             backdrop-filter: blur(8px);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(52, 211, 153, 0.25);
             padding: 8px 12px;
             border-radius: 12px;
             font-weight: 700;
@@ -583,11 +584,11 @@
             border: 1.5px solid var(--primary);
             margin-bottom: 14px;
             text-align: center;
-            box-shadow: 0 8px 24px rgba(29, 78, 216, 0.15);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
             display: none;
         }
-        .stop-number { font-size: 3.5rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
-        .stop-address { font-size: 0.92rem; font-weight: 700; color: #38bdf8; margin-top: 4px; line-height: 1.3; }
+        .stop-number { font-size: 3.5rem; font-weight: 900; color: var(--accent-mint); line-height: 1; margin-bottom: 4px; }
+        .stop-address { font-size: 0.92rem; font-weight: 700; color: #ffffff; margin-top: 4px; line-height: 1.3; }
         
         .result-panel.error-state {
             border-color: var(--danger);
@@ -641,8 +642,8 @@
         }
 
         .parada-box-pro.duplo-pro {
-            border-color: rgba(56, 189, 248, 0.4);
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), var(--surface-2));
+            border-color: rgba(52, 211, 153, 0.4);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), var(--surface-2));
         }
 
         .parada-header-row {
@@ -653,26 +654,26 @@
         }
 
         .parada-badge-num {
-            background: #060913;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #05080e;
+            border: 1px solid rgba(52, 211, 153, 0.25);
             border-radius: 10px;
             padding: 5px 12px;
             font-weight: 800;
             font-size: 0.88rem;
-            color: var(--text-main);
+            color: var(--accent-mint);
             letter-spacing: 0.5px;
         }
 
         .parada-badge-num.destaque-duplo {
-            background: #1e3a8a;
-            border-color: #38bdf8;
-            color: #e0f2fe;
+            background: #064e3b;
+            border-color: #34d399;
+            color: #ecfdf5;
         }
 
         .tag-duplo-info {
             font-size: 0.68rem;
             font-weight: 800;
-            color: var(--accent-blue-soft);
+            color: var(--accent-mint);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             display: flex;
@@ -709,7 +710,7 @@
             justify-content: center;
             gap: 6px;
         }
-        .btn-acao-card:hover { background: rgba(29, 78, 216, 0.2); }
+        .btn-acao-card:hover { background: rgba(16, 185, 129, 0.2); }
 
         .gps-option-btn {
             width: 100%;
@@ -761,7 +762,7 @@
         .segmented-btn.active {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
 
         .admin-nav-tabs {
@@ -782,8 +783,8 @@
             text-align: center;
         }
         .admin-tab.active {
-            background: #d97706;
-            color: #000000;
+            background: var(--primary);
+            color: #ffffff;
             border-color: transparent;
         }
 
@@ -805,12 +806,16 @@
     <!-- TOAST NOTIFICATION -->
     <div id="toastNotificacao"></div>
 
-    <!-- TELA DE LOGIN CORPORATIVA EXECUTIVA -->
+    <!-- TELA DE LOGIN -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             
             <div class="auth-header-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
+                <svg class="app-logo-pro" viewBox="0 0 512 512" onclick="registrarCliqueAdmin()">
+                    <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
+                    <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
+                    <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
                 <p class="brand-subtitle-pro">Plataforma de Logística</p>
             </div>
@@ -908,7 +913,7 @@
     <div id="modalTreinamento" class="modal-backdrop">
         <div class="modal-card" style="max-width:400px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#38bdf8; font-weight:800;">📖 Guia de Treinamento</h3>
+                <h3 style="color:#34d399; font-weight:800;">📖 Guia de Treinamento</h3>
                 <span onclick="fecharGuiaTreinamento()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.1rem;">✕</span>
             </div>
             <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
@@ -946,7 +951,7 @@
             <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
             <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
             
-            <button class="gps-option-btn" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">
+            <button class="gps-option-btn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff;" onclick="abrirGpsSelecionado('waze')">
                 🚗 Abrir no Waze
             </button>
             <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">
@@ -963,13 +968,13 @@
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#d97706; font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
+                <h3 style="color:#10b981; font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
                 <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             
             <div id="areaLoginAdmin">
                 <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:#d97706; color:#000;">Entrar</button>
+                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:var(--accent-green);">Entrar</button>
             </div>
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
@@ -1012,16 +1017,16 @@
 
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- MENU LATERAL COM GUIA DE TREINAMENTO E SUPORTE -->
+    <!-- MENU LATERAL -->
     <div class="drawer-panel" id="sidebar">
         <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
-        <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:16px;">Plataforma de Logística</div>
+        <div style="font-size:0.68rem; color:var(--accent-mint); font-weight:800; margin-bottom:16px;">Plataforma de Logística</div>
 
         <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:10px;" onclick="dispararInstalacaoPWA()">
             📲 Baixar App no Celular
         </button>
 
-        <button class="btn-action-primary" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.3); margin-bottom:12px; font-size:0.82rem; padding:10px;" onclick="abrirGuiaTreinamento(); toggleSidebar();">
+        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:var(--accent-mint); border:1px solid rgba(52, 211, 153, 0.3); margin-bottom:12px; font-size:0.82rem; padding:10px;" onclick="abrirGuiaTreinamento(); toggleSidebar();">
             📖 Guia de Treinamento
         </button>
 
@@ -1072,14 +1077,18 @@
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" style="width:55px; margin-bottom:4px;">
+            <svg class="app-logo-pro" viewBox="0 0 512 512" style="width:48px; height:48px; margin:0 auto 4px;">
+                <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
+                <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
+                <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+            <div style="font-size:0.68rem; font-weight:800; color:var(--accent-mint); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
         <!-- RETOMAR ROTA SALVA -->
         <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div style="font-size:0.75rem; font-weight:800; color:var(--accent-mint); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
             <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
                 ⚡ Retomar Rota Onde Parei
@@ -1110,11 +1119,11 @@
                     <div class="metric-lbl">Bipados</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valParadas" style="color:#38bdf8;">0</div>
+                    <div class="metric-val" id="valParadas" style="color:var(--accent-mint);">0</div>
                     <div class="metric-lbl">Paradas</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valFaltam" style="color:var(--accent-amber);">0</div>
+                    <div class="metric-val" id="valFaltam" style="color:#f59e0b;">0</div>
                     <div class="metric-lbl">Faltam</div>
                 </div>
             </div>
@@ -1139,7 +1148,7 @@
                 <div id="resPacote" style="font-size:0.75rem; font-weight:800; color:var(--text-muted); margin-top:4px;">Pacote: BR...</div>
             </div>
 
-            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid var(--accent-amber); color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+            <div id="boxAviso" style="background:rgba(245, 158, 11, 0.12); border:1px solid #f59e0b; color:#fbbf24; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
             <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)">
 
@@ -1149,13 +1158,13 @@
 
     <script>
         // ==========================================
-        // TEMAS
+        // TEMAS (BASEADOS NA LOGO ORIGINAL DO APP)
         // ==========================================
         const paletas = {
-            slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
+            slate_tech: { bg_body: "#05080e", surface_1: "#0b111e", surface_2: "#131c31", border: "rgba(52, 211, 153, 0.15)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(52, 211, 153, 0.15)" },
+            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(52, 211, 153, 0.2)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(52, 211, 153, 0.2)" },
             light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
+            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(52, 211, 153, 0.15)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(52, 211, 153, 0.15)" }
         };
 
         function mudarTema(tipo) {
@@ -1233,7 +1242,7 @@
         }
 
         // ==========================================
-        // FIREBASE SETUP
+        // FIREBASE SETUP BLINDADO
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
@@ -1244,8 +1253,14 @@
             appId: "1:535255652602:web:2881a450c393d22ccc1143"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Autenticação anônima preventiva para evitar bloqueio de regras do Firestore
+        auth.signInAnonymously().catch(() => {});
 
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
         const SENHA_DONO = "121212";
@@ -1443,6 +1458,8 @@
             btn.disabled = true;
 
             try {
+                if (!auth.currentUser) await auth.signInAnonymously();
+
                 let docAparelho = await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).get();
                 if (docAparelho.exists) {
                     localStorage.setItem('teste_gratis_bloqueado_local', 'true');
@@ -1527,6 +1544,8 @@
             btn.disabled = true;
 
             try {
+                if (!auth.currentUser) await auth.signInAnonymously();
+
                 let doc = await db.collection("usuarios").doc(zap).get();
 
                 if (!doc.exists) {
@@ -1575,7 +1594,7 @@
                 iniciarMonitoramentoSessao(zap);
 
             } catch(e) {
-                msgErro.innerText = "Erro ao conectar ao banco de dados.";
+                msgErro.innerText = "Erro ao conectar ao banco de dados: " + (e.message || "");
                 msgErro.style.display = 'block';
             }
 
@@ -1726,6 +1745,7 @@
             viewTeste.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
 
             try {
+                if (!auth.currentUser) await auth.signInAnonymously();
                 let snapshot = await db.collection("usuarios").get();
                 let html30 = "", html90 = "", htmlTeste = "";
                 let agora = Date.now();
@@ -1749,12 +1769,12 @@
                         <div class="user-row">
                             <div>
                                 <div style="font-weight:800; font-size:0.8rem; color:var(--text-main);">📱 ${zap}</div>
-                                <div style="font-size:0.7rem; color:#38bdf8; font-weight:800;">🔑 Senha: ${senhaUser}</div>
+                                <div style="font-size:0.7rem; color:var(--accent-mint); font-weight:800;">🔑 Senha: ${senhaUser}</div>
                                 <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
                                 <div style="display:flex; gap:3px;">
-                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#3b82f6; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer;">Nova Senha</button>
+                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#10b981; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer;">Nova Senha</button>
                                     <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
                                 </div>
                                 <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer; width:100%;">Excluir</button>
@@ -1785,6 +1805,7 @@
             viewPagos.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando pagamentos...</div>";
 
             try {
+                if (!auth.currentUser) await auth.signInAnonymously();
                 let snapshot = await db.collection("pagamentos_concluidos").orderBy("timestamp", "desc").get();
                 let htmlPagos = "";
 
@@ -1793,7 +1814,7 @@
                     htmlPagos += `
                         <div class="user-row">
                             <div>
-                                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${p.whatsapp}</div>
+                                <div style="font-weight:800; font-size:0.8rem; color:var(--accent-mint);">📱 ${p.whatsapp}</div>
                                 <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
                                 <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${p.data}</div>
                             </div>
@@ -1812,6 +1833,7 @@
             if (!novaSenha) return;
 
             try {
+                if (!auth.currentUser) await auth.signInAnonymously();
                 await db.collection("usuarios").doc(zap).update({ 
                     senha: novaSenha.trim(),
                     deviceId: ""
@@ -1824,12 +1846,14 @@
         }
 
         async function alternarBloqueioUsuario(zap, statusBloqueio) {
+            if (!auth.currentUser) await auth.signInAnonymously();
             await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
             notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
             carregarUsuariosAdmin();
         }
 
         async function deletarUsuarioAdmin(zap) {
+            if (!auth.currentUser) await auth.signInAnonymously();
             await db.collection("usuarios").doc(zap).delete();
             notificar(`Acesso de ${zap} removido.`);
             carregarUsuariosAdmin();
@@ -1854,6 +1878,7 @@
             let nomePlanoManual = dias === 3 ? "3 Dias" : (dias === 7 ? "7 Dias (Semanal)" : (dias === 30 ? "30 Dias (1 Mês)" : "90 Dias (3 Meses)"));
 
             try {
+                if (!auth.currentUser) await auth.signInAnonymously();
                 await db.collection("usuarios").doc(zap).set({
                     whatsapp: zap,
                     senha: senha,
@@ -2483,6 +2508,13 @@
                 osc.start();
                 osc.stop(ctx.currentTime + 0.22);
             } catch(e) {}
+        }
+
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
         }
 
         function falarParada(num) {
