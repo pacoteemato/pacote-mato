@@ -9,10 +9,10 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230b0b0d'/%3E%3Cg transform='scale(1.15) translate(-38, -38)'%3E%3Cpath d='M112 348 Q50 235 142 164 Q192 255 112 348 Z' fill='%2310b981'/%3E%3Cpath d='M400 348 Q462 235 370 164 Q320 255 400 348 Z' fill='%2310b981'/%3E%3Cpolygon points='256,112 400,184 256,256 112,184' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpolygon points='112,184 256,256 256,400 112,328' fill='%23059669' stroke='%23047857' stroke-width='8'/%3E%3Cpolygon points='400,184 256,256 256,400 400,328' fill='%23047857' stroke='%23065f46' stroke-width='8'/%3E%3Cpath d='M256 112 L256 256 M184 220 L328 220' stroke='%23a7f3d0' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M256 400 Q205 306 256 214 Q307 306 256 400 Z' fill='%2334d399'/%3E%3C/g%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230b0b0d'/%3E%3Cg transform='translate(0, 0)'%3E%3Cpath d='M90 360 Q20 230 120 150 Q170 250 90 360 Z' fill='%2310b981'/%3E%3Cpath d='M422 360 Q492 230 392 150 Q342 250 422 360 Z' fill='%2310b981'/%3E%3Cpolygon points='256,90 422,170 256,250 90,170' fill='%2310b981' stroke='%2334d399' stroke-width='10'/%3E%3Cpolygon points='90,170 256,250 256,422 90,342' fill='%23059669' stroke='%23047857' stroke-width='10'/%3E%3Cpolygon points='422,170 256,250 256,422 422,342' fill='%23047857' stroke='%23065f46' stroke-width='10'/%3E%3Cpath d='M256 90 L256 250 M170 210 L342 210' stroke='%23a7f3d0' stroke-width='14' stroke-linecap='round'/%3E%3Cpath d='M256 422 Q190 310 256 198 Q322 310 256 422 Z' fill='%2334d399'/%3E%3C/g%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
