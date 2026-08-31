@@ -194,6 +194,20 @@
             box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
         }
 
+        #bannerBroadcast {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+            border: 1px solid #f59e0b;
+            color: #fbbf24;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
         #toastNotificacao {
             position: fixed;
             top: 20px;
@@ -823,7 +837,7 @@
 
         .admin-nav-tabs {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 5px;
             margin-bottom: 12px;
         }
@@ -850,10 +864,36 @@
             border-radius: 12px;
             padding: 10px 12px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 8px;
             margin-bottom: 8px;
             text-align: left;
+        }
+
+        .user-row-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .user-row-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            border-top: 1px solid var(--surface-border);
+            padding-top: 6px;
+        }
+
+        .btn-mini-admin {
+            border: none;
+            border-radius: 6px;
+            padding: 4px 7px;
+            font-size: 0.60rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
         }
 
         .tutorial-sim-container {
@@ -1129,43 +1169,80 @@
         </div>
     </div>
 
+    <!-- MODAL MODO DONO / PAINEL MASTER REESTRUTURADO -->
     <div id="modalAdmin" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
+        <div class="modal-card" style="max-width:440px; text-align:left; max-height:90vh; overflow-y:auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">👑 Painel Dono & Controle</h3>
                 <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             
             <div id="areaLoginAdmin">
                 <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary">Entrar</button>
+                <button onclick="autenticarAdmin()" class="btn-action-primary">Entrar no Modo Dono</button>
             </div>
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
+                
+                <!-- BUSCA RÁPIDA -->
+                <input type="text" id="buscaAdminUser" placeholder="🔍 Buscar por WhatsApp..." oninput="filtrarListaAdminLocal()" class="input-auth" style="padding-left:14px; margin-bottom:10px; font-size:0.8rem;">
+
                 <div class="admin-nav-tabs">
                     <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
                     <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
-                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes</button>
+                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes/Outros</button>
                     <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
-                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="grid-column: span 2; background:var(--primary); color:#fff;">➕ Liberar Acesso</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="background:var(--accent-green); color:#fff;">➕ Liberar Dias</button>
+                    <button class="admin-tab" id="tabAviso" onclick="alternarTabAdmin('aviso')" style="background:#f59e0b; color:#000;">📢 Broadcast</button>
                 </div>
 
-                <div id="viewAdmin30d" style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column;"></div>
-                <div id="viewAdmin90d" style="max-height:250px; overflow-y:auto; display:none; flex-direction:column;"></div>
-                <div id="viewAdminTeste" style="max-height:250px; overflow-y:auto; display:none; flex-direction:column;"></div>
-                <div id="viewAdminPagos" style="max-height:250px; overflow-y:auto; display:none; flex-direction:column;"></div>
+                <div id="viewAdmin30d" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column;"></div>
+                <div id="viewAdmin90d" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+                <div id="viewAdminTeste" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+                <div id="viewAdminPagos" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
 
-                <div id="viewAdminAdd" style="display:none; flex-direction:column;">
-                    <input type="tel" id="inputClienteZap" placeholder="WhatsApp (DDD + Número)" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <input type="text" id="inputClienteSenha" placeholder="Senha inicial do entregador" class="input-auth" style="margin-bottom:8px; padding-left:14px;">
-                    <select id="selDiasAdmin" class="drawer-select" style="margin-bottom:10px; width:100%; padding:10px; background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); border-radius:10px;">
-                        <option value="3">3 Dias</option>
-                        <option value="7">7 Dias (Semanal)</option>
-                        <option value="30" selected>30 Dias (1 Mês)</option>
-                        <option value="90">90 Dias (3 Meses)</option>
-                    </select>
-                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff;">⚡ Liberar Acesso</button>
+                <!-- ABA LIBERAR ACESSO COM QUALQUER QUANTIDADE DE DIAS -->
+                <div id="viewAdminAdd" style="display:none; flex-direction:column; gap:8px;">
+                    <label class="form-label-pro">WhatsApp do Entregador (DDD + Número)</label>
+                    <input type="tel" id="inputClienteZap" placeholder="Ex: 11999998888" class="input-auth" style="padding-left:14px;">
+
+                    <label class="form-label-pro">Senha de Acesso</label>
+                    <input type="text" id="inputClienteSenha" placeholder="Senha pessoal do entregador" class="input-auth" style="padding-left:14px;">
+
+                    <label class="form-label-pro">Dias de Acesso (Digite qualquer valor)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="number" id="inputDiasCustom" placeholder="Ex: 1, 15, 45, 180" class="input-auth" style="padding-left:14px; flex:1;" min="1" value="30">
+                        <select id="selAtalhosDias" onchange="if(this.value) document.getElementById('inputDiasCustom').value = this.value" class="input-auth" style="width:130px; padding:0 8px;">
+                            <option value="">Atalhos...</option>
+                            <option value="1">1 Dia</option>
+                            <option value="7">7 Dias</option>
+                            <option value="15">15 Dias</option>
+                            <option value="30">30 Dias</option>
+                            <option value="90">90 Dias</option>
+                            <option value="365">365 Dias</option>
+                        </select>
+                    </div>
+
+                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff; margin-top:6px;">
+                        ⚡ Salvar e Ativar Acesso
+                    </button>
                 </div>
+
+                <!-- ABA AVISO BROADCAST -->
+                <div id="viewAdminAviso" style="display:none; flex-direction:column; gap:8px;">
+                    <label class="form-label-pro">Mensagem para todos os motoristas</label>
+                    <textarea id="inputBroadcastTexto" class="input-auth" style="height:80px; padding-left:14px; resize:none;" placeholder="Ex: Servidor em manutenção hoje às 23h..."></textarea>
+                    
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="salvarBroadcastGlobal(true)" class="btn-action-primary" style="background:#f59e0b; color:#000;">
+                            📢 Publicar Aviso
+                        </button>
+                        <button onclick="salvarBroadcastGlobal(false)" class="btn-action-primary" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">
+                            ✕ Remover
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1238,6 +1315,9 @@
     </div>
 
     <div class="container">
+        <!-- BANNER DE AVISO GERAL (BROADCAST) -->
+        <div id="bannerBroadcast"></div>
+
         <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
             📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
         </button>
@@ -1709,6 +1789,7 @@
             
             verificarRotaSalvaAnterior();
             verificarStatusInstalacaoPWA();
+            iniciarMonitoramentoBroadcast();
 
             let zapSalvo = localStorage.getItem('usuario_zap_salvo');
             if (!zapSalvo) {
@@ -1736,7 +1817,8 @@
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
         
         async function autenticarAdmin() {
-            let pass = document.getElementById('passAdmin').value;
+            let passInput = document.getElementById('passAdmin');
+            let pass = passInput ? passInput.value.trim() : "";
             if (!pass) return;
 
             try {
@@ -1748,10 +1830,12 @@
                 const data = await res.json();
                 
                 if (data.sucesso) {
+                    passInput.value = "";
                     document.getElementById('areaLoginAdmin').style.display = 'none';
                     document.getElementById('areaGeradorAdmin').style.display = 'flex';
                     carregarUsuariosAdmin();
                     carregarPagamentosAdmin();
+                    notificar("👑 Painel Dono Desbloqueado!");
                 } else {
                     notificar("Senha incorreta.");
                 }
@@ -2068,7 +2152,7 @@
                 tentativasLoginFalhas = 0;
 
                 if (data.bloqueado) {
-                    msgErro.innerText = "❌ Este número foi bloqueado temporariamente pelo suporte.";
+                    msgErro.innerText = "❌ Este número foi bloqueado pelo administrador.";
                     msgErro.style.display = 'block';
                     btn.innerText = "⚡ Entrar no Sistema";
                     btn.disabled = false;
@@ -2124,7 +2208,7 @@
                 let agora = Date.now();
 
                 if (data.bloqueado) {
-                    desconectarForcado("❌ Acesso bloqueado pelo administrador.");
+                    desconectarForcado("❌ Seu acesso foi bloqueado pelo administrador.");
                     return;
                 }
 
@@ -2193,6 +2277,9 @@
             document.getElementById('telaBloqueio').style.display = 'flex';
         }
 
+        // ==========================================
+        // MODO DONO - GESTÃO AVANÇADA E COMPLETA
+        // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
 
@@ -2211,6 +2298,8 @@
             document.getElementById('modalAdmin').style.display = 'none';
         }
 
+        let listaUsuariosCache = [];
+
         async function carregarUsuariosAdmin() {
             let view30d = document.getElementById('viewAdmin30d');
             let view90d = document.getElementById('viewAdmin90d');
@@ -2222,57 +2311,85 @@
 
             try {
                 let snapshot = await db.collection("usuarios").get();
-                let html30 = "", html90 = "", htmlTeste = "";
-                let agora = Date.now();
-
+                listaUsuariosCache = [];
                 snapshot.forEach(doc => {
                     let u = doc.data();
-                    let zap = u.whatsapp || doc.id;
-                    let senhaUser = u.senha || "Não definida";
-                    let expira = u.expiraEm || 0;
-                    let bloqueado = u.bloqueado === true;
-                    let ativo = u.ativo && agora <= expira && !bloqueado;
-                    let duracao = u.duracaoDias || 30;
-                    
-                    let dias = Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
-                    let statusLabel = bloqueado ? `<span style="color:#ef4444; font-weight:800;">Bloqueado ⛔</span>` : (ativo ? `<span style="color:#10b981;">Ativo (${dias}d)</span>` : `<span style="color:#f59e0b;">Expirado</span>`);
-
-                    let btnBloqueioTexto = bloqueado ? "Desbloquear" : "Bloquear";
-                    let btnBloqueioCor = bloqueado ? "#10b981" : "#f59e0b";
-
-                    let row = `
-                        <div class="user-row">
-                            <div>
-                                <div style="font-weight:800; font-size:0.8rem; color:var(--text-main);">📱 ${zap}</div>
-                                <div style="font-size:0.7rem; color:#34d399; font-weight:800;">🔑 Senha: ${senhaUser}</div>
-                                <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
-                            </div>
-                            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
-                                <div style="display:flex; gap:3px;">
-                                    <button onclick="redefinirSenhaAdmin('${zap}')" style="background:#10b981; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer;">Nova Senha</button>
-                                    <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" style="background:${btnBloqueioCor}; color:#000; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:900; cursor:pointer;">${btnBloqueioTexto}</button>
-                                </div>
-                                <button onclick="deletarUsuarioAdmin('${zap}')" style="background:#ef4444; color:#fff; border:none; border-radius:5px; padding:3px 5px; font-size:0.58rem; font-weight:800; cursor:pointer; width:100%;">Excluir</button>
-                            </div>
-                        </div>
-                    `;
-
-                    if (duracao === 90) {
-                        html90 += row;
-                    } else if (duracao === 30) {
-                        html30 += row;
-                    } else {
-                        htmlTeste += row;
-                    }
+                    u.id = doc.id;
+                    listaUsuariosCache.push(u);
                 });
 
-                if (view30d) view30d.innerHTML = html30 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 1 Mês.</div>";
-                if (view90d) view90d.innerHTML = html90 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 3 Meses.</div>";
-                if (viewTeste) viewTeste.innerHTML = htmlTeste || "<div style='font-size:0.75rem; color:#888;'>Nenhum teste ou plano semanal.</div>";
-
+                renderizarUsuariosAdminList(listaUsuariosCache);
             } catch(e) {
                 if (view30d) view30d.innerHTML = "Erro ao buscar dados.";
             }
+        }
+
+        function renderizarUsuariosAdminList(lista) {
+            let view30d = document.getElementById('viewAdmin30d');
+            let view90d = document.getElementById('viewAdmin90d');
+            let viewTeste = document.getElementById('viewAdminTeste');
+            let html30 = "", html90 = "", htmlTeste = "";
+            let agora = Date.now();
+
+            lista.forEach(u => {
+                let zap = u.whatsapp || u.id;
+                let senhaUser = u.senha || "Não definida";
+                let expira = u.expiraEm || 0;
+                let bloqueado = u.bloqueado === true;
+                let ativo = u.ativo && agora <= expira && !bloqueado;
+                let duracao = u.duracaoDias || 30;
+                
+                let dias = Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
+                let statusLabel = bloqueado ? `<span style="color:#ef4444; font-weight:800;">Bloqueado ⛔</span>` : (ativo ? `<span style="color:#10b981;">Ativo (${dias}d restantes)</span>` : `<span style="color:#f59e0b;">Expirado</span>`);
+
+                let btnBloqueioTexto = bloqueado ? "🟢 Desbloquear" : "⛔ Bloquear";
+                let btnBloqueioCor = bloqueado ? "#10b981" : "#f59e0b";
+
+                let row = `
+                    <div class="user-row">
+                        <div class="user-row-header">
+                            <div>
+                                <div style="font-weight:900; font-size:0.84rem; color:var(--text-main);">📱 ${zap}</div>
+                                <div style="font-size:0.7rem; color:#34d399; font-weight:800;">🔑 Senha: ${senhaUser}</div>
+                                <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
+                            </div>
+                        </div>
+
+                        <div class="user-row-actions">
+                            <button onclick="ajustarDiasRapido('${zap}')" class="btn-mini-admin" style="background:#3b82f6; color:#fff;">⏳ +/- Dias</button>
+                            <button onclick="redefinirSenhaAdmin('${zap}')" class="btn-mini-admin" style="background:#10b981; color:#fff;">🔑 Senha</button>
+                            <button onclick="desconectarAparelhoAdmin('${zap}')" class="btn-mini-admin" style="background:rgba(255,255,255,0.08); color:#34d399; border:1px solid rgba(52,211,153,0.3);">📲 Reset Celular</button>
+                            <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" class="btn-mini-admin" style="background:${btnBloqueioCor}; color:#000;">${btnBloqueioTexto}</button>
+                            <button onclick="deletarUsuarioAdmin('${zap}')" class="btn-mini-admin" style="background:#ef4444; color:#fff;">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                `;
+
+                if (duracao === 90) {
+                    html90 += row;
+                } else if (duracao === 30) {
+                    html30 += row;
+                } else {
+                    htmlTeste += row;
+                }
+            });
+
+            if (view30d) view30d.innerHTML = html30 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 1 Mês.</div>";
+            if (view90d) view90d.innerHTML = html90 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 3 Meses.</div>";
+            if (viewTeste) viewTeste.innerHTML = htmlTeste || "<div style='font-size:0.75rem; color:#888;'>Nenhum teste ou plano customizado.</div>";
+        }
+
+        function filtrarListaAdminLocal() {
+            let query = document.getElementById('buscaAdminUser').value.trim().toLowerCase();
+            if (!query) {
+                renderizarUsuariosAdminList(listaUsuariosCache);
+                return;
+            }
+            let filtrados = listaUsuariosCache.filter(u => {
+                let zap = (u.whatsapp || u.id || "").toLowerCase();
+                return zap.includes(query);
+            });
+            renderizarUsuariosAdminList(filtrados);
         }
 
         async function carregarPagamentosAdmin() {
@@ -2297,31 +2414,31 @@
                     `;
                 });
 
-                viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento concluído registrado ainda.</div>";
+                viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento registrado ainda.</div>";
             } catch(e) {
                 viewPagos.innerHTML = "Erro ao carregar histórico de pagamentos.";
             }
         }
 
         function alternarTabAdmin(tab) {
-            let tabs = ['30d', '90d', 'teste', 'pagos', 'add'];
+            let tabs = ['30d', '90d', 'teste', 'pagos', 'add', 'aviso'];
             tabs.forEach(t => {
-                let btn = document.getElementById('tab' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : 'Add')))));
-                let view = document.getElementById('viewAdmin' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : 'Add')))));
+                let btn = document.getElementById('tab' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : (t === 'add' ? 'Add' : 'Aviso'))))));
+                let view = document.getElementById('viewAdmin' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : (t === 'add' ? 'Add' : 'Aviso'))))));
                 
                 if (btn) btn.classList.remove('active');
                 if (view) view.style.display = 'none';
             });
 
-            let btnAtivo = document.getElementById('tab' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : 'Add')))));
-            let viewAtiva = document.getElementById('viewAdmin' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : 'Add')))));
+            let btnAtivo = document.getElementById('tab' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : (tab === 'add' ? 'Add' : 'Aviso'))))));
+            let viewAtiva = document.getElementById('viewAdmin' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : (tab === 'add' ? 'Add' : 'Aviso'))))));
 
             if (btnAtivo) btnAtivo.classList.add('active');
             if (viewAtiva) viewAtiva.style.display = 'flex';
         }
 
         async function redefinirSenhaAdmin(zap) {
-            let novaSenha = prompt(`Digite a nova senha para o número ${zap}:`);
+            let novaSenha = prompt(`Digite a nova senha para o entregador ${zap}:`);
             if (!novaSenha) return;
 
             try {
@@ -2329,29 +2446,79 @@
                     senha: novaSenha.trim(),
                     deviceId: ""
                 });
-                notificar(`Senha do ${zap} redefinida com sucesso para: ${novaSenha}`);
+                notificar(`Senha do ${zap} alterada para: ${novaSenha}`);
                 carregarUsuariosAdmin();
             } catch(e) {
                 notificar("Erro ao redefinir senha.");
             }
         }
 
+        async function desconectarAparelhoAdmin(zap) {
+            try {
+                await db.collection("usuarios").doc(zap).update({ deviceId: "" });
+                notificar(`📲 Celular de ${zap} desconectado. Ele já pode logar em outro aparelho.`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao resetar aparelho.");
+            }
+        }
+
+        async function ajustarDiasRapido(zap) {
+            let diasStr = prompt(`Quantos dias deseja adicionar (ex: 7) ou remover (ex: -5) para ${zap}?`);
+            if (!diasStr) return;
+            
+            let dias = parseInt(diasStr);
+            if (isNaN(dias)) {
+                notificar("Valor inválido.");
+                return;
+            }
+
+            try {
+                let doc = await db.collection("usuarios").doc(zap).get();
+                if (!doc.exists) return;
+
+                let u = doc.data();
+                let agora = Date.now();
+                let base = (u.expiraEm && u.expiraEm > agora) ? u.expiraEm : agora;
+                let novoExpira = base + (dias * 24 * 60 * 60 * 1000);
+
+                await db.collection("usuarios").doc(zap).update({
+                    expiraEm: novoExpira,
+                    ativo: novoExpira > agora
+                });
+
+                notificar(`Acesso de ${zap} ajustado em ${dias} dias.`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao ajustar dias.");
+            }
+        }
+
         async function alternarBloqueioUsuario(zap, statusBloqueio) {
-            await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
-            notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
-            carregarUsuariosAdmin();
+            try {
+                await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
+                notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao atualizar status de bloqueio.");
+            }
         }
 
         async function deletarUsuarioAdmin(zap) {
-            await db.collection("usuarios").doc(zap).delete();
-            notificar(`Acesso de ${zap} removido.`);
-            carregarUsuariosAdmin();
+            if (!confirm(`Deseja realmente apagar o cadastro de ${zap}?`)) return;
+            try {
+                await db.collection("usuarios").doc(zap).delete();
+                notificar(`Acesso de ${zap} removido com sucesso.`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao remover usuário.");
+            }
         }
 
         async function liberarClienteManual() {
             let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
             let senha = document.getElementById('inputClienteSenha').value.trim();
-            let dias = parseInt(document.getElementById('selDiasAdmin').value);
+            let diasInput = parseInt(document.getElementById('inputDiasCustom').value);
 
             if (!validarNumeroWhatsApp(zap)) {
                 notificar("⚠️ Digite um WhatsApp válido com DDD.");
@@ -2359,37 +2526,88 @@
             }
 
             if (!senha) {
-                notificar("⚠️ Digite uma senha inicial para o entregador.");
+                notificar("⚠️ Digite uma senha para o usuário.");
                 return;
             }
 
-            let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
-            let nomePlanoManual = dias === 3 ? "3 Dias" : (dias === 7 ? "7 Dias (Semanal)" : (dias === 30 ? "30 Dias (1 Mês)" : "90 Dias (3 Meses)"));
+            if (isNaN(diasInput) || diasInput <= 0) {
+                notificar("⚠️ Informe uma quantidade de dias válida.");
+                return;
+            }
 
             try {
-                await db.collection("usuarios").doc(zap).set({
+                let userDocRef = db.collection("usuarios").doc(zap);
+                let userDoc = await userDocRef.get();
+                let agora = Date.now();
+                let expiraEmBase = agora;
+
+                if (userDoc.exists) {
+                    let dadosAntigos = userDoc.data();
+                    if (dadosAntigos.expiraEm && dadosAntigos.expiraEm > agora) {
+                        expiraEmBase = dadosAntigos.expiraEm;
+                    }
+                }
+
+                let novoExpiraEm = expiraEmBase + (diasInput * 24 * 60 * 60 * 1000);
+
+                await userDocRef.set({
                     whatsapp: zap,
                     senha: senha,
-                    expiraEm: expiraEm,
+                    expiraEm: novoExpiraEm,
                     ativo: true,
                     bloqueado: false,
                     deviceId: "",
                     tipo: "pago",
-                    plano: `${nomePlanoManual} (Manual)`,
-                    duracaoDias: dias,
-                    atualizadoEm: Date.now()
+                    plano: `${diasInput} Dias (Liberado)`,
+                    duracaoDias: diasInput,
+                    atualizadoEm: agora
                 }, { merge: true });
 
-                notificar(`WhatsApp ${zap} liberado com senha ${senha} por ${dias} dias.`);
+                notificar(`✅ ${zap} liberado com sucesso por ${diasInput} dias!`);
                 document.getElementById('inputClienteZap').value = "";
                 document.getElementById('inputClienteSenha').value = "";
-                alternarTabAdmin('30d');
+                
+                alternarTabAdmin(diasInput === 30 ? '30d' : (diasInput === 90 ? '90d' : 'teste'));
                 carregarUsuariosAdmin();
             } catch(e) {
-                notificar("Erro ao salvar no banco.");
+                notificar("Erro ao salvar no banco: " + e.message);
             }
         }
 
+        async function salvarBroadcastGlobal(ativo) {
+            let txt = document.getElementById('inputBroadcastTexto').value.trim();
+            if (ativo && !txt) {
+                notificar("Digite uma mensagem antes de publicar.");
+                return;
+            }
+
+            try {
+                await db.collection("sistema_config").doc("broadcast").set({
+                    ativo: ativo,
+                    mensagem: txt,
+                    atualizadoEm: Date.now()
+                });
+                notificar(ativo ? "📢 Mensagem publicada para todos os motoristas!" : "Aviso removido.");
+            } catch(e) {
+                notificar("Erro ao salvar aviso global.");
+            }
+        }
+
+        function iniciarMonitoramentoBroadcast() {
+            db.collection("sistema_config").doc("broadcast").onSnapshot(doc => {
+                let banner = document.getElementById('bannerBroadcast');
+                if (doc.exists && doc.data().ativo && doc.data().mensagem) {
+                    banner.innerText = "📢 " + doc.data().mensagem;
+                    banner.style.display = 'block';
+                } else {
+                    banner.style.display = 'none';
+                }
+            });
+        }
+
+        // ==========================================
+        // CONTROLE PWA E HARDWARE
+        // ==========================================
         let deferredPrompt = null;
 
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -2932,7 +3150,6 @@
             let agora = Date.now();
             let codLimpo = extrairCodigoChave(codigoBruto);
 
-            // Se o mesmo código continuar na frente da lente, bloqueia por 2.5s
             if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 2500)) return;
 
             processandoLeituraAtual = true;
@@ -3009,7 +3226,6 @@
                 }
             }
 
-            // Cooldown de 1 segundo para liberar a câmera para outro pacote
             setTimeout(() => {
                 processandoLeituraAtual = false;
             }, 1000);
