@@ -62,6 +62,7 @@
             align-items: center;
             min-height: 100vh;
             padding-bottom: 2rem;
+            transition: background-color 0.25s, color 0.25s;
         }
 
         /* ABERTURA ESTILO PS2 / GTA V COM O ÍCONE REAL */
@@ -147,7 +148,7 @@
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
 
-        button:active {
+        button:active, .plan-item:active, .nav-btn:active, .cam-overlay-btn:active, .btn-acao-card:active, .gps-option-btn:active, .segmented-btn:active, .admin-tab:active {
             transform: scale(0.96) !important;
         }
 
@@ -183,6 +184,10 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+        }
+        .btn-instalar-dinamico:hover {
+            background: rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
 
         #toastNotificacao {
@@ -253,6 +258,12 @@
             font-size: 0.92rem;
             font-weight: 700;
             outline: none;
+            transition: all 0.2s;
+        }
+        .input-auth:focus {
+            border-color: var(--primary);
+            background: rgba(22, 32, 56, 0.9);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
         }
 
         .btn-toggle-senha {
@@ -358,6 +369,7 @@
         .plan-item.selecionado {
             border-color: #38bdf8 !important;
             background: rgba(56, 189, 248, 0.08);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
         }
         .plan-item.featured { border-color: rgba(5, 150, 105, 0.4); }
 
@@ -592,7 +604,7 @@
         .segmented-control { grid-template-columns: repeat(3, 1fr); }
         .segmented-control-grid4 { grid-template-columns: repeat(2, 1fr); }
         .segmented-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 4px; font-size: 0.65rem; font-weight: 800; border-radius: 9px; cursor: pointer; text-align: center; }
-        .segmented-btn.active { background: var(--primary); color: #ffffff; }
+        .segmented-btn.active { background: var(--primary); color: #ffffff; box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4); }
 
         .admin-nav-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-bottom: 12px; }
         .admin-tab { padding: 7px 4px; background: var(--surface-2); border: 1px solid var(--surface-border); color: var(--text-muted); border-radius: 8px; font-size: 0.65rem; font-weight: 800; cursor: pointer; text-align: center; }
@@ -608,7 +620,7 @@
 </head>
 <body>
 
-    <!-- ABERTURA ESTILO PS2 / GTA V COM O ÍCONE DA CARTINHA -->
+    <!-- ABERTURA ESTILO PS2 / GTA V COM O ÍCONE REAL -->
     <div id="splashScreenPs2">
         <div class="ps2-bg-glow"></div>
         <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="ps2-icon-rotating">
@@ -619,7 +631,7 @@
     <!-- TOAST -->
     <div id="toastNotificacao"></div>
 
-    <!-- TELA DE LOGIN COM OLHINHO NA SENHA -->
+    <!-- TELA DE LOGIN COM PLANOS, PIX E OLHINHO NA SENHA -->
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             <div class="auth-header-center" style="text-align: center; margin-bottom: 20px;">
@@ -816,6 +828,7 @@
 
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
+    <!-- MENU LATERAL COM TEMAS E VOZES -->
     <div class="drawer-panel" id="sidebar">
         <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
         <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:16px;">Plataforma de Logística</div>
@@ -832,6 +845,28 @@
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
                 <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">💬 Suporte</button>
             </a>
+        </div>
+
+        <!-- SELETOR DE TEMAS -->
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 Tema de Cor</label>
+            <div class="segmented-control-grid4">
+                <button class="segmented-btn active" id="theme_slate_tech" onclick="mudarTema('slate_tech')">Slate</button>
+                <button class="segmented-btn" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED</button>
+                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Light</button>
+                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button>
+            </div>
+        </div>
+
+        <!-- SELETOR DE VOZ -->
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ Voz do Sintetizador</label>
+            <div class="segmented-control-grid4">
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Rápida</button>
+                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">👩 Feminina</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">👨 Masculina</button>
+                <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
+            </div>
         </div>
 
         <div style="margin-top:24px;">
@@ -885,7 +920,7 @@
                 </div>
             </div>
 
-            <!-- SCAN RESULT ACIMA DA CÂMERA (PEDIDO FEITO) -->
+            <!-- SCAN RESULT ACIMA DA CÂMERA -->
             <div class="result-panel" id="cardResult">
                 <div class="stop-number" id="resStop">P1</div>
                 <div class="stop-address" id="resEndereco">📍 Endereço exato aparecerá aqui</div>
@@ -914,6 +949,49 @@
     </div>
 
     <script>
+        // TEMAS
+        const paletas = {
+            slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
+            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
+            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
+            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
+        };
+
+        function mudarTema(tipo) {
+            let p = paletas[tipo] || paletas.slate_tech;
+            document.documentElement.style.setProperty('--bg-body', p.bg_body);
+            document.documentElement.style.setProperty('--surface-1', p.surface_1);
+            document.documentElement.style.setProperty('--surface-2', p.surface_2);
+            document.documentElement.style.setProperty('--surface-border', p.border);
+            document.documentElement.style.setProperty('--text-main', p.text_main);
+            document.documentElement.style.setProperty('--text-muted', p.text_muted);
+            document.documentElement.style.setProperty('--shadow-card', p.shadow);
+            
+            let metaColor = document.getElementById('metaThemeColor');
+            if (metaColor) metaColor.setAttribute('content', p.bg_body);
+
+            localStorage.setItem('tema_preferido', tipo);
+
+            ['slate_tech', 'black_oled', 'light', 'gray'].forEach(t => {
+                let btn = document.getElementById('theme_' + t);
+                if (btn) {
+                    if (t === tipo) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
+
+        function salvarVoz(tipo) {
+            localStorage.setItem('voz_preferida', tipo);
+            ['rapida', 'normal', 'grave', 'mudo'].forEach(v => {
+                let btn = document.getElementById('voice_' + v);
+                if (btn) {
+                    if (v === tipo) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
+
         function dispararAberturaPs2() {
             setTimeout(() => {
                 let splash = document.getElementById('splashScreenPs2');
@@ -924,8 +1002,13 @@
                 }
             }, 2200);
         }
+
         window.addEventListener('DOMContentLoaded', () => {
             dispararAberturaPs2();
+            let tema = localStorage.getItem('tema_preferido') || 'slate_tech';
+            mudarTema(tema);
+            let voz = localStorage.getItem('voz_preferida') || 'rapida';
+            salvarVoz(voz);
             carregarConfiguracoesSalvas();
         });
 
@@ -1254,11 +1337,25 @@
         }
 
         function falarParada(num) {
+            let tipo = localStorage.getItem('voz_preferida') || 'rapida';
+            if (tipo === 'mudo') return;
+
             try {
                 window.speechSynthesis.cancel();
                 let msg = new SpeechSynthesisUtterance("Parada " + num);
                 msg.lang = 'pt-BR';
-                msg.rate = 1.2;
+                
+                if (tipo === "grave") {
+                    msg.pitch = 0.6;
+                    msg.rate = 1.1;
+                } else if (tipo === "normal") {
+                    msg.pitch = 1.2;
+                    msg.rate = 1.0;
+                } else {
+                    msg.pitch = 1.05;
+                    msg.rate = 1.45;
+                }
+
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
