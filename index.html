@@ -1779,10 +1779,30 @@
 
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
         
-        function verificarSenhaAdminSegura(senhaDigitada) {
-            if (!senhaDigitada) return false;
-            let limpa = String(senhaDigitada).trim();
-            return limpa === "121212" || btoa(limpa) === "MTIxMjEy";
+        // FUNÇÃO DE LOGIN DO ADMIN BLINDADA (VIA CLOUDFLARE WORKER)
+        async function autenticarAdmin() {
+            let pass = document.getElementById('passAdmin').value;
+            if (!pass) return;
+
+            try {
+                const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: pass })
+                });
+                const data = await res.json();
+                
+                if (data.sucesso) {
+                    document.getElementById('areaLoginAdmin').style.display = 'none';
+                    document.getElementById('areaGeradorAdmin').style.display = 'flex';
+                    carregarUsuariosAdmin();
+                    carregarPagamentosAdmin();
+                } else {
+                    notificar("Senha incorreta.");
+                }
+            } catch (err) {
+                notificar("Erro ao validar acesso.");
+            }
         }
         
         let timerVerificadorPix = null;
@@ -2051,15 +2071,6 @@
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let senha = document.getElementById('inputSenha').value.trim();
 
-            let ehDono = (zap === "121212") && verificarSenhaAdminSegura(senha);
-            if (ehDono) {
-                localStorage.setItem('usuario_zap_salvo', "121212");
-                document.getElementById('telaBloqueio').style.display = 'none';
-                document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
-                notificar("⚡ Bem-vindo Dono!");
-                return;
-            }
-
             if (!validarNumeroWhatsApp(zap)) {
                 msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
                 msgErro.style.display = 'block';
@@ -2147,12 +2158,6 @@
 
         function iniciarMonitoramentoSessao(zap) {
             if (listenerSessaoRealtime) listenerSessaoRealtime();
-
-            if (zap === "121212") {
-                document.getElementById('telaBloqueio').style.display = 'none';
-                document.getElementById('diasRestantes').innerText = "⚡ ACESSO DONO";
-                return;
-            }
 
             listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
                 if (!doc.exists) {
@@ -2249,32 +2254,6 @@
 
         function fecharModalAdmin() {
             document.getElementById('modalAdmin').style.display = 'none';
-        }
-
-        function autenticarAdmin() {
-            let pass = document.getElementById('passAdmin').value;
-            let autenticado = verificarSenhaAdminSegura(pass);
-            
-            if (autenticado) {
-                document.getElementById('areaLoginAdmin').style.display = 'none';
-                document.getElementById('areaGeradorAdmin').style.display = 'flex';
-                carregarUsuariosAdmin();
-                carregarPagamentosAdmin();
-            } else {
-                notificar("Senha incorreta.");
-            }
-        }
-
-        function alternarTabAdmin(tab) {
-            ['30d', '90d', 'teste', 'pagos', 'add'].forEach(t => {
-                let btn = document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1)));
-                let view = document.getElementById('viewAdmin' + (t.charAt(0).toUpperCase() + t.slice(1)));
-                if(btn) btn.classList.remove('active');
-                if(view) view.style.display = 'none';
-            });
-
-            document.getElementById('tab' + (tab.charAt(0).toUpperCase() + tab.slice(1))).classList.add('active');
-            document.getElementById('viewAdmin' + (tab.charAt(0).toUpperCase() + tab.slice(1))).style.display = 'block';
         }
 
         async function carregarUsuariosAdmin() {
