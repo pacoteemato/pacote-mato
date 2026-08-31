@@ -8,8 +8,8 @@
     <!-- Ícone Favicon SVG -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b120e' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%3C/svg%3E">
     
-    <!-- PWA Manifest Embutido -->
-    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PACOTE%20%C3%89%20MATO%22%2C%22short_name%22%3A%22Pacote%C3%89Mato%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23050807%22%2C%22theme_color%22%3A%22%23050807%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%253E%253Crect%20width%3D'100'%20height%3D'100'%20rx%3D'24'%20fill%3D'%230b120e'%20stroke%3D'%2334d399'%20stroke-width%3D'2'%2F%253E%253Cpath%20d%3D'M22%2068%20Q10%2046%2028%2032%20Q38%2050%2022%2068%20Z'%20fill%3D'%2310b981'%2F%253E%253Cpath%20d%3D'M78%2068%20Q90%2046%2072%2032%20Q62%2050%2078%2068%20Z'%20fill%3D'%2310b981'%2F%253E%253Cpolygon%20points%3D'50%2C22%2078%2C36%2050%2C50%2022%2C36'%20fill%3D'%2310b981'%20stroke%3D'%2334d399'%20stroke-width%3D'1.5'%2F%253E%253Cpolygon%20points%3D'22%2C36%2050%2C50%2050%2C78%2022%2C64'%20fill%3D'%23059669'%20stroke%3D'%23047857'%20stroke-width%3D'1.5'%2F%253E%253Cpolygon%20points%3D'78%2C36%2050%2C50%2050%2C78%2078%2C64'%20fill%3D'%23047857'%20stroke%3D'%23065f46'%20stroke-width%3D'1.5'%2F%253E%253Cpath%20d%3D'M50%2022%20L50%2050%20M36%2043%20L64%2043'%20stroke%3D'%23a7f3d0'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%2F%253E%253Cpath%20d%3D'M50%2078%20Q40%2060%2050%2042%20Q60%2060%2050%2078%20Z'%20fill%3D'%2334d399'%2F%253E%253Cpath%20d%3D'M50%2056%20Q44%2048%2038%2052%20Q42%2060%2050%2056%20Z'%20fill%3D'%236ee7b7'%2F%253E%253Cpath%20d%3D'M50%2050%20Q56%2042%2062%2046%20Q58%2054%2050%2050%20Z'%20fill%3D'%236ee7b7'%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+    <!-- PWA Manifest Padrão (Gera WebAPK com menu nativo no Android) -->
+    <link rel="manifest" href="manifest.json">
     
     <meta name="theme-color" content="#050807" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -68,7 +68,6 @@
             transition: background-color 0.25s, color 0.25s;
         }
 
-        /* --- ABERTURA ESTILO PS2 / GTA (CINEMATIC INTRO) --- */
         #splashScreenPs2 {
             position: fixed;
             inset: 0;
@@ -109,21 +108,10 @@
         }
 
         @keyframes rotate3dBox {
-            0% {
-                transform: rotateX(75deg) rotateY(-180deg) scale(0.2);
-                opacity: 0;
-            }
-            50% {
-                transform: rotateX(20deg) rotateY(30deg) scale(1.15);
-                opacity: 1;
-            }
-            75% {
-                transform: rotateX(-10deg) rotateY(-10deg) scale(0.95);
-            }
-            100% {
-                transform: rotateX(0deg) rotateY(0deg) scale(1);
-                opacity: 1;
-            }
+            0% { transform: rotateX(75deg) rotateY(-180deg) scale(0.2); opacity: 0; }
+            50% { transform: rotateX(20deg) rotateY(30deg) scale(1.15); opacity: 1; }
+            75% { transform: rotateX(-10deg) rotateY(-10deg) scale(0.95); }
+            100% { transform: rotateX(0deg) rotateY(0deg) scale(1); opacity: 1; }
         }
 
         .ps2-title {
@@ -334,9 +322,7 @@
             transition: all 0.2s;
         }
 
-        .input-auth.com-icone-direita {
-            padding-right: 40px;
-        }
+        .input-auth.com-icone-direita { padding-right: 40px; }
 
         .input-auth:focus {
             border-color: var(--primary);
@@ -411,9 +397,7 @@
             text-decoration: none;
             margin-bottom: 12px;
         }
-        .btn-support-login:hover {
-            background: rgba(16, 185, 129, 0.18);
-        }
+        .btn-support-login:hover { background: rgba(16, 185, 129, 0.18); }
 
         .divider-label {
             display: flex;
@@ -463,9 +447,7 @@
             box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
         }
 
-        .plan-item.featured {
-            border-color: rgba(16, 185, 129, 0.45);
-        }
+        .plan-item.featured { border-color: rgba(16, 185, 129, 0.45); }
 
         .plan-badge-top {
             position: absolute;
@@ -500,10 +482,6 @@
             justify-content: center;
             gap: 6px;
             animation: fadeIn 0.2s ease;
-        }
-        .btn-gerar-pix-confirm:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 6px 18px rgba(5, 150, 105, 0.5);
         }
 
         @keyframes fadeIn {
@@ -570,9 +548,7 @@
             align-items: center;
             gap: 6px;
         }
-        .nav-btn:hover {
-            border-color: var(--surface-border-hover);
-        }
+        .nav-btn:hover { border-color: var(--surface-border-hover); }
 
         .access-badge {
             font-size: 0.7rem;
@@ -595,9 +571,7 @@
             cursor: pointer;
             transition: border-color 0.25s ease;
         }
-        .hero-banner:hover {
-            border-color: var(--primary);
-        }
+        .hero-banner:hover { border-color: var(--primary); }
 
         .card-retomar-rota {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
@@ -693,11 +667,7 @@
             gap: 5px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
-        .cam-overlay-btn svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-        }
+        .cam-overlay-btn svg { width: 14px; height: 14px; fill: currentColor; }
         .cam-overlay-btn.active-flash {
             background: var(--primary);
             border-color: #34d399;
@@ -721,10 +691,7 @@
             background: rgba(239, 68, 68, 0.08);
             box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
         }
-        .result-panel.error-state .stop-number {
-            font-size: 1.5rem;
-            color: var(--danger);
-        }
+        .result-panel.error-state .stop-number { font-size: 1.5rem; color: var(--danger); }
 
         .drawer-mask {
             position: fixed;
@@ -853,25 +820,16 @@
             margin-bottom: 8px;
         }
 
-        .segmented-control {
+        .segmented-control, .segmented-control-grid4 {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
             gap: 4px;
             background: var(--surface-2);
             padding: 4px;
             border-radius: 12px;
             border: 1px solid var(--surface-border);
         }
-
-        .segmented-control-grid4 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-            background: var(--surface-2);
-            padding: 4px;
-            border-radius: 12px;
-            border: 1px solid var(--surface-border);
-        }
+        .segmented-control { grid-template-columns: repeat(3, 1fr); }
+        .segmented-control-grid4 { grid-template-columns: repeat(2, 1fr); }
 
         .segmented-btn {
             background: transparent;
@@ -1435,9 +1393,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // ÁUDIO CINEMÁTICO & INTRO PS2 / GTA
-        // ==========================================
         function tocarIntroPs2Audio() {
             try {
                 let ctx = getAudioContext();
@@ -1563,7 +1518,7 @@
                 saved_route_found: "📂 ROTA ANTERIOR ENCONTRADA",
                 resume_route: "Reanudar Ruta Donde Me Quedé",
                 load_pdf_title: "Cargar Ruta en PDF",
-                load_pdf_subtitle: "Importa la hoja de tu ruta para sincronizar las paradas",
+                load_pdf_subtitle: "Importa la hoja de tu rota para sincronizar las paradas",
                 choose_pdf: "Elegir Archivo PDF",
                 metric_scanned: "Escaneados",
                 metric_stops: "Paradas",
@@ -1779,11 +1734,10 @@
 
         const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
         
-        // VALIDADOR DIRETO E SEGURO DE SENHA ADMIN (121212)
+        // VALIDADOR DIRETO E INFALÍVEL PARA O ADMIN (121212)
         function verificarSenhaAdminSegura(senhaDigitada) {
             if (!senhaDigitada) return false;
-            let limpa = senhaDigitada.trim();
-            // Aceita diretamente a senha mestre 121212
+            let limpa = String(senhaDigitada).trim();
             return limpa === "121212" || btoa(limpa) === "MTIxMjEy";
         }
         
@@ -2491,7 +2445,7 @@
         }
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript;charset=utf-8,+encodeURIComponent("self.addEventListener(\'fetch\', function(event) {});")').catch(() => {});
+            navigator.serviceWorker.register('sw.js').catch(() => {});
         }
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
