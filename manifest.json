@@ -1,17 +1,13 @@
 {
   "name": "Pacote É Mato",
   "short_name": "Pacote É Mato",
-  "description": "Aplicativo de pagamentos Pix - Pacote É Mato",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#000000",
+  "background_color": "#0d1a14",
   "theme_color": "#10B981",
-  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icons/icon-512x512.png",
+      "src": "icone.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
