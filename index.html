@@ -20,7 +20,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Chakra+Petch:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Chakra+Petch:wght@700;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -889,44 +889,58 @@
             text-align: left;
         }
 
-        .tutorial-step-card {
-            background: var(--surface-2);
-            border: 1px solid var(--surface-border);
-            border-radius: 14px;
+        /* --- SIMULADOR INTERATIVO DO TUTORIAL --- */
+        .tutorial-sim-container {
+            background: #000000;
+            border: 1.5px solid rgba(16, 185, 129, 0.35);
+            border-radius: 16px;
             padding: 14px;
             margin-bottom: 12px;
-            text-align: left;
-        }
-        .tutorial-step-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #34d399;
-            margin-bottom: 6px;
-        }
-        .tutorial-badge {
-            background: var(--primary);
-            color: #ffffff;
-            font-size: 0.68rem;
-            font-weight: 900;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tutorial-mockup {
-            background: #000000;
-            border: 1px dashed var(--surface-border-hover);
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 8px;
             text-align: center;
-            font-size: 0.75rem;
-            color: var(--text-muted);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .sim-screen-box {
+            background: #0b0b0d;
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sim-laser-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #34d399;
+            box-shadow: 0 0 10px #34d399;
+            top: 0;
+            animation: scanMove 1.8s infinite ease-in-out;
+            display: none;
+        }
+
+        @keyframes scanMove {
+            0% { top: 10%; opacity: 0.2; }
+            50% { top: 90%; opacity: 1; }
+            100% { top: 10%; opacity: 0.2; }
+        }
+
+        .sim-status-badge {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            margin-bottom: 8px;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -995,7 +1009,7 @@
             </button>
 
             <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
-                📖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Iniciante)</span>
+                📖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Interativo)</span>
             </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
@@ -1061,73 +1075,34 @@
         </div>
     </div>
 
+    <!-- MODAL TUTORIAL / SIMULADOR INTERATIVO -->
     <div id="modalTutorial" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#34d399; font-weight:800; font-size:1.1rem;">📖 Guia Rápido do Entregador</h3>
+                <h3 style="color:#34d399; font-weight:800; font-size:1.1rem;">📖 Demonstração do Sistema</h3>
                 <span onclick="fecharModalTutorial()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.1rem;">✕</span>
             </div>
             
-            <div style="max-height:60vh; overflow-y:auto; padding-right:4px;">
+            <div class="tutorial-sim-container">
+                <div class="sim-status-badge" id="simStatus">Passo 1: Carregando Rota...</div>
                 
-                <div class="tutorial-step-card">
-                    <div class="tutorial-step-header">
-                        <span class="tutorial-badge">1</span>
-                        <span>Carregar sua Rota em PDF</span>
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">
-                        Toque no botão <b>"📄 Escolher Arquivo PDF"</b> e selecione o manifesto de entrega da sua transportadora. O sistema sincroniza todos os pacotes e paradas instantaneamente.
-                    </div>
-                    <div class="tutorial-mockup">
-                        <span style="color:#34d399; font-weight:800;">[📄 Escolher Arquivo PDF]</span>
-                        <div style="font-size:0.65rem; margin-top:2px;">Compatível com Circuit, Shopee, Mercado Livre e transportadoras</div>
+                <div class="sim-screen-box" id="simScreen">
+                    <div class="sim-laser-line" id="simLaser"></div>
+                    <div id="simContent" style="font-size:0.82rem; font-weight:800; color:#ffffff;">
+                        📄 Manifesto.pdf
                     </div>
                 </div>
-
-                <div class="tutorial-step-card">
-                    <div class="tutorial-step-header">
-                        <span class="tutorial-badge">2</span>
-                        <span>Configurar Voz e Estilo</span>
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">
-                        Abra o <b>Menu</b> para escolher o tipo de voz que fala as paradas no fone ou alto-falante (Turbo, Walkie Rádio, Natural) e selecione o tema de cor de sua preferência.
-                    </div>
-                    <div class="tutorial-mockup">
-                        <span style="color:#34d399; font-weight:800;">🎙️ Voz: ⚡ Tática Turbo | 📻 Walkie Rádio</span>
-                    </div>
-                </div>
-
-                <div class="tutorial-step-card">
-                    <div class="tutorial-step-header">
-                        <span class="tutorial-badge">3</span>
-                        <span>Apontar a Câmera e Bipar</span>
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">
-                        Aponte a câmera para a etiqueta do pacote. Você pode acionar o <b>Flash</b> à noite ou alternar para a câmera frontal.
-                    </div>
-                    <div class="tutorial-mockup">
-                        📷 <b>Scanner Ativo:</b> [ QR / Código de Barras ] ⚡
-                    </div>
-                </div>
-
-                <div class="tutorial-step-card">
-                    <div class="tutorial-step-header">
-                        <span class="tutorial-badge">4</span>
-                        <span>Identificação Imediata da Parada</span>
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">
-                        O app mostra o número da parada em destaque e avisa se existirem outros pacotes para entregar no mesmo local!
-                    </div>
-                    <div class="tutorial-mockup" style="border-color:#10b981; background:rgba(16,185,129,0.08);">
-                        <div style="font-size:1.4rem; font-weight:900; color:#34d399;">P12</div>
-                        <div style="font-size:0.68rem; color:#34d399; font-weight:800;">⚠️ MESMO ENDEREÇO DA PARADA P13!</div>
-                    </div>
-                </div>
-
             </div>
 
-            <button onclick="fecharModalTutorial()" class="btn-action-primary" style="margin-top:14px;">
-                Entendido! Começar
+            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin-bottom:14px;">
+                <b>Como Funciona na Rua:</b><br>
+                1. Você importa a folha da transportadora.<br>
+                2. Aponta a câmera para o pacote.<br>
+                3. O app bipa, fala no seu fone e mostra a parada na tela instantaneamente!
+            </div>
+
+            <button onclick="fecharModalTutorial()" class="btn-action-primary">
+                Entendido! Começar Agora
             </button>
         </div>
     </div>
@@ -1442,6 +1417,68 @@
             }, 2400);
         }
 
+        // ==========================================
+        // SIMULAÇÃO ANIMADA DO TUTORIAL
+        // ==========================================
+        let simInterval = null;
+
+        function iniciarSimulacaoTutorial() {
+            let status = document.getElementById('simStatus');
+            let content = document.getElementById('simContent');
+            let laser = document.getElementById('simLaser');
+            let step = 0;
+
+            if (simInterval) clearInterval(simInterval);
+
+            function executarPasso() {
+                if (step === 0) {
+                    status.innerText = "1. Carregando Rota em PDF...";
+                    laser.style.display = "none";
+                    content.innerHTML = `
+                        <div style="font-size:2rem; margin-bottom:4px;">📄</div>
+                        <div style="color:#34d399; font-weight:800;">Manifesto_ZonaSul.pdf</div>
+                        <div style="font-size:0.68rem; color:#888;">35 pacotes identificados</div>
+                    `;
+                    step = 1;
+                } else if (step === 1) {
+                    status.innerText = "2. Escaneando Etiqueta...";
+                    laser.style.display = "block";
+                    content.innerHTML = `
+                        <div style="border:2px dashed #34d399; border-radius:8px; padding:10px 16px; background:rgba(16,185,129,0.06);">
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#fff;">BR994820194SP</div>
+                            <div style="font-size:0.65rem; color:#888; margin-top:2px;">Rua das Flores, 120</div>
+                        </div>
+                    `;
+                    step = 2;
+                } else if (step === 2) {
+                    status.innerText = "3. Parada Identificada!";
+                    laser.style.display = "none";
+                    playBeepSucesso();
+                    content.innerHTML = `
+                        <div style="font-size:2.8rem; font-weight:900; color:#34d399; line-height:1;">P12</div>
+                        <div style="font-size:0.68rem; color:#ffffff; font-weight:800; margin-top:4px;">📍 BR994820194SP</div>
+                        <div style="font-size:0.65rem; color:#34d399; font-weight:800; margin-top:4px; background:rgba(16,185,129,0.15); padding:2px 6px; border-radius:4px;">
+                            ⚠️ MESMO ENDEREÇO DA P13
+                        </div>
+                    `;
+                    step = 0;
+                }
+            }
+
+            executarPasso();
+            simInterval = setInterval(executarPasso, 2200);
+        }
+
+        function abrirModalTutorial() {
+            document.getElementById('modalTutorial').style.display = 'flex';
+            iniciarSimulacaoTutorial();
+        }
+
+        function fecharModalTutorial() {
+            if (simInterval) clearInterval(simInterval);
+            document.getElementById('modalTutorial').style.display = 'none';
+        }
+
         const traducoes = {
             pt: {
                 download_app: "Baixar App no Celular",
@@ -1487,14 +1524,14 @@
                 same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
                 pdf_erro: "❌ Não consegui ler este PDF. Verifique se o arquivo não está corrompido e tente novamente.",
                 login_bloqueado: "🔒 Muitas tentativas erradas. Aguarde 30 segundos e tente de novo.",
-                tutorial_btn: "Como Usar (Tutorial Iniciante)"
+                tutorial_btn: "Como Usar (Tutorial Interativo)"
             },
             es: {
                 download_app: "Descargar App en el Móvil",
                 brand_subtitle: "Plataforma de Logística",
                 whatsapp_label: "WhatsApp / Acceso",
                 password_label: "Tu Contraseña",
-                whatsapp_placeholder: "Número com código de área",
+                whatsapp_placeholder: "Número con código de área",
                 password_placeholder: "Crea o escribe tu contraseña",
                 btn_enter: "Entrar al Sistema",
                 btn_trial: "Probar 3 Días Gratis",
@@ -1698,14 +1735,6 @@
                 campo.type = 'password';
                 icone.innerText = '👁️';
             }
-        }
-
-        function abrirModalTutorial() {
-            document.getElementById('modalTutorial').style.display = 'flex';
-        }
-
-        function fecharModalTutorial() {
-            document.getElementById('modalTutorial').style.display = 'none';
         }
 
         function carregarConfiguracoesSalvas() {
@@ -2453,6 +2482,16 @@
                     notificar("📲 Para instalar: Toque nos 3 pontinhos do navegador e selecione 'Instalar Aplicativo' ou 'Adicionar à Tela Inicial'.");
                 }
             }
+        }
+
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => clients.claim());
+                self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+            `;
+            const blob = new Blob([swCode], { type: 'text/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
         }
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
