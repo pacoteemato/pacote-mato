@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PACOTE É MATO</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <!-- Ícone SVG Vetorizado da Caixa com Folhas -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='10'/%3E%3Crect x='116' y='156' width='280' height='200' rx='24' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpath d='M116 180 L256 280 L396 180' fill='none' stroke='%23047857' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#060913" id="metaThemeColor">
+    <meta name="theme-color" content="#0b0b0d" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='10'/%3E%3Crect x='116' y='156' width='280' height='200' rx='24' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpath d='M116 180 L256 280 L396 180' fill='none' stroke='%23047857' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,20 +31,20 @@
 
     <style>
         :root {
-            --bg-body: #060913;
-            --surface-1: #0e1526;
-            --surface-2: #162038;
-            --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(255, 255, 255, 0.16);
+            --bg-body: #05080e;
+            --surface-1: #0b111e;
+            --surface-2: #131c31;
+            --surface-border: rgba(52, 211, 153, 0.15);
+            --surface-border-hover: rgba(52, 211, 153, 0.35);
             --text-main: #f8fafc;
             --text-muted: #8a99af;
-            --primary: #1d4ed8;
-            --primary-gradient: linear-gradient(135deg, #1e40af, #2563eb);
+            --primary: #10b981;
+            --primary-gradient: linear-gradient(135deg, #059669, #10b981);
             --accent-green: #047857;
             --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
-            --accent-blue-soft: #38bdf8;
-            --danger: #b91c1c;
-            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--surface-border);
+            --accent-mint: #34d399;
+            --danger: #ef4444;
+            --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--surface-border);
         }
 
         * {
@@ -65,7 +66,7 @@
             transition: background-color 0.25s, color 0.25s;
         }
 
-        /* ABERTURA ESTILO PS2 / GTA V COM O ÍCONE REAL */
+        /* ABERTURA ESTILO PS2 / GTA V */
         #splashScreenPs2 {
             position: fixed;
             inset: 0;
@@ -83,7 +84,7 @@
             position: absolute;
             width: 400px;
             height: 400px;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
             border-radius: 50%;
             animation: pulseGlow 2s infinite alternate;
         }
@@ -94,11 +95,10 @@
         }
 
         .ps2-icon-rotating {
-            width: 105px;
-            height: 105px;
-            object-fit: contain;
+            width: 95px;
+            height: 95px;
             animation: rotate3dIcon 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            filter: drop-shadow(0 15px 35px rgba(56, 189, 248, 0.8));
+            filter: drop-shadow(0 15px 35px rgba(52, 211, 153, 0.6));
             z-index: 2;
         }
 
@@ -115,7 +115,7 @@
             letter-spacing: 4px;
             color: #ffffff;
             margin-top: 22px;
-            text-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.8);
             opacity: 0;
             animation: fadeInTitle 1s ease forwards 0.8s;
             z-index: 2;
@@ -125,7 +125,7 @@
             font-size: 0.72rem;
             font-weight: 800;
             letter-spacing: 3px;
-            color: var(--accent-blue-soft);
+            color: var(--accent-mint);
             text-transform: uppercase;
             margin-top: 6px;
             opacity: 0;
@@ -153,13 +153,12 @@
         }
 
         .app-logo-animado {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
+            width: 62px;
+            height: 62px;
             margin: 0 auto 10px;
             display: block;
             cursor: pointer;
-            filter: drop-shadow(0 4px 14px rgba(56, 189, 248, 0.4));
+            filter: drop-shadow(0 4px 14px rgba(16, 185, 129, 0.4));
             animation: floatLogo 3.5s ease-in-out infinite;
         }
 
@@ -171,9 +170,9 @@
 
         .btn-instalar-dinamico {
             width: 100%;
-            background: rgba(37, 99, 235, 0.1);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-mint);
+            border: 1px solid rgba(52, 211, 153, 0.3);
             border-radius: 12px;
             padding: 11px 14px;
             font-weight: 700;
@@ -185,24 +184,20 @@
             justify-content: center;
             gap: 8px;
         }
-        .btn-instalar-dinamico:hover {
-            background: rgba(37, 99, 235, 0.2);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-        }
 
         #toastNotificacao {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #162038;
+            background: var(--surface-2);
             color: #f8fafc;
             padding: 11px 20px;
             border-radius: 12px;
             font-weight: 700;
             font-size: 0.84rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--surface-border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary);
             z-index: 1000005;
             display: none;
             text-align: center;
@@ -212,7 +207,7 @@
         #telaBloqueio {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top center, #111c38 0%, #060913 70%);
+            background: radial-gradient(circle at top center, #0b1f15 0%, #05080e 70%);
             z-index: 1000000;
             display: none;
             flex-direction: column;
@@ -262,8 +257,8 @@
         }
         .input-auth:focus {
             border-color: var(--primary);
-            background: rgba(22, 32, 56, 0.9);
-            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.25);
+            background: rgba(19, 28, 49, 0.95);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
         }
 
         .btn-toggle-senha {
@@ -287,7 +282,7 @@
             font-weight: 800;
             font-size: 0.9rem;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -314,9 +309,9 @@
 
         .btn-support-login {
             width: 100%;
-            background: rgba(5, 150, 105, 0.1);
-            color: #34d399;
-            border: 1px solid rgba(5, 150, 105, 0.25);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-mint);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 12px;
             padding: 11px;
             font-weight: 700;
@@ -367,17 +362,17 @@
             position: relative;
         }
         .plan-item.selecionado {
-            border-color: #38bdf8 !important;
-            background: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+            border-color: var(--accent-mint) !important;
+            background: rgba(16, 185, 129, 0.12);
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
         }
-        .plan-item.featured { border-color: rgba(5, 150, 105, 0.4); }
+        .plan-item.featured { border-color: rgba(16, 185, 129, 0.4); }
 
         .plan-badge-top {
             position: absolute;
             top: -7px;
             right: 12px;
-            background: linear-gradient(135deg, #065f46, #059669);
+            background: var(--accent-green-gradient);
             color: #ffffff;
             font-size: 0.55rem;
             font-weight: 800;
@@ -388,11 +383,11 @@
 
         .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
         .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
-        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
+        .plan-val { font-size: 1rem; font-weight: 900; color: var(--accent-mint); }
 
         .btn-gerar-pix-confirm {
             width: 100%;
-            background: linear-gradient(135deg, #065f46, #059669);
+            background: var(--accent-green-gradient);
             color: #ffffff;
             border: none;
             border-radius: 12px;
@@ -409,7 +404,7 @@
         .modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.88);
             backdrop-filter: blur(8px);
             z-index: 1000010;
             display: none;
@@ -469,9 +464,9 @@
             font-weight: 700;
             padding: 5px 10px;
             border-radius: 20px;
-            border: 1px solid rgba(5, 150, 105, 0.3);
-            background: rgba(5, 150, 105, 0.1);
-            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-mint);
         }
 
         .hero-banner {
@@ -486,7 +481,7 @@
         }
 
         .card-retomar-rota {
-            background: linear-gradient(135deg, rgba(29, 78, 216, 0.12), rgba(56, 189, 248, 0.05));
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.05));
             border: 1.5px solid var(--primary);
             border-radius: 18px;
             padding: 14px;
@@ -499,7 +494,7 @@
             background: var(--surface-1);
             padding: 20px 16px;
             border-radius: 18px;
-            border: 1px dashed rgba(59, 130, 246, 0.3);
+            border: 1px dashed rgba(52, 211, 153, 0.3);
             text-align: center;
             margin-bottom: 14px;
         }
@@ -543,11 +538,11 @@
             border: 1.5px solid var(--primary);
             margin-bottom: 14px;
             text-align: center;
-            box-shadow: 0 8px 24px rgba(29, 78, 216, 0.2);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
             display: none;
         }
-        .stop-number { font-size: 3.2rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
-        .stop-address { font-size: 0.9rem; font-weight: 700; color: #38bdf8; margin-top: 4px; line-height: 1.3; }
+        .stop-number { font-size: 3.2rem; font-weight: 900; color: var(--accent-mint); line-height: 1; margin-bottom: 4px; }
+        .stop-address { font-size: 0.9rem; font-weight: 700; color: #ffffff; margin-top: 4px; line-height: 1.3; }
 
         .result-panel.error-state {
             border-color: var(--danger);
@@ -572,10 +567,10 @@
         .cam-overlay-btn {
             position: absolute;
             z-index: 99;
-            background: rgba(14, 21, 38, 0.8);
+            background: rgba(11, 17, 30, 0.85);
             backdrop-filter: blur(8px);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(52, 211, 153, 0.25);
             padding: 8px 12px;
             border-radius: 12px;
             font-weight: 700;
@@ -595,7 +590,7 @@
         .modal-rota-conteudo { max-height: 60vh; overflow-y: auto; text-align: left; margin-top: 10px; }
         .parada-box-pro { background: var(--surface-2); border: 1px solid var(--surface-border); border-radius: 16px; padding: 12px; margin-bottom: 10px; }
         .parada-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-        .parada-badge-num { background: #060913; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 5px 12px; font-weight: 800; font-size: 0.88rem; color: var(--text-main); }
+        .parada-badge-num { background: #05080e; border: 1px solid rgba(52, 211, 153, 0.25); border-radius: 10px; padding: 5px 12px; font-weight: 800; font-size: 0.88rem; color: var(--accent-mint); }
         .endereco-texto-pro { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px; line-height: 1.3; }
         .acoes-footer-pro { display: flex; justify-content: flex-end; border-top: 1px solid var(--surface-border); padding-top: 8px; }
         .btn-acao-card { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--surface-border); border-radius: 10px; padding: 8px 14px; color: var(--text-main); font-weight: 700; font-size: 0.75rem; cursor: pointer; }
@@ -604,26 +599,30 @@
         .segmented-control { grid-template-columns: repeat(3, 1fr); }
         .segmented-control-grid4 { grid-template-columns: repeat(2, 1fr); }
         .segmented-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 4px; font-size: 0.65rem; font-weight: 800; border-radius: 9px; cursor: pointer; text-align: center; }
-        .segmented-btn.active { background: var(--primary); color: #ffffff; box-shadow: 0 2px 8px rgba(29, 78, 216, 0.4); }
+        .segmented-btn.active { background: var(--primary); color: #ffffff; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
 
         .admin-nav-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-bottom: 12px; }
         .admin-tab { padding: 7px 4px; background: var(--surface-2); border: 1px solid var(--surface-border); color: var(--text-muted); border-radius: 8px; font-size: 0.65rem; font-weight: 800; cursor: pointer; text-align: center; }
-        .admin-tab.active { background: #d97706; color: #000000; border-color: transparent; }
+        .admin-tab.active { background: var(--primary); color: #ffffff; border-color: transparent; }
         .user-row { background: var(--surface-2); border: 1px solid var(--surface-border); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; text-align: left; }
 
         /* TUTORIAL ANIMADO MODAL */
         .tutorial-step-card { background: var(--surface-2); border: 1px solid var(--surface-border); border-radius: 14px; padding: 14px; margin-bottom: 10px; text-align: left; }
-        .tutorial-step-num { font-size: 0.65rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 2px; }
+        .tutorial-step-num { font-size: 0.65rem; font-weight: 800; color: var(--accent-mint); text-transform: uppercase; margin-bottom: 2px; }
         .tutorial-step-title { font-size: 0.88rem; font-weight: 900; color: #fff; margin-bottom: 4px; }
         .tutorial-step-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
     </style>
 </head>
 <body>
 
-    <!-- ABERTURA ESTILO PS2 / GTA V COM O ÍCONE REAL -->
+    <!-- ABERTURA ESTILO PS2 / GTA V COM O ÍCONE DA CAIXA COM FOLHAS -->
     <div id="splashScreenPs2">
         <div class="ps2-bg-glow"></div>
-        <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="ps2-icon-rotating">
+        <svg class="ps2-icon-rotating" viewBox="0 0 512 512" style="width: 105px; height: 105px;">
+            <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
+            <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
+            <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         <h1 class="ps2-title">PACOTE É MATO</h1>
         <p class="ps2-subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</p>
     </div>
@@ -635,16 +634,20 @@
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             <div class="auth-header-center" style="text-align: center; margin-bottom: 20px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-animado" onclick="registrarCliqueAdmin()">
+                <svg class="app-logo-animado" viewBox="0 0 512 512" onclick="registrarCliqueAdmin()" style="width: 64px; height: 64px;">
+                    <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
+                    <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
+                    <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()" style="font-size: 1.35rem; font-weight: 900;">PACOTE É MATO</h1>
-                <p class="brand-subtitle-pro" style="font-size: 0.7rem; color: var(--accent-blue-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Plataforma de Logística</p>
+                <p class="brand-subtitle-pro" style="font-size: 0.7rem; color: var(--accent-mint); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Plataforma de Logística</p>
             </div>
 
             <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
                 📲 Baixar Aplicativo no Celular
             </button>
 
-            <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom: 12px; border-color: rgba(56, 189, 248, 0.3); color: #38bdf8;">
+            <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom: 12px; border-color: rgba(52, 211, 153, 0.3); color: var(--accent-mint);">
                 📖 Guia de Treinamento Animado
             </button>
             
@@ -713,7 +716,7 @@
     <div id="modalTutorialAnimado" class="modal-backdrop">
         <div class="modal-card" style="max-width: 410px; text-align: left;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h3 style="color: #38bdf8; font-weight: 900; font-size: 1.1rem;">📖 Guia de Treinamento Animado</h3>
+                <h3 style="color: var(--accent-mint); font-weight: 900; font-size: 1.1rem;">📖 Guia de Treinamento Animado</h3>
                 <span onclick="fecharModalTutorial()" style="cursor: pointer; color: var(--text-muted); font-weight: bold; font-size: 1.1rem;">✕</span>
             </div>
 
@@ -776,7 +779,7 @@
         <div class="modal-card" style="max-width:330px;">
             <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
             <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
-            <button class="gps-option-btn" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff;" onclick="abrirGpsSelecionado('waze')">🚗 Abrir no Waze</button>
+            <button class="gps-option-btn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff;" onclick="abrirGpsSelecionado('waze')">🚗 Abrir no Waze</button>
             <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">🗺️ Abrir no Google Maps</button>
             <button onclick="fecharModalGps()" style="margin-top:6px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;">Cancelar</button>
         </div>
@@ -786,12 +789,12 @@
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#d97706; font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
+                <h3 style="color:#10b981; font-weight:800; font-size:1.05rem;">👑 Painel Master & Controle</h3>
                 <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
             </div>
             <div id="areaLoginAdmin">
                 <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
-                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:#d97706; color:#000;">Entrar</button>
+                <button onclick="autenticarAdmin()" class="btn-action-primary" style="background:var(--accent-green);">Entrar</button>
             </div>
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
                 <div class="admin-nav-tabs">
@@ -831,13 +834,13 @@
     <!-- MENU LATERAL COM TEMAS E VOZES -->
     <div class="drawer-panel" id="sidebar">
         <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
-        <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:16px;">Plataforma de Logística</div>
+        <div style="font-size:0.68rem; color:var(--accent-mint); font-weight:800; margin-bottom:16px;">Plataforma de Logística</div>
 
         <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:10px;" onclick="dispararInstalacaoPWA()">
             📲 Baixar App no Celular
         </button>
 
-        <button class="btn-action-trial" style="margin-bottom:12px; border-color:rgba(56,189,248,0.3); color:#38bdf8;" onclick="abrirModalTutorial(); toggleSidebar();">
+        <button class="btn-action-trial" style="margin-bottom:12px; border-color:rgba(52,211,153,0.3); color:var(--accent-mint);" onclick="abrirModalTutorial(); toggleSidebar();">
             📖 Guia de Treinamento
         </button>
 
@@ -881,13 +884,17 @@
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-animado">
+            <svg class="app-logo-animado" viewBox="0 0 512 512">
+                <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
+                <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
+                <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+            <div style="font-size:0.68rem; font-weight:800; color:var(--accent-mint); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
 
         <div class="card-retomar-rota" id="cardRetomarRota">
-            <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div style="font-size:0.75rem; font-weight:800; color:var(--accent-mint); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
             <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
             <button class="btn-action-primary" style="background:var(--primary-gradient); margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">⚡ Retomar Rota Onde Parei</button>
         </div>
@@ -911,7 +918,7 @@
                     <div class="metric-lbl">Bipados</div>
                 </div>
                 <div class="metric-cell">
-                    <div class="metric-val" id="valParadas" style="color:#38bdf8;">0</div>
+                    <div class="metric-val" id="valParadas" style="color:var(--accent-mint);">0</div>
                     <div class="metric-lbl">Paradas</div>
                 </div>
                 <div class="metric-cell">
@@ -949,12 +956,12 @@
     </div>
 
     <script>
-        // TEMAS
+        // TEMAS DE COR
         const paletas = {
-            slate_tech: { bg_body: "#060913", surface_1: "#0e1526", surface_2: "#162038", border: "rgba(255, 255, 255, 0.08)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)" },
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.12)" },
+            slate_tech: { bg_body: "#05080e", surface_1: "#0b111e", surface_2: "#131c31", border: "rgba(52, 211, 153, 0.15)", text_main: "#f8fafc", text_muted: "#8a99af", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(52, 211, 153, 0.15)" },
+            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(52, 211, 153, 0.2)", text_main: "#ffffff", text_muted: "#888888", shadow: "0 16px 36px -10px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(52, 211, 153, 0.2)" },
             light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b", shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" }
+            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(52, 211, 153, 0.15)", text_main: "#fafafa", text_muted: "#a1a1aa", shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(52, 211, 153, 0.15)" }
         };
 
         function mudarTema(tipo) {
@@ -1228,7 +1235,7 @@
             let html = "";
             snap.forEach(doc => {
                 let u = doc.data();
-                html += `<div class="user-row"><div><b>📱 ${u.whatsapp}</b><br><small style="color:#38bdf8;">Senha: ${u.senha}</small></div></div>`;
+                html += `<div class="user-row"><div><b>📱 ${u.whatsapp}</b><br><small style="color:var(--accent-mint);">Senha: ${u.senha}</small></div></div>`;
             });
             document.getElementById('viewAdmin30d').innerHTML = html;
         }
