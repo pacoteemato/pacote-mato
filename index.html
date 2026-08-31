@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PACOTE É MATO</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='10'/%3E%3Crect x='116' y='156' width='280' height='200' rx='24' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpath d='M116 180 L256 280 L396 180' fill='none' stroke='%23047857' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PacoteÉMato">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230b0b0d' stroke='%2334d399' stroke-width='10'/%3E%3Crect x='116' y='156' width='280' height='200' rx='24' fill='%2310b981' stroke='%2334d399' stroke-width='8'/%3E%3Cpath d='M116 180 L256 280 L396 180' fill='none' stroke='%23047857' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,7 +65,7 @@
             transition: background-color 0.25s, color 0.25s;
         }
 
-        /* ABERTURA PS2 COM A CARTINHA GIRANDO */
+        /* ABERTURA PS2 COM A CARTINHA ANTIGA EM 3D */
         #splashScreenPs2 {
             position: fixed;
             inset: 0;
@@ -156,8 +156,8 @@
         }
 
         .app-logo-pro {
-            width: 58px;
-            height: 58px;
+            width: 62px;
+            height: 62px;
             margin: 0 auto 10px;
             display: block;
             cursor: pointer;
@@ -696,7 +696,7 @@
 </head>
 <body>
 
-    <!-- ABERTURA PS2 COM A CARTINHA GIRANDO -->
+    <!-- ABERTURA PS2 COM A CARTINHA ANTIGA EM 3D -->
     <div id="splashScreenPs2">
         <div class="ps2-bg-radial"></div>
         <svg class="ps2-cube-rotating" viewBox="0 0 512 512">
@@ -713,7 +713,11 @@
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             <div class="auth-header-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" onclick="registrarCliqueAdmin()">
+                <svg class="app-logo-pro" viewBox="0 0 512 512" onclick="registrarCliqueAdmin()">
+                    <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
+                    <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
+                    <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
                 <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
             </div>
@@ -957,7 +961,11 @@
         </button>
         
         <div class="hero-banner" onclick="registrarCliqueAdmin()">
-            <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" class="app-logo-pro" style="width:52px; height:52px; margin:0 auto 4px;">
+            <svg class="app-logo-pro" viewBox="0 0 512 512" style="width:52px; height:52px; margin:0 auto 4px;">
+                <rect width="512" height="512" rx="110" fill="#0b0b0d" stroke="#34d399" stroke-width="12"/>
+                <rect x="116" y="156" width="280" height="200" rx="24" fill="#10b981" stroke="#34d399" stroke-width="8"/>
+                <path d="M116 180 L256 280 L396 180" fill="none" stroke="#047857" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
             <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
         </div>
@@ -1027,17 +1035,15 @@
     </div>
 
     <script>
-        // SOM DE ABERTURA PS2 PERSONALIZADO COMBINANDO COM A CARTINHA
         function tocarIntroPs2Audio() {
             try {
                 let ctx = getAudioContext();
                 let now = ctx.currentTime;
-
                 let oscBase = ctx.createOscillator();
                 let gainBase = ctx.createGain();
                 oscBase.type = 'triangle';
-                oscBase.frequency.setValueAtTime(120, now);
-                oscBase.frequency.exponentialRampToValueAtTime(320, now + 1.5);
+                oscBase.frequency.setValueAtTime(140, now);
+                oscBase.frequency.exponentialRampToValueAtTime(360, now + 1.5);
                 gainBase.gain.setValueAtTime(0.01, now);
                 gainBase.gain.linearRampToValueAtTime(0.18, now + 0.5);
                 gainBase.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
@@ -1060,7 +1066,6 @@
             }, 2400);
         }
 
-        // SIMULADOR DO TUTORIAL
         let simInterval = null;
         function iniciarSimulacaoTutorial() {
             let status = document.getElementById('simStatus');
@@ -1074,7 +1079,7 @@
                 if (step === 0) {
                     status.innerText = "1. Carregando Rota em PDF...";
                     laser.style.display = "none";
-                    content.innerHTML = `<div style="font-size:2rem; margin-bottom:4px;">📄</div><div style="color:#34d399; font-weight:800;">Manifesto.pdf</div><div style="font-size:0.68rem; color:#888;">Paradas sincronizadas</div>`;
+                    content.innerHTML = `<div style="font-size:2rem; margin-bottom:4px;">📄</div><div style="color:#34d399; font-weight:800;">Manifesto.pdf</div>`;
                     step = 1;
                 } else if (step === 1) {
                     status.innerText = "2. Escaneando Etiqueta...";
@@ -1145,13 +1150,11 @@
                 flash_txt: "Flash",
                 manual_placeholder: "Digite o código manualmente...",
                 same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
-                pdf_erro: "❌ Não consegui ler este PDF. Verifique se o arquivo não está corrompido.",
                 tutorial_btn: "Como Usar (Tutorial Interativo)"
             }
         };
 
         function mudarIdioma(lang) {
-            localStorage.setItem('idioma_preferido', lang);
             let dict = traducoes[lang] || traducoes.pt;
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 let key = el.getAttribute('data-i18n');
@@ -1160,34 +1163,6 @@
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 let key = el.getAttribute('data-i18n-placeholder');
                 if (dict[key]) el.setAttribute('placeholder', dict[key]);
-            });
-        }
-
-        const paletas = {
-            black_oled: { bg_body: "#000000", surface_1: "#0b0b0d", surface_2: "#141417", border: "rgba(255, 255, 255, 0.12)", text_main: "#ffffff", text_muted: "#888888" },
-            light: { bg_body: "#f8fafc", surface_1: "#ffffff", surface_2: "#f1f5f9", border: "rgba(0, 0, 0, 0.08)", text_main: "#0f172a", text_muted: "#64748b" },
-            gray: { bg_body: "#18181b", surface_1: "#27272a", surface_2: "#3f3f46", border: "rgba(255, 255, 255, 0.1)", text_main: "#fafafa", text_muted: "#a1a1aa" }
-        };
-
-        function mudarTema(tipo) {
-            let p = paletas[tipo] || paletas.black_oled;
-            document.documentElement.style.setProperty('--bg-body', p.bg_body);
-            document.documentElement.style.setProperty('--surface-1', p.surface_1);
-            document.documentElement.style.setProperty('--surface-2', p.surface_2);
-            document.documentElement.style.setProperty('--surface-border', p.border);
-            document.documentElement.style.setProperty('--text-main', p.text_main);
-            document.documentElement.style.setProperty('--text-muted', p.text_muted);
-            localStorage.setItem('tema_preferido', tipo);
-        }
-
-        function salvarVoz(tipo) {
-            localStorage.setItem('voz_preferida', tipo);
-            ['rapida', 'grave', 'hd', 'mudo'].forEach(v => {
-                let btn = document.getElementById('voice_' + v);
-                if (btn) {
-                    if (v === tipo) btn.classList.add('active');
-                    else btn.classList.remove('active');
-                }
             });
         }
 
@@ -1205,9 +1180,6 @@
 
         function carregarConfiguracoesSalvas() {
             mudarIdioma('pt');
-            mudarTema(localStorage.getItem('tema_preferido') || 'black_oled');
-            salvarVoz(localStorage.getItem('voz_preferida') || 'hd');
-            verificarRotaSalvaAnterior();
             if (!localStorage.getItem('usuario_zap_salvo')) {
                 document.getElementById('telaBloqueio').style.display = 'flex';
             }
@@ -1354,7 +1326,7 @@
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         let html5QrCode = null, sensorAtual = "environment", flashLigado = false;
-        let mapaRotas = {}, stopCorrespondente = {}, nomeExibicao = {}, todosPacotes = new Set(), pacotesBipados = new Set(), chaveStorageAtual = null;
+        let mapaRotas = {}, stopCorrespondente = {}, nomeExibicao = {}, todosPacotes = new Set(), pacotesBipados = new Set();
 
         function verificarRotaSalvaAnterior() {
             let dados = localStorage.getItem('rota_ativa_completa');
@@ -1477,16 +1449,24 @@
             } catch(e) {}
         }
 
+        function audioCtxManager() {
+            return new (window.AudioContext || window.webkitAudioContext)();
+        }
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = audioCtxManager();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
         // VOZ NATURAL HD PADRÃO
         function falarParada(num) {
-            let tipo = localStorage.getItem('voz_preferida') || 'hd';
-            if (tipo === 'mudo') return;
             try {
                 window.speechSynthesis.cancel();
                 let msg = new SpeechSynthesisUtterance("Parada " + num);
                 msg.lang = 'pt-BR';
                 msg.pitch = 1.0;
-                msg.rate = 1.15; // Natural HD fluido e profissional
+                msg.rate = 1.15;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
