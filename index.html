@@ -928,7 +928,6 @@
             overflow: hidden;
         }
 
-        /* Boneco Entregador Instrutor */
         .driver-character {
             position: absolute;
             left: 14px;
@@ -993,7 +992,6 @@
             50% { transform: rotate(-25deg); }
         }
 
-        /* Celular Mockup do Simulador */
         .phone-mockup {
             position: absolute;
             width: 130px;
@@ -1019,7 +1017,6 @@
             padding: 6px;
         }
 
-        /* Menu Lateral Deslizante dentro do Mockup */
         .sim-drawer-menu {
             position: absolute;
             top: 0;
@@ -1072,7 +1069,6 @@
             100% { top: 20%; opacity: 0.2; }
         }
 
-        /* Pacote no Chão */
         .box-package {
             position: absolute;
             width: 44px;
@@ -1107,7 +1103,6 @@
             width: 100%;
         }
 
-        /* Balão de Fala do Instrutor */
         .audio-bubble {
             position: absolute;
             top: 10px;
@@ -1264,6 +1259,18 @@
         </div>
     </div>
 
+    <!-- MODAL HISTÓRICO DE ROTAS DO MOTORISTA -->
+    <div id="modalHistoricoRotas" class="modal-backdrop">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📊 Histórico de Rotas</h3>
+                <span onclick="fecharModalHistorico()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            <div id="listaHistoricoRotas" style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+            <button onclick="fecharModalHistorico()" class="btn-action-primary" style="margin-top:12px;">Fechar</button>
+        </div>
+    </div>
+
     <!-- MODAL TUTORIAL / SIMULADOR COM BONECO INSTRUTOR ANIMADO -->
     <div id="modalTutorial" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
@@ -1392,7 +1399,7 @@
         </div>
     </div>
 
-    <!-- MODAL MODO DONO / PAINEL MASTER -->
+    <!-- MODAL MODO DONO / PAINEL MASTER COM MÉTRICAS E WHATSAPP DIRETO -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left; max-height:90vh; overflow-y:auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1407,8 +1414,25 @@
 
             <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
                 
-                <!-- BUSCA RÁPIDA -->
-                <input type="text" id="buscaAdminUser" placeholder="🔍 Buscar por WhatsApp..." oninput="filtrarListaAdminLocal()" class="input-auth" style="padding-left:14px; margin-bottom:10px; font-size:0.8rem;">
+                <!-- MÉTRICAS FINANCEIRAS DO DONO -->
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
+                    <div style="background:var(--surface-2); padding:8px; border-radius:10px; border:1px solid var(--surface-border); text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Faturamento Total</div>
+                        <div style="font-size:1.05rem; font-weight:900; color:#34d399;" id="txtTotalFaturamento">R$ 0,00</div>
+                    </div>
+                    <div style="background:var(--surface-2); padding:8px; border-radius:10px; border:1px solid var(--surface-border); text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Pagantes Ativos</div>
+                        <div style="font-size:1.05rem; font-weight:900; color:#10b981;" id="txtTotalPagantesAtivos">0</div>
+                    </div>
+                </div>
+
+                <!-- BUSCA RÁPIDA E EXPORTAÇÃO -->
+                <div style="display:flex; gap:6px; margin-bottom:10px;">
+                    <input type="text" id="buscaAdminUser" placeholder="🔍 Buscar por WhatsApp..." oninput="filtrarListaAdminLocal()" class="input-auth" style="padding-left:14px; flex:1; font-size:0.8rem; margin-bottom:0;">
+                    <button onclick="exportarRelatorioCSV()" class="btn-action-primary" style="width:auto; padding:0 10px; font-size:0.75rem; margin-bottom:0; background:var(--surface-2); border:1px solid var(--surface-border);">
+                        📥 CSV
+                    </button>
+                </div>
 
                 <div class="admin-nav-tabs">
                     <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
@@ -1498,8 +1522,12 @@
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
-        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:14px;" onclick="abrirModalTutorial(); toggleSidebar();">
+        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:10px;" onclick="abrirModalTutorial(); toggleSidebar();">
             📖 <span>Guia & Tutorial</span>
+        </button>
+
+        <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:14px;" onclick="abrirModalHistorico(); toggleSidebar();">
+            📊 <span>Histórico de Rotas</span>
         </button>
 
         <div style="margin-bottom:16px;">
@@ -1531,8 +1559,8 @@
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
             <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Tática Turbo</button>
-                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Walkie Rádio</button>
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Cria Turbo</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Rádio Asfalto</button>
                 <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">🗣️ Natural HD</button>
                 <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
             </div>
@@ -1694,7 +1722,7 @@
         }
 
         // ==========================================
-        // SIMULADOR INTERATIVO COM VOZ E BONECO INSTRUTOR
+        // SIMULADOR INTERATIVO COM VOZ "CRIA DO ASFALTO"
         // ==========================================
         let simInterval = null;
 
@@ -1706,7 +1734,10 @@
                 let msg = new SpeechSynthesisUtterance(texto);
                 let lang = localStorage.getItem('idioma_preferido') || 'pt';
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
-                msg.rate = 1.35;
+                
+                // Configuração da voz "Cria": rápida, marcante e assertiva
+                msg.rate = 1.45;
+                msg.pitch = 1.15;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
@@ -1729,13 +1760,13 @@
                     laser.style.display = "none";
                     drawer.classList.remove('open');
                     driverArm.style.transform = "rotate(20deg)";
-                    falaTxt.innerText = "1. Importe a folha da rota em PDF!";
-                    falarNarradorTutorial("Importe a folha da sua rota.");
+                    falaTxt.innerText = "1. Importe a folha da sua rota!";
+                    falarNarradorTutorial("Carrega o PDF da rota aí meu parceiro!");
 
                     phoneScreen.innerHTML = `
                         <div style="font-size:1.4rem; margin-top:20px;">📄</div>
-                        <div style="color:#34d399; font-size:0.55rem; font-weight:900;">Rota.pdf</div>
-                        <div style="font-size:0.45rem; color:#888;">35 pacotes</div>
+                        <div style="color:#34d399; font-size:0.55rem; font-weight:900;">Manifesto.pdf</div>
+                        <div style="font-size:0.45rem; color:#888;">35 pacotes carregados</div>
                     `;
                     step = 1;
                 } else if (step === 1) {
@@ -1744,8 +1775,8 @@
                     laser.style.display = "block";
                     drawer.classList.remove('open');
                     driverArm.style.transform = "rotate(-20deg)";
-                    falaTxt.innerText = "2. Aponte a câmera para o pacote!";
-                    falarNarradorTutorial("Aponte a câmera para a etiqueta.");
+                    falaTxt.innerText = "2. Aponte a câmera na etiqueta!";
+                    falarNarradorTutorial("Mire na etiqueta pra ler a chave!");
 
                     phoneScreen.innerHTML = `
                         <div style="font-size:0.48rem; color:#34d399; font-weight:800; margin-top:10px;">LENDO CÓDIGO...</div>
@@ -1761,7 +1792,7 @@
                     playBeepSucesso();
                     
                     falaTxt.innerText = '🔊 "Parada 14! Rua Central, 120"';
-                    falarNarradorTutorial("Parada 14!");
+                    falarNarradorTutorial("Parada quatorze na mão!");
 
                     phoneScreen.innerHTML = `
                         <div style="font-size:1.4rem; font-weight:900; color:#34d399; line-height:1; margin-top:10px;">P14</div>
@@ -1776,14 +1807,14 @@
                     drawer.classList.add('open');
                     driverArm.style.transform = "rotate(30deg)";
                     falaTxt.innerText = "4. Alterne temas, vozes e GPS no Menu!";
-                    falarNarradorTutorial("Use o menu para temas, voz e navegação.");
+                    falarNarradorTutorial("Menu lateral cheio de opções táticas!");
 
                     step = 0;
                 }
             }
 
             executarPasso();
-            simInterval = setInterval(executarPasso, 2700);
+            simInterval = setInterval(executarPasso, 2800);
         }
 
         function abrirModalTutorial() {
@@ -2556,7 +2587,7 @@
         }
 
         // ==========================================
-        // MODO DONO - GESTÃO AVANÇADA
+        // MODO DONO - DASHBOARD FINANCEIRO E WHATSAPP
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -2590,12 +2621,20 @@
             try {
                 let snapshot = await db.collection("usuarios").get();
                 listaUsuariosCache = [];
+                let ativosCount = 0;
+                let agora = Date.now();
+
                 snapshot.forEach(doc => {
                     let u = doc.data();
                     u.id = doc.id;
                     listaUsuariosCache.push(u);
+
+                    if (u.ativo && agora <= (u.expiraEm || 0) && !u.bloqueado && u.tipo === 'pago') {
+                        ativosCount++;
+                    }
                 });
 
+                document.getElementById('txtTotalPagantesAtivos').innerText = ativosCount;
                 renderizarUsuariosAdminList(listaUsuariosCache);
             } catch(e) {
                 if (view30d) view30d.innerHTML = "Erro ao buscar dados.";
@@ -2623,6 +2662,8 @@
                 let btnBloqueioTexto = bloqueado ? "🟢 Desbloquear" : "⛔ Bloquear";
                 let btnBloqueioCor = bloqueado ? "#10b981" : "#f59e0b";
 
+                let zapLink = `https://wa.me/55${zap.replace(/\D/g,'')}?text=Ol%C3%A1%2C+sou+o+suporte+do+Pacote+%C3%89+Mato!`;
+
                 let row = `
                     <div class="user-row">
                         <div class="user-row-header">
@@ -2631,6 +2672,9 @@
                                 <div style="font-size:0.7rem; color:#34d399; font-weight:800;">🔑 Senha: ${senhaUser}</div>
                                 <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
                             </div>
+                            <a href="${zapLink}" target="_blank" style="text-decoration:none;">
+                                <button class="btn-mini-admin" style="background:#25d366; color:#000;">💬 WhatsApp</button>
+                            </a>
                         </div>
 
                         <div class="user-row-actions">
@@ -2678,24 +2722,50 @@
             try {
                 let snapshot = await db.collection("pagamentos_concluidos").orderBy("timestamp", "desc").get();
                 let htmlPagos = "";
+                let totalFaturado = 0;
 
                 snapshot.forEach(doc => {
                     let p = doc.data();
+                    let valorNum = Number(p.valor || 0);
+                    totalFaturado += valorNum;
+
                     htmlPagos += `
                         <div class="user-row">
                             <div>
                                 <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${p.whatsapp}</div>
-                                <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${Number(p.valor || 0).toFixed(2).replace('.', ',')}</div>
+                                <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${valorNum.toFixed(2).replace('.', ',')}</div>
                                 <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${p.data}</div>
                             </div>
                         </div>
                     `;
                 });
 
+                document.getElementById('txtTotalFaturamento').innerText = `R$ ${totalFaturado.toFixed(2).replace('.', ',')}`;
                 viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento registrado ainda.</div>";
             } catch(e) {
                 viewPagos.innerHTML = "Erro ao carregar histórico de pagamentos.";
             }
+        }
+
+        function exportarRelatorioCSV() {
+            if (listaUsuariosCache.length === 0) {
+                notificar("Nenhum usuário para exportar.");
+                return;
+            }
+            let csv = "WhatsApp,Senha,Plano,DuracaoDias,Status\n";
+            let agora = Date.now();
+
+            listaUsuariosCache.forEach(u => {
+                let status = u.bloqueado ? "Bloqueado" : (u.ativo && agora <= (u.expiraEm || 0) ? "Ativo" : "Expirado");
+                csv += `"${u.whatsapp || u.id}","${u.senha || ''}","${u.plano || ''}","${u.duracaoDias || ''}","${status}"\n`;
+            });
+
+            let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `pacote_e_mato_clientes_${Date.now()}.csv`;
+            link.click();
+            notificar("📥 Relatório CSV baixado com sucesso!");
         }
 
         function alternarTabAdmin(tab) {
@@ -2900,6 +2970,42 @@
                     banner.style.display = 'none';
                 }
             });
+        }
+
+        // ==========================================
+        // HISTÓRICO DE ROTAS LOCAIS DO MOTORISTA
+        // ==========================================
+        function salvarHistoricoRotaConcluida(nomeRota, totalPacotes, totalParadas) {
+            let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+            hist.unshift({
+                nome: nomeRota,
+                data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR').substring(0,5),
+                pacotes: totalPacotes,
+                paradas: totalParadas
+            });
+            if (hist.length > 20) hist.pop();
+            localStorage.setItem('historico_rotas_usuario', JSON.stringify(hist));
+        }
+
+        function abrirModalHistorico() {
+            let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+            let container = document.getElementById('listaHistoricoRotas');
+            if (hist.length === 0) {
+                container.innerHTML = "<div style='font-size:0.75rem; color:#888; text-align:center;'>Nenhuma rota salva no histórico ainda.</div>";
+            } else {
+                container.innerHTML = hist.map(h => `
+                    <div style="background:var(--surface-2); padding:10px; border-radius:10px; border:1px solid var(--surface-border);">
+                        <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📄 ${h.nome}</div>
+                        <div style="font-size:0.68rem; color:#fff;">${h.pacotes} pacotes • ${h.paradas} paradas</div>
+                        <div style="font-size:0.60rem; color:var(--text-muted);">🕒 Concluída em: ${h.data}</div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('modalHistoricoRotas').style.display = 'flex';
+        }
+
+        function fecharModalHistorico() {
+            document.getElementById('modalHistoricoRotas').style.display = 'none';
         }
 
         // ==========================================
@@ -3430,6 +3536,7 @@
             document.getElementById('cardRetomarRota').style.display = 'none';
 
             salvarEstadoCompletoRota(nomeArquivo);
+            salvarHistoricoRotaConcluida(nomeArquivo, todosPacotes.size, Object.keys(mapaRotas).length);
             atualizarStats();
             iniciarScanner();
         }
@@ -3600,7 +3707,7 @@
                     msg.pitch = 1.0;
                     msg.rate = 1.1;
                 } else {
-                    msg.pitch = 1.1;
+                    msg.pitch = 1.15;
                     msg.rate = 1.55;
                 }
 
