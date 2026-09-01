@@ -902,230 +902,109 @@
             gap: 3px;
         }
 
-        /* SIMULADOR INTERATIVO COM BONECO INSTRUTOR */
-        .tutorial-sim-container {
-            background: #000000;
-            border: 1.5px solid rgba(16, 185, 129, 0.4);
-            border-radius: 18px;
-            padding: 14px 10px;
-            margin-bottom: 12px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
-            position: relative;
-            overflow: hidden;
+        /* OVERLAY E AVATAR DO MODO PILOTO AUTOMÁTICO */
+        #tourGuiaReal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000020;
+            pointer-events: none;
+            display: none;
         }
 
-        .sim-stage-area {
-            position: relative;
-            width: 100%;
-            height: 235px;
-            background: radial-gradient(circle at center, #111c16 0%, #08080a 80%);
-            border-radius: 14px;
-            border: 1px solid var(--surface-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .driver-character {
+        .tour-avatar-box {
             position: absolute;
-            left: 14px;
-            bottom: 14px;
+            transition: all 0.75s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
-            animation: idleCharacter 2.4s infinite ease-in-out;
-            transition: all 0.4s ease;
-            z-index: 10;
+            z-index: 1000025;
+            pointer-events: auto;
         }
 
-        @keyframes idleCharacter {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
+        .tour-bubble {
+            background: rgba(16, 185, 129, 0.96);
+            color: #000000;
+            font-weight: 900;
+            font-size: 0.80rem;
+            padding: 8px 14px;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+            margin-bottom: 6px;
+            max-width: 260px;
+            text-align: center;
+            border: 2px solid #ffffff;
+            animation: pulseGlowAviso 1.5s infinite alternate;
         }
 
-        .driver-helmet {
-            width: 36px;
-            height: 36px;
+        .tour-char-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: floatLogo 2s infinite ease-in-out;
+        }
+
+        .tour-char-head {
+            width: 44px;
+            height: 44px;
             background: #10b981;
             border-radius: 50% 50% 40% 40%;
             position: relative;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
         }
 
-        .driver-visor {
+        .tour-char-visor {
             position: absolute;
-            width: 24px;
-            height: 12px;
-            background: #0b0b0d;
+            width: 28px;
+            height: 14px;
+            background: #000000;
             border-radius: 8px;
-            top: 13px;
+            top: 14px;
             right: 4px;
-            border: 1px solid #34d399;
+            border: 1.5px solid #34d399;
         }
 
-        .driver-body {
-            width: 30px;
-            height: 42px;
+        .tour-char-torso {
+            width: 34px;
+            height: 46px;
             background: #141417;
-            border: 1.5px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            margin-top: -2px;
-            position: relative;
-        }
-
-        .driver-arm {
-            position: absolute;
-            width: 24px;
-            height: 9px;
-            background: #10b981;
-            border-radius: 6px;
-            top: 10px;
-            right: -14px;
-            transform-origin: left center;
-            animation: pointAction 2.4s infinite ease-in-out;
-        }
-
-        @keyframes pointAction {
-            0%, 100% { transform: rotate(15deg); }
-            50% { transform: rotate(-25deg); }
-        }
-
-        .phone-mockup {
-            position: absolute;
-            width: 130px;
-            height: 200px;
-            background: #000000;
-            border: 2px solid #34d399;
-            border-radius: 16px;
-            right: 14px;
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 5;
-        }
-
-        .phone-screen-inner {
-            width: 100%;
-            height: 100%;
-            background: #0b0b0d;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            padding: 6px;
-        }
-
-        .sim-drawer-menu {
-            position: absolute;
-            top: 0;
-            left: -100px;
-            width: 90px;
-            height: 100%;
-            background: #141417;
-            border-right: 1px solid #34d399;
-            z-index: 20;
-            padding: 6px 4px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sim-drawer-menu.open { left: 0; }
-
-        .sim-drawer-item {
-            font-size: 0.50rem;
-            font-weight: 800;
-            padding: 4px 5px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            text-align: left;
-        }
-
-        .sim-drawer-item.highlight {
-            background: #10b981;
-            color: #000;
-            box-shadow: 0 2px 6px rgba(16,185,129,0.5);
-        }
-
-        .laser-beam {
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background: #34d399;
-            box-shadow: 0 0 10px #34d399;
-            top: 0;
-            animation: laserScan 1.5s infinite ease-in-out;
-            display: none;
-            z-index: 15;
-        }
-
-        @keyframes laserScan {
-            0% { top: 20%; opacity: 0.2; }
-            50% { top: 80%; opacity: 1; }
-            100% { top: 20%; opacity: 0.2; }
-        }
-
-        .box-package {
-            position: absolute;
-            width: 44px;
-            height: 40px;
-            background: #ca8a04;
-            border: 1.5px solid #eab308;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            bottom: 14px;
-            left: 64px;
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
-            z-index: 8;
-        }
-
-        .box-barcode-label {
-            width: 26px;
-            height: 18px;
-            background: #ffffff;
-            border-radius: 2px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 2px;
-            padding: 2px;
-        }
-
-        .barcode-line {
-            height: 1.5px;
-            background: #000000;
-            width: 100%;
-        }
-
-        .audio-bubble {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(16, 185, 129, 0.95);
-            color: #000000;
-            font-weight: 900;
-            font-size: 0.70rem;
-            padding: 6px 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            z-index: 30;
-            animation: popInBubble 0.25s ease;
+            margin-top: -3px;
+            position: relative;
         }
 
-        @keyframes popInBubble {
-            from { transform: scale(0.85); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        .tour-char-hand {
+            position: absolute;
+            width: 28px;
+            height: 10px;
+            background: #34d399;
+            border-radius: 6px;
+            top: 12px;
+            right: -16px;
+            transform-origin: left center;
+            animation: pointArm 1s infinite alternate;
+        }
+
+        @keyframes pointArm {
+            0% { transform: rotate(20deg); }
+            100% { transform: rotate(-35deg); }
+        }
+
+        .btn-abort-tour {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+            z-index: 1000030;
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -1158,6 +1037,22 @@
     </div>
 
     <div id="toastNotificacao"></div>
+
+    <!-- CAMADA DO BONECO INSTRUTOR NO MODO PILOTO AUTOMÁTICO -->
+    <div id="tourGuiaReal">
+        <button class="btn-abort-tour" onclick="abortarTourInterativo()">✕ Sair do Tutorial</button>
+        <div class="tour-avatar-box" id="tourAvatarBox">
+            <div class="tour-bubble" id="tourTextoBolha">E aí motorista! Vou te ensinar na prática.</div>
+            <div class="tour-char-body">
+                <div class="tour-char-head">
+                    <div class="tour-char-visor"></div>
+                </div>
+                <div class="tour-char-torso">
+                    <div class="tour-char-hand"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="telaBloqueio">
         <div class="auth-wrapper">
@@ -1192,8 +1087,8 @@
                 📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
             </button>
 
-            <button class="btn-action-trial" onclick="abrirModalTutorial()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
-                📖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Interativo)</span>
+            <button class="btn-action-trial" onclick="iniciarPilotoAutomaticoReal()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
+                🤖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Interativo Real)</span>
             </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
@@ -1271,77 +1166,6 @@
         </div>
     </div>
 
-    <!-- MODAL TUTORIAL / SIMULADOR COM BONECO INSTRUTOR ANIMADO -->
-    <div id="modalTutorial" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h3 style="color:#34d399; font-weight:900; font-size:1.1rem;">🛵 Como Usar na Rota</h3>
-                <span onclick="fecharModalTutorial()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.2rem;">✕</span>
-            </div>
-            
-            <div class="tutorial-sim-container">
-                <div class="sim-status-badge" id="simStatus">Passo 1: Carregando Manifesto...</div>
-                
-                <div class="sim-stage-area">
-                    <!-- Balão de Fala do Instrutor -->
-                    <div class="audio-bubble" id="simAudioBubble">
-                        🗣️ <span id="simTextoFala">Importe a folha da sua rota em PDF!</span>
-                    </div>
-
-                    <!-- Boneco Entregador Instrutor -->
-                    <div class="driver-character" id="simDriverChar">
-                        <div class="driver-helmet">
-                            <div class="driver-visor"></div>
-                        </div>
-                        <div class="driver-body">
-                            <div class="driver-arm" id="simDriverArm"></div>
-                        </div>
-                    </div>
-
-                    <!-- Pacote no Chão -->
-                    <div class="box-package" id="simBox">
-                        <div class="box-barcode-label">
-                            <div class="barcode-line"></div>
-                            <div class="barcode-line" style="height:1px;"></div>
-                            <div class="barcode-line"></div>
-                        </div>
-                    </div>
-
-                    <!-- Celular do Entregador com Leitor e Menu -->
-                    <div class="phone-mockup" id="simPhone">
-                        <div class="laser-beam" id="simLaser"></div>
-                        
-                        <!-- Menu Lateral Deslizante Interno -->
-                        <div class="sim-drawer-menu" id="simDrawerMenu">
-                            <div style="font-size:0.48rem; font-weight:900; color:#34d399; margin-bottom:2px;">MENU</div>
-                            <div class="sim-drawer-item" id="simItemLang">🌐 Idioma</div>
-                            <div class="sim-drawer-item highlight" id="simItemTheme">🎨 Tema OLED</div>
-                            <div class="sim-drawer-item" id="simItemVoice">⚡ Voz Turbo</div>
-                            <div class="sim-drawer-item" id="simItemSupport">💬 Suporte</div>
-                        </div>
-
-                        <div class="phone-screen-inner" id="simPhoneScreen">
-                            <div style="font-size:1.2rem; margin-top:20px;">📄</div>
-                            <div style="color:#34d399; font-size:0.55rem; font-weight:800;">Rota.pdf</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.45; margin-bottom:14px;">
-                <b>Como Funciona na Prática:</b><br>
-                1. <b>Importe o PDF:</b> Escolha o arquivo da sua rota.<br>
-                2. <b>Aponte para o Pacote:</b> A câmera faz o escaneamento a laser instantâneo.<br>
-                3. <b>Ouça a Parada:</b> O app fala no fone e alerta paradas duplas no mesmo endereço!<br>
-                4. <b>Menu Lateral:</b> Alterne temas, ajuste a voz tática ou abra o Waze/Maps.
-            </div>
-
-            <button onclick="fecharModalTutorial()" class="btn-action-primary">
-                Entendido! Começar Agora
-            </button>
-        </div>
-    </div>
-
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
             <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
@@ -1399,7 +1223,7 @@
         </div>
     </div>
 
-    <!-- MODAL MODO DONO / PAINEL MASTER COM MÉTRICAS E WHATSAPP DIRETO -->
+    <!-- MODAL MODO DONO / PAINEL MASTER -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left; max-height:90vh; overflow-y:auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1505,8 +1329,8 @@
         </div>
     </div>
 
-    <div class="top-nav">
-        <button class="nav-btn" onclick="toggleSidebar()">
+    <div class="top-nav" id="elTopNav">
+        <button class="nav-btn" id="btnMenuReal" onclick="toggleSidebar()">
             <span>☰</span> <span data-i18n="menu">Menu</span>
         </button>
         <span class="access-badge" id="diasRestantes">Acesso Ativo</span>
@@ -1522,8 +1346,8 @@
             📲 <span data-i18n="download_app">Baixar App no Celular</span>
         </button>
 
-        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:10px;" onclick="abrirModalTutorial(); toggleSidebar();">
-            📖 <span>Guia & Tutorial</span>
+        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:10px;" onclick="iniciarPilotoAutomaticoReal(); toggleSidebar();">
+            🤖 <span>Guia com Boneco Real</span>
         </button>
 
         <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:14px;" onclick="abrirModalHistorico(); toggleSidebar();">
@@ -1532,7 +1356,7 @@
 
         <div style="margin-bottom:16px;">
             <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
-                <button class="btn-action-primary" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
+                <button class="btn-action-primary" id="btnSuporteSidebar" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
                     💬 Suporte
                 </button>
             </a>
@@ -1540,7 +1364,7 @@
 
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span data-i18n="language_label">Idioma</span></label>
-            <div class="segmented-control">
+            <div class="segmented-control" id="controlLangReal">
                 <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
                 <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
                 <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">EN</button>
@@ -1549,7 +1373,7 @@
 
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
-            <div class="segmented-control-grid3">
+            <div class="segmented-control-grid3" id="controlThemeReal">
                 <button class="segmented-btn active" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
                 <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
                 <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button>
@@ -1558,7 +1382,7 @@
 
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
-            <div class="segmented-control-grid4">
+            <div class="segmented-control-grid4" id="controlVoiceReal">
                 <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Cria Turbo</button>
                 <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Rádio Asfalto</button>
                 <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">🗣️ Natural HD</button>
@@ -1619,7 +1443,7 @@
             </button>
         </div>
 
-        <div class="upload-section">
+        <div class="upload-section" id="elSecaoUpload">
             <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
             <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
             
@@ -1635,7 +1459,7 @@
         </div>
 
         <div id="areaExecucao" style="display:none;">
-            <div class="metrics-board">
+            <div class="metrics-board" id="elMetricsBoard">
                 <div class="metric-cell">
                     <div class="metric-val" id="valPacotes">0 / 0</div>
                     <div class="metric-lbl" data-i18n="metric_scanned">Bipados</div>
@@ -1659,7 +1483,7 @@
 
             <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
 
-            <div class="camera-viewport">
+            <div class="camera-viewport" id="elCameraViewport">
                 <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
                     <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
                     <span data-i18n="cam_flip">Virar</span>
@@ -1722,11 +1546,12 @@
         }
 
         // ==========================================
-        // SIMULADOR INTERATIVO COM VOZ "CRIA DO ASFALTO"
+        // MODO PILOTO AUTOMÁTICO / TOUR REAL NO APP
         // ==========================================
-        let simInterval = null;
+        let tourTimer = null;
+        let tourEtapa = 0;
 
-        function falarNarradorTutorial(texto) {
+        function falarNarradorCria(texto) {
             let tipo = localStorage.getItem('voz_preferida') || 'rapida';
             if (tipo === 'mudo') return;
             try {
@@ -1734,98 +1559,129 @@
                 let msg = new SpeechSynthesisUtterance(texto);
                 let lang = localStorage.getItem('idioma_preferido') || 'pt';
                 msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
-                
-                // Configuração da voz "Cria": rápida, marcante e assertiva
-                msg.rate = 1.45;
+                msg.rate = 1.40;
                 msg.pitch = 1.15;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
 
-        function iniciarSimulacaoTutorial() {
-            let status = document.getElementById('simStatus');
-            let phoneScreen = document.getElementById('simPhoneScreen');
-            let laser = document.getElementById('simLaser');
-            let drawer = document.getElementById('simDrawerMenu');
-            let falaTxt = document.getElementById('simTextoFala');
-            let driverArm = document.getElementById('simDriverArm');
-            let step = 0;
+        function moverBonecoParaElemento(el, textoBalão) {
+            let box = document.getElementById('tourAvatarBox');
+            let bolha = document.getElementById('tourTextoBolha');
+            bolha.innerText = textoBalão;
 
-            if (simInterval) clearInterval(simInterval);
+            if (el) {
+                let rect = el.getBoundingClientRect();
+                let topPos = rect.top - 140;
+                let leftPos = rect.left + (rect.width / 2) - 30;
 
-            function executarPasso() {
-                if (step === 0) {
-                    // Passo 1: Importar Rota em PDF
-                    status.innerText = "1. Carregando Rota em PDF...";
-                    laser.style.display = "none";
-                    drawer.classList.remove('open');
-                    driverArm.style.transform = "rotate(20deg)";
-                    falaTxt.innerText = "1. Importe a folha da sua rota!";
-                    falarNarradorTutorial("Carrega o PDF da rota aí meu parceiro!");
+                if (topPos < 60) topPos = rect.bottom + 15;
+                if (leftPos < 20) leftPos = 20;
+                if (leftPos > window.innerWidth - 180) leftPos = window.innerWidth - 180;
 
-                    phoneScreen.innerHTML = `
-                        <div style="font-size:1.4rem; margin-top:20px;">📄</div>
-                        <div style="color:#34d399; font-size:0.55rem; font-weight:900;">Manifesto.pdf</div>
-                        <div style="font-size:0.45rem; color:#888;">35 pacotes carregados</div>
-                    `;
-                    step = 1;
-                } else if (step === 1) {
-                    // Passo 2: Câmera ativa e escaneamento do pacote
-                    status.innerText = "2. Câmera e Escaneamento...";
-                    laser.style.display = "block";
-                    drawer.classList.remove('open');
-                    driverArm.style.transform = "rotate(-20deg)";
-                    falaTxt.innerText = "2. Aponte a câmera na etiqueta!";
-                    falarNarradorTutorial("Mire na etiqueta pra ler a chave!");
-
-                    phoneScreen.innerHTML = `
-                        <div style="font-size:0.48rem; color:#34d399; font-weight:800; margin-top:10px;">LENDO CÓDIGO...</div>
-                        <div style="font-size:0.50rem; color:#fff; font-family:monospace; margin-top:20px;">BR994820194SP</div>
-                    `;
-                    step = 2;
-                } else if (step === 2) {
-                    // Passo 3: Bip de Sucesso e Parada em Destaque
-                    status.innerText = "3. Parada & Endereço Instantâneo!";
-                    laser.style.display = "none";
-                    drawer.classList.remove('open');
-                    driverArm.style.transform = "rotate(0deg)";
-                    playBeepSucesso();
-                    
-                    falaTxt.innerText = '🔊 "Parada 14! Rua Central, 120"';
-                    falarNarradorTutorial("Parada quatorze na mão!");
-
-                    phoneScreen.innerHTML = `
-                        <div style="font-size:1.4rem; font-weight:900; color:#34d399; line-height:1; margin-top:10px;">P14</div>
-                        <div style="font-size:0.46rem; color:#fff; font-weight:700; margin-top:4px;">📍 Rua Central, 120</div>
-                        <div style="font-size:0.42rem; color:#34d399; background:rgba(16,185,129,0.2); border-radius:3px; padding:2px; margin-top:4px;">MESMO ENDEREÇO P15</div>
-                    `;
-                    step = 3;
-                } else if (step === 3) {
-                    // Passo 4: Menu Lateral com Waze, Temas e Voz
-                    status.innerText = "4. Menu Lateral & Opções...";
-                    laser.style.display = "none";
-                    drawer.classList.add('open');
-                    driverArm.style.transform = "rotate(30deg)";
-                    falaTxt.innerText = "4. Alterne temas, vozes e GPS no Menu!";
-                    falarNarradorTutorial("Menu lateral cheio de opções táticas!");
-
-                    step = 0;
-                }
+                box.style.top = topPos + "px";
+                box.style.left = leftPos + "px";
             }
-
-            executarPasso();
-            simInterval = setInterval(executarPasso, 2800);
         }
 
-        function abrirModalTutorial() {
-            document.getElementById('modalTutorial').style.display = 'flex';
-            iniciarSimulacaoTutorial();
+        function iniciarPilotoAutomaticoReal() {
+            document.getElementById('telaBloqueio').style.display = 'none';
+            document.getElementById('tourGuiaReal').style.display = 'block';
+            tourEtapa = 0;
+            executarProximaEtapaTour();
         }
 
-        function fecharModalTutorial() {
-            if (simInterval) clearInterval(simInterval);
+        function abortarTourInterativo() {
+            clearTimeout(tourTimer);
             try { window.speechSynthesis.cancel(); } catch(e) {}
-            document.getElementById('modalTutorial').style.display = 'none';
+            
+            let sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('active');
+            let ov = document.getElementById('overlay');
+            if (ov) ov.style.display = 'none';
+
+            document.getElementById('tourGuiaReal').style.display = 'none';
+
+            let zap = localStorage.getItem('usuario_zap_salvo');
+            if (!zap) {
+                document.getElementById('telaBloqueio').style.display = 'flex';
+            }
+            notificar("Tutorial finalizado!");
+        }
+
+        function executarProximaEtapaTour() {
+            clearTimeout(tourTimer);
+
+            if (tourEtapa === 0) {
+                // 1. Mostrar o botão de PDF
+                let btnUpload = document.getElementById('elSecaoUpload');
+                moverBonecoParaElemento(btnUpload, "1. Primeiro você clica aqui para carregar o PDF da rota!");
+                falarNarradorCria("Carrega o PDF da rota aqui no botão!");
+                tourEtapa = 1;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4000);
+
+            } else if (tourEtapa === 1) {
+                // 2. Simular o carregamento de uma rota real
+                document.getElementById('areaExecucao').style.display = 'block';
+                mapaRotas = { "rua_central_120": ["BR994820194SP", "BR994820195SP"] };
+                stopCorrespondente = { "BR994820194SP": 14, "BR994820195SP": 15 };
+                nomeExibicao = { "rua_central_120": "Rua Central, 120" };
+                todosPacotes = new Set(["BR994820194SP", "BR994820195SP"]);
+                pacotesBipados = new Set();
+                atualizarStats();
+
+                let camBox = document.getElementById('elCameraViewport');
+                moverBonecoParaElemento(camBox, "2. Aponte a câmera na etiqueta para bipar a encomenda!");
+                falarNarradorCria("Aponta a câmera na etiqueta que o app faz a leitura a laser!");
+                tourEtapa = 2;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4200);
+
+            } else if (tourEtapa === 2) {
+                // 3. Simular o Bip e resultado
+                processarCodigo("BR994820194SP");
+                let cardRes = document.getElementById('cardResult');
+                moverBonecoParaElemento(cardRes, "3. O app bipa, fala no seu fone e avisa paradas no mesmo local!");
+                falarNarradorCria("Parada quatorze na mão! E ainda avisa que tem outro pacote no mesmo lugar!");
+                tourEtapa = 3;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4500);
+
+            } else if (tourEtapa === 3) {
+                // 4. Abrir o Menu Lateral Real
+                let btnMenu = document.getElementById('btnMenuReal');
+                moverBonecoParaElemento(btnMenu, "4. Agora veja as opções no Menu Lateral!");
+                falarNarradorCria("Abrindo o menu lateral tático!");
+                toggleSidebar();
+
+                tourEtapa = 4;
+                tourTimer = setTimeout(executarProximaEtapaTour, 2500);
+
+            } else if (tourEtapa === 4) {
+                // 5. Clicar no Tema OLED e Voz Turbo dentro do menu real
+                let temaBtn = document.getElementById('theme_gray');
+                if (temaBtn) temaBtn.click();
+
+                let voiceControl = document.getElementById('controlVoiceReal');
+                moverBonecoParaElemento(voiceControl, "5. Escolha o tema de cor, a voz tática e o GPS Waze/Maps!");
+                falarNarradorCria("Você pode mudar o tema da tela e a voz do sintetizador!");
+                
+                setTimeout(() => {
+                    let oledBtn = document.getElementById('theme_black_oled');
+                    if (oledBtn) oledBtn.click();
+                }, 1500);
+
+                tourEtapa = 5;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4500);
+
+            } else if (tourEtapa === 5) {
+                // 6. Finalização do tour
+                let sb = document.getElementById('sidebar');
+                if (sb && sb.classList.contains('active')) toggleSidebar();
+
+                moverBonecoParaElemento(document.querySelector('.hero-banner'), "Pronto! Agora você domina o Pacote É Mato na rua!");
+                falarNarradorCria("Fechou meu parceiro! Agora é só acelerar nas entregas!");
+
+                tourTimer = setTimeout(abortarTourInterativo, 4000);
+            }
         }
 
         const traducoes = {
