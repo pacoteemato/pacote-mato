@@ -902,57 +902,235 @@
             gap: 3px;
         }
 
+        /* SIMULADOR INTERATIVO COM BONECO INSTRUTOR */
         .tutorial-sim-container {
             background: #000000;
-            border: 1.5px solid rgba(16, 185, 129, 0.35);
-            border-radius: 16px;
-            padding: 14px;
+            border: 1.5px solid rgba(16, 185, 129, 0.4);
+            border-radius: 18px;
+            padding: 14px 10px;
             margin-bottom: 12px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-        }
-
-        .sim-screen-box {
-            background: #0b0b0d;
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 12px;
-            min-height: 180px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
             position: relative;
             overflow: hidden;
         }
 
-        .sim-laser-line {
+        .sim-stage-area {
+            position: relative;
+            width: 100%;
+            height: 235px;
+            background: radial-gradient(circle at center, #111c16 0%, #08080a 80%);
+            border-radius: 14px;
+            border: 1px solid var(--surface-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Boneco Entregador Instrutor */
+        .driver-character {
+            position: absolute;
+            left: 14px;
+            bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: idleCharacter 2.4s infinite ease-in-out;
+            transition: all 0.4s ease;
+            z-index: 10;
+        }
+
+        @keyframes idleCharacter {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .driver-helmet {
+            width: 36px;
+            height: 36px;
+            background: #10b981;
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+        }
+
+        .driver-visor {
+            position: absolute;
+            width: 24px;
+            height: 12px;
+            background: #0b0b0d;
+            border-radius: 8px;
+            top: 13px;
+            right: 4px;
+            border: 1px solid #34d399;
+        }
+
+        .driver-body {
+            width: 30px;
+            height: 42px;
+            background: #141417;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            margin-top: -2px;
+            position: relative;
+        }
+
+        .driver-arm {
+            position: absolute;
+            width: 24px;
+            height: 9px;
+            background: #10b981;
+            border-radius: 6px;
+            top: 10px;
+            right: -14px;
+            transform-origin: left center;
+            animation: pointAction 2.4s infinite ease-in-out;
+        }
+
+        @keyframes pointAction {
+            0%, 100% { transform: rotate(15deg); }
+            50% { transform: rotate(-25deg); }
+        }
+
+        /* Celular Mockup do Simulador */
+        .phone-mockup {
+            position: absolute;
+            width: 130px;
+            height: 200px;
+            background: #000000;
+            border: 2px solid #34d399;
+            border-radius: 16px;
+            right: 14px;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        .phone-screen-inner {
+            width: 100%;
+            height: 100%;
+            background: #0b0b0d;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 6px;
+        }
+
+        /* Menu Lateral Deslizante dentro do Mockup */
+        .sim-drawer-menu {
+            position: absolute;
+            top: 0;
+            left: -100px;
+            width: 90px;
+            height: 100%;
+            background: #141417;
+            border-right: 1px solid #34d399;
+            z-index: 20;
+            padding: 6px 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sim-drawer-menu.open { left: 0; }
+
+        .sim-drawer-item {
+            font-size: 0.50rem;
+            font-weight: 800;
+            padding: 4px 5px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-align: left;
+        }
+
+        .sim-drawer-item.highlight {
+            background: #10b981;
+            color: #000;
+            box-shadow: 0 2px 6px rgba(16,185,129,0.5);
+        }
+
+        .laser-beam {
             position: absolute;
             width: 100%;
             height: 2px;
             background: #34d399;
             box-shadow: 0 0 10px #34d399;
             top: 0;
-            animation: scanMove 1.8s infinite ease-in-out;
+            animation: laserScan 1.5s infinite ease-in-out;
             display: none;
+            z-index: 15;
         }
 
-        @keyframes scanMove {
-            0% { top: 10%; opacity: 0.2; }
-            50% { top: 90%; opacity: 1; }
-            100% { top: 10%; opacity: 0.2; }
+        @keyframes laserScan {
+            0% { top: 20%; opacity: 0.2; }
+            50% { top: 80%; opacity: 1; }
+            100% { top: 20%; opacity: 0.2; }
         }
 
-        .sim-status-badge {
-            display: inline-block;
-            font-size: 0.68rem;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            margin-bottom: 8px;
-            text-transform: uppercase;
+        /* Pacote no Chão */
+        .box-package {
+            position: absolute;
+            width: 44px;
+            height: 40px;
+            background: #ca8a04;
+            border: 1.5px solid #eab308;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            bottom: 14px;
+            left: 64px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
+            z-index: 8;
+        }
+
+        .box-barcode-label {
+            width: 26px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+            padding: 2px;
+        }
+
+        .barcode-line {
+            height: 1.5px;
+            background: #000000;
+            width: 100%;
+        }
+
+        /* Balão de Fala do Instrutor */
+        .audio-bubble {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(16, 185, 129, 0.95);
+            color: #000000;
+            font-weight: 900;
+            font-size: 0.70rem;
+            padding: 6px 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            z-index: 30;
+            animation: popInBubble 0.25s ease;
+        }
+
+        @keyframes popInBubble {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -1086,30 +1264,69 @@
         </div>
     </div>
 
-    <!-- MODAL TUTORIAL / SIMULADOR INTERATIVO -->
+    <!-- MODAL TUTORIAL / SIMULADOR COM BONECO INSTRUTOR ANIMADO -->
     <div id="modalTutorial" class="modal-backdrop">
         <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#34d399; font-weight:800; font-size:1.1rem;">📖 Demonstração do Sistema</h3>
-                <span onclick="fecharModalTutorial()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.1rem;">✕</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="color:#34d399; font-weight:900; font-size:1.1rem;">🛵 Como Usar na Rota</h3>
+                <span onclick="fecharModalTutorial()" style="cursor:pointer; color:var(--text-muted); font-weight:bold; font-size:1.2rem;">✕</span>
             </div>
             
             <div class="tutorial-sim-container">
-                <div class="sim-status-badge" id="simStatus">Passo 1: Carregando Rota...</div>
+                <div class="sim-status-badge" id="simStatus">Passo 1: Carregando Manifesto...</div>
                 
-                <div class="sim-screen-box" id="simScreen">
-                    <div class="sim-laser-line" id="simLaser"></div>
-                    <div id="simContent" style="font-size:0.82rem; font-weight:800; color:#ffffff;">
-                        📄 Manifesto.pdf
+                <div class="sim-stage-area">
+                    <!-- Balão de Fala do Instrutor -->
+                    <div class="audio-bubble" id="simAudioBubble">
+                        🗣️ <span id="simTextoFala">Importe a folha da sua rota em PDF!</span>
+                    </div>
+
+                    <!-- Boneco Entregador Instrutor -->
+                    <div class="driver-character" id="simDriverChar">
+                        <div class="driver-helmet">
+                            <div class="driver-visor"></div>
+                        </div>
+                        <div class="driver-body">
+                            <div class="driver-arm" id="simDriverArm"></div>
+                        </div>
+                    </div>
+
+                    <!-- Pacote no Chão -->
+                    <div class="box-package" id="simBox">
+                        <div class="box-barcode-label">
+                            <div class="barcode-line"></div>
+                            <div class="barcode-line" style="height:1px;"></div>
+                            <div class="barcode-line"></div>
+                        </div>
+                    </div>
+
+                    <!-- Celular do Entregador com Leitor e Menu -->
+                    <div class="phone-mockup" id="simPhone">
+                        <div class="laser-beam" id="simLaser"></div>
+                        
+                        <!-- Menu Lateral Deslizante Interno -->
+                        <div class="sim-drawer-menu" id="simDrawerMenu">
+                            <div style="font-size:0.48rem; font-weight:900; color:#34d399; margin-bottom:2px;">MENU</div>
+                            <div class="sim-drawer-item" id="simItemLang">🌐 Idioma</div>
+                            <div class="sim-drawer-item highlight" id="simItemTheme">🎨 Tema OLED</div>
+                            <div class="sim-drawer-item" id="simItemVoice">⚡ Voz Turbo</div>
+                            <div class="sim-drawer-item" id="simItemSupport">💬 Suporte</div>
+                        </div>
+
+                        <div class="phone-screen-inner" id="simPhoneScreen">
+                            <div style="font-size:1.2rem; margin-top:20px;">📄</div>
+                            <div style="color:#34d399; font-size:0.55rem; font-weight:800;">Rota.pdf</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin-bottom:14px;">
-                <b>Como Funciona na Rua:</b><br>
-                1. Você importa a folha da transportadora.<br>
-                2. Aponta a câmera para o pacote.<br>
-                3. O app bipa, fala no seu fone e mostra a parada e o endereço completo instantaneamente!
+            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.45; margin-bottom:14px;">
+                <b>Como Funciona na Prática:</b><br>
+                1. <b>Importe o PDF:</b> Escolha o arquivo da sua rota.<br>
+                2. <b>Aponte para o Pacote:</b> A câmera faz o escaneamento a laser instantâneo.<br>
+                3. <b>Ouça a Parada:</b> O app fala no fone e alerta paradas duplas no mesmo endereço!<br>
+                4. <b>Menu Lateral:</b> Alterne temas, ajuste a voz tática ou abra o Waze/Maps.
             </div>
 
             <button onclick="fecharModalTutorial()" class="btn-action-primary">
@@ -1175,7 +1392,7 @@
         </div>
     </div>
 
-    <!-- MODAL MODO DONO / PAINEL MASTER REESTRUTURADO -->
+    <!-- MODAL MODO DONO / PAINEL MASTER -->
     <div id="modalAdmin" class="modal-backdrop">
         <div class="modal-card" style="max-width:440px; text-align:left; max-height:90vh; overflow-y:auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1476,54 +1693,97 @@
             }, 2400);
         }
 
+        // ==========================================
+        // SIMULADOR INTERATIVO COM VOZ E BONECO INSTRUTOR
+        // ==========================================
         let simInterval = null;
+
+        function falarNarradorTutorial(texto) {
+            let tipo = localStorage.getItem('voz_preferida') || 'rapida';
+            if (tipo === 'mudo') return;
+            try {
+                window.speechSynthesis.cancel();
+                let msg = new SpeechSynthesisUtterance(texto);
+                let lang = localStorage.getItem('idioma_preferido') || 'pt';
+                msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
+                msg.rate = 1.35;
+                window.speechSynthesis.speak(msg);
+            } catch(e) {}
+        }
 
         function iniciarSimulacaoTutorial() {
             let status = document.getElementById('simStatus');
-            let content = document.getElementById('simContent');
+            let phoneScreen = document.getElementById('simPhoneScreen');
             let laser = document.getElementById('simLaser');
+            let drawer = document.getElementById('simDrawerMenu');
+            let falaTxt = document.getElementById('simTextoFala');
+            let driverArm = document.getElementById('simDriverArm');
             let step = 0;
 
             if (simInterval) clearInterval(simInterval);
 
             function executarPasso() {
                 if (step === 0) {
+                    // Passo 1: Importar Rota em PDF
                     status.innerText = "1. Carregando Rota em PDF...";
                     laser.style.display = "none";
-                    content.innerHTML = `
-                        <div style="font-size:2rem; margin-bottom:4px;">📄</div>
-                        <div style="color:#34d399; font-weight:800;">Manifesto_ZonaSul.pdf</div>
-                        <div style="font-size:0.68rem; color:#888;">35 pacotes identificados</div>
+                    drawer.classList.remove('open');
+                    driverArm.style.transform = "rotate(20deg)";
+                    falaTxt.innerText = "1. Importe a folha da rota em PDF!";
+                    falarNarradorTutorial("Importe a folha da sua rota.");
+
+                    phoneScreen.innerHTML = `
+                        <div style="font-size:1.4rem; margin-top:20px;">📄</div>
+                        <div style="color:#34d399; font-size:0.55rem; font-weight:900;">Rota.pdf</div>
+                        <div style="font-size:0.45rem; color:#888;">35 pacotes</div>
                     `;
                     step = 1;
                 } else if (step === 1) {
-                    status.innerText = "2. Escaneando Etiqueta...";
+                    // Passo 2: Câmera ativa e escaneamento do pacote
+                    status.innerText = "2. Câmera e Escaneamento...";
                     laser.style.display = "block";
-                    content.innerHTML = `
-                        <div style="border:2px dashed #34d399; border-radius:8px; padding:10px 16px; background:rgba(16,185,129,0.06);">
-                            <div style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#fff;">BR994820194SP</div>
-                            <div style="font-size:0.65rem; color:#888; margin-top:2px;">Rua das Palmeiras, 340</div>
-                        </div>
+                    drawer.classList.remove('open');
+                    driverArm.style.transform = "rotate(-20deg)";
+                    falaTxt.innerText = "2. Aponte a câmera para o pacote!";
+                    falarNarradorTutorial("Aponte a câmera para a etiqueta.");
+
+                    phoneScreen.innerHTML = `
+                        <div style="font-size:0.48rem; color:#34d399; font-weight:800; margin-top:10px;">LENDO CÓDIGO...</div>
+                        <div style="font-size:0.50rem; color:#fff; font-family:monospace; margin-top:20px;">BR994820194SP</div>
                     `;
                     step = 2;
                 } else if (step === 2) {
-                    status.innerText = "3. Parada e Endereço!";
+                    // Passo 3: Bip de Sucesso e Parada em Destaque
+                    status.innerText = "3. Parada & Endereço Instantâneo!";
                     laser.style.display = "none";
+                    drawer.classList.remove('open');
+                    driverArm.style.transform = "rotate(0deg)";
                     playBeepSucesso();
-                    content.innerHTML = `
-                        <div style="font-size:2.8rem; font-weight:900; color:#34d399; line-height:1;">P12</div>
-                        <div style="font-size:0.85rem; font-weight:700; color:#ffffff; margin-top:4px;">📍 Rua das Palmeiras, 340</div>
-                        <div style="font-size:0.68rem; color:#888; font-family:'JetBrains Mono',monospace;">BR994820194SP</div>
-                        <div style="font-size:0.65rem; color:#34d399; font-weight:800; margin-top:4px; background:rgba(16,185,129,0.15); padding:2px 6px; border-radius:4px;">
-                            ⚠️ MESMO ENDEREÇO DA P13
-                        </div>
+                    
+                    falaTxt.innerText = '🔊 "Parada 14! Rua Central, 120"';
+                    falarNarradorTutorial("Parada 14!");
+
+                    phoneScreen.innerHTML = `
+                        <div style="font-size:1.4rem; font-weight:900; color:#34d399; line-height:1; margin-top:10px;">P14</div>
+                        <div style="font-size:0.46rem; color:#fff; font-weight:700; margin-top:4px;">📍 Rua Central, 120</div>
+                        <div style="font-size:0.42rem; color:#34d399; background:rgba(16,185,129,0.2); border-radius:3px; padding:2px; margin-top:4px;">MESMO ENDEREÇO P15</div>
                     `;
+                    step = 3;
+                } else if (step === 3) {
+                    // Passo 4: Menu Lateral com Waze, Temas e Voz
+                    status.innerText = "4. Menu Lateral & Opções...";
+                    laser.style.display = "none";
+                    drawer.classList.add('open');
+                    driverArm.style.transform = "rotate(30deg)";
+                    falaTxt.innerText = "4. Alterne temas, vozes e GPS no Menu!";
+                    falarNarradorTutorial("Use o menu para temas, voz e navegação.");
+
                     step = 0;
                 }
             }
 
             executarPasso();
-            simInterval = setInterval(executarPasso, 2200);
+            simInterval = setInterval(executarPasso, 2700);
         }
 
         function abrirModalTutorial() {
@@ -1533,6 +1793,7 @@
 
         function fecharModalTutorial() {
             if (simInterval) clearInterval(simInterval);
+            try { window.speechSynthesis.cancel(); } catch(e) {}
             document.getElementById('modalTutorial').style.display = 'none';
         }
 
@@ -2295,7 +2556,7 @@
         }
 
         // ==========================================
-        // MODO DONO - GESTÃO AVANÇADA E COMPLETA
+        // MODO DONO - GESTÃO AVANÇADA
         // ==========================================
         let cliquesAdmin = 0;
         let timerCliques = null;
@@ -2629,7 +2890,6 @@
                     let data = doc.data();
                     let agora = Date.now();
 
-                    // Verifica se está ativo e se ainda não expirou
                     if (data.ativo && data.mensagem && (agora <= data.expiraEm || !data.expiraEm)) {
                         banner.innerHTML = `<span style="font-size:1.1rem; vertical-align:middle;">📢</span> <b>AVISO GERAL:</b> ${data.mensagem}`;
                         banner.style.display = 'block';
