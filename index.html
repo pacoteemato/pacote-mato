@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PACOTE É MATO - OTIMIZADOR & LOGÍSTICA</title>
+    <title>PACOTE É MATO</title>
     
-    <!-- Favicon SVG -->
+    <!-- Ícone Favicon SVG -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b0b0d' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%/svg%3E">
     
     <!-- PWA Setup -->
@@ -21,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Chakra+Petch:wght@700;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 
-    <!-- Bibliotecas: XLSX (Excel), PDF.js, QR Code Scanner -->
+    <!-- Libraries: XLSX (Excel), PDF.js, QR Code Scanner -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -43,9 +43,9 @@
             --primary: #10b981;
             --primary-gradient: linear-gradient(135deg, #059669, #10b981);
             --accent-green: #047857;
+            --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
             --accent-green-soft: #34d399;
             --danger: #ef4444;
-            --warning: #f59e0b;
             --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--surface-border);
         }
 
@@ -177,6 +177,44 @@
             100% { filter: drop-shadow(0 8px 22px rgba(52, 211, 153, 0.65)); }
         }
 
+        .btn-instalar-dinamico {
+            width: 100%;
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 12px;
+            padding: 11px 14px;
+            font-weight: 800;
+            font-size: 0.84rem;
+            margin-bottom: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+        }
+
+        #bannerBroadcast {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(220, 38, 38, 0.2));
+            border: 1.5px solid #f59e0b;
+            color: #ffffff;
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 14px;
+            display: none;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+            animation: pulseGlowAviso 2s infinite alternate, slideDown 0.3s ease;
+        }
+
+        @keyframes pulseGlowAviso {
+            0% { transform: scale(0.99); box-shadow: 0 0 10px rgba(245, 158, 11, 0.25); }
+            100% { transform: scale(1.01); box-shadow: 0 0 24px rgba(245, 158, 11, 0.7); }
+        }
+
         #toastNotificacao {
             position: fixed;
             top: 20px;
@@ -202,6 +240,244 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
+        #telaBloqueio {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at top center, #111c16 0%, #000000 80%);
+            z-index: 1000000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 410px;
+            background: var(--surface-1);
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--surface-border);
+            text-align: left;
+        }
+
+        .auth-header-center {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .brand-title-pro {
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: -0.3px;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .brand-subtitle-pro {
+            font-size: 0.7rem;
+            color: #34d399;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-label-pro {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 14px;
+            font-size: 0.95rem;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .input-icon-right {
+            position: absolute;
+            right: 14px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            opacity: 0.7;
+            user-select: none;
+        }
+
+        .input-auth {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 0.92rem;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-auth.com-icone-direita { padding-right: 40px; }
+
+        .input-auth:focus {
+            border-color: var(--primary);
+            background: rgba(20, 20, 23, 0.95);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-action-primary {
+            width: 100%;
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-action-trial {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-support-login {
+            width: 100%;
+            background: rgba(16, 185, 129, 0.08);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.84rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            margin-bottom: 12px;
+        }
+
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin: 12px 0 10px;
+        }
+        .divider-label::before, .divider-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--surface-border);
+        }
+
+        .plan-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+
+        .plan-item {
+            background: var(--surface-2);
+            border: 1.5px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .plan-item.selecionado {
+            border-color: #34d399 !important;
+            background: rgba(16, 185, 129, 0.12);
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+        }
+
+        .plan-item.featured { border-color: rgba(16, 185, 129, 0.45); }
+
+        .plan-badge-top {
+            position: absolute;
+            top: -7px;
+            right: 12px;
+            background: var(--accent-green-gradient);
+            color: #ffffff;
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
+        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
+
+        .btn-gerar-pix-confirm {
+            width: 100%;
+            background: var(--accent-green-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            font-size: 0.90rem;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -225,6 +501,19 @@
             box-shadow: var(--shadow-card);
         }
 
+        .qr-placeholder {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 14px;
+            width: 155px;
+            height: 155px;
+            margin: 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
         .top-nav {
             width: 100%;
             max-width: 440px;
@@ -243,6 +532,7 @@
             font-size: 0.82rem;
             font-weight: 700;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             gap: 6px;
@@ -269,7 +559,7 @@
             cursor: pointer;
         }
 
-        /* CARD DO OTIMIZADOR DE ROTA & IMPORTADOR */
+        /* SEÇÃO DE IMPORTAÇÃO & OTIMIZADOR */
         .upload-section {
             background: var(--surface-1);
             padding: 18px 16px;
@@ -364,35 +654,6 @@
         .stop-address { font-size: 0.90rem; font-weight: 700; color: #ffffff; margin-bottom: 4px; }
         .stop-package-id { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
 
-        /* LISTA DE ENTREGAS & CARDS DINÂMICOS */
-        .parada-box-pro {
-            background: var(--surface-2);
-            border: 1px solid var(--surface-border);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-            text-align: left;
-        }
-        .parada-box-pro.entregue {
-            border-color: #10b981;
-            opacity: 0.75;
-            background: rgba(16, 185, 129, 0.06);
-        }
-        .parada-box-pro.nao-entregue {
-            border-color: var(--danger);
-            background: rgba(239, 68, 68, 0.08);
-        }
-
-        .btn-status-toggle {
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.68rem;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
-        }
-
         .drawer-mask {
             position: fixed;
             inset: 0;
@@ -417,34 +678,199 @@
         }
         .drawer-panel.active { left: 0; }
 
-        .btn-action-primary {
-            width: 100%;
-            background: var(--primary-gradient);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
+        /* LISTA DE PARADAS OTIMIZADAS COM STATUS */
+        .parada-box-pro {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
             padding: 12px;
-            font-weight: 800;
-            font-size: 0.9rem;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            text-align: left;
+        }
+        .parada-box-pro.entregue {
+            border-color: #10b981;
+            opacity: 0.8;
+            background: rgba(16, 185, 129, 0.08);
+        }
+        .parada-box-pro.nao-entregue {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.08);
         }
 
-        .input-auth {
-            width: 100%;
-            padding: 12px 14px;
+        .btn-status-toggle {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+        }
+
+        .admin-nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+        .admin-tab {
+            padding: 7px 4px;
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+        }
+        .admin-tab.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .user-row {
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             border-radius: 12px;
-            color: var(--text-main);
-            font-size: 0.92rem;
-            font-weight: 700;
-            outline: none;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .user-row-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .user-row-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            border-top: 1px solid var(--surface-border);
+            padding-top: 6px;
+        }
+
+        .btn-mini-admin {
+            border: none;
+            border-radius: 6px;
+            padding: 4px 7px;
+            font-size: 0.60rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        /* OVERLAY E AVATAR DO MODO PILOTO AUTOMÁTICO */
+        #tourGuiaReal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000020;
+            pointer-events: none;
+            display: none;
+        }
+
+        .tour-avatar-box {
+            position: absolute;
+            transition: all 0.75s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000025;
+            pointer-events: auto;
+        }
+
+        .tour-bubble {
+            background: rgba(16, 185, 129, 0.96);
+            color: #000000;
+            font-weight: 900;
+            font-size: 0.80rem;
+            padding: 8px 14px;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+            margin-bottom: 6px;
+            max-width: 260px;
+            text-align: center;
+            border: 2px solid #ffffff;
+            animation: pulseGlowAviso 1.5s infinite alternate;
+        }
+
+        .tour-char-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: floatLogo 2s infinite ease-in-out;
+        }
+
+        .tour-char-head {
+            width: 44px;
+            height: 44px;
+            background: #10b981;
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
+        }
+
+        .tour-char-visor {
+            position: absolute;
+            width: 28px;
+            height: 14px;
+            background: #000000;
+            border-radius: 8px;
+            top: 14px;
+            right: 4px;
+            border: 1.5px solid #34d399;
+        }
+
+        .tour-char-torso {
+            width: 34px;
+            height: 46px;
+            background: #141417;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            margin-top: -3px;
+            position: relative;
+        }
+
+        .tour-char-hand {
+            position: absolute;
+            width: 28px;
+            height: 10px;
+            background: #34d399;
+            border-radius: 6px;
+            top: 12px;
+            right: -16px;
+            transform-origin: left center;
+            animation: pointArm 1s infinite alternate;
+        }
+
+        @keyframes pointArm {
+            0% { transform: rotate(20deg); }
+            100% { transform: rotate(-35deg); }
+        }
+
+        .btn-abort-tour {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+            z-index: 1000030;
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -460,14 +886,236 @@
             <path d="M50 82 Q38 60 50 38 Q62 60 50 82 Z" fill="#34d399"/>
         </svg>
         <h1 class="ps2-title">PACOTE É MATO</h1>
-        <p class="ps2-subtitle">SISTEMA INTELIGENTE DE OTIMIZAÇÃO</p>
+        <p class="ps2-subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</p>
     </div>
 
     <div id="toastNotificacao"></div>
 
-    <div class="top-nav">
-        <button class="nav-btn" onclick="toggleSidebar()">
-            <span>☰</span> <span>Menu</span>
+    <!-- CAMADA DO BONECO INSTRUTOR NO MODO PILOTO AUTOMÁTICO -->
+    <div id="tourGuiaReal">
+        <button class="btn-abort-tour" onclick="abortarTourInterativo()">✕ Sair do Tutorial</button>
+        <div class="tour-avatar-box" id="tourAvatarBox">
+            <div class="tour-bubble" id="tourTextoBolha">E aí motorista! Vou te ensinar na prática.</div>
+            <div class="tour-char-body">
+                <div class="tour-char-head">
+                    <div class="tour-char-visor"></div>
+                </div>
+                <div class="tour-char-torso">
+                    <div class="tour-char-hand"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="telaBloqueio">
+        <div class="auth-wrapper">
+            <div class="auth-header-center">
+                <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
+                    <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                    <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="#34d399"/>
+                    <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="#34d399"/>
+                    <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                    <polygon points="22,36 50,50 50,78 22,64" fill="#059669" stroke="#047857" stroke-width="1.5"/>
+                    <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+                </svg>
+                <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
+                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
+            </div>
+
+            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
+                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+            </button>
+
+            <button class="btn-action-trial" onclick="iniciarPilotoAutomaticoReal()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
+                🤖 <span>Como Usar (Tutorial com Boneco Real)</span>
+            </button>
+            
+            <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
+            <div class="input-group">
+                <span class="input-icon-left">📱</span>
+                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+            </div>
+
+            <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
+            <div class="input-group">
+                <span class="input-icon-left">🔑</span>
+                <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+                <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">👁️</span>
+            </div>
+            
+            <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
+                ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
+            </button>
+            <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
+                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
+            </button>
+
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+                <button class="btn-support-login">
+                    💬 Suporte
+                </button>
+            </a>
+            
+            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
+
+            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
+            
+            <div class="plan-stack">
+                <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
+                    <div>
+                        <div class="plan-name">Plano Semanal</div>
+                        <div class="plan-meta">7 dias de acesso total</div>
+                    </div>
+                    <div class="plan-val">R$ 4,99</div>
+                </div>
+
+                <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
+                    <span class="plan-badge-top">Popular</span>
+                    <div>
+                        <div class="plan-name">Plano Mensal (1 Mês)</div>
+                        <div class="plan-meta">30 dias • Melhor custo-benefício</div>
+                    </div>
+                    <div class="plan-val">R$ 9,99</div>
+                </div>
+
+                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
+                    <div>
+                        <div class="plan-name">Plano Trimestral (3 Meses)</div>
+                        <div class="plan-meta">90 dias com desconto</div>
+                    </div>
+                    <div class="plan-val">R$ 24,99</div>
+                </div>
+            </div>
+
+            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
+                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE LISTA DE TODAS AS ENTREGAS COM STATUS & GPS -->
+    <div id="modalListaEntregas" class="modal-backdrop">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📋 Paradas & Status de Entrega</h3>
+                <span onclick="fecharModalListaEntregas()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            
+            <div id="listaParadasContainer" style="max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+            
+            <button onclick="fecharModalListaEntregas()" class="btn-action-primary" style="margin-top:12px;">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL MODO DONO / PAINEL MASTER -->
+    <div id="modalAdmin" class="modal-backdrop">
+        <div class="modal-card" style="max-width:440px; text-align:left; max-height:90vh; overflow-y:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">👑 Painel Dono & Controle</h3>
+                <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            
+            <div id="areaLoginAdmin">
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
+                <button onclick="autenticarAdmin()" class="btn-action-primary">Entrar no Modo Dono</button>
+            </div>
+
+            <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
+                
+                <!-- MÉTRICAS FINANCEIRAS DO DONO -->
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
+                    <div style="background:var(--surface-2); padding:8px; border-radius:10px; border:1px solid var(--surface-border); text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Faturamento Total</div>
+                        <div style="font-size:1.05rem; font-weight:900; color:#34d399;" id="txtTotalFaturamento">R$ 0,00</div>
+                    </div>
+                    <div style="background:var(--surface-2); padding:8px; border-radius:10px; border:1px solid var(--surface-border); text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Pagantes Ativos</div>
+                        <div style="font-size:1.05rem; font-weight:900; color:#10b981;" id="txtTotalPagantesAtivos">0</div>
+                    </div>
+                </div>
+
+                <!-- BUSCA RÁPIDA E EXPORTAÇÃO -->
+                <div style="display:flex; gap:6px; margin-bottom:10px;">
+                    <input type="text" id="buscaAdminUser" placeholder="🔍 Buscar por WhatsApp..." oninput="filtrarListaAdminLocal()" class="input-auth" style="padding-left:14px; flex:1; font-size:0.8rem; margin-bottom:0;">
+                    <button onclick="exportarRelatorioCSV()" class="btn-action-primary" style="width:auto; padding:0 10px; font-size:0.75rem; margin-bottom:0; background:var(--surface-2); border:1px solid var(--surface-border);">
+                        📥 CSV
+                    </button>
+                </div>
+
+                <div class="admin-nav-tabs">
+                    <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
+                    <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
+                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes/Outros</button>
+                    <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="background:var(--accent-green); color:#fff;">➕ Liberar Dias</button>
+                    <button class="admin-tab" id="tabAviso" onclick="alternarTabAdmin('aviso')" style="background:#f59e0b; color:#000;">📢 Broadcast</button>
+                </div>
+
+                <div id="viewAdmin30d" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column;"></div>
+                <div id="viewAdmin90d" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+                <div id="viewAdminTeste" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+                <div id="viewAdminPagos" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+
+                <!-- ABA LIBERAR ACESSO COM QUALQUER QUANTIDADE DE DIAS -->
+                <div id="viewAdminAdd" style="display:none; flex-direction:column; gap:8px;">
+                    <label class="form-label-pro">WhatsApp do Entregador (DDD + Número)</label>
+                    <input type="tel" id="inputClienteZap" placeholder="Ex: 11999998888" class="input-auth" style="padding-left:14px;">
+
+                    <label class="form-label-pro">Senha de Acesso</label>
+                    <input type="text" id="inputClienteSenha" placeholder="Senha pessoal do entregador" class="input-auth" style="padding-left:14px;">
+
+                    <label class="form-label-pro">Dias de Acesso (Digite qualquer valor)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="number" id="inputDiasCustom" placeholder="Ex: 1, 15, 45, 180" class="input-auth" style="padding-left:14px; flex:1;" min="1" value="30">
+                        <select id="selAtalhosDias" onchange="if(this.value) document.getElementById('inputDiasCustom').value = this.value" class="input-auth" style="width:130px; padding:0 8px;">
+                            <option value="">Atalhos...</option>
+                            <option value="1">1 Dia</option>
+                            <option value="7">7 Dias</option>
+                            <option value="15">15 Dias</option>
+                            <option value="30">30 Dias</option>
+                            <option value="90">90 Dias</option>
+                            <option value="365">365 Dias</option>
+                        </select>
+                    </div>
+
+                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff; margin-top:6px;">
+                        ⚡ Salvar e Ativar Acesso
+                    </button>
+                </div>
+
+                <!-- ABA AVISO BROADCAST COM DURAÇÃO -->
+                <div id="viewAdminAviso" style="display:none; flex-direction:column; gap:8px;">
+                    <label class="form-label-pro">Mensagem para todos os motoristas</label>
+                    <textarea id="inputBroadcastTexto" class="input-auth" style="height:75px; padding-left:14px; resize:none;" placeholder="Ex: Servidor em manutenção rápida hoje às 23h..."></textarea>
+                    
+                    <label class="form-label-pro">Duração do Aviso na Tela</label>
+                    <select id="selDuracaoAviso" class="input-auth" style="padding-left:10px; margin-bottom:4px;">
+                        <option value="1">1 Hora</option>
+                        <option value="3">3 Horas</option>
+                        <option value="6">6 Horas</option>
+                        <option value="12">12 Horas</option>
+                        <option value="24" selected>24 Horas (1 Dia)</option>
+                        <option value="72">3 Dias</option>
+                        <option value="99999">Permanente (Até eu apagar)</option>
+                    </select>
+
+                    <div style="display:flex; gap:6px; margin-top:4px;">
+                        <button onclick="salvarBroadcastGlobal(true)" class="btn-action-primary" style="background:#f59e0b; color:#000;">
+                            📢 Publicar Aviso
+                        </button>
+                        <button onclick="salvarBroadcastGlobal(false)" class="btn-action-primary" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">
+                            ✕ Apagar
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="top-nav" id="elTopNav">
+        <button class="nav-btn" id="btnMenuReal" onclick="toggleSidebar()">
+            <span>☰</span> <span data-i18n="menu">Menu</span>
         </button>
         <span class="access-badge" id="diasRestantes">GPS & Otimizador Ativo</span>
     </div>
@@ -475,8 +1123,20 @@
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
     <div class="drawer-panel" id="sidebar">
-        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px;">PACOTE É MATO</div>
+        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px; color:var(--text-main);">PACOTE É MATO</div>
         <div style="font-size:0.68rem; color:#34d399; font-weight:800; margin-bottom:16px;">Plataforma de Logística</div>
+
+        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:10px;" onclick="dispararInstalacaoPWA()">
+            📲 <span data-i18n="download_app">Baixar App no Celular</span>
+        </button>
+
+        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:10px;" onclick="iniciarPilotoAutomaticoReal(); toggleSidebar();">
+            🤖 <span>Guia com Boneco Real</span>
+        </button>
+
+        <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:14px;" onclick="abrirModalListaEntregas(); toggleSidebar();">
+            📋 <span>Ver Todas as Paradas</span>
+        </button>
 
         <div style="margin-bottom:14px;">
             <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:6px;">🚗 Navegador Padrão</label>
@@ -486,38 +1146,93 @@
             </div>
         </div>
 
-        <button class="btn-action-primary" style="background:var(--surface-2); border:1px solid var(--surface-border); margin-bottom:10px;" onclick="abrirModalListaEntregas(); toggleSidebar();">
-            📋 Ver Todas as Entregas
-        </button>
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span>Idioma</span></label>
+            <div class="segmented-control" id="controlLangReal">
+                <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
+                <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
+                <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">EN</button>
+            </div>
+        </div>
 
-        <button onclick="zerarRota()" class="btn-action-primary" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); font-size:0.8rem; margin-top:20px;">
-            🔄 Zerar Rota Atual
-        </button>
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span>Tema de Cor</span></label>
+            <div class="segmented-control-grid3" id="controlThemeReal">
+                <button class="segmented-btn active" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
+                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
+                <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span>Voz do Sintetizador</span></label>
+            <div class="segmented-control-grid4" id="controlVoiceReal">
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Cria Turbo</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Rádio Asfalto</button>
+                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">🗣️ Natural HD</button>
+                <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
+            </div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <button onclick="zerarRota()" class="btn-action-primary" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); font-size:0.8rem;">
+                🔄 <span>Zerar Rota Atual</span>
+            </button>
+            <button onclick="sairDoApp()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem;">
+                🔒 <span>Desconectar Conta</span>
+            </button>
+        </div>
     </div>
 
     <div class="container">
-        <div class="hero-banner">
+        <!-- BANNER DE AVISO GERAL (BROADCAST) COM ANIMAÇÃO -->
+        <div id="bannerBroadcast"></div>
+
+        <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
+            📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+        </button>
+        
+        <div class="hero-banner" onclick="registrarCliqueAdmin()">
+            <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:62px; height:62px; margin:0 auto 4px;">
+                <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="#34d399"/>
+                <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="#34d399"/>
+                <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                <polygon points="22,36 50,50 50,78 22,64" fill="#059669" stroke="#047857" stroke-width="1.5"/>
+                <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+            </svg>
             <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
             <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;">ROTEIRIZADOR & ESCANEAMENTO DIRETO</div>
         </div>
 
-        <!-- SEÇÃO DE IMPORTAÇÃO E OTIMIZAÇÃO AUTOMÁTICA -->
-        <div class="upload-section">
+        <div class="card-retomar-rota" id="cardRetomarRota">
+            <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
+            <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
+                ⚡ <span>Retomar Rota Onde Parei</span>
+            </button>
+        </div>
+
+        <!-- SEÇÃO DE IMPORTAÇÃO & OTIMIZAÇÃO (EXCEL & PDF) -->
+        <div class="upload-section" id="elSecaoUpload">
             <div style="font-size:0.92rem; font-weight:800; margin-bottom:2px;">Otimizador de Rotas Automático</div>
-            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Importe a planilha Excel (.xlsx) ou PDF da transportadora</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Importe a planilha Excel (.xlsx, .xls) ou PDF da transportadora</div>
             
             <button class="btn-upload-trigger" onclick="document.getElementById('fileInput').click()" id="btnUploadTxt">
                 ⚡ Importar Rota (Excel ou PDF)
             </button>
             
-            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, application/pdf" style="display:none;">
+            <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalListaEntregas()">
+                👀 Ver Paradas Otimizadas
+            </button>
 
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, application/pdf" style="display:none;">
             <div id="statusOtimizacao" style="font-size:0.72rem; font-weight:800; color:#34d399; display:none; margin-top:6px;"></div>
         </div>
 
         <div id="areaExecucao" style="display:none;">
-            <!-- PAINEL DE MÉTRICAS COMPLETAS -->
-            <div class="metrics-board">
+            <!-- PAINEL DE MÉTRICAS -->
+            <div class="metrics-board" id="elMetricsBoard">
                 <div class="metric-cell">
                     <div class="metric-val" id="valPacotes">0 / 0</div>
                     <div class="metric-lbl">Bipados</div>
@@ -536,10 +1251,10 @@
                 </div>
             </div>
 
-            <!-- CARD DA PARADA BIPADA ATUAL -->
+            <!-- CARD DE RESULTADO COM PARADA, STATUS E GPS -->
             <div class="result-panel" id="cardResult">
                 <div class="stop-number" id="resStop">P1</div>
-                <div class="stop-address" id="resEndereco">📍 Endereço</div>
+                <div class="stop-address" id="resEndereco">📍 Carregando endereço...</div>
                 <div class="stop-package-id" id="resPacote">Pacote: BR...</div>
                 
                 <div style="display:flex; gap:6px; margin-top:10px; justify-content:center;">
@@ -549,28 +1264,15 @@
                 </div>
             </div>
 
-            <!-- CÂMERA SCANNER -->
-            <div class="camera-viewport">
+            <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+
+            <div class="camera-viewport" id="elCameraViewport">
                 <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">Virar</button>
                 <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">Flash</button>
                 <div id="reader"></div>
             </div>
 
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digitar código manualmente..." onchange="processarCodigo(this.value)">
-        </div>
-    </div>
-
-    <!-- MODAL DE LISTA DE TODAS AS ENTREGAS -->
-    <div id="modalListaEntregas" class="modal-backdrop">
-        <div class="modal-card" style="max-width:420px; text-align:left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📋 Lista de Paradas Otimizadas</h3>
-                <span onclick="fecharModalListaEntregas()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
-            </div>
-            
-            <div id="listaParadasContainer" style="max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
-            
-            <button onclick="fecharModalListaEntregas()" class="btn-action-primary" style="margin-top:12px;">Fechar</button>
+            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)">
         </div>
     </div>
 
@@ -582,11 +1284,12 @@
         let flashLigado = false;
         let gpsPadrao = localStorage.getItem('gps_padrao_pref') || 'waze';
 
-        let rotaOtimizada = []; // Array de paradas sequenciadas
+        let rotaOtimizada = [];
         let stopCorrespondente = {};
-        let statusEntregas = {}; // 'pendente', 'entregue', 'nao_entregue'
+        let statusEntregas = {};
         let pacotesBipados = new Set();
         let pontoAtualParada = null;
+        let chaveStorageAtual = null;
 
         function notificar(msg) {
             let t = document.getElementById('toastNotificacao');
@@ -614,7 +1317,7 @@
         function obterLocalizacaoAtual() {
             return new Promise((resolve) => {
                 if (!navigator.geolocation) {
-                    resolve({ lat: -23.55052, lon: -46.633308 }); // Fallback SP
+                    resolve({ lat: -23.55052, lon: -46.633308 });
                     return;
                 }
                 navigator.geolocation.getCurrentPosition(
@@ -626,15 +1329,18 @@
         }
 
         // ==========================================
-        // IMPORTAÇÃO EXCEL / PDF E OTIMIZADOR INTELIGENTE
+        // IMPORTAÇÃO EXCEL / PDF & OTIMIZAÇÃO
         // ==========================================
         document.getElementById('fileInput').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             const statusEl = document.getElementById('statusOtimizacao');
-            statusEl.innerText = "📍 Identificando GPS e calculando trajeto mais rápido...";
+            statusEl.innerText = "📍 Identificando GPS e sequenciando trajeto mais rápido...";
             statusEl.style.display = "block";
+            document.getElementById('btnUploadTxt').innerHTML = "⏳ Lendo " + file.name.substring(0, 18) + "...";
+
+            chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
 
             try {
                 let entregasBrutas = [];
@@ -645,14 +1351,15 @@
                 }
 
                 if (!entregasBrutas || entregasBrutas.length === 0) {
-                    throw new Error("Nenhum dado legível encontrado.");
+                    throw new Error("Nenhum dado de entrega legível encontrado.");
                 }
 
-                await processarEOtimizarRota(entregasBrutas);
+                await processarEOtimizarRota(entregasBrutas, file.name);
 
             } catch (err) {
                 notificar("❌ Erro ao ler arquivo: " + err.message);
                 statusEl.style.display = "none";
+                document.getElementById('btnUploadTxt').innerHTML = "⚡ Importar Rota (Excel ou PDF)";
             }
         });
 
@@ -698,11 +1405,10 @@
             return lista;
         }
 
-        // ALGORITMO TSP (VIZINHO MAIS PRÓXIMO & AGRUPAMENTO POR ENDEREÇO)
-        async function processarEOtimizarRota(lista) {
+        async function processarEOtimizarRota(lista, nomeArquivo) {
             const gpsInicio = await obterLocalizacaoAtual();
             
-            // 1. Unificar pacotes com mesmo endereço (Paradas Duplas)
+            // Agrupar pacotes no mesmo endereço (Paradas Duplas)
             let grupos = {};
             lista.forEach(item => {
                 let chave = item.endereco.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -712,7 +1418,6 @@
                 grupos[chave].pacotes.push(item.codigo);
             });
 
-            // 2. Ordenar paradas sequencialmente
             let chaves = Object.keys(grupos);
             rotaOtimizada = [];
             stopCorrespondente = {};
@@ -736,18 +1441,23 @@
                 });
             });
 
-            // 3. Calcular KM e Horas estimadas
+            // Métricas
             let totalParadas = rotaOtimizada.length;
-            let kmEstimado = (totalParadas * 1.35).toFixed(1); // Média de 1.35 km entre paradas
-            let tempoMinutos = (totalParadas * 3.5); // 3.5 min por entrega + deslocamento
+            let kmEstimado = (totalParadas * 1.35).toFixed(1);
+            let tempoMinutos = (totalParadas * 3.5);
             let horasEstimadas = (tempoMinutos / 60).toFixed(1);
 
             document.getElementById('valKm').innerText = `${kmEstimado} km`;
             document.getElementById('valHoras').innerText = `${horasEstimadas}h`;
-            document.getElementById('statusOtimizacao').innerText = `✅ Rota Otimizada: ${totalParadas} paradas • ${kmEstimado} km • ~${horasEstimadas}h`;
+            document.getElementById('statusOtimizacao').innerText = `✅ Otimizado: ${totalParadas} paradas • ${kmEstimado} km • ~${horasEstimadas}h`;
 
-            // 4. Iniciar automaticamente a tela do scanner
+            document.getElementById('btnUploadTxt').innerHTML = "📄 " + nomeArquivo.substring(0, 18) + "...";
+            document.getElementById('btnVerParadasModal').style.display = 'flex';
             document.getElementById('areaExecucao').style.display = 'block';
+            document.getElementById('cardRetomarRota').style.display = 'none';
+
+            salvarEstadoCompletoRota(nomeArquivo);
+            salvarHistoricoRotaConcluida(nomeArquivo, lista.length, totalParadas);
             atualizarStats();
             iniciarScanner();
             notificar(`🚀 Rota otimizada com sucesso! ${totalParadas} paradas.`);
@@ -756,6 +1466,10 @@
         // ==========================================
         // BIPAGEM & SCANNER
         // ==========================================
+        let ultimoCodigoBipado = "";
+        let tempoUltimoBip = 0;
+        let processandoLeituraAtual = false;
+
         async function iniciarScanner() {
             if (html5QrCode) {
                 try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e) {}
@@ -783,12 +1497,17 @@
         }
 
         function processarCodigo(codigoBruto) {
-            if (!codigoBruto) return;
+            if (!codigoBruto || processandoLeituraAtual) return;
+            
+            let agora = Date.now();
             let codLimpo = codigoBruto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
+
+            if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 2500)) return;
+
+            processandoLeituraAtual = true;
 
             let paradaNum = stopCorrespondente[codLimpo];
             
-            // Busca parcial
             if (!paradaNum) {
                 for (let c in stopCorrespondente) {
                     if (c.includes(codLimpo) || codLimpo.includes(c)) {
@@ -805,6 +1524,9 @@
             let resPacote = document.getElementById('resPacote');
 
             if (paradaNum) {
+                ultimoCodigoBipado = codLimpo;
+                tempoUltimoBip = agora;
+
                 pontoAtualParada = rotaOtimizada.find(p => p.stop === paradaNum);
                 pacotesBipados.add(codLimpo);
 
@@ -814,12 +1536,27 @@
                 resEndereco.innerText = "📍 " + (pontoAtualParada ? pontoAtualParada.endereco : 'Endereço localizado');
                 resPacote.innerText = "Pacote: " + codLimpo;
 
+                let aviso = document.getElementById('boxAviso');
+                if (pontoAtualParada && pontoAtualParada.pacotes.length > 1) {
+                    aviso.style.display = 'block';
+                    aviso.innerText = `⚠️ MESMO ENDEREÇO! Pacotes nesta parada: ${pontoAtualParada.pacotes.join(', ')}`;
+                } else {
+                    aviso.style.display = 'none';
+                }
+
                 falarVoz(`Parada ${paradaNum}`);
                 atualizarStats();
+                salvarEstadoCompletoRota();
             } else {
-                notificar("Pacote não localizado na rota otimizada.");
+                if (agora - tempoUltimoBip > 2000) {
+                    tempoUltimoBip = agora;
+                    playBeepErro();
+                    notificar("Pacote não localizado na rota.");
+                }
             }
+
             document.getElementById('inputManual').value = "";
+            setTimeout(() => { processandoLeituraAtual = false; }, 1000);
         }
 
         function marcarStatusAtual(status) {
@@ -827,16 +1564,12 @@
             statusEntregas[pontoAtualParada.stop] = status;
             notificar(status === 'entregue' ? "✅ Parada concluída!" : "❌ Marcada como não entregue.");
             atualizarStats();
+            salvarEstadoCompletoRota();
         }
 
         function abrirNavegacaoGpsAtual() {
             if (!pontoAtualParada) return;
-            let query = encodeURIComponent(pontoAtualParada.endereco);
-            if (gpsPadrao === 'waze') {
-                window.open(`https://waze.com/ul?q=${query}&navigate=yes`, '_blank');
-            } else {
-                window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
-            }
+            abrirNavegacaoGpsItem(pontoAtualParada.endereco);
         }
 
         function abrirNavegacaoGpsItem(end) {
@@ -857,7 +1590,9 @@
             document.getElementById('valEntregues').innerText = entregues;
         }
 
-        // MODAL DE LISTA DE ENTREGAS COM STATUS
+        // ==========================================
+        // MODAL DE LISTA DE ENTREGAS
+        // ==========================================
         function abrirModalListaEntregas() {
             let container = document.getElementById('listaParadasContainer');
             if (rotaOtimizada.length === 0) {
@@ -893,6 +1628,72 @@
             statusEntregas[stopNum] = status;
             abrirModalListaEntregas();
             atualizarStats();
+            salvarEstadoCompletoRota();
+        }
+
+        function salvarEstadoCompletoRota(nomeArquivo) {
+            let dados = {
+                nomeArquivo: nomeArquivo || 'Rota Salva',
+                chaveStorage: chaveStorageAtual,
+                rotaOtimizada: rotaOtimizada,
+                stopCorrespondente: stopCorrespondente,
+                statusEntregas: statusEntregas,
+                pacotesBipados: Array.from(pacotesBipados),
+                salvoEm: Date.now()
+            };
+            localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
+        }
+
+        function verificarRotaSalvaAnterior() {
+            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
+            let cardRetomar = document.getElementById('cardRetomarRota');
+            if (dadosSalvos) {
+                try {
+                    let parsed = JSON.parse(dadosSalvos);
+                    if (parsed.rotaOtimizada && parsed.rotaOtimizada.length > 0) {
+                        document.getElementById('txtNomeRotaSalva').innerText = `${parsed.nomeArquivo || 'Rota'} (${parsed.pacotesBipados.length} bipados)`;
+                        cardRetomar.style.display = 'block';
+                        document.getElementById('btnVerParadasModal').style.display = 'flex';
+                        return;
+                    }
+                } catch(e) {}
+            }
+            cardRetomar.style.display = 'none';
+        }
+
+        function retomarRotaAnterior() {
+            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
+            if (!dadosSalvos) return;
+
+            try {
+                let parsed = JSON.parse(dadosSalvos);
+                rotaOtimizada = parsed.rotaOtimizada || [];
+                stopCorrespondente = parsed.stopCorrespondente || {};
+                statusEntregas = parsed.statusEntregas || {};
+                pacotesBipados = new Set(parsed.pacotesBipados || []);
+                chaveStorageAtual = parsed.chaveStorage;
+
+                document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
+                document.getElementById('btnVerParadasModal').style.display = 'flex';
+                document.getElementById('areaExecucao').style.display = 'block';
+                document.getElementById('cardRetomarRota').style.display = 'none';
+
+                atualizarStats();
+                iniciarScanner();
+                notificar("⚡ Rota anterior retomada!");
+            } catch(e) {}
+        }
+
+        function salvarHistoricoRotaConcluida(nomeRota, totalPacotes, totalParadas) {
+            let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+            hist.unshift({
+                nome: nomeRota,
+                data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR').substring(0,5),
+                pacotes: totalPacotes,
+                paradas: totalParadas
+            });
+            if (hist.length > 20) hist.pop();
+            localStorage.setItem('historico_rotas_usuario', JSON.stringify(hist));
         }
 
         function playBeepSucesso() {
@@ -910,12 +1711,29 @@
             } catch(e) {}
         }
 
+        function playBeepErro() {
+            try {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator();
+                let gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
         function falarVoz(texto) {
+            let tipo = localStorage.getItem('voz_preferida') || 'rapida';
+            if (tipo === 'mudo') return;
             try {
                 window.speechSynthesis.cancel();
                 let msg = new SpeechSynthesisUtterance(texto);
                 msg.lang = 'pt-BR';
-                msg.rate = 1.4;
+                msg.rate = 1.45;
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
@@ -925,6 +1743,7 @@
             stopCorrespondente = {};
             statusEntregas = {};
             pacotesBipados.clear();
+            localStorage.removeItem('rota_ativa_completa');
             document.getElementById('areaExecucao').style.display = 'none';
             document.getElementById('statusOtimizacao').style.display = 'none';
             document.getElementById('cardResult').style.display = 'none';
@@ -932,7 +1751,768 @@
             notificar("Rota zerada com sucesso!");
         }
 
+        // ==========================================
+        // MODO PILOTO AUTOMÁTICO / TOUR REAL
+        // ==========================================
+        let tourTimer = null;
+        let tourEtapa = 0;
+
+        function iniciarPilotoAutomaticoReal() {
+            document.getElementById('telaBloqueio').style.display = 'none';
+            document.getElementById('tourGuiaReal').style.display = 'block';
+            tourEtapa = 0;
+            executarProximaEtapaTour();
+        }
+
+        function abortarTourInterativo() {
+            clearTimeout(tourTimer);
+            try { window.speechSynthesis.cancel(); } catch(e) {}
+            
+            let sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('active');
+            let ov = document.getElementById('overlay');
+            if (ov) ov.style.display = 'none';
+
+            document.getElementById('tourGuiaReal').style.display = 'none';
+
+            let zap = localStorage.getItem('usuario_zap_salvo');
+            if (!zap) {
+                document.getElementById('telaBloqueio').style.display = 'flex';
+            }
+            notificar("Tutorial finalizado!");
+        }
+
+        function moverBonecoParaElemento(el, textoBalão) {
+            let box = document.getElementById('tourAvatarBox');
+            let bolha = document.getElementById('tourTextoBolha');
+            bolha.innerText = textoBalão;
+
+            if (el) {
+                let rect = el.getBoundingClientRect();
+                let topPos = rect.top - 140;
+                let leftPos = rect.left + (rect.width / 2) - 30;
+
+                if (topPos < 60) topPos = rect.bottom + 15;
+                if (leftPos < 20) leftPos = 20;
+                if (leftPos > window.innerWidth - 180) leftPos = window.innerWidth - 180;
+
+                box.style.top = topPos + "px";
+                box.style.left = leftPos + "px";
+            }
+        }
+
+        function executarProximaEtapaTour() {
+            clearTimeout(tourTimer);
+
+            if (tourEtapa === 0) {
+                let btnUpload = document.getElementById('elSecaoUpload');
+                moverBonecoParaElemento(btnUpload, "1. Importe a planilha Excel ou PDF aqui para otimizar!");
+                falarVoz("Importe a planilha da rota no botão!");
+                tourEtapa = 1;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4000);
+
+            } else if (tourEtapa === 1) {
+                document.getElementById('areaExecucao').style.display = 'block';
+                rotaOtimizada = [{ stop: 14, endereco: "Rua Central, 120", pacotes: ["BR994820194SP"] }];
+                stopCorrespondente = { "BR994820194SP": 14 };
+                statusEntregas = { 14: 'pendente' };
+                pacotesBipados = new Set();
+                atualizarStats();
+
+                let camBox = document.getElementById('elCameraViewport');
+                moverBonecoParaElemento(camBox, "2. Aponte a câmera na etiqueta para bipar a encomenda!");
+                falarVoz("Mire na etiqueta para ler o código!");
+                tourEtapa = 2;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4200);
+
+            } else if (tourEtapa === 2) {
+                processarCodigo("BR994820194SP");
+                let cardRes = document.getElementById('cardResult');
+                moverBonecoParaElemento(cardRes, "3. O app bipa, fala no fone e você pode marcar Entregue!");
+                falarVoz("Parada quatorze na mão!");
+                tourEtapa = 3;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4500);
+
+            } else if (tourEtapa === 3) {
+                let btnMenu = document.getElementById('btnMenuReal');
+                moverBonecoParaElemento(btnMenu, "4. Acesse o Menu para trocar temas, vozes e ver paradas!");
+                falarVoz("Menu lateral com todas as opções!");
+                toggleSidebar();
+                tourEtapa = 4;
+                tourTimer = setTimeout(executarProximaEtapaTour, 3500);
+
+            } else if (tourEtapa === 4) {
+                let sb = document.getElementById('sidebar');
+                if (sb && sb.classList.contains('active')) toggleSidebar();
+
+                moverBonecoParaElemento(document.querySelector('.hero-banner'), "Pronto! Agora você domina o Pacote É Mato na rua!");
+                falarVoz("Agora é só acelerar nas entregas!");
+                tourTimer = setTimeout(abortarTourInterativo, 3500);
+            }
+        }
+
+        // ==========================================
+        // FIREBASE & AUTENTICAÇÃO & MODO DONO
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
+            authDomain: "pacote-e-mato.firebaseapp.com",
+            projectId: "pacote-e-mato",
+            storageBucket: "pacote-e-mato.firebasestorage.app",
+            messagingSenderId: "535255652602",
+            appId: "1:535255652602:web:2881a450c393d22ccc1143"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
+
+        function obterDeviceId() {
+            let id = localStorage.getItem('app_device_hw_id');
+            if (!id) {
+                id = 'DEV_' + Math.random().toString(36).substring(2, 12) + '_' + Date.now();
+                localStorage.setItem('app_device_hw_id', id);
+            }
+            return id;
+        }
+        const MEU_DEVICE_ID = obterDeviceId();
+
+        let cliquesAdmin = 0;
+        let timerCliques = null;
+
+        function registrarCliqueAdmin() {
+            cliquesAdmin++;
+            clearTimeout(timerCliques);
+            timerCliques = setTimeout(() => { cliquesAdmin = 0; }, 2000);
+
+            if (cliquesAdmin >= 5) {
+                cliquesAdmin = 0;
+                document.getElementById('modalAdmin').style.display = 'flex';
+            }
+        }
+
+        function fecharModalAdmin() {
+            document.getElementById('modalAdmin').style.display = 'none';
+        }
+
+        async function autenticarAdmin() {
+            let passInput = document.getElementById('passAdmin');
+            let pass = passInput ? passInput.value.trim() : "";
+            if (!pass) return;
+
+            try {
+                const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: pass })
+                });
+                const data = await res.json();
+                
+                if (data.sucesso) {
+                    passInput.value = "";
+                    document.getElementById('areaLoginAdmin').style.display = 'none';
+                    document.getElementById('areaGeradorAdmin').style.display = 'flex';
+                    carregarUsuariosAdmin();
+                    carregarPagamentosAdmin();
+                    notificar("👑 Painel Dono Desbloqueado!");
+                } else {
+                    notificar("Senha incorreta.");
+                }
+            } catch (err) {
+                notificar("Erro ao validar acesso.");
+            }
+        }
+
+        let listaUsuariosCache = [];
+
+        async function carregarUsuariosAdmin() {
+            let view30d = document.getElementById('viewAdmin30d');
+            let view90d = document.getElementById('viewAdmin90d');
+            let viewTeste = document.getElementById('viewAdminTeste');
+            
+            try {
+                let snapshot = await db.collection("usuarios").get();
+                listaUsuariosCache = [];
+                let ativosCount = 0;
+                let agora = Date.now();
+
+                snapshot.forEach(doc => {
+                    let u = doc.data();
+                    u.id = doc.id;
+                    listaUsuariosCache.push(u);
+
+                    if (u.ativo && agora <= (u.expiraEm || 0) && !u.bloqueado && u.tipo === 'pago') {
+                        ativosCount++;
+                    }
+                });
+
+                document.getElementById('txtTotalPagantesAtivos').innerText = ativosCount;
+                renderizarUsuariosAdminList(listaUsuariosCache);
+            } catch(e) {}
+        }
+
+        function renderizarUsuariosAdminList(lista) {
+            let view30d = document.getElementById('viewAdmin30d');
+            let view90d = document.getElementById('viewAdmin90d');
+            let viewTeste = document.getElementById('viewAdminTeste');
+            let html30 = "", html90 = "", htmlTeste = "";
+            let agora = Date.now();
+
+            lista.forEach(u => {
+                let zap = u.whatsapp || u.id;
+                let senhaUser = u.senha || "Não definida";
+                let expira = u.expiraEm || 0;
+                let bloqueado = u.bloqueado === true;
+                let ativo = u.ativo && agora <= expira && !bloqueado;
+                let duracao = u.duracaoDias || 30;
+                
+                let dias = Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
+                let statusLabel = bloqueado ? `<span style="color:#ef4444; font-weight:800;">Bloqueado ⛔</span>` : (ativo ? `<span style="color:#10b981;">Ativo (${dias}d restantes)</span>` : `<span style="color:#f59e0b;">Expirado</span>`);
+
+                let btnBloqueioTexto = bloqueado ? "🟢 Desbloquear" : "⛔ Bloquear";
+                let btnBloqueioCor = bloqueado ? "#10b981" : "#f59e0b";
+                let zapLink = `https://wa.me/55${zap.replace(/\D/g,'')}?text=Ol%C3%A1%2C+sou+o+suporte+do+Pacote+%C3%89+Mato!`;
+
+                let row = `
+                    <div class="user-row">
+                        <div class="user-row-header">
+                            <div>
+                                <div style="font-weight:900; font-size:0.84rem; color:var(--text-main);">📱 ${zap}</div>
+                                <div style="font-size:0.7rem; color:#34d399; font-weight:800;">🔑 Senha: ${senhaUser}</div>
+                                <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
+                            </div>
+                            <a href="${zapLink}" target="_blank" style="text-decoration:none;">
+                                <button class="btn-mini-admin" style="background:#25d366; color:#000;">💬 WhatsApp</button>
+                            </a>
+                        </div>
+
+                        <div class="user-row-actions">
+                            <button onclick="ajustarDiasRapido('${zap}')" class="btn-mini-admin" style="background:#3b82f6; color:#fff;">⏳ +/- Dias</button>
+                            <button onclick="redefinirSenhaAdmin('${zap}')" class="btn-mini-admin" style="background:#10b981; color:#fff;">🔑 Senha</button>
+                            <button onclick="desconectarAparelhoAdmin('${zap}')" class="btn-mini-admin" style="background:rgba(255,255,255,0.08); color:#34d399; border:1px solid rgba(52,211,153,0.3);">📲 Reset Celular</button>
+                            <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" class="btn-mini-admin" style="background:${btnBloqueioCor}; color:#000;">${btnBloqueioTexto}</button>
+                            <button onclick="deletarUsuarioAdmin('${zap}')" class="btn-mini-admin" style="background:#ef4444; color:#fff;">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                `;
+
+                if (duracao === 90) html90 += row;
+                else if (duracao === 30) html30 += row;
+                else htmlTeste += row;
+            });
+
+            if (view30d) view30d.innerHTML = html30 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 1 Mês.</div>";
+            if (view90d) view90d.innerHTML = html90 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 3 Meses.</div>";
+            if (viewTeste) viewTeste.innerHTML = htmlTeste || "<div style='font-size:0.75rem; color:#888;'>Nenhum teste ou plano customizado.</div>";
+        }
+
+        function filtrarListaAdminLocal() {
+            let query = document.getElementById('buscaAdminUser').value.trim().toLowerCase();
+            if (!query) {
+                renderizarUsuariosAdminList(listaUsuariosCache);
+                return;
+            }
+            let filtrados = listaUsuariosCache.filter(u => (u.whatsapp || u.id || "").toLowerCase().includes(query));
+            renderizarUsuariosAdminList(filtrados);
+        }
+
+        async function carregarPagamentosAdmin() {
+            let viewPagos = document.getElementById('viewAdminPagos');
+            if (!viewPagos) return;
+
+            try {
+                let snapshot = await db.collection("pagamentos_concluidos").orderBy("timestamp", "desc").get();
+                let htmlPagos = "";
+                let totalFaturado = 0;
+
+                snapshot.forEach(doc => {
+                    let p = doc.data();
+                    let valorNum = Number(p.valor || 0);
+                    totalFaturado += valorNum;
+
+                    htmlPagos += `
+                        <div class="user-row">
+                            <div>
+                                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${p.whatsapp}</div>
+                                <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${valorNum.toFixed(2).replace('.', ',')}</div>
+                                <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${p.data}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('txtTotalFaturamento').innerText = `R$ ${totalFaturado.toFixed(2).replace('.', ',')}`;
+                viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento registrado ainda.</div>";
+            } catch(e) {}
+        }
+
+        function exportarRelatorioCSV() {
+            if (listaUsuariosCache.length === 0) return;
+            let csv = "WhatsApp,Senha,Plano,DuracaoDias,Status\n";
+            let agora = Date.now();
+
+            listaUsuariosCache.forEach(u => {
+                let status = u.bloqueado ? "Bloqueado" : (u.ativo && agora <= (u.expiraEm || 0) ? "Ativo" : "Expirado");
+                csv += `"${u.whatsapp || u.id}","${u.senha || ''}","${u.plano || ''}","${u.duracaoDias || ''}","${status}"\n`;
+            });
+
+            let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `pacote_e_mato_clientes_${Date.now()}.csv`;
+            link.click();
+            notificar("📥 Relatório CSV baixado!");
+        }
+
+        function alternarTabAdmin(tab) {
+            let tabs = ['30d', '90d', 'teste', 'pagos', 'add', 'aviso'];
+            tabs.forEach(t => {
+                let btn = document.getElementById('tab' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : (t === 'add' ? 'Add' : 'Aviso'))))));
+                let view = document.getElementById('viewAdmin' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : (t === 'add' ? 'Add' : 'Aviso'))))));
+                if (btn) btn.classList.remove('active');
+                if (view) view.style.display = 'none';
+            });
+
+            let btnAtivo = document.getElementById('tab' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : (tab === 'add' ? 'Add' : 'Aviso'))))));
+            let viewAtiva = document.getElementById('viewAdmin' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : (tab === 'add' ? 'Add' : 'Aviso'))))));
+            if (btnAtivo) btnAtivo.classList.add('active');
+            if (viewAtiva) viewAtiva.style.display = 'flex';
+        }
+
+        async function redefinirSenhaAdmin(zap) {
+            let novaSenha = prompt(`Digite a nova senha para ${zap}:`);
+            if (!novaSenha) return;
+            try {
+                await db.collection("usuarios").doc(zap).update({ senha: novaSenha.trim(), deviceId: "" });
+                notificar(`Senha do ${zap} alterada para: ${novaSenha}`);
+                carregarUsuariosAdmin();
+            } catch(e) {}
+        }
+
+        async function desconectarAparelhoAdmin(zap) {
+            try {
+                await db.collection("usuarios").doc(zap).update({ deviceId: "" });
+                notificar(`📲 Celular de ${zap} desconectado.`);
+                carregarUsuariosAdmin();
+            } catch(e) {}
+        }
+
+        async function ajustarDiasRapido(zap) {
+            let diasStr = prompt(`Quantos dias deseja somar (+7) ou subtrair (-5) para ${zap}?`);
+            if (!diasStr) return;
+            let dias = parseInt(diasStr);
+            if (isNaN(dias)) return;
+
+            try {
+                let doc = await db.collection("usuarios").doc(zap).get();
+                if (!doc.exists) return;
+                let u = doc.data();
+                let agora = Date.now();
+                let base = (u.expiraEm && u.expiraEm > agora) ? u.expiraEm : agora;
+                let novoExpira = base + (dias * 24 * 60 * 60 * 1000);
+
+                await db.collection("usuarios").doc(zap).update({ expiraEm: novoExpira, ativo: novoExpira > agora });
+                notificar(`Acesso de ${zap} ajustado em ${dias} dias.`);
+                carregarUsuariosAdmin();
+            } catch(e) {}
+        }
+
+        async function alternarBloqueioUsuario(zap, statusBloqueio) {
+            try {
+                await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
+                notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'}!`);
+                carregarUsuariosAdmin();
+            } catch(e) {}
+        }
+
+        async function deletarUsuarioAdmin(zap) {
+            if (!confirm(`Deseja apagar o cadastro de ${zap}?`)) return;
+            try {
+                await db.collection("usuarios").doc(zap).delete();
+                notificar(`Usuário ${zap} removido.`);
+                carregarUsuariosAdmin();
+            } catch(e) {}
+        }
+
+        async function liberarClienteManual() {
+            let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputClienteSenha').value.trim();
+            let diasInput = parseInt(document.getElementById('inputDiasCustom').value);
+
+            if (!validarNumeroWhatsApp(zap) || !senha || isNaN(diasInput) || diasInput <= 0) {
+                notificar("⚠️ Preencha os campos corretamente.");
+                return;
+            }
+
+            try {
+                let agora = Date.now();
+                let expiraEm = agora + (diasInput * 24 * 60 * 60 * 1000);
+
+                await db.collection("usuarios").doc(zap).set({
+                    whatsapp: zap,
+                    senha: senha,
+                    expiraEm: expiraEm,
+                    ativo: true,
+                    bloqueado: false,
+                    deviceId: "",
+                    tipo: "pago",
+                    plano: `${diasInput} Dias (Liberado)`,
+                    duracaoDias: diasInput,
+                    atualizadoEm: agora
+                }, { merge: true });
+
+                notificar(`✅ ${zap} liberado por ${diasInput} dias!`);
+                document.getElementById('inputClienteZap').value = "";
+                document.getElementById('inputClienteSenha').value = "";
+                alternarTabAdmin('30d');
+                carregarUsuariosAdmin();
+            } catch(e) {}
+        }
+
+        async function salvarBroadcastGlobal(ativo) {
+            let txt = document.getElementById('inputBroadcastTexto').value.trim();
+            let horas = parseFloat(document.getElementById('selDuracaoAviso').value) || 24;
+            if (ativo && !txt) return;
+
+            let expiraEm = ativo ? (Date.now() + (horas * 60 * 60 * 1000)) : 0;
+            try {
+                await db.collection("sistema_config").doc("broadcast").set({
+                    ativo: ativo,
+                    mensagem: txt,
+                    expiraEm: expiraEm,
+                    atualizadoEm: Date.now()
+                });
+                notificar(ativo ? "📢 Aviso publicado!" : "Aviso removido.");
+            } catch(e) {}
+        }
+
+        function iniciarMonitoramentoBroadcast() {
+            db.collection("sistema_config").doc("broadcast").onSnapshot(doc => {
+                let banner = document.getElementById('bannerBroadcast');
+                if (doc.exists) {
+                    let data = doc.data();
+                    let agora = Date.now();
+                    if (data.ativo && data.mensagem && (agora <= data.expiraEm || !data.expiraEm)) {
+                        banner.innerHTML = `📢 <b>AVISO:</b> ${data.mensagem}`;
+                        banner.style.display = 'block';
+                    } else {
+                        banner.style.display = 'none';
+                    }
+                } else {
+                    banner.style.display = 'none';
+                }
+            });
+        }
+
+        // ==========================================
+        // LOGIN DO CLIENTE & FLUXO PIX
+        // ==========================================
+        let listenerSessaoRealtime = null;
+
+        function validarNumeroWhatsApp(zap) {
+            let limpo = zap.replace(/\D/g, '');
+            return limpo.length >= 10 && limpo.length <= 11;
+        }
+
+        function alternarVisibilidadeSenha() {
+            let campo = document.getElementById('inputSenha');
+            let icone = document.getElementById('toggleSenhaVisivel');
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icone.innerText = '🙈';
+            } else {
+                campo.type = 'password';
+                icone.innerText = '👁️';
+            }
+        }
+
+        async function autenticarUsuarioFirebase() {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+            let msgErro = document.getElementById('msgErro');
+
+            if (!validarNumeroWhatsApp(zap) || !senha) {
+                msgErro.innerText = "❌ Digite WhatsApp e senha válidos.";
+                msgErro.style.display = 'block';
+                return;
+            }
+
+            try {
+                let doc = await db.collection("usuarios").doc(zap).get();
+                if (!doc.exists) {
+                    msgErro.innerText = "Número não encontrado. Ative o teste ou escolha um plano.";
+                    msgErro.style.display = 'block';
+                    return;
+                }
+
+                let data = doc.data();
+                let agora = Date.now();
+
+                if (data.senha && data.senha !== senha) {
+                    msgErro.innerText = "❌ Senha incorreta!";
+                    msgErro.style.display = 'block';
+                    return;
+                }
+
+                if (data.bloqueado) {
+                    msgErro.innerText = "❌ Acesso bloqueado pelo suporte.";
+                    msgErro.style.display = 'block';
+                    return;
+                }
+
+                if (!data.ativo || agora > data.expiraEm) {
+                    msgErro.innerText = "Acesso expirado. Renove seu plano abaixo.";
+                    msgErro.style.display = 'block';
+                    return;
+                }
+
+                await db.collection("usuarios").doc(zap).update({ deviceId: MEU_DEVICE_ID, senha: data.senha || senha });
+                localStorage.setItem('usuario_zap_salvo', zap);
+                msgErro.style.display = 'none';
+                notificar("⚡ Bem-vindo de volta!");
+                iniciarMonitoramentoSessao(zap);
+
+            } catch(e) {
+                msgErro.innerText = "Erro ao conectar ao banco de dados.";
+                msgErro.style.display = 'block';
+            }
+        }
+
+        async function ativarTesteGratis() {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+            let msgErro = document.getElementById('msgErro');
+
+            if (!validarNumeroWhatsApp(zap) || !senha || senha.length < 3) {
+                msgErro.innerText = "❌ Digite WhatsApp e senha (mínimo 3 dígitos).";
+                msgErro.style.display = 'block';
+                return;
+            }
+
+            try {
+                let docAparelho = await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).get();
+                if (docAparelho.exists) {
+                    msgErro.innerText = "❌ Este celular já utilizou o teste gratuito!";
+                    msgErro.style.display = 'block';
+                    return;
+                }
+
+                let docZap = await db.collection("usuarios").doc(zap).get();
+                if (docZap.exists && docZap.data().jaUsouTeste) {
+                    msgErro.innerText = "❌ Este WhatsApp já usou o teste gratuito.";
+                    msgErro.style.display = 'block';
+                    return;
+                }
+
+                let expiraEm = Date.now() + (3 * 24 * 60 * 60 * 1000);
+
+                await db.collection("usuarios").doc(zap).set({
+                    whatsapp: zap,
+                    senha: senha,
+                    expiraEm: expiraEm,
+                    ativo: true,
+                    bloqueado: false,
+                    deviceId: MEU_DEVICE_ID,
+                    jaUsouTeste: true,
+                    tipo: "teste",
+                    plano: "Teste Grátis (3 Dias)",
+                    duracaoDias: 3,
+                    ativadoEm: Date.now()
+                }, { merge: true });
+
+                await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).set({
+                    whatsapp: zap,
+                    bloqueadoEm: Date.now()
+                });
+
+                localStorage.setItem('usuario_zap_salvo', zap);
+                msgErro.style.display = 'none';
+                notificar("🎉 Teste de 3 Dias Ativado com Sucesso!");
+                iniciarMonitoramentoSessao(zap);
+
+            } catch(e) {
+                msgErro.innerText = "Erro ao ativar teste: " + e.message;
+                msgErro.style.display = 'block';
+            }
+        }
+
+        function iniciarMonitoramentoSessao(zap) {
+            if (listenerSessaoRealtime) listenerSessaoRealtime();
+
+            listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
+                if (!doc.exists) { desconectarForcado("Conta não encontrada."); return; }
+                let data = doc.data();
+                let agora = Date.now();
+
+                if (data.bloqueado) { desconectarForcado("❌ Seu acesso foi bloqueado."); return; }
+                if (!data.ativo || agora > data.expiraEm) { desconectarForcado("Assinatura expirada."); return; }
+                if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) { desconectarForcado("⚠️ Conectado em outro aparelho!"); return; }
+
+                let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
+                document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
+                document.getElementById('telaBloqueio').style.display = 'none';
+            });
+        }
+
+        function desconectarForcado(motivo) {
+            if (listenerSessaoRealtime) { listenerSessaoRealtime(); listenerSessaoRealtime = null; }
+            finalizarCameraHardware();
+            localStorage.removeItem('usuario_zap_salvo');
+            let msgErro = document.getElementById('msgErro');
+            msgErro.innerText = motivo;
+            msgErro.style.display = 'block';
+            document.getElementById('telaBloqueio').style.display = 'flex';
+        }
+
+        function sairDoApp() {
+            desconectarForcado("🔒 Você foi desconectado.");
+        }
+
+        let planoSelecionadoAtual = null;
+
+        function selecionarPlano(dias, valor, nomePlano, cardId) {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+
+            if (!validarNumeroWhatsApp(zap) || !senha || senha.length < 3) {
+                notificar("⚠️ Digite WhatsApp com DDD e crie uma senha antes.");
+                return;
+            }
+
+            document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
+            document.getElementById(cardId).classList.add('selecionado');
+            planoSelecionadoAtual = { dias, valor, nomePlano, senha };
+
+            let btn = document.getElementById('btnConfirmarPagamento');
+            btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
+            btn.style.display = 'flex';
+        }
+
+        function iniciarPixPlanoSelecionado() {
+            if (!planoSelecionadoAtual) return;
+            gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano, planoSelecionadoAtual.senha);
+        }
+
+        let timerVerificadorPix = null;
+
+        async function gerarPixAutomatico(dias, valor, nomePlano, senha) {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            document.getElementById('pixPlanoNome').innerText = `${nomePlano} • R$ ${valor.toFixed(2).replace('.', ',')}`;
+            document.getElementById('modalPix').style.display = 'flex';
+            document.getElementById('qrContainer').innerHTML = "<div style='color:#000; font-weight:800; font-size:0.8rem;'>Gerando QR Code Pix...</div>";
+            document.getElementById('pixCopiaColaOut').value = "";
+
+            try {
+                const response = await fetch(`${CLOUDFLARE_WORKER_URL}/criar-pix`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ valor: valor, descricao: `Pacote É Mato - ${nomePlano}`, zap: zap })
+                });
+
+                const data = await response.json();
+                if (data && data.point_of_interaction && data.point_of_interaction.transaction_data) {
+                    const copiaCola = data.point_of_interaction.transaction_data.qr_code;
+                    const paymentId = String(data.id);
+
+                    document.getElementById('pixCopiaColaOut').value = copiaCola;
+                    document.getElementById('qrContainer').innerHTML = "";
+                    new QRCode(document.getElementById('qrContainer'), { text: copiaCola, width: 150, height: 150 });
+
+                    clearInterval(timerVerificadorPix);
+                    timerVerificadorPix = setInterval(async () => {
+                        try {
+                            const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentId}`);
+                            const payData = await res.json();
+                            if (payData && payData.status === "approved") {
+                                clearInterval(timerVerificadorPix);
+                                let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
+
+                                await db.collection("usuarios").doc(zap).set({
+                                    whatsapp: zap, senha: senha, expiraEm: expiraEm,
+                                    ativo: true, bloqueado: false, deviceId: MEU_DEVICE_ID,
+                                    plano: nomePlano, duracaoDias: dias, tipo: "pago", atualizadoEm: Date.now()
+                                }, { merge: true });
+
+                                await db.collection("pagamentos_concluidos").doc(paymentId).set({
+                                    whatsapp: zap, plano: nomePlano, valor: valor,
+                                    data: new Date().toLocaleString('pt-BR'), timestamp: Date.now()
+                                });
+
+                                fecharModalPix();
+                                localStorage.setItem('usuario_zap_salvo', zap);
+                                notificar("🎉 Pagamento Aprovado!");
+                                iniciarMonitoramentoSessao(zap);
+                            }
+                        } catch(e) {}
+                    }, 2000);
+                }
+            } catch(e) {
+                notificar("Erro ao gerar Pix.");
+                fecharModalPix();
+            }
+        }
+
+        function fecharModalPix() {
+            clearInterval(timerVerificadorPix);
+            document.getElementById('modalPix').style.display = 'none';
+        }
+
+        function copiarPixCopiaCola() {
+            let campo = document.getElementById('pixCopiaColaOut');
+            if (!campo.value) return;
+            campo.select();
+            navigator.clipboard.writeText(campo.value);
+            notificar("📋 Código Pix Copiado!");
+        }
+
+        // ==========================================
+        // TEMAS, IDIOMA E VOZ
+        // ==========================================
+        function mudarTema(tipo) {
+            const cores = {
+                black_oled: { bg: "#000000", s1: "#0b0b0d", s2: "#141417", border: "rgba(255,255,255,0.12)", text: "#ffffff" },
+                light: { bg: "#f8fafc", s1: "#ffffff", s2: "#f1f5f9", border: "rgba(0,0,0,0.08)", text: "#0f172a" },
+                gray: { bg: "#18181b", s1: "#27272a", s2: "#3f3f46", border: "rgba(255,255,255,0.1)", text: "#fafafa" }
+            };
+            let c = cores[tipo] || cores.black_oled;
+            document.documentElement.style.setProperty('--bg-body', c.bg);
+            document.documentElement.style.setProperty('--surface-1', c.s1);
+            document.documentElement.style.setProperty('--surface-2', c.s2);
+            document.documentElement.style.setProperty('--surface-border', c.border);
+            document.documentElement.style.setProperty('--text-main', c.text);
+            localStorage.setItem('tema_preferido', tipo);
+        }
+
+        function salvarVoz(tipo) {
+            localStorage.setItem('voz_preferida', tipo);
+        }
+
+        function mudarIdioma(lang) {
+            localStorage.setItem('idioma_preferido', lang);
+        }
+
+        // PWA
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+
+        async function dispararInstalacaoPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt = null;
+            } else {
+                notificar("📲 Toque no menu do navegador e escolha 'Instalar Aplicativo'.");
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
+            mudarTema(localStorage.getItem('tema_preferido') || 'black_oled');
+            iniciarMonitoramentoBroadcast();
+            verificarRotaSalvaAnterior();
+
+            let zapSalvo = localStorage.getItem('usuario_zap_salvo');
+            if (zapSalvo) iniciarMonitoramentoSessao(zapSalvo);
+            else document.getElementById('telaBloqueio').style.display = 'flex';
+
             setTimeout(() => {
                 let splash = document.getElementById('splashScreenPs2');
                 if (splash) {
