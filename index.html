@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PACOTE É MATO - LOGÍSTICA & OTIMIZADOR</title>
+    <title>PACOTE É MATO</title>
     
-    <!-- Favicon SVG -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b0b0d' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3C/svg%3E">
+    <!-- Ícone Favicon SVG -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b0b0d' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%/svg%3E">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
@@ -21,8 +21,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Chakra+Petch:wght@700;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
 
-    <!-- Bibliotecas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -43,9 +42,9 @@
             --primary: #10b981;
             --primary-gradient: linear-gradient(135deg, #059669, #10b981);
             --accent-green: #047857;
+            --accent-green-gradient: linear-gradient(135deg, #065f46, #059669);
             --accent-green-soft: #34d399;
             --danger: #ef4444;
-            --warning: #f59e0b;
             --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--surface-border);
         }
 
@@ -81,45 +80,138 @@
             transition: opacity 0.8s cubic-bezier(0.8, 0, 0.2, 1), transform 0.8s ease;
         }
 
+        .ps2-bg-radial {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            animation: pulseGlowBg 2s infinite alternate;
+        }
+
+        @keyframes pulseGlowBg {
+            0% { transform: scale(0.8); opacity: 0.4; }
+            100% { transform: scale(1.3); opacity: 0.9; }
+        }
+
+        .ps2-cube-rotating {
+            width: 95px;
+            height: 95px;
+            animation: rotate3dBox 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            filter: drop-shadow(0 15px 35px rgba(52, 211, 153, 0.6));
+            z-index: 2;
+        }
+
+        @keyframes rotate3dBox {
+            0% { transform: rotateY(-180deg) scale(0.2); opacity: 0; }
+            50% { transform: rotateY(30deg) scale(1.15); opacity: 1; }
+            75% { transform: rotateY(-10deg) scale(0.95); }
+            100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+        }
+
+        .ps2-title {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: #ffffff;
+            margin-top: 24px;
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.8);
+            opacity: 0;
+            animation: fadeInTitle 1s ease forwards 0.8s;
+            z-index: 2;
+        }
+
+        .ps2-subtitle {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #34d399;
+            text-transform: uppercase;
+            margin-top: 6px;
+            opacity: 0;
+            animation: fadeInTitle 1s ease forwards 1.1s;
+            z-index: 2;
+        }
+
+        @keyframes fadeInTitle {
+            from { opacity: 0; transform: translateY(12px); letter-spacing: 8px; }
+            to { opacity: 1; transform: translateY(0); letter-spacing: 3px; }
+        }
+
         .container {
             width: 100%;
             max-width: 440px;
             padding: 0 14px;
         }
 
-        /* NAVEGAÇÃO PRINCIPAL EM ABAS (SEPARANDO OTIMIZADOR DE BIPAGEM) */
-        .tab-switcher-main {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            background: var(--surface-1);
-            border: 1px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 4px;
-            margin-bottom: 12px;
-            width: 100%;
+        button, .plan-item, .nav-btn, .cam-overlay-btn, .btn-acao-card, .gps-option-btn, .segmented-btn, .admin-tab {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .tab-main-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 10px 6px;
-            font-size: 0.78rem;
+        button:active, .plan-item:active, .nav-btn:active, .cam-overlay-btn:active, .btn-acao-card:active, .gps-option-btn:active, .segmented-btn:active, .admin-tab:active {
+            transform: scale(0.95) !important;
+            filter: brightness(1.15);
+        }
+
+        .app-logo-pro {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 10px;
+            display: block;
+            cursor: pointer;
+            animation: floatLogo 3.8s ease-in-out infinite, pulseGlow 2.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatLogo {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.3)); }
+            100% { filter: drop-shadow(0 8px 22px rgba(52, 211, 153, 0.65)); }
+        }
+
+        .btn-instalar-dinamico {
+            width: 100%;
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 12px;
+            padding: 11px 14px;
             font-weight: 800;
-            border-radius: 10px;
+            font-size: 0.84rem;
+            margin-bottom: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
         }
 
-        .tab-main-btn.active {
-            background: var(--primary);
+        #bannerBroadcast {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(220, 38, 38, 0.2));
+            border: 1.5px solid #f59e0b;
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 14px;
+            display: none;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+            animation: pulseGlowAviso 2s infinite alternate, slideDown 0.3s ease;
+        }
+
+        @keyframes pulseGlowAviso {
+            0% { transform: scale(0.99); box-shadow: 0 0 10px rgba(245, 158, 11, 0.25); }
+            100% { transform: scale(1.01); box-shadow: 0 0 24px rgba(245, 158, 11, 0.7); }
         }
 
         #toastNotificacao {
@@ -137,52 +229,114 @@
             border: 1px solid var(--primary);
             z-index: 1000005;
             display: none;
+            animation: slideDown 0.25s ease;
             text-align: center;
             max-width: 90%;
         }
 
-        .top-nav {
-            width: 100%;
-            max-width: 440px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 14px 8px;
+        @keyframes slideDown {
+            from { transform: translate(-50%, -20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        .nav-btn {
+        #telaBloqueio {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at top center, #111c16 0%, #000000 80%);
+            z-index: 1000000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 410px;
             background: var(--surface-1);
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--surface-border);
+            text-align: left;
+        }
+
+        .auth-header-center {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .brand-title-pro {
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: -0.3px;
             color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .brand-subtitle-pro {
+            font-size: 0.7rem;
+            color: #34d399;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-label-pro {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 14px;
+            font-size: 0.95rem;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .input-icon-right {
+            position: absolute;
+            right: 14px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            opacity: 0.7;
+            user-select: none;
+        }
+
+        .input-auth {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background: var(--surface-2);
             border: 1px solid var(--surface-border);
             border-radius: 12px;
-            padding: 8px 14px;
-            font-size: 0.82rem;
+            color: var(--text-main);
+            font-size: 0.92rem;
             font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            outline: none;
+            transition: all 0.2s;
         }
 
-        .access-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            background: rgba(16, 185, 129, 0.12);
-            color: #34d399;
-        }
+        .input-auth.com-icone-direita { padding-right: 40px; }
 
-        /* SEÇÃO DO OTIMIZADOR */
-        .upload-section {
-            background: var(--surface-1);
-            padding: 18px 14px;
-            border-radius: 18px;
-            border: 1.5px dashed rgba(16, 185, 129, 0.35);
-            text-align: center;
-            margin-bottom: 12px;
-            box-shadow: var(--shadow-card);
+        .input-auth:focus {
+            border-color: var(--primary);
+            background: rgba(20, 20, 23, 0.95);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
         }
 
         .btn-action-primary {
@@ -203,78 +357,278 @@
             gap: 6px;
         }
 
+        .btn-action-trial {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-support-login {
+            width: 100%;
+            background: rgba(16, 185, 129, 0.08);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 700;
+            font-size: 0.84rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            margin-bottom: 12px;
+        }
+
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin: 12px 0 10px;
+        }
+        .divider-label::before, .divider-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--surface-border);
+        }
+
+        .plan-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+
+        .plan-item {
+            background: var(--surface-2);
+            border: 1.5px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .plan-item.selecionado {
+            border-color: #34d399 !important;
+            background: rgba(16, 185, 129, 0.12);
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+        }
+
+        .plan-item.featured { border-color: rgba(16, 185, 129, 0.45); }
+
+        .plan-badge-top {
+            position: absolute;
+            top: -7px;
+            right: 12px;
+            background: var(--accent-green-gradient);
+            color: #ffffff;
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .plan-name { font-size: 0.84rem; font-weight: 800; color: var(--text-main); text-align: left; }
+        .plan-meta { font-size: 0.65rem; color: var(--text-muted); text-align: left; margin-top: 1px; }
+        .plan-val { font-size: 1rem; font-weight: 900; color: #34d399; }
+
+        .btn-gerar-pix-confirm {
+            width: 100%;
+            background: var(--accent-green-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            font-size: 0.90rem;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 1000010;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 380px;
+            background: var(--surface-1);
+            border: 1px solid var(--surface-border);
+            border-radius: 20px;
+            padding: 22px;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+        }
+
+        .qr-placeholder {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 14px;
+            width: 155px;
+            height: 155px;
+            margin: 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .top-nav {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 14px 8px;
+        }
+
+        .nav-btn {
+            background: var(--surface-1);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .access-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+        }
+
+        .hero-banner {
+            background: var(--surface-1);
+            padding: 18px 16px;
+            border-radius: 18px;
+            border: 1px solid var(--surface-border);
+            text-align: center;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: border-color 0.25s ease;
+        }
+
+        .card-retomar-rota {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
+            border: 1.5px solid var(--primary);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+            display: none;
+            text-align: center;
+        }
+
+        .upload-section {
+            background: var(--surface-1);
+            padding: 20px 16px;
+            border-radius: 18px;
+            border: 1px dashed rgba(16, 185, 129, 0.35);
+            text-align: center;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .btn-upload-trigger {
+            width: 100%;
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 13px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
         .metrics-board {
             background: var(--surface-1);
             border-radius: 16px;
-            padding: 12px 6px;
+            padding: 12px 8px;
             border: 1px solid var(--surface-border);
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             box-shadow: var(--shadow-card);
         }
         .metric-cell {
-            padding: 6px 2px;
+            padding: 6px 4px;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.02);
         }
-        .metric-val { font-size: 1.15rem; font-weight: 900; color: var(--text-main); }
-        .metric-lbl { font-size: 0.60rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+        .metric-val { font-size: 1.35rem; font-weight: 900; color: var(--text-main); }
+        .metric-lbl { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
-        /* CARDS DE ENTREGA COM OBSERVAÇÃO */
-        .parada-box-pro {
-            background: var(--surface-2);
-            border: 1px solid var(--surface-border);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-            text-align: left;
-        }
-        .parada-box-pro.entregue {
-            border-color: #10b981;
-            opacity: 0.75;
-            background: rgba(16, 185, 129, 0.06);
-        }
-        .parada-box-pro.nao-entregue {
-            border-color: var(--danger);
-            background: rgba(239, 68, 68, 0.08);
-        }
-
-        .obs-tag-box {
-            background: rgba(245, 158, 11, 0.15);
-            border-left: 3px solid #f59e0b;
-            color: #fbbf24;
-            padding: 5px 8px;
-            border-radius: 4px;
-            font-size: 0.68rem;
-            font-weight: 700;
-            margin: 6px 0;
-        }
-
-        .btn-status-toggle {
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.68rem;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* ÁREA DA CÂMERA SCANNER */
         .camera-viewport {
             position: relative;
             width: 100%;
-            height: 380px;
+            height: 420px;
             border-radius: 20px;
             border: 1px solid var(--surface-border);
             background: #000000;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             overflow: hidden;
             box-shadow: var(--shadow-card);
         }
+
         #reader { width: 100% !important; height: 100% !important; }
         #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 
@@ -293,20 +647,36 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        .cam-overlay-btn svg { width: 14px; height: 14px; fill: currentColor; }
+        .cam-overlay-btn.active-flash {
+            background: var(--primary);
+            border-color: #34d399;
+            color: #000000;
         }
 
         .result-panel {
             background: var(--surface-1);
-            padding: 16px;
+            padding: 18px 16px;
             border-radius: 18px;
             border: 1.5px solid var(--primary);
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             text-align: center;
             box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
             display: none;
         }
+        .stop-number { font-size: 3.8rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 6px; }
+        .stop-address { font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; line-height: 1.35; }
+        .stop-package-id { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+        
+        .result-panel.error-state {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.08);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+        }
+        .result-panel.error-state .stop-number { font-size: 1.5rem; color: var(--danger); }
 
-        /* MENU LATERAL AJUSTADO & ALINHADO */
         .drawer-mask {
             position: fixed;
             inset: 0;
@@ -320,7 +690,7 @@
             position: fixed;
             top: 0;
             left: -320px;
-            width: 290px;
+            width: 280px;
             height: 100%;
             background: var(--surface-1);
             border-right: 1px solid var(--surface-border);
@@ -328,34 +698,122 @@
             padding: 22px 16px;
             transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
         }
         .drawer-panel.active { left: 0; }
 
-        .drawer-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .drawer-group-label {
-            font-size: 0.68rem;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
+        .modal-rota-conteudo {
+            max-height: 60vh;
+            overflow-y: auto;
+            text-align: left;
+            margin-top: 10px;
+            padding-right: 4px;
         }
 
-        .segmented-control {
+        .parada-box-pro {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+
+        .parada-box-pro.duplo-pro {
+            border-color: rgba(52, 211, 153, 0.4);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), var(--surface-2));
+        }
+
+        .parada-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .parada-badge-num {
+            background: #000000;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: #34d399;
+            letter-spacing: 0.5px;
+        }
+
+        .parada-badge-num.destaque-duplo {
+            background: #064e3b;
+            border-color: #34d399;
+            color: #ecfdf5;
+        }
+
+        .tag-duplo-info {
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #34d399;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .endereco-texto-pro {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .acoes-footer-pro {
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid var(--surface-border);
+            padding-top: 8px;
+        }
+
+        .btn-acao-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            padding: 8px 14px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .gps-option-btn {
+            width: 100%;
+            padding: 11px;
+            border-radius: 11px;
+            border: 1px solid var(--surface-border);
+            font-weight: 800;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .segmented-control, .segmented-control-grid3 {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
             gap: 4px;
             background: var(--surface-2);
             padding: 4px;
             border-radius: 12px;
             border: 1px solid var(--surface-border);
         }
-        .segmented-control-grid4 {
+        .segmented-control { grid-template-columns: repeat(3, 1fr); }
+        .segmented-control-grid3 { grid-template-columns: repeat(3, 1fr); }
+        .segmented-control-grid4 { 
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 4px;
@@ -364,6 +822,7 @@
             border-radius: 12px;
             border: 1px solid var(--surface-border);
         }
+
         .segmented-btn {
             background: transparent;
             border: none;
@@ -375,204 +834,1087 @@
             cursor: pointer;
             text-align: center;
         }
+
         .segmented-btn.active {
             background: var(--primary);
             color: #ffffff;
             box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
 
-        .input-auth {
-            width: 100%;
-            padding: 12px 14px;
+        .admin-nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+        .admin-tab {
+            padding: 7px 4px;
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+        }
+        .admin-tab.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .user-row {
             background: var(--surface-2);
             border: 1px solid var(--surface-border);
             border-radius: 12px;
-            color: var(--text-main);
-            font-size: 0.92rem;
-            font-weight: 700;
-            outline: none;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 8px;
+            text-align: left;
         }
 
-        #bannerBroadcast {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(220, 38, 38, 0.2));
-            border: 1.5px solid #f59e0b;
-            color: #ffffff;
-            border-radius: 14px;
-            padding: 10px 12px;
-            font-size: 0.80rem;
+        .user-row-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .user-row-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            border-top: 1px solid var(--surface-border);
+            padding-top: 6px;
+        }
+
+        .btn-mini-admin {
+            border: none;
+            border-radius: 6px;
+            padding: 4px 7px;
+            font-size: 0.60rem;
             font-weight: 800;
-            text-align: center;
-            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        /* OVERLAY E AVATAR DO MODO PILOTO AUTOMÁTICO */
+        #tourGuiaReal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000020;
+            pointer-events: none;
             display: none;
+        }
+
+        .tour-avatar-box {
+            position: absolute;
+            transition: all 0.75s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000025;
+            pointer-events: auto;
+        }
+
+        .tour-bubble {
+            background: rgba(16, 185, 129, 0.96);
+            color: #000000;
+            font-weight: 900;
+            font-size: 0.80rem;
+            padding: 8px 14px;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+            margin-bottom: 6px;
+            max-width: 260px;
+            text-align: center;
+            border: 2px solid #ffffff;
+            animation: pulseGlowAviso 1.5s infinite alternate;
+        }
+
+        .tour-char-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: floatLogo 2s infinite ease-in-out;
+        }
+
+        .tour-char-head {
+            width: 44px;
+            height: 44px;
+            background: #10b981;
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
+        }
+
+        .tour-char-visor {
+            position: absolute;
+            width: 28px;
+            height: 14px;
+            background: #000000;
+            border-radius: 8px;
+            top: 14px;
+            right: 4px;
+            border: 1.5px solid #34d399;
+        }
+
+        .tour-char-torso {
+            width: 34px;
+            height: 46px;
+            background: #141417;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            margin-top: -3px;
+            position: relative;
+        }
+
+        .tour-char-hand {
+            position: absolute;
+            width: 28px;
+            height: 10px;
+            background: #34d399;
+            border-radius: 6px;
+            top: 12px;
+            right: -16px;
+            transform-origin: left center;
+            animation: pointArm 1s infinite alternate;
+        }
+
+        @keyframes pointArm {
+            0% { transform: rotate(20deg); }
+            100% { transform: rotate(-35deg); }
+        }
+
+        .btn-abort-tour {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+            z-index: 1000030;
+            pointer-events: auto;
         }
     </style>
 </head>
 <body>
 
-    <!-- SPLASH PS2 -->
+    <!-- ABERTURA PS2 COM A CAIXA E MATO -->
     <div id="splashScreenPs2">
-        <div style="font-family:'Chakra Petch',sans-serif; font-size:1.8rem; font-weight:900; color:#34d399; letter-spacing:4px;">PACOTE É MATO</div>
-        <p style="font-size:0.75rem; color:#888; margin-top:4px; letter-spacing:2px;">LOGÍSTICA & ROTEIRIZAÇÃO</p>
+        <div class="ps2-bg-radial"></div>
+        <svg class="ps2-cube-rotating" viewBox="0 0 100 100">
+            <defs>
+                <linearGradient id="splashBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#10b981"/>
+                    <stop offset="100%" stop-color="#047857"/>
+                </linearGradient>
+                <linearGradient id="splashPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34d399"/>
+                    <stop offset="100%" stop-color="#059669"/>
+                </linearGradient>
+            </defs>
+            <path d="M18 70 Q5 45 25 30 Q35 50 18 70 Z" fill="url(#splashPlantGrad)"/>
+            <path d="M82 70 Q95 45 75 30 Q65 50 82 70 Z" fill="url(#splashPlantGrad)"/>
+            <polygon points="50,18 82,34 50,50 18,34" fill="#34d399" stroke="#6ee7b7" stroke-width="2"/>
+            <polygon points="18,34 50,50 50,82 18,66" fill="url(#splashBoxGrad)" stroke="#065f46" stroke-width="2"/>
+            <polygon points="82,34 50,50 50,82 82,66" fill="#047857" stroke="#064e3b" stroke-width="2"/>
+            <path d="M50 18 L50 50 M34 42 L66 42" stroke="#d1fae5" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M50 82 Q38 60 50 38 Q62 60 50 82 Z" fill="#34d399"/>
+        </svg>
+        <h1 class="ps2-title">PACOTE É MATO</h1>
+        <p class="ps2-subtitle">SISTEMA INTELIGENTE DE LOGÍSTICA</p>
     </div>
 
     <div id="toastNotificacao"></div>
 
-    <div class="top-nav">
-        <button class="nav-btn" onclick="toggleSidebar()">
-            <span>☰</span> <span>Menu</span>
+    <!-- CAMADA DO BONECO INSTRUTOR NO MODO PILOTO AUTOMÁTICO -->
+    <div id="tourGuiaReal">
+        <button class="btn-abort-tour" onclick="abortarTourInterativo()">✕ Sair do Tutorial</button>
+        <div class="tour-avatar-box" id="tourAvatarBox">
+            <div class="tour-bubble" id="tourTextoBolha">E aí motorista! Vou te ensinar na prática.</div>
+            <div class="tour-char-body">
+                <div class="tour-char-head">
+                    <div class="tour-char-visor"></div>
+                </div>
+                <div class="tour-char-torso">
+                    <div class="tour-char-hand"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="telaBloqueio">
+        <div class="auth-wrapper">
+            <div class="auth-header-center">
+                <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
+                    <defs>
+                        <linearGradient id="logoBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#059669"/>
+                            <stop offset="100%" stop-color="#047857"/>
+                        </linearGradient>
+                        <linearGradient id="logoPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#34d399"/>
+                            <stop offset="100%" stop-color="#10b981"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                    <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGrad)"/>
+                    <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGrad)"/>
+                    <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                    <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGrad)" stroke="#047857" stroke-width="1.5"/>
+                    <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+                    <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+                    <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+                    <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
+                </svg>
+                <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
+                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
+            </div>
+
+            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
+                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+            </button>
+
+            <button class="btn-action-trial" onclick="iniciarPilotoAutomaticoReal()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
+                🤖 <span data-i18n="tutorial_btn">Como Usar (Tutorial Interativo Real)</span>
+            </button>
+            
+            <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
+            <div class="input-group">
+                <span class="input-icon-left">📱</span>
+                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+            </div>
+
+            <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
+            <div class="input-group">
+                <span class="input-icon-left">🔑</span>
+                <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+                <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">👁️</span>
+            </div>
+            
+            <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
+                ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
+            </button>
+            <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
+                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
+            </button>
+
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+                <button class="btn-support-login">
+                    💬 Suporte
+                </button>
+            </a>
+            
+            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
+
+            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
+            
+            <div class="plan-stack">
+                <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
+                    <div>
+                        <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
+                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
+                    </div>
+                    <div class="plan-val">R$ 4,99</div>
+                </div>
+
+                <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
+                    <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
+                    <div>
+                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
+                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
+                    </div>
+                    <div class="plan-val">R$ 9,99</div>
+                </div>
+
+                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
+                    <div>
+                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
+                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
+                    </div>
+                    <div class="plan-val">R$ 24,99</div>
+                </div>
+            </div>
+
+            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
+                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL HISTÓRICO DE ROTAS DO MOTORISTA -->
+    <div id="modalHistoricoRotas" class="modal-backdrop">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📊 Histórico de Rotas</h3>
+                <span onclick="fecharModalHistorico()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            <div id="listaHistoricoRotas" style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+            <button onclick="fecharModalHistorico()" class="btn-action-primary" style="margin-top:12px;">Fechar</button>
+        </div>
+    </div>
+
+    <div id="modalPix" class="modal-backdrop">
+        <div class="modal-card">
+            <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
+            <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 9,99</h3>
+            
+            <div class="qr-placeholder" id="qrContainer"></div>
+            
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
+            <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O sistema destrava sozinho após o pagamento.</div>
+
+            <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-size:0.68rem; text-align:center; outline:none;">
+            
+            <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
+                📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
+            </button>
+            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <div id="modalVisualizarRota" class="modal-backdrop">
+        <div class="modal-card" style="max-width:420px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📋 Paradas & Endereços</h3>
+                <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
+                <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Todos (<span id="contadorTodos">0</span>)</button>
+                <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
+            </div>
+
+            <div class="modal-rota-conteudo" id="listaParadasModal"></div>
+
+            <button onclick="fecharModalRota()" class="btn-action-primary" style="margin-top:14px;">Fechar</button>
+        </div>
+    </div>
+
+    <div id="modalEscolhaGps" class="modal-backdrop">
+        <div class="modal-card" style="max-width:330px;">
+            <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
+            <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
+            
+            <button class="gps-option-btn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff;" onclick="abrirGpsSelecionado('waze')">
+                🚗 Abrir no Waze
+            </button>
+            <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">
+                🗺️ Abrir no Google Maps
+            </button>
+            
+            <button onclick="fecharModalGps()" style="margin-top:6px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL MODO DONO / PAINEL MASTER -->
+    <div id="modalAdmin" class="modal-backdrop">
+        <div class="modal-card" style="max-width:440px; text-align:left; max-height:90vh; overflow-y:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">👑 Painel Dono & Controle</h3>
+                <span onclick="fecharModalAdmin()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+            </div>
+            
+            <div id="areaLoginAdmin">
+                <input type="password" id="passAdmin" placeholder="Senha Mestre" class="input-auth" style="margin-bottom:10px; padding-left:14px;">
+                <button onclick="autenticarAdmin()" class="btn-action-primary">Entrar no Modo Dono</button>
+            </div>
+
+            <div id="areaGeradorAdmin" style="display:none; flex-direction:column;">
+                
+                <!-- MÉTRICAS FINANCEIRAS DO DONO -->
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
+                    <div style="background:var(--surface-2); padding:8px; border-radius:10px; border:1px solid var(--surface-border); text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Faturamento Total</div>
+                        <div style="font-size:1.05rem; font-weight:900; color:#34d399;" id="txtTotalFaturamento">R$ 0,00</div>
+                    </div>
+                    <div style="background:var(--surface-2); padding:8px; border-radius:10px; border:1px solid var(--surface-border); text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Pagantes Ativos</div>
+                        <div style="font-size:1.05rem; font-weight:900; color:#10b981;" id="txtTotalPagantesAtivos">0</div>
+                    </div>
+                </div>
+
+                <!-- BUSCA RÁPIDA E EXPORTAÇÃO -->
+                <div style="display:flex; gap:6px; margin-bottom:10px;">
+                    <input type="text" id="buscaAdminUser" placeholder="🔍 Buscar por WhatsApp..." oninput="filtrarListaAdminLocal()" class="input-auth" style="padding-left:14px; flex:1; font-size:0.8rem; margin-bottom:0;">
+                    <button onclick="exportarRelatorioCSV()" class="btn-action-primary" style="width:auto; padding:0 10px; font-size:0.75rem; margin-bottom:0; background:var(--surface-2); border:1px solid var(--surface-border);">
+                        📥 CSV
+                    </button>
+                </div>
+
+                <div class="admin-nav-tabs">
+                    <button class="admin-tab active" id="tab30d" onclick="alternarTabAdmin('30d')">🗓️ 1 Mês</button>
+                    <button class="admin-tab" id="tab90d" onclick="alternarTabAdmin('90d')">📦 3 Meses</button>
+                    <button class="admin-tab" id="tabTeste" onclick="alternarTabAdmin('teste')">🎁 Testes/Outros</button>
+                    <button class="admin-tab" id="tabPagos" onclick="alternarTabAdmin('pagos')">💰 Pagos</button>
+                    <button class="admin-tab" id="tabAdd" onclick="alternarTabAdmin('add')" style="background:var(--accent-green); color:#fff;">➕ Liberar Dias</button>
+                    <button class="admin-tab" id="tabAviso" onclick="alternarTabAdmin('aviso')" style="background:#f59e0b; color:#000;">📢 Broadcast</button>
+                </div>
+
+                <div id="viewAdmin30d" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column;"></div>
+                <div id="viewAdmin90d" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+                <div id="viewAdminTeste" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+                <div id="viewAdminPagos" style="max-height:280px; overflow-y:auto; display:none; flex-direction:column;"></div>
+
+                <!-- ABA LIBERAR ACESSO COM QUALQUER QUANTIDADE DE DIAS -->
+                <div id="viewAdminAdd" style="display:none; flex-direction:column; gap:8px;">
+                    <label class="form-label-pro">WhatsApp do Entregador (DDD + Número)</label>
+                    <input type="tel" id="inputClienteZap" placeholder="Ex: 11999998888" class="input-auth" style="padding-left:14px;">
+
+                    <label class="form-label-pro">Senha de Acesso</label>
+                    <input type="text" id="inputClienteSenha" placeholder="Senha pessoal do entregador" class="input-auth" style="padding-left:14px;">
+
+                    <label class="form-label-pro">Dias de Acesso (Digite qualquer valor)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="number" id="inputDiasCustom" placeholder="Ex: 1, 15, 45, 180" class="input-auth" style="padding-left:14px; flex:1;" min="1" value="30">
+                        <select id="selAtalhosDias" onchange="if(this.value) document.getElementById('inputDiasCustom').value = this.value" class="input-auth" style="width:130px; padding:0 8px;">
+                            <option value="">Atalhos...</option>
+                            <option value="1">1 Dia</option>
+                            <option value="7">7 Dias</option>
+                            <option value="15">15 Dias</option>
+                            <option value="30">30 Dias</option>
+                            <option value="90">90 Dias</option>
+                            <option value="365">365 Dias</option>
+                        </select>
+                    </div>
+
+                    <button onclick="liberarClienteManual()" class="btn-action-primary" style="background:var(--accent-green); color:#fff; margin-top:6px;">
+                        ⚡ Salvar e Ativar Acesso
+                    </button>
+                </div>
+
+                <!-- ABA AVISO BROADCAST COM DURAÇÃO -->
+                <div id="viewAdminAviso" style="display:none; flex-direction:column; gap:8px;">
+                    <label class="form-label-pro">Mensagem para todos os motoristas</label>
+                    <textarea id="inputBroadcastTexto" class="input-auth" style="height:75px; padding-left:14px; resize:none;" placeholder="Ex: Servidor em manutenção rápida hoje às 23h..."></textarea>
+                    
+                    <label class="form-label-pro">Duração do Aviso na Tela</label>
+                    <select id="selDuracaoAviso" class="input-auth" style="padding-left:10px; margin-bottom:4px;">
+                        <option value="1">1 Hora</option>
+                        <option value="3">3 Horas</option>
+                        <option value="6">6 Horas</option>
+                        <option value="12">12 Horas</option>
+                        <option value="24" selected>24 Horas (1 Dia)</option>
+                        <option value="72">3 Dias</option>
+                        <option value="99999">Permanente (Até eu apagar)</option>
+                    </select>
+
+                    <div style="display:flex; gap:6px; margin-top:4px;">
+                        <button onclick="salvarBroadcastGlobal(true)" class="btn-action-primary" style="background:#f59e0b; color:#000;">
+                            📢 Publicar Aviso
+                        </button>
+                        <button onclick="salvarBroadcastGlobal(false)" class="btn-action-primary" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">
+                            ✕ Apagar
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="top-nav" id="elTopNav">
+        <button class="nav-btn" id="btnMenuReal" onclick="toggleSidebar()">
+            <span>☰</span> <span data-i18n="menu">Menu</span>
         </button>
-        <span class="access-badge" id="diasRestantes">Sistema Ativo</span>
+        <span class="access-badge" id="diasRestantes">Acesso Ativo</span>
     </div>
 
     <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- MENU LATERAL ORGANIZADO -->
     <div class="drawer-panel" id="sidebar">
-        <div>
-            <div style="font-weight:900; font-size:1.1rem; color:var(--text-main);">PACOTE É MATO</div>
-            <div style="font-size:0.68rem; color:#34d399; font-weight:800;">Logística Inteligente</div>
+        <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px; color:var(--text-main);">PACOTE É MATO</div>
+        <div style="font-size:0.68rem; color:#34d399; font-weight:800; margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
+
+        <button class="btn-instalar-dinamico" id="btnDownloadSidebar" style="margin-bottom:10px;" onclick="dispararInstalacaoPWA()">
+            📲 <span data-i18n="download_app">Baixar App no Celular</span>
+        </button>
+
+        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:10px;" onclick="iniciarPilotoAutomaticoReal(); toggleSidebar();">
+            🤖 <span>Guia com Boneco Real</span>
+        </button>
+
+        <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:14px;" onclick="abrirModalHistorico(); toggleSidebar();">
+            📊 <span>Histórico de Rotas</span>
+        </button>
+
+        <div style="margin-bottom:16px;">
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+                <button class="btn-action-primary" id="btnSuporteSidebar" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
+                    💬 Suporte
+                </button>
+            </a>
         </div>
 
-        <div class="drawer-group">
-            <label class="drawer-group-label">🚗 Navegação GPS</label>
-            <div class="segmented-control" style="grid-template-columns: 1fr 1fr;">
-                <button class="segmented-btn active" id="gps_waze" onclick="definirGpsPadrao('waze')">Waze</button>
-                <button class="segmented-btn" id="gps_maps" onclick="definirGpsPadrao('maps')">Google Maps</button>
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span data-i18n="language_label">Idioma</span></label>
+            <div class="segmented-control" id="controlLangReal">
+                <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
+                <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
+                <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">EN</button>
             </div>
         </div>
 
-        <div class="drawer-group">
-            <label class="drawer-group-label">🎨 Tema Visual</label>
-            <div class="segmented-control">
-                <button class="segmented-btn active" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED</button>
-                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Light</button>
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
+            <div class="segmented-control-grid3" id="controlThemeReal">
+                <button class="segmented-btn active" id="theme_black_oled" onclick="mudarTema('black_oled')">OLED Puro</button>
+                <button class="segmented-btn" id="theme_light" onclick="mudarTema('light')">Branco Light</button>
                 <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button>
             </div>
         </div>
 
-        <div class="drawer-group">
-            <label class="drawer-group-label">🎙️ Voz Tática</label>
-            <div class="segmented-control-grid4">
-                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Turbo</button>
-                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Rádio</button>
-                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">🗣️ HD</button>
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎙️ <span data-i18n="voice_label">Voz do Sintetizador</span></label>
+            <div class="segmented-control-grid4" id="controlVoiceReal">
+                <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')">⚡ Cria Turbo</button>
+                <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')">📻 Rádio Asfalto</button>
+                <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')">🗣️ Natural HD</button>
                 <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;">🔇 Mudo</button>
             </div>
         </div>
 
-        <div class="drawer-group" style="margin-top:auto;">
-            <button onclick="zerarRota()" class="btn-action-primary" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); font-size:0.8rem; margin-bottom:6px;">
-                🔄 Zerar Rota Atual
+        <div style="margin-top:24px;">
+            <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
+                🔄 <span data-i18n="reset_route">Zerar Bipagens</span>
             </button>
-            <button onclick="sairDoApp()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem;">
-                🔒 Sair da Conta
+            <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(220, 38, 38, 0.15); color:#ef4444; border:1px solid rgba(220, 38, 38, 0.3); font-size:0.8rem;">
+                🔒 <span data-i18n="logout">Desconectar Conta</span>
             </button>
         </div>
     </div>
 
     <div class="container">
-        <!-- AVISO GLOBAL -->
+        <!-- BANNER DE AVISO GERAL (BROADCAST) COM ANIMAÇÃO -->
         <div id="bannerBroadcast"></div>
 
-        <!-- ABAS PRINCIPAIS: SEPARANDO OTIMIZADOR DA BIPAGEM -->
-        <div class="tab-switcher-main">
-            <button class="tab-main-btn active" id="tabBtnOtimizador" onclick="alternarAbaPrincipal('otimizador')">
-                ⚡ Otimizador & Rota
-            </button>
-            <button class="tab-main-btn" id="tabBtnScanner" onclick="alternarAbaPrincipal('scanner')">
-                📷 Scanner & Bipagem
+        <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
+            📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
+        </button>
+        
+        <div class="hero-banner" onclick="registrarCliqueAdmin()">
+            <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:62px; height:62px; margin:0 auto 4px;">
+                <defs>
+                    <linearGradient id="logoBoxGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#059669"/>
+                        <stop offset="100%" stop-color="#047857"/>
+                    </linearGradient>
+                    <linearGradient id="logoPlantGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#34d399"/>
+                        <stop offset="100%" stop-color="#10b981"/>
+                    </linearGradient>
+                </defs>
+                <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGradBanner)"/>
+                <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGradBanner)"/>
+                <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGradBanner)" stroke="#047857" stroke-width="1.5"/>
+                <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+                <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+                <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+                <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+                <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
+            </svg>
+            <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
+            <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+        </div>
+
+        <div class="card-retomar-rota" id="cardRetomarRota">
+            <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
+            <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
+            <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
+                ⚡ <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
             </button>
         </div>
 
-        <!-- ============================================== -->
-        <!-- ABA 1: OTIMIZADOR & LISTA DE ENTREGAS COMPLETA -->
-        <!-- ============================================== -->
-        <div id="secaoOtimizador">
-            <div class="upload-section">
-                <div style="font-size:0.92rem; font-weight:800; margin-bottom:2px;">Carregar Rota (Excel ou PDF)</div>
-                <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;">Selecione a folha de romaneio ou manifesto</div>
-                
-                <button class="btn-action-primary" onclick="document.getElementById('fileInput').click()" id="btnUploadTxt">
-                    📁 Selecionar Arquivo (.xlsx / .pdf)
-                </button>
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, application/pdf" style="display:none;">
+        <div class="upload-section" id="elSecaoUpload">
+            <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
+            
+            <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
+                📄 Escolher Arquivo PDF
+            </button>
 
-                <!-- Card de Confirmação para Iniciar Otimização -->
-                <div id="boxPreOtimizacao" style="display:none; background:var(--surface-2); padding:10px; border-radius:12px; border:1px solid var(--surface-border); margin-top:8px;">
-                    <div style="font-size:0.8rem; font-weight:800; color:#fff;" id="txtArquivoDetectado">Arquivo carregado</div>
-                    <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:8px;" id="txtQtdDetectada">0 paradas identificadas</div>
-                    <button class="btn-action-primary" style="background:var(--accent-green); color:#fff; margin-bottom:0;" onclick="iniciarCalculoOtimizacao()">
-                        🚀 Calcular Melhor Trajeto (Otimizar)
-                    </button>
-                </div>
-            </div>
+            <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
+                👀 Visualizar Paradas da Rota
+            </button>
 
-            <!-- PAINEL DE MÉTRICAS DA ROTA -->
-            <div class="metrics-board" id="boardMetricas" style="display:none;">
-                <div class="metric-cell">
-                    <div class="metric-val" id="valTotalParadas">0</div>
-                    <div class="metric-lbl">Paradas</div>
-                </div>
-                <div class="metric-cell">
-                    <div class="metric-val" id="valEntregues" style="color:#10b981;">0</div>
-                    <div class="metric-lbl">Entregues</div>
-                </div>
-                <div class="metric-cell">
-                    <div class="metric-val" id="valKm" style="color:#34d399;">0 km</div>
-                    <div class="metric-lbl">Distância</div>
-                </div>
-                <div class="metric-cell">
-                    <div class="metric-val" id="valHoras" style="color:#f59e0b;">0h</div>
-                    <div class="metric-lbl">Estimativa</div>
-                </div>
-            </div>
-
-            <!-- LISTA DE TODAS AS ENTREGAS OTIMIZADAS -->
-            <div id="listaEntregasOtimizadas" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
         </div>
 
-        <!-- ============================================== -->
-        <!-- ABA 2: SCANNER & BIPAGEM EM TEMPO REAL         -->
-        <!-- ============================================== -->
-        <div id="secaoScanner" style="display:none;">
-            <!-- CARD DO PACOTE BIPADO -->
+        <div id="areaExecucao" style="display:none;">
+            <div class="metrics-board" id="elMetricsBoard">
+                <div class="metric-cell">
+                    <div class="metric-val" id="valPacotes">0 / 0</div>
+                    <div class="metric-lbl" data-i18n="metric_scanned">Bipados</div>
+                </div>
+                <div class="metric-cell">
+                    <div class="metric-val" id="valParadas" style="color:#34d399;">0</div>
+                    <div class="metric-lbl" data-i18n="metric_stops">Paradas</div>
+                </div>
+                <div class="metric-cell">
+                    <div class="metric-val" id="valFaltam" style="color:#10b981;">0</div>
+                    <div class="metric-lbl" data-i18n="metric_remaining">Faltam</div>
+                </div>
+            </div>
+
+            <!-- CARD DE RESULTADO COM PARADA E ENDEREÇO EMBAIXO -->
             <div class="result-panel" id="cardResult">
                 <div class="stop-number" id="resStop">P1</div>
-                <div class="stop-address" id="resEndereco">📍 Endereço</div>
-                <div id="resObservacao" class="obs-tag-box" style="display:none;"></div>
+                <div class="stop-address" id="resEndereco">📍 Carregando endereço...</div>
                 <div class="stop-package-id" id="resPacote">Pacote: BR...</div>
-                
-                <div style="display:flex; gap:6px; margin-top:10px; justify-content:center;">
-                    <button class="btn-status-toggle" style="background:#10b981; color:#000;" onclick="marcarStatusAtual('entregue')">✅ Entregue</button>
-                    <button class="btn-status-toggle" style="background:#ef4444; color:#fff;" onclick="marcarStatusAtual('nao_entregue')">❌ Não Entregue</button>
-                    <button class="btn-status-toggle" style="background:#3b82f6; color:#fff;" onclick="abrirNavegacaoGpsAtual()">🚗 GPS</button>
-                </div>
             </div>
 
-            <div class="camera-viewport">
-                <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">Virar</button>
-                <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">Flash</button>
+            <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
+
+            <div class="camera-viewport" id="elCameraViewport">
+                <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
+                    <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
+                    <span data-i18n="cam_flip">Virar</span>
+                </button>
+                <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">
+                    <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l3-8z"/></svg>
+                    <span id="txt-flash">Flash</span>
+                </button>
                 <div id="reader"></div>
             </div>
 
-            <input type="text" class="input-auth" id="inputManual" placeholder="Digitar código manualmente..." onchange="processarCodigo(this.value)">
+            <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
         </div>
     </div>
 
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        function tocarIntroPs2Audio() {
+            try {
+                let ctx = getAudioContext();
+                let now = ctx.currentTime;
 
-        let html5QrCode = null;
-        let sensorAtual = "environment";
-        let flashLigado = false;
-        let gpsPadrao = localStorage.getItem('gps_padrao_pref') || 'waze';
+                let oscBase = ctx.createOscillator();
+                let gainBase = ctx.createGain();
+                oscBase.type = 'sine';
+                oscBase.frequency.setValueAtTime(55, now);
+                oscBase.frequency.exponentialRampToValueAtTime(110, now + 1.8);
+                gainBase.gain.setValueAtTime(0.01, now);
+                gainBase.gain.linearRampToValueAtTime(0.25, now + 0.6);
+                gainBase.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
+                oscBase.connect(gainBase);
+                gainBase.connect(ctx.destination);
+                oscBase.start(now);
+                oscBase.stop(now + 2.5);
 
-        let rotaOtimizada = [];
-        let stopCorrespondente = {};
-        let statusEntregas = {};
-        let pacotesBipados = new Set();
-        let pontoAtualParada = null;
-        let entregasBrutasTemp = [];
+                let oscHarm = ctx.createOscillator();
+                let gainHarm = ctx.createGain();
+                oscHarm.type = 'triangle';
+                oscHarm.frequency.setValueAtTime(220, now + 0.5);
+                oscHarm.frequency.exponentialRampToValueAtTime(440, now + 1.6);
+                gainHarm.gain.setValueAtTime(0.001, now + 0.5);
+                gainHarm.gain.linearRampToValueAtTime(0.12, now + 1.0);
+                gainHarm.gain.exponentialRampToValueAtTime(0.001, now + 2.3);
+                oscHarm.connect(gainHarm);
+                gainHarm.connect(ctx.destination);
+                oscHarm.start(now + 0.5);
+                oscHarm.stop(now + 2.5);
+            } catch (e) {}
+        }
+
+        function dispararAberturaPs2() {
+            tocarIntroPs2Audio();
+            setTimeout(() => {
+                let splash = document.getElementById('splashScreenPs2');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    splash.style.transform = 'scale(1.08)';
+                    setTimeout(() => { splash.style.display = 'none'; }, 800);
+                }
+            }, 2400);
+        }
+
+        // ==========================================
+        // MODO PILOTO AUTOMÁTICO / TOUR REAL NO APP
+        // ==========================================
+        let tourTimer = null;
+        let tourEtapa = 0;
+
+        function falarNarradorCria(texto) {
+            let tipo = localStorage.getItem('voz_preferida') || 'rapida';
+            if (tipo === 'mudo') return;
+            try {
+                window.speechSynthesis.cancel();
+                let msg = new SpeechSynthesisUtterance(texto);
+                let lang = localStorage.getItem('idioma_preferido') || 'pt';
+                msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
+                msg.rate = 1.40;
+                msg.pitch = 1.15;
+                window.speechSynthesis.speak(msg);
+            } catch(e) {}
+        }
+
+        function moverBonecoParaElemento(el, textoBalão) {
+            let box = document.getElementById('tourAvatarBox');
+            let bolha = document.getElementById('tourTextoBolha');
+            bolha.innerText = textoBalão;
+
+            if (el) {
+                let rect = el.getBoundingClientRect();
+                let topPos = rect.top - 140;
+                let leftPos = rect.left + (rect.width / 2) - 30;
+
+                if (topPos < 60) topPos = rect.bottom + 15;
+                if (leftPos < 20) leftPos = 20;
+                if (leftPos > window.innerWidth - 180) leftPos = window.innerWidth - 180;
+
+                box.style.top = topPos + "px";
+                box.style.left = leftPos + "px";
+            }
+        }
+
+        function iniciarPilotoAutomaticoReal() {
+            document.getElementById('telaBloqueio').style.display = 'none';
+            document.getElementById('tourGuiaReal').style.display = 'block';
+            tourEtapa = 0;
+            executarProximaEtapaTour();
+        }
+
+        function abortarTourInterativo() {
+            clearTimeout(tourTimer);
+            try { window.speechSynthesis.cancel(); } catch(e) {}
+            
+            let sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('active');
+            let ov = document.getElementById('overlay');
+            if (ov) ov.style.display = 'none';
+
+            document.getElementById('tourGuiaReal').style.display = 'none';
+
+            let zap = localStorage.getItem('usuario_zap_salvo');
+            if (!zap) {
+                document.getElementById('telaBloqueio').style.display = 'flex';
+            }
+            notificar("Tutorial finalizado!");
+        }
+
+        function executarProximaEtapaTour() {
+            clearTimeout(tourTimer);
+
+            if (tourEtapa === 0) {
+                // 1. Mostrar o botão de PDF
+                let btnUpload = document.getElementById('elSecaoUpload');
+                moverBonecoParaElemento(btnUpload, "1. Primeiro você clica aqui para carregar o PDF da rota!");
+                falarNarradorCria("Carrega o PDF da rota aqui no botão!");
+                tourEtapa = 1;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4000);
+
+            } else if (tourEtapa === 1) {
+                // 2. Simular o carregamento de uma rota real
+                document.getElementById('areaExecucao').style.display = 'block';
+                mapaRotas = { "rua_central_120": ["BR994820194SP", "BR994820195SP"] };
+                stopCorrespondente = { "BR994820194SP": 14, "BR994820195SP": 15 };
+                nomeExibicao = { "rua_central_120": "Rua Central, 120" };
+                todosPacotes = new Set(["BR994820194SP", "BR994820195SP"]);
+                pacotesBipados = new Set();
+                atualizarStats();
+
+                let camBox = document.getElementById('elCameraViewport');
+                moverBonecoParaElemento(camBox, "2. Aponte a câmera na etiqueta para bipar a encomenda!");
+                falarNarradorCria("Aponta a câmera na etiqueta que o app faz a leitura a laser!");
+                tourEtapa = 2;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4200);
+
+            } else if (tourEtapa === 2) {
+                // 3. Simular o Bip e resultado
+                processarCodigo("BR994820194SP");
+                let cardRes = document.getElementById('cardResult');
+                moverBonecoParaElemento(cardRes, "3. O app bipa, fala no seu fone e avisa paradas no mesmo local!");
+                falarNarradorCria("Parada quatorze na mão! E ainda avisa que tem outro pacote no mesmo lugar!");
+                tourEtapa = 3;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4500);
+
+            } else if (tourEtapa === 3) {
+                // 4. Abrir o Menu Lateral Real
+                let btnMenu = document.getElementById('btnMenuReal');
+                moverBonecoParaElemento(btnMenu, "4. Agora veja as opções no Menu Lateral!");
+                falarNarradorCria("Abrindo o menu lateral tático!");
+                toggleSidebar();
+
+                tourEtapa = 4;
+                tourTimer = setTimeout(executarProximaEtapaTour, 2500);
+
+            } else if (tourEtapa === 4) {
+                // 5. Clicar no Tema OLED e Voz Turbo dentro do menu real
+                let temaBtn = document.getElementById('theme_gray');
+                if (temaBtn) temaBtn.click();
+
+                let voiceControl = document.getElementById('controlVoiceReal');
+                moverBonecoParaElemento(voiceControl, "5. Escolha o tema de cor, a voz tática e o GPS Waze/Maps!");
+                falarNarradorCria("Você pode mudar o tema da tela e a voz do sintetizador!");
+                
+                setTimeout(() => {
+                    let oledBtn = document.getElementById('theme_black_oled');
+                    if (oledBtn) oledBtn.click();
+                }, 1500);
+
+                tourEtapa = 5;
+                tourTimer = setTimeout(executarProximaEtapaTour, 4500);
+
+            } else if (tourEtapa === 5) {
+                // 6. Finalização do tour
+                let sb = document.getElementById('sidebar');
+                if (sb && sb.classList.contains('active')) toggleSidebar();
+
+                moverBonecoParaElemento(document.querySelector('.hero-banner'), "Pronto! Agora você domina o Pacote É Mato na rua!");
+                falarNarradorCria("Fechou meu parceiro! Agora é só acelerar nas entregas!");
+
+                tourTimer = setTimeout(abortarTourInterativo, 4000);
+            }
+        }
+
+        const traducoes = {
+            pt: {
+                download_app: "Baixar App no Celular",
+                brand_subtitle: "Plataforma de Logística",
+                whatsapp_label: "WhatsApp / Acesso",
+                password_label: "Sua Senha Pessoal",
+                whatsapp_placeholder: "Número com DDD",
+                password_placeholder: "Crie ou digite sua senha",
+                btn_enter: "Entrar no Sistema",
+                btn_trial: "Testar 3 Dias Grátis",
+                choose_plan: "Planos de Acesso",
+                plan_weekly_name: "Plano Semanal",
+                plan_weekly_meta: "7 dias de acesso total",
+                plan_monthly_name: "Plano Mensal (1 Mês)",
+                plan_monthly_meta: "30 dias • Melhor custo-benefício",
+                plan_quarterly_name: "Plano Trimestral (3 Meses)",
+                plan_quarterly_meta: "90 dias com desconto",
+                most_popular: "Popular",
+                generate_pix: "Gerar Pagamento Pix",
+                secure_payment: "Pagamento Seguro Pix",
+                waiting_confirmation: "Aguardando confirmação... ⏳",
+                auto_unlock: "O sistema destrava sozinho após o pagamento.",
+                copy_pix: "Copiar Código Pix",
+                cancel: "Cancelar",
+                menu: "Menu",
+                language_label: "Idioma",
+                theme_label: "Tema de Cor",
+                voice_label: "Voz do Sintetizador",
+                reset_route: "Zerar Bipagens",
+                logout: "Desconectar Conta",
+                logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
+                saved_route_found: "📂 ROTA ANTERIOR IDENTIFICADA",
+                resume_route: "Retomar Rota Onde Parei",
+                load_pdf_title: "Carregar Rota em PDF",
+                load_pdf_subtitle: "Importe a folha da sua rota para sincronizar as paradas",
+                choose_pdf: "Escolher Arquivo PDF",
+                metric_scanned: "Bipados",
+                metric_stops: "Paradas",
+                metric_remaining: "Faltam",
+                cam_flip: "Virar",
+                flash_txt: "Flash",
+                manual_placeholder: "Digite o código manualmente...",
+                same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
+                pdf_erro: "❌ Não consegui ler este PDF. Verifique se o arquivo não está corrompido e tente novamente.",
+                login_bloqueado: "🔒 Muitas tentativas erradas. Aguarde 30 segundos e tente de novo.",
+                tutorial_btn: "Como Usar (Tutorial Interativo)"
+            },
+            es: {
+                download_app: "Descargar App en el Móvil",
+                brand_subtitle: "Plataforma de Logística",
+                whatsapp_label: "WhatsApp / Acceso",
+                password_label: "Tu Contraseña",
+                whatsapp_placeholder: "Número com código de área",
+                password_placeholder: "Crea o escribe tu contraseña",
+                btn_enter: "Entrar al Sistema",
+                btn_trial: "Probar 3 Días Gratis",
+                choose_plan: "Planes de Acceso",
+                plan_weekly_name: "Plan Semanal",
+                plan_weekly_meta: "7 días de acesso total",
+                plan_monthly_name: "Plan Mensual (1 Mes)",
+                plan_monthly_meta: "30 días • Melhor relação qualidade-preço",
+                plan_quarterly_name: "Plan Trimestral (3 Meses)",
+                plan_quarterly_meta: "90 días con desconto",
+                most_popular: "Popular",
+                generate_pix: "Generar Pago Pix",
+                secure_payment: "Pago Seguro Pix",
+                waiting_confirmation: "Esperando confirmación... ⏳",
+                auto_unlock: "El sistema se desbloquea solo tras el pago.",
+                copy_pix: "Copiar Código Pix",
+                cancel: "Cancelar",
+                menu: "Menú",
+                language_label: "Idioma",
+                theme_label: "Tema de Color",
+                voice_label: "Voz del Sintetizador",
+                reset_route: "Reiniciar Escaneos",
+                logout: "Cerrar Sesión",
+                logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
+                saved_route_found: "📂 ROTA ANTERIOR ENCONTRADA",
+                resume_route: "Reanudar Ruta Donde Me Quedé",
+                load_pdf_title: "Cargar Ruta en PDF",
+                load_pdf_subtitle: "Importa la hoja de tu rota para sincronizar las paradas",
+                choose_pdf: "Elegir Archivo PDF",
+                metric_scanned: "Escaneados",
+                metric_stops: "Paradas",
+                metric_remaining: "Faltam",
+                cam_flip: "Girar",
+                flash_txt: "Flash",
+                manual_placeholder: "Escribe el código manualmente...",
+                same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paquetes en este punto: ",
+                pdf_erro: "❌ No pude leer este PDF. Verifica que el archivo no esté dañado e intenta de nuevo.",
+                login_bloqueado: "🔒 Demasiados intentos fallidos. Espera 30 segundos e intenta de nuevo.",
+                tutorial_btn: "Cómo Usar (Tutorial)"
+            },
+            en: {
+                download_app: "Download App on Phone",
+                brand_subtitle: "Logistics Platform",
+                whatsapp_label: "WhatsApp / Access",
+                password_label: "Your Password",
+                whatsapp_placeholder: "Number with area code",
+                password_placeholder: "Create or type your password",
+                btn_enter: "Sign In",
+                btn_trial: "Try 3 Days Free",
+                choose_plan: "Access Plans",
+                plan_weekly_name: "Weekly Plan",
+                plan_weekly_meta: "7 days full access",
+                plan_monthly_name: "Monthly Plan (1 Month)",
+                plan_monthly_meta: "30 days • Best value",
+                plan_quarterly_name: "Quarterly Plan (3 Months)",
+                plan_quarterly_meta: "90 days with discount",
+                most_popular: "Popular",
+                generate_pix: "Generate Pix Payment",
+                secure_payment: "Secure Pix Payment",
+                waiting_confirmation: "Waiting for confirmation... ⏳",
+                auto_unlock: "The system unlocks automatically after payment.",
+                copy_pix: "Copy Pix Code",
+                cancel: "Cancel",
+                menu: "Menu",
+                language_label: "Language",
+                theme_label: "Color Theme",
+                voice_label: "Synthesizer Voice",
+                reset_route: "Reset Scans",
+                logout: "Log Out",
+                logistics_system: "SMART LOGISTICS SYSTEM",
+                saved_route_found: "📂 PREVIOUS ROUTE FOUND",
+                resume_route: "Resume Route Where I Left",
+                load_pdf_title: "Upload Route PDF",
+                load_pdf_subtitle: "Import your route sheet to sync stops",
+                choose_pdf: "Choose PDF File",
+                metric_scanned: "Scanned",
+                metric_stops: "Stops",
+                metric_remaining: "Remaining",
+                cam_flip: "Flip",
+                flash_txt: "Flash",
+                manual_placeholder: "Type code manually...",
+                same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: ",
+                pdf_erro: "Could not read this PDF. Check that the file isn't corrupted and try again.",
+                login_bloqueado: "🔒 Too many failed attempts. Wait 30 seconds and try again.",
+                tutorial_btn: "How to Use (Tutorial)"
+            }
+        };
+
+        function mudarIdioma(lang) {
+            localStorage.setItem('idioma_preferido', lang);
+            let dict = traducoes[lang] || traducoes.pt;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                let key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                let key = el.getAttribute('data-i18n-placeholder');
+                if (dict[key]) el.setAttribute('placeholder', dict[key]);
+            });
+
+            let txtFlash = document.getElementById('txt-flash');
+            if (txtFlash && !flashLigado) txtFlash.innerText = dict.flash_txt;
+
+            ['pt', 'es', 'en'].forEach(l => {
+                let btn = document.getElementById('lang_' + l);
+                if (btn) {
+                    if (l === lang) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
+
+        const paletas = {
+            black_oled: { 
+                bg_body: "#000000", 
+                surface_1: "#0b0b0d", 
+                surface_2: "#141417", 
+                border: "rgba(255, 255, 255, 0.12)", 
+                text_main: "#ffffff", 
+                text_muted: "#888888", 
+                shadow: "0 16px 36px -10px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(52, 211, 153, 0.2)" 
+            },
+            light: { 
+                bg_body: "#f8fafc", 
+                surface_1: "#ffffff", 
+                surface_2: "#f1f5f9", 
+                border: "rgba(0, 0, 0, 0.08)", 
+                text_main: "#0f172a", 
+                text_muted: "#64748b", 
+                shadow: "0 16px 36px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.06)" 
+            },
+            gray: { 
+                bg_body: "#18181b", 
+                surface_1: "#27272a", 
+                surface_2: "#3f3f46", 
+                border: "rgba(255, 255, 255, 0.1)", 
+                text_main: "#fafafa", 
+                text_muted: "#a1a1aa", 
+                shadow: "0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)" 
+            }
+        };
+
+        function mudarTema(tipo) {
+            let p = paletas[tipo] || paletas.black_oled;
+            document.documentElement.style.setProperty('--bg-body', p.bg_body);
+            document.documentElement.style.setProperty('--surface-1', p.surface_1);
+            document.documentElement.style.setProperty('--surface-2', p.surface_2);
+            document.documentElement.style.setProperty('--surface-border', p.border);
+            document.documentElement.style.setProperty('--text-main', p.text_main);
+            document.documentElement.style.setProperty('--text-muted', p.text_muted);
+            document.documentElement.style.setProperty('--shadow-card', p.shadow);
+            
+            let metaColor = document.getElementById('metaThemeColor');
+            if (metaColor) metaColor.setAttribute('content', p.bg_body);
+
+            localStorage.setItem('tema_preferido', tipo);
+
+            ['black_oled', 'light', 'gray'].forEach(t => {
+                let btn = document.getElementById('theme_' + t);
+                if (btn) {
+                    if (t === tipo) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
+
+        function salvarVoz(tipo) {
+            localStorage.setItem('voz_preferida', tipo);
+            ['rapida', 'grave', 'normal', 'mudo'].forEach(v => {
+                let btn = document.getElementById('voice_' + v);
+                if (btn) {
+                    if (v === tipo) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
 
         function notificar(msg) {
             let t = document.getElementById('toastNotificacao');
@@ -581,264 +1923,1505 @@
             setTimeout(() => { t.style.display = 'none'; }, 3500);
         }
 
-        function toggleSidebar() {
-            let sb = document.getElementById('sidebar');
-            let ov = document.getElementById('overlay');
-            sb.classList.toggle('active');
-            ov.style.display = sb.classList.contains('active') ? 'block' : 'none';
+        function validarNumeroWhatsApp(zap) {
+            let limpo = zap.replace(/\D/g, '');
+            if (limpo.length < 10 || limpo.length > 11) return false;
+            let ddd = parseInt(limpo.substring(0, 2));
+            return ddd >= 11 && ddd <= 99;
         }
 
-        function definirGpsPadrao(app) {
-            gpsPadrao = app;
-            localStorage.setItem('gps_padrao_pref', app);
-            document.getElementById('gps_waze').classList.toggle('active', app === 'waze');
-            document.getElementById('gps_maps').classList.toggle('active', app === 'maps');
-            notificar(`Navegador padrão: ${app === 'waze' ? 'Waze' : 'Google Maps'}`);
-        }
-
-        // ALTERNAR ENTRE AS ABAS PRINCIPAIS
-        function alternarAbaPrincipal(aba) {
-            let btnOtimizador = document.getElementById('tabBtnOtimizador');
-            let btnScanner = document.getElementById('tabBtnScanner');
-            let secOtimizador = document.getElementById('secaoOtimizador');
-            let secScanner = document.getElementById('secaoScanner');
-
-            if (aba === 'otimizador') {
-                btnOtimizador.classList.add('active');
-                btnScanner.classList.remove('active');
-                secOtimizador.style.display = 'block';
-                secScanner.style.display = 'none';
-                if (html5QrCode && html5QrCode.isScanning) {
-                    try { html5QrCode.stop(); } catch(e) {}
-                }
+        function alternarVisibilidadeSenha() {
+            let campo = document.getElementById('inputSenha');
+            let icone = document.getElementById('toggleSenhaVisivel');
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icone.innerText = '🙈';
             } else {
-                btnScanner.classList.add('active');
-                btnOtimizador.classList.remove('active');
-                secScanner.style.display = 'block';
-                secOtimizador.style.display = 'none';
-                iniciarScanner();
+                campo.type = 'password';
+                icone.innerText = '👁️';
             }
         }
 
-        // ==========================================
-        // IMPORTAÇÃO DE ARQUIVOS (EXCEL & PDF)
-        // ==========================================
-        document.getElementById('fileInput').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        function carregarConfiguracoesSalvas() {
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            mudarIdioma(lang);
+
+            let tema = localStorage.getItem('tema_preferido') || 'black_oled';
+            mudarTema(tema);
+
+            let voz = localStorage.getItem('voz_preferida') || 'rapida';
+            salvarVoz(voz);
+            
+            verificarRotaSalvaAnterior();
+            verificarStatusInstalacaoPWA();
+            iniciarMonitoramentoBroadcast();
+
+            let zapSalvo = localStorage.getItem('usuario_zap_salvo');
+            if (!zapSalvo) {
+                document.getElementById('telaBloqueio').style.display = 'flex';
+            }
+
+            if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
+                let btnTeste = document.getElementById('btnTesteGratis');
+                if (btnTeste) btnTeste.style.display = 'none';
+            }
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-2l3pWZSR8Z_d5jun5lUTuFyROUFa7zY",
+            authDomain: "pacote-e-mato.firebaseapp.com",
+            projectId: "pacote-e-mato",
+            storageBucket: "pacote-e-mato.firebasestorage.app",
+            messagingSenderId: "535255652602",
+            appId: "1:535255652602:web:2881a450c393d22ccc1143"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
+        
+        async function autenticarAdmin() {
+            let passInput = document.getElementById('passAdmin');
+            let pass = passInput ? passInput.value.trim() : "";
+            if (!pass) return;
 
             try {
-                if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
-                    entregasBrutasTemp = await lerPlanilhaExcel(file);
-                } else if (file.name.endsWith('.pdf')) {
-                    entregasBrutasTemp = await lerArquivoPdf(file);
+                const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: pass })
+                });
+                const data = await res.json();
+                
+                if (data.sucesso) {
+                    passInput.value = "";
+                    document.getElementById('areaLoginAdmin').style.display = 'none';
+                    document.getElementById('areaGeradorAdmin').style.display = 'flex';
+                    carregarUsuariosAdmin();
+                    carregarPagamentosAdmin();
+                    notificar("👑 Painel Dono Desbloqueado!");
+                } else {
+                    notificar("Senha incorreta.");
                 }
-
-                if (!entregasBrutasTemp || entregasBrutasTemp.length === 0) {
-                    throw new Error("Nenhum dado legível encontrado no arquivo.");
-                }
-
-                document.getElementById('txtArquivoDetectado').innerText = `📄 ${file.name.substring(0, 25)}`;
-                document.getElementById('txtQtdDetectada').innerText = `${entregasBrutasTemp.length} entregas identificadas`;
-                document.getElementById('boxPreOtimizacao').style.display = 'block';
-
             } catch (err) {
-                notificar("Erro ao ler arquivo: " + err.message);
+                notificar("Erro ao validar acesso.");
             }
-        });
-
-        async function lerPlanilhaExcel(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const data = new Uint8Array(e.target.result);
-                    const wb = XLSX.read(data, { type: 'array' });
-                    const sheet = wb.Sheets[wb.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-                    
-                    let lista = json.map((row, idx) => {
-                        let endereco = row.Endereco || row.Endereço || row.endereco || row.Logradouro || row.Destinatario || `Ponto ${idx+1}`;
-                        let codigo = row.Codigo || row.Código || row.Rastreio || row.Pacote || row.tracking || `BR${Date.now()}${idx}`;
-                        let obs = row.Observacao || row.Observação || row.Obs || row.obs || row.Nota || row.Notas || "";
-                        return { 
-                            endereco: String(endereco), 
-                            codigo: String(codigo).toUpperCase().trim(),
-                            obs: String(obs).trim()
-                        };
-                    });
-                    resolve(lista);
-                };
-                reader.onerror = reject;
-                reader.readAsArrayBuffer(file);
-            });
         }
+        
+        let timerVerificadorPix = null;
+        let listenerSessaoRealtime = null;
 
-        async function lerArquivoPdf(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument(new Uint8Array(arrayBuffer)).promise;
-            let lista = [];
-
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const linhas = textContent.items.map(it => it.str).join(' ');
-                
-                const codigos = linhas.match(/BR[A-Za-z0-9]{8,22}/gi) || [];
-                codigos.forEach((cod, idx) => {
-                    lista.push({
-                        endereco: `Endereço extraído do PDF (Ponto ${idx+1})`,
-                        codigo: cod.toUpperCase().trim(),
-                        obs: ""
-                    });
-                });
+        function obterDeviceId() {
+            let id = localStorage.getItem('app_device_hw_id');
+            if (!id) {
+                id = 'DEV_' + Math.random().toString(36).substring(2, 12) + '_' + Date.now();
+                localStorage.setItem('app_device_hw_id', id);
             }
-            return lista;
+            return id;
         }
+        const MEU_DEVICE_ID = obterDeviceId();
 
-        // INICIAR CÁLCULO E OTIMIZAR
-        async function iniciarCalculoOtimizacao() {
-            if (!entregasBrutasTemp || entregasBrutasTemp.length === 0) return;
-            notificar("📍 Sequenciando paradas pelo trajeto mais rápido...");
+        let planoSelecionadoAtual = null;
 
-            // Agrupar por endereço
-            let grupos = {};
-            entregasBrutasTemp.forEach(item => {
-                let chave = item.endereco.toLowerCase().replace(/[^a-z0-9]/g, '');
-                if (!grupos[chave]) {
-                    grupos[chave] = { endereco: item.endereco, pacotes: [], obs: item.obs };
-                }
-                grupos[chave].pacotes.push(item.codigo);
-                if (item.obs && !grupos[chave].obs) grupos[chave].obs = item.obs;
-            });
+        function selecionarPlano(dias, valor, nomePlano, cardId) {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
 
-            rotaOtimizada = [];
-            stopCorrespondente = {};
-            statusEntregas = {};
-            pacotesBipados.clear();
-
-            let chaves = Object.keys(grupos);
-            chaves.forEach((k, index) => {
-                let stopNum = index + 1;
-                let dados = grupos[k];
-                
-                rotaOtimizada.push({
-                    stop: stopNum,
-                    endereco: dados.endereco,
-                    pacotes: dados.pacotes,
-                    obs: dados.obs
-                });
-
-                statusEntregas[stopNum] = 'pendente';
-                dados.pacotes.forEach(pkg => {
-                    stopCorrespondente[pkg] = stopNum;
-                });
-            });
-
-            let total = rotaOtimizada.length;
-            let km = (total * 1.35).toFixed(1);
-            let horas = ((total * 3.5) / 60).toFixed(1);
-
-            document.getElementById('valTotalParadas').innerText = total;
-            document.getElementById('valKm').innerText = `${km} km`;
-            document.getElementById('valHoras').innerText = `${horas}h`;
-            document.getElementById('boardMetricas').style.display = 'grid';
-            document.getElementById('boxPreOtimizacao').style.display = 'none';
-
-            renderizarListaEntregasOtimizadas();
-            atualizarStats();
-            notificar(`🚀 Rota otimizada! ${total} paradas prontas.`);
-        }
-
-        function renderizarListaEntregasOtimizadas() {
-            let container = document.getElementById('listaEntregasOtimizadas');
-            if (rotaOtimizada.length === 0) {
-                container.innerHTML = "";
+            if (!validarNumeroWhatsApp(zap)) {
+                notificar("⚠️ Digite um número de WhatsApp válido com DDD antes de escolher o plano.");
+                document.getElementById('inputTel').focus();
                 return;
             }
 
-            container.innerHTML = rotaOtimizada.map(item => {
-                let st = statusEntregas[item.stop] || 'pendente';
-                let classe = st === 'entregue' ? 'entregue' : (st === 'nao_entregue' ? 'nao-entregue' : '');
-                let obsHtml = item.obs ? `<div class="obs-tag-box">📝 Obs: ${item.obs}</div>` : '';
-                let statusLabel = st === 'entregue' ? '✅ Entregue' : (st === 'nao_entregue' ? '❌ Não Entregue' : '⏳ Pendente');
+            if (!senha || senha.length < 3) {
+                notificar("⚠️ Defina uma senha pessoal (mínimo 3 dígitos) antes de escolher o plano.");
+                document.getElementById('inputSenha').focus();
+                return;
+            }
 
-                return `
-                    <div class="parada-box-pro ${classe}">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span style="font-weight:900; color:#34d399; font-size:0.9rem;">PARADA P${item.stop}</span>
-                            <div style="display:flex; gap:4px;">
-                                <button class="btn-status-toggle" style="background:#10b981; color:#000;" onclick="alternarStatus(${item.stop}, 'entregue')">✅</button>
-                                <button class="btn-status-toggle" style="background:#ef4444; color:#fff;" onclick="alternarStatus(${item.stop}, 'nao_entregue')">❌</button>
-                                <button class="btn-status-toggle" style="background:#3b82f6; color:#fff;" onclick="abrirGps('${item.endereco}')">🚗 GPS</button>
+            document.querySelectorAll('.plan-item').forEach(el => el.classList.remove('selecionado'));
+            document.getElementById(cardId).classList.add('selecionado');
+
+            planoSelecionadoAtual = { dias, valor, nomePlano, senha };
+
+            let btn = document.getElementById('btnConfirmarPagamento');
+            btn.innerText = `⚡ Pagar ${nomePlano} (R$ ${valor.toFixed(2).replace('.', ',')})`;
+            btn.style.display = 'flex';
+
+            notificar(`Plano ${nomePlano} selecionado. Clique abaixo para gerar o Pix.`);
+        }
+
+        function iniciarPixPlanoSelecionado() {
+            if (!planoSelecionadoAtual) {
+                notificar("Selecione um plano acima primeiro.");
+                return;
+            }
+            gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano, planoSelecionadoAtual.senha);
+        }
+
+        async function gerarPixAutomatico(dias, valor, nomePlano, senha) {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            if (!validarNumeroWhatsApp(zap)) {
+                notificar("⚠️ Número de WhatsApp inválido.");
+                return;
+            }
+
+            document.getElementById('pixPlanoNome').innerText = `${nomePlano} • R$ ${valor.toFixed(2).replace('.', ',')}`;
+            document.getElementById('modalPix').style.display = 'flex';
+            document.getElementById('qrContainer').innerHTML = "<div style='color:#000; font-weight:800; font-size:0.8rem;'>Gerando QR Code Pix...</div>";
+            document.getElementById('pixCopiaColaOut').value = "";
+
+            try {
+                const response = await fetch(`${CLOUDFLARE_WORKER_URL}/criar-pix`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        valor: valor,
+                        descricao: `Pacote É Mato - ${nomePlano}`,
+                        zap: zap
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data && data.point_of_interaction && data.point_of_interaction.transaction_data) {
+                    const copiaCola = data.point_of_interaction.transaction_data.qr_code;
+                    const paymentId = String(data.id);
+
+                    document.getElementById('pixCopiaColaOut').value = copiaCola;
+
+                    document.getElementById('qrContainer').innerHTML = "";
+                    new QRCode(document.getElementById('qrContainer'), {
+                        text: copiaCola,
+                        width: 150,
+                        height: 150,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+
+                    iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha);
+                } else {
+                    notificar("Não foi possível gerar a cobrança Pix. Tente novamente.");
+                    fecharModalPix();
+                }
+
+            } catch (err) {
+                notificar("Erro de conexão com o Pix.");
+                fecharModalPix();
+            }
+        }
+
+        function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha) {
+            clearInterval(timerVerificadorPix);
+            
+            timerVerificadorPix = setInterval(async () => {
+                try {
+                    const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentId}`);
+                    const payData = await res.json();
+
+                    if (payData && payData.status === "approved") {
+                        clearInterval(timerVerificadorPix);
+                        
+                        let expiraEm = Date.now() + (dias * 24 * 60 * 60 * 1000);
+                        
+                        await db.collection("usuarios").doc(zap).set({
+                            whatsapp: zap,
+                            senha: senha,
+                            expiraEm: expiraEm,
+                            ativo: true,
+                            bloqueado: false,
+                            deviceId: MEU_DEVICE_ID,
+                            plano: nomePlano,
+                            duracaoDias: dias,
+                            tipo: "pago",
+                            atualizadoEm: Date.now()
+                        }, { merge: true });
+
+                        let docPagamentoRef = db.collection("pagamentos_concluidos").doc(paymentId);
+                        let docCheck = await docPagamentoRef.get();
+                        if (!docCheck.exists) {
+                            await docPagamentoRef.set({
+                                whatsapp: zap,
+                                plano: nomePlano,
+                                valor: valor,
+                                data: new Date().toLocaleString('pt-BR'),
+                                timestamp: Date.now()
+                            });
+                        }
+
+                        fecharModalPix();
+                        localStorage.setItem('usuario_zap_salvo', zap);
+                        notificar("🎉 Pagamento Aprovado! Senha cadastrada com sucesso.");
+                        iniciarMonitoramentoSessao(zap);
+                    }
+                } catch(e) {}
+            }, 2000);
+        }
+
+        function fecharModalPix() {
+            clearInterval(timerVerificadorPix);
+            document.getElementById('modalPix').style.display = 'none';
+        }
+
+        function copiarPixCopiaCola() {
+            let campo = document.getElementById('pixCopiaColaOut');
+            if (!campo.value) return;
+            campo.select();
+            navigator.clipboard.writeText(campo.value);
+            notificar("📋 Código Pix Copiado com sucesso!");
+        }
+
+        async function ativarTesteGratis() {
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+            let msgErro = document.getElementById('msgErro');
+            let btn = document.getElementById('btnTesteGratis');
+
+            if (!validarNumeroWhatsApp(zap)) {
+                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
+                msgErro.style.display = 'block';
+                document.getElementById('inputTel').focus();
+                return;
+            }
+
+            if (!senha || senha.length < 3) {
+                msgErro.innerText = "❌ Defina uma senha pessoal (mínimo 3 dígitos).";
+                msgErro.style.display = 'block';
+                document.getElementById('inputSenha').focus();
+                return;
+            }
+
+            if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
+                msgErro.innerText = "❌ Este celular já utilizou o teste grátis!";
+                msgErro.style.display = 'block';
+                if (btn) btn.style.display = 'none';
+                return;
+            }
+
+            btn.innerText = "Validando...";
+            btn.disabled = true;
+
+            try {
+                let docAparelho = await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).get();
+                if (docAparelho.exists) {
+                    localStorage.setItem('teste_gratis_bloqueado_local', 'true');
+                    msgErro.innerText = "❌ Este celular já utilizou o teste grátis anteriormente!";
+                    msgErro.style.display = 'block';
+                    btn.style.display = 'none';
+                    return;
+                }
+
+                let docZap = await db.collection("usuarios").doc(zap).get();
+                if (docZap.exists && docZap.data().jaUsouTeste) {
+                    msgErro.innerText = "❌ Este WhatsApp já utilizou o teste gratuito.";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "🎁 Testar 3 Dias Grátis";
+                    btn.disabled = false;
+                    return;
+                }
+
+                let expiraEm = Date.now() + (3 * 24 * 60 * 60 * 1000);
+
+                await db.collection("usuarios").doc(zap).set({
+                    whatsapp: zap,
+                    senha: senha,
+                    expiraEm: expiraEm,
+                    ativo: true,
+                    bloqueado: false,
+                    deviceId: MEU_DEVICE_ID,
+                    jaUsouTeste: true,
+                    tipo: "teste",
+                    plano: "Teste Grátis (3 Dias)",
+                    duracaoDias: 3,
+                    ativadoEm: Date.now()
+                }, { merge: true });
+
+                await db.collection("dispositivos_bloqueados").doc(MEU_DEVICE_ID).set({
+                    whatsapp: zap,
+                    bloqueadoEm: Date.now()
+                });
+
+                localStorage.setItem('teste_gratis_bloqueado_local', 'true');
+                if (btn) btn.style.display = 'none';
+                localStorage.setItem('usuario_zap_salvo', zap);
+                
+                msgErro.style.display = 'none';
+                notificar("🎉 Teste de 3 Dias Ativado com Sucesso!");
+                iniciarMonitoramentoSessao(zap);
+
+            } catch(e) {
+                msgErro.innerText = "Erro ao ativar teste: " + e.message;
+                msgErro.style.display = 'block';
+                btn.innerText = "🎁 Testar 3 Dias Grátis";
+                btn.disabled = false;
+            }
+        }
+
+        let tentativasLoginFalhas = 0;
+        let loginBloqueadoAte = 0;
+
+        async function autenticarUsuarioFirebase() {
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            let dict = traducoes[lang] || traducoes.pt;
+            let msgErro = document.getElementById('msgErro');
+            let btn = document.getElementById('btnEntrarAuth');
+
+            if (Date.now() < loginBloqueadoAte) {
+                msgErro.innerText = dict.login_bloqueado;
+                msgErro.style.display = 'block';
+                return;
+            }
+
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+
+            if (!validarNumeroWhatsApp(zap)) {
+                msgErro.innerText = "❌ Digite um número de WhatsApp válido com DDD.";
+                msgErro.style.display = 'block';
+                return;
+            }
+
+            if (!senha) {
+                msgErro.innerText = "❌ Digite sua senha de acesso.";
+                msgErro.style.display = 'block';
+                document.getElementById('inputSenha').focus();
+                return;
+            }
+
+            btn.innerText = "Verificando...";
+            btn.disabled = true;
+
+            try {
+                let doc = await db.collection("usuarios").doc(zap).get();
+
+                if (!doc.exists) {
+                    msgErro.innerText = "Número não localizado. Escolha um plano ou ative o teste.";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.disabled = false;
+                    return;
+                }
+
+                let data = doc.data();
+                let agora = Date.now();
+
+                if (data.senha && data.senha !== senha) {
+                    registrarTentativaLoginFalha(dict);
+                    msgErro.innerText = "❌ Senha incorreta!";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.disabled = false;
+                    return;
+                }
+
+                tentativasLoginFalhas = 0;
+
+                if (data.bloqueado) {
+                    msgErro.innerText = "❌ Este número foi bloqueado pelo administrador.";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.disabled = false;
+                    return;
+                }
+
+                if (!data.ativo || agora > data.expiraEm) {
+                    msgErro.innerText = "Acesso expirado. Selecione um plano abaixo para renovar.";
+                    msgErro.style.display = 'block';
+                    btn.innerText = "⚡ Entrar no Sistema";
+                    btn.disabled = false;
+                    return;
+                }
+
+                await db.collection("usuarios").doc(zap).update({ 
+                    deviceId: MEU_DEVICE_ID,
+                    senha: data.senha || senha 
+                });
+
+                localStorage.setItem('usuario_zap_salvo', zap);
+                msgErro.style.display = 'none';
+                notificar("⚡ Bem-vindo de volta!");
+                iniciarMonitoramentoSessao(zap);
+
+            } catch(e) {
+                msgErro.innerText = "Erro ao conectar ao banco de dados.";
+                msgErro.style.display = 'block';
+            }
+
+            btn.innerText = "⚡ Entrar no Sistema";
+            btn.disabled = false;
+        }
+
+        function registrarTentativaLoginFalha(dict) {
+            tentativasLoginFalhas++;
+            if (tentativasLoginFalhas >= 5) {
+                loginBloqueadoAte = Date.now() + 30000;
+                tentativasLoginFalhas = 0;
+                notificar(dict.login_bloqueado);
+            }
+        }
+
+        function iniciarMonitoramentoSessao(zap) {
+            if (listenerSessaoRealtime) listenerSessaoRealtime();
+
+            listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
+                if (!doc.exists) {
+                    desconectarForcado("Conta não encontrada.");
+                    return;
+                }
+
+                let data = doc.data();
+                let agora = Date.now();
+
+                if (data.bloqueado) {
+                    desconectarForcado("❌ Seu acesso foi bloqueado pelo administrador.");
+                    return;
+                }
+
+                if (!data.ativo || agora > data.expiraEm) {
+                    desconectarForcado("Assinatura expirada.");
+                    return;
+                }
+
+                if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
+                    desconectarForcado("⚠️ Esta conta foi conectada em outro aparelho!");
+                    return;
+                }
+
+                let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
+                document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
+                document.getElementById('telaBloqueio').style.display = 'none';
+            });
+        }
+
+        function desconectarForcado(motivo) {
+            if (listenerSessaoRealtime) {
+                listenerSessaoRealtime();
+                listenerSessaoRealtime = null;
+            }
+            
+            let sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('active');
+            let ov = document.getElementById('overlay');
+            if (ov) ov.style.display = 'none';
+
+            finalizarCameraHardware();
+
+            localStorage.removeItem('usuario_zap_salvo');
+            let msgErro = document.getElementById('msgErro');
+            msgErro.innerText = motivo;
+            msgErro.style.display = 'block';
+            document.getElementById('telaBloqueio').style.display = 'flex';
+        }
+
+        function sairDoApp() {
+            if (listenerSessaoRealtime) {
+                listenerSessaoRealtime();
+                listenerSessaoRealtime = null;
+            }
+
+            let sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('active');
+            let ov = document.getElementById('overlay');
+            if (ov) ov.style.display = 'none';
+
+            finalizarCameraHardware();
+
+            localStorage.removeItem('usuario_zap_salvo');
+            document.getElementById('inputTel').value = "";
+            document.getElementById('inputSenha').value = "";
+            document.getElementById('areaExecucao').style.display = 'none';
+            
+            document.getElementById('telaBloqueio').style.display = 'flex';
+            notificar("🔒 Você foi desconectado.");
+        }
+
+        let zapSalvoInicial = localStorage.getItem('usuario_zap_salvo');
+        if (zapSalvoInicial) {
+            iniciarMonitoramentoSessao(zapSalvoInicial);
+        } else {
+            document.getElementById('telaBloqueio').style.display = 'flex';
+        }
+
+        // ==========================================
+        // MODO DONO - DASHBOARD FINANCEIRO E WHATSAPP
+        // ==========================================
+        let cliquesAdmin = 0;
+        let timerCliques = null;
+
+        function registrarCliqueAdmin() {
+            cliquesAdmin++;
+            clearTimeout(timerCliques);
+            timerCliques = setTimeout(() => { cliquesAdmin = 0; }, 2000);
+
+            if (cliquesAdmin >= 5) {
+                cliquesAdmin = 0;
+                document.getElementById('modalAdmin').style.display = 'flex';
+            }
+        }
+
+        function fecharModalAdmin() {
+            document.getElementById('modalAdmin').style.display = 'none';
+        }
+
+        let listaUsuariosCache = [];
+
+        async function carregarUsuariosAdmin() {
+            let view30d = document.getElementById('viewAdmin30d');
+            let view90d = document.getElementById('viewAdmin90d');
+            let viewTeste = document.getElementById('viewAdminTeste');
+            
+            if (view30d) view30d.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
+            if (view90d) view90d.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
+            if (viewTeste) viewTeste.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando...</div>";
+
+            try {
+                let snapshot = await db.collection("usuarios").get();
+                listaUsuariosCache = [];
+                let ativosCount = 0;
+                let agora = Date.now();
+
+                snapshot.forEach(doc => {
+                    let u = doc.data();
+                    u.id = doc.id;
+                    listaUsuariosCache.push(u);
+
+                    if (u.ativo && agora <= (u.expiraEm || 0) && !u.bloqueado && u.tipo === 'pago') {
+                        ativosCount++;
+                    }
+                });
+
+                document.getElementById('txtTotalPagantesAtivos').innerText = ativosCount;
+                renderizarUsuariosAdminList(listaUsuariosCache);
+            } catch(e) {
+                if (view30d) view30d.innerHTML = "Erro ao buscar dados.";
+            }
+        }
+
+        function renderizarUsuariosAdminList(lista) {
+            let view30d = document.getElementById('viewAdmin30d');
+            let view90d = document.getElementById('viewAdmin90d');
+            let viewTeste = document.getElementById('viewAdminTeste');
+            let html30 = "", html90 = "", htmlTeste = "";
+            let agora = Date.now();
+
+            lista.forEach(u => {
+                let zap = u.whatsapp || u.id;
+                let senhaUser = u.senha || "Não definida";
+                let expira = u.expiraEm || 0;
+                let bloqueado = u.bloqueado === true;
+                let ativo = u.ativo && agora <= expira && !bloqueado;
+                let duracao = u.duracaoDias || 30;
+                
+                let dias = Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)));
+                let statusLabel = bloqueado ? `<span style="color:#ef4444; font-weight:800;">Bloqueado ⛔</span>` : (ativo ? `<span style="color:#10b981;">Ativo (${dias}d restantes)</span>` : `<span style="color:#f59e0b;">Expirado</span>`);
+
+                let btnBloqueioTexto = bloqueado ? "🟢 Desbloquear" : "⛔ Bloquear";
+                let btnBloqueioCor = bloqueado ? "#10b981" : "#f59e0b";
+
+                let zapLink = `https://wa.me/55${zap.replace(/\D/g,'')}?text=Ol%C3%A1%2C+sou+o+suporte+do+Pacote+%C3%89+Mato!`;
+
+                let row = `
+                    <div class="user-row">
+                        <div class="user-row-header">
+                            <div>
+                                <div style="font-weight:900; font-size:0.84rem; color:var(--text-main);">📱 ${zap}</div>
+                                <div style="font-size:0.7rem; color:#34d399; font-weight:800;">🔑 Senha: ${senhaUser}</div>
+                                <div style="font-size:0.65rem; color:var(--text-muted);">${u.plano || (duracao + ' Dias')} • ${statusLabel}</div>
                             </div>
+                            <a href="${zapLink}" target="_blank" style="text-decoration:none;">
+                                <button class="btn-mini-admin" style="background:#25d366; color:#000;">💬 WhatsApp</button>
+                            </a>
                         </div>
-                        <div style="font-size:0.85rem; font-weight:700; color:#fff;">📍 ${item.endereco}</div>
-                        ${obsHtml}
-                        <div style="font-size:0.68rem; color:#888; font-family:monospace; margin-top:2px;">Pacotes: ${item.pacotes.join(', ')} • <b>${statusLabel}</b></div>
+
+                        <div class="user-row-actions">
+                            <button onclick="ajustarDiasRapido('${zap}')" class="btn-mini-admin" style="background:#3b82f6; color:#fff;">⏳ +/- Dias</button>
+                            <button onclick="redefinirSenhaAdmin('${zap}')" class="btn-mini-admin" style="background:#10b981; color:#fff;">🔑 Senha</button>
+                            <button onclick="desconectarAparelhoAdmin('${zap}')" class="btn-mini-admin" style="background:rgba(255,255,255,0.08); color:#34d399; border:1px solid rgba(52,211,153,0.3);">📲 Reset Celular</button>
+                            <button onclick="alternarBloqueioUsuario('${zap}', ${!bloqueado})" class="btn-mini-admin" style="background:${btnBloqueioCor}; color:#000;">${btnBloqueioTexto}</button>
+                            <button onclick="deletarUsuarioAdmin('${zap}')" class="btn-mini-admin" style="background:#ef4444; color:#fff;">🗑️ Excluir</button>
+                        </div>
                     </div>
                 `;
-            }).join('');
+
+                if (duracao === 90) {
+                    html90 += row;
+                } else if (duracao === 30) {
+                    html30 += row;
+                } else {
+                    htmlTeste += row;
+                }
+            });
+
+            if (view30d) view30d.innerHTML = html30 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 1 Mês.</div>";
+            if (view90d) view90d.innerHTML = html90 || "<div style='font-size:0.75rem; color:#888;'>Nenhum usuário de 3 Meses.</div>";
+            if (viewTeste) viewTeste.innerHTML = htmlTeste || "<div style='font-size:0.75rem; color:#888;'>Nenhum teste ou plano customizado.</div>";
         }
 
-        function alternarStatus(stopNum, status) {
-            statusEntregas[stopNum] = status;
-            renderizarListaEntregasOtimizadas();
-            atualizarStats();
+        function filtrarListaAdminLocal() {
+            let query = document.getElementById('buscaAdminUser').value.trim().toLowerCase();
+            if (!query) {
+                renderizarUsuariosAdminList(listaUsuariosCache);
+                return;
+            }
+            let filtrados = listaUsuariosCache.filter(u => {
+                let zap = (u.whatsapp || u.id || "").toLowerCase();
+                return zap.includes(query);
+            });
+            renderizarUsuariosAdminList(filtrados);
         }
 
-        function abrirGps(endereco) {
-            let query = encodeURIComponent(endereco);
-            if (gpsPadrao === 'waze') {
+        async function carregarPagamentosAdmin() {
+            let viewPagos = document.getElementById('viewAdminPagos');
+            if (!viewPagos) return;
+            viewPagos.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando pagamentos...</div>";
+
+            try {
+                let snapshot = await db.collection("pagamentos_concluidos").orderBy("timestamp", "desc").get();
+                let htmlPagos = "";
+                let totalFaturado = 0;
+
+                snapshot.forEach(doc => {
+                    let p = doc.data();
+                    let valorNum = Number(p.valor || 0);
+                    totalFaturado += valorNum;
+
+                    htmlPagos += `
+                        <div class="user-row">
+                            <div>
+                                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${p.whatsapp}</div>
+                                <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${valorNum.toFixed(2).replace('.', ',')}</div>
+                                <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${p.data}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('txtTotalFaturamento').innerText = `R$ ${totalFaturado.toFixed(2).replace('.', ',')}`;
+                viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento registrado ainda.</div>";
+            } catch(e) {
+                viewPagos.innerHTML = "Erro ao carregar histórico de pagamentos.";
+            }
+        }
+
+        function exportarRelatorioCSV() {
+            if (listaUsuariosCache.length === 0) {
+                notificar("Nenhum usuário para exportar.");
+                return;
+            }
+            let csv = "WhatsApp,Senha,Plano,DuracaoDias,Status\n";
+            let agora = Date.now();
+
+            listaUsuariosCache.forEach(u => {
+                let status = u.bloqueado ? "Bloqueado" : (u.ativo && agora <= (u.expiraEm || 0) ? "Ativo" : "Expirado");
+                csv += `"${u.whatsapp || u.id}","${u.senha || ''}","${u.plano || ''}","${u.duracaoDias || ''}","${status}"\n`;
+            });
+
+            let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `pacote_e_mato_clientes_${Date.now()}.csv`;
+            link.click();
+            notificar("📥 Relatório CSV baixado com sucesso!");
+        }
+
+        function alternarTabAdmin(tab) {
+            let tabs = ['30d', '90d', 'teste', 'pagos', 'add', 'aviso'];
+            tabs.forEach(t => {
+                let btn = document.getElementById('tab' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : (t === 'add' ? 'Add' : 'Aviso'))))));
+                let view = document.getElementById('viewAdmin' + (t === '30d' ? '30d' : (t === '90d' ? '90d' : (t === 'teste' ? 'Teste' : (t === 'pagos' ? 'Pagos' : (t === 'add' ? 'Add' : 'Aviso'))))));
+                
+                if (btn) btn.classList.remove('active');
+                if (view) view.style.display = 'none';
+            });
+
+            let btnAtivo = document.getElementById('tab' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : (tab === 'add' ? 'Add' : 'Aviso'))))));
+            let viewAtiva = document.getElementById('viewAdmin' + (tab === '30d' ? '30d' : (tab === '90d' ? '90d' : (tab === 'teste' ? 'Teste' : (tab === 'pagos' ? 'Pagos' : (tab === 'add' ? 'Add' : 'Aviso'))))));
+
+            if (btnAtivo) btnAtivo.classList.add('active');
+            if (viewAtiva) viewAtiva.style.display = 'flex';
+        }
+
+        async function redefinirSenhaAdmin(zap) {
+            let novaSenha = prompt(`Digite a nova senha para o entregador ${zap}:`);
+            if (!novaSenha) return;
+
+            try {
+                await db.collection("usuarios").doc(zap).update({ 
+                    senha: novaSenha.trim(),
+                    deviceId: ""
+                });
+                notificar(`Senha do ${zap} alterada para: ${novaSenha}`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao redefinir senha.");
+            }
+        }
+
+        async function desconectarAparelhoAdmin(zap) {
+            try {
+                await db.collection("usuarios").doc(zap).update({ deviceId: "" });
+                notificar(`📲 Celular de ${zap} desconectado. Ele já pode logar em outro aparelho.`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao resetar aparelho.");
+            }
+        }
+
+        async function ajustarDiasRapido(zap) {
+            let diasStr = prompt(`Quantos dias deseja adicionar (ex: 7) ou remover (ex: -5) para ${zap}?`);
+            if (!diasStr) return;
+            
+            let dias = parseInt(diasStr);
+            if (isNaN(dias)) {
+                notificar("Valor inválido.");
+                return;
+            }
+
+            try {
+                let doc = await db.collection("usuarios").doc(zap).get();
+                if (!doc.exists) return;
+
+                let u = doc.data();
+                let agora = Date.now();
+                let base = (u.expiraEm && u.expiraEm > agora) ? u.expiraEm : agora;
+                let novoExpira = base + (dias * 24 * 60 * 60 * 1000);
+
+                await db.collection("usuarios").doc(zap).update({
+                    expiraEm: novoExpira,
+                    ativo: novoExpira > agora
+                });
+
+                notificar(`Acesso de ${zap} ajustado em ${dias} dias.`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao ajustar dias.");
+            }
+        }
+
+        async function alternarBloqueioUsuario(zap, statusBloqueio) {
+            try {
+                await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
+                notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao atualizar status de bloqueio.");
+            }
+        }
+
+        async function deletarUsuarioAdmin(zap) {
+            if (!confirm(`Deseja realmente apagar o cadastro de ${zap}?`)) return;
+            try {
+                await db.collection("usuarios").doc(zap).delete();
+                notificar(`Acesso de ${zap} removido com sucesso.`);
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao remover usuário.");
+            }
+        }
+
+        async function liberarClienteManual() {
+            let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputClienteSenha').value.trim();
+            let diasInput = parseInt(document.getElementById('inputDiasCustom').value);
+
+            if (!validarNumeroWhatsApp(zap)) {
+                notificar("⚠️ Digite um WhatsApp válido com DDD.");
+                return;
+            }
+
+            if (!senha) {
+                notificar("⚠️ Digite uma senha para o usuário.");
+                return;
+            }
+
+            if (isNaN(diasInput) || diasInput <= 0) {
+                notificar("⚠️ Informe uma quantidade de dias válida.");
+                return;
+            }
+
+            try {
+                let userDocRef = db.collection("usuarios").doc(zap);
+                let userDoc = await userDocRef.get();
+                let agora = Date.now();
+                let expiraEmBase = agora;
+
+                if (userDoc.exists) {
+                    let dadosAntigos = userDoc.data();
+                    if (dadosAntigos.expiraEm && dadosAntigos.expiraEm > agora) {
+                        expiraEmBase = dadosAntigos.expiraEm;
+                    }
+                }
+
+                let novoExpiraEm = expiraEmBase + (diasInput * 24 * 60 * 60 * 1000);
+
+                await userDocRef.set({
+                    whatsapp: zap,
+                    senha: senha,
+                    expiraEm: novoExpiraEm,
+                    ativo: true,
+                    bloqueado: false,
+                    deviceId: "",
+                    tipo: "pago",
+                    plano: `${diasInput} Dias (Liberado)`,
+                    duracaoDias: diasInput,
+                    atualizadoEm: agora
+                }, { merge: true });
+
+                notificar(`✅ ${zap} liberado com sucesso por ${diasInput} dias!`);
+                document.getElementById('inputClienteZap').value = "";
+                document.getElementById('inputClienteSenha').value = "";
+                
+                alternarTabAdmin(diasInput === 30 ? '30d' : (diasInput === 90 ? '90d' : 'teste'));
+                carregarUsuariosAdmin();
+            } catch(e) {
+                notificar("Erro ao salvar no banco: " + e.message);
+            }
+        }
+
+        async function salvarBroadcastGlobal(ativo) {
+            let txt = document.getElementById('inputBroadcastTexto').value.trim();
+            let horas = parseFloat(document.getElementById('selDuracaoAviso').value) || 24;
+
+            if (ativo && !txt) {
+                notificar("⚠️ Digite o texto do aviso antes de publicar.");
+                return;
+            }
+
+            let expiraEm = ativo ? (Date.now() + (horas * 60 * 60 * 1000)) : 0;
+
+            try {
+                await db.collection("sistema_config").doc("broadcast").set({
+                    ativo: ativo,
+                    mensagem: txt,
+                    expiraEm: expiraEm,
+                    atualizadoEm: Date.now()
+                });
+
+                if (ativo) {
+                    notificar(`📢 Aviso publicado por ${horas === 99999 ? 'tempo indeterminado' : horas + 'h'}!`);
+                } else {
+                    document.getElementById('inputBroadcastTexto').value = "";
+                    notificar("Aviso global removido da tela de todos.");
+                }
+            } catch(e) {
+                console.error("Erro broadcast:", e);
+                notificar("Erro ao salvar aviso no Firebase. Verifique as regras.");
+            }
+        }
+
+        function iniciarMonitoramentoBroadcast() {
+            db.collection("sistema_config").doc("broadcast").onSnapshot(doc => {
+                let banner = document.getElementById('bannerBroadcast');
+                if (doc.exists) {
+                    let data = doc.data();
+                    let agora = Date.now();
+
+                    if (data.ativo && data.mensagem && (agora <= data.expiraEm || !data.expiraEm)) {
+                        banner.innerHTML = `<span style="font-size:1.1rem; vertical-align:middle;">📢</span> <b>AVISO GERAL:</b> ${data.mensagem}`;
+                        banner.style.display = 'block';
+                    } else {
+                        banner.style.display = 'none';
+                    }
+                } else {
+                    banner.style.display = 'none';
+                }
+            });
+        }
+
+        // ==========================================
+        // HISTÓRICO DE ROTAS LOCAIS DO MOTORISTA
+        // ==========================================
+        function salvarHistoricoRotaConcluida(nomeRota, totalPacotes, totalParadas) {
+            let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+            hist.unshift({
+                nome: nomeRota,
+                data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR').substring(0,5),
+                pacotes: totalPacotes,
+                paradas: totalParadas
+            });
+            if (hist.length > 20) hist.pop();
+            localStorage.setItem('historico_rotas_usuario', JSON.stringify(hist));
+        }
+
+        function abrirModalHistorico() {
+            let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+            let container = document.getElementById('listaHistoricoRotas');
+            if (hist.length === 0) {
+                container.innerHTML = "<div style='font-size:0.75rem; color:#888; text-align:center;'>Nenhuma rota salva no histórico ainda.</div>";
+            } else {
+                container.innerHTML = hist.map(h => `
+                    <div style="background:var(--surface-2); padding:10px; border-radius:10px; border:1px solid var(--surface-border);">
+                        <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📄 ${h.nome}</div>
+                        <div style="font-size:0.68rem; color:#fff;">${h.pacotes} pacotes • ${h.paradas} paradas</div>
+                        <div style="font-size:0.60rem; color:var(--text-muted);">🕒 Concluída em: ${h.data}</div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('modalHistoricoRotas').style.display = 'flex';
+        }
+
+        function fecharModalHistorico() {
+            document.getElementById('modalHistoricoRotas').style.display = 'none';
+        }
+
+        // ==========================================
+        // CONTROLE PWA E HARDWARE
+        // ==========================================
+        let deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            verificarStatusInstalacaoPWA();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            verificarStatusInstalacaoPWA();
+            notificar("🎉 Aplicativo instalado com sucesso!");
+        });
+
+        function verificarStatusInstalacaoPWA() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            
+            const btnAuth = document.getElementById('btnDownloadAuth');
+            const btnPrincipal = document.getElementById('btnDownloadPrincipal');
+            const btnSidebar = document.getElementById('btnDownloadSidebar');
+
+            if (isStandalone) {
+                if (btnAuth) btnAuth.style.display = 'none';
+                if (btnPrincipal) btnPrincipal.style.display = 'none';
+                if (btnSidebar) btnSidebar.style.display = 'none';
+            } else {
+                if (btnAuth) btnAuth.style.display = 'flex';
+                if (btnPrincipal) btnPrincipal.style.display = 'flex';
+                if (btnSidebar) btnSidebar.style.display = 'flex';
+            }
+        }
+
+        async function dispararInstalacaoPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    verificarStatusInstalacaoPWA();
+                }
+                deferredPrompt = null;
+            } else {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    notificar("📲 Para instalar no iPhone: Toque no ícone de Compartilhar (quadrado com seta) e escolha 'Adicionar à Tela de Início'.");
+                } else {
+                    notificar("📲 Para instalar: Toque nos 3 pontinhos do navegador e selecione 'Instalar Aplicativo' ou 'Adicionar à Tela Inicial'.");
+                }
+            }
+        }
+
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => clients.claim());
+                self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+            `;
+            const blob = new Blob([swCode], { type: 'text/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+        }
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let html5QrCode = null;
+        let sensorAtual = "environment";
+        let flashLigado = false;
+        let processandoTroca = false;
+
+        let mapaRotas = {};
+        let stopCorrespondente = {};
+        let nomeExibicao = {};
+        let todosPacotes = new Set();
+        let pacotesBipados = new Set();
+        let chaveStorageAtual = null;
+        let enderecoSelecionadoGps = "";
+        let filtroAtualModal = 'todos';
+
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function verificarRotaSalvaAnterior() {
+            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
+            let cardRetomar = document.getElementById('cardRetomarRota');
+            if (dadosSalvos) {
+                try {
+                    let parsed = JSON.parse(dadosSalvos);
+                    if (parsed.todosPacotes && parsed.todosPacotes.length > 0) {
+                        document.getElementById('txtNomeRotaSalva').innerText = `${parsed.nomeArquivo || 'Rota'} (${parsed.pacotesBipados.length}/${parsed.todosPacotes.length} bipados)`;
+                        cardRetomar.style.display = 'block';
+                        document.getElementById('btnVerParadasModal').style.display = 'flex';
+                        return;
+                    }
+                } catch(e) {}
+            }
+            cardRetomar.style.display = 'none';
+        }
+
+        function salvarEstadoCompletoRota(nomeArquivo) {
+            let dados = {
+                nomeArquivo: nomeArquivo || (chaveStorageAtual ? chaveStorageAtual.replace('bipados_', '') : 'Rota Salva'),
+                chaveStorage: chaveStorageAtual,
+                mapaRotas: mapaRotas,
+                stopCorrespondente: stopCorrespondente,
+                nomeExibicao: nomeExibicao,
+                todosPacotes: Array.from(todosPacotes),
+                pacotesBipados: Array.from(pacotesBipados),
+                salvoEm: Date.now()
+            };
+            localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
+        }
+
+        function retomarRotaAnterior() {
+            let dadosSalvos = localStorage.getItem('rota_ativa_completa');
+            if (!dadosSalvos) return;
+
+            try {
+                let parsed = JSON.parse(dadosSalvos);
+                mapaRotas = parsed.mapaRotas || {};
+                stopCorrespondente = parsed.stopCorrespondente || {};
+                nomeExibicao = parsed.nomeExibicao || {};
+                todosPacotes = new Set(parsed.todosPacotes || []);
+                pacotesBipados = new Set(parsed.pacotesBipados || []);
+                chaveStorageAtual = parsed.chaveStorage;
+
+                document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
+                document.getElementById('btnVerParadasModal').style.display = 'flex';
+
+                document.getElementById('areaExecucao').style.display = 'block';
+                document.getElementById('cardRetomarRota').style.display = 'none';
+
+                atualizarStats();
+                iniciarScanner();
+                notificar("⚡ Rota anterior retomada!");
+
+            } catch(e) {
+                notificar("Erro ao carregar a rota anterior.");
+            }
+        }
+
+        function abrirModalRota() {
+            filtroAtualModal = 'todos';
+            document.getElementById('filtroTabTodos').classList.add('active');
+            document.getElementById('filtroTabDuplos').classList.remove('active');
+            renderizarListaParadasModal();
+            document.getElementById('modalVisualizarRota').style.display = 'flex';
+        }
+
+        function fecharModalRota() {
+            document.getElementById('modalVisualizarRota').style.display = 'none';
+        }
+
+        function filtrarParadasModal(filtro) {
+            filtroAtualModal = filtro;
+            if (filtro === 'todos') {
+                document.getElementById('filtroTabTodos').classList.add('active');
+                document.getElementById('filtroTabDuplos').classList.remove('active');
+            } else {
+                document.getElementById('filtroTabDuplos').classList.add('active');
+                document.getElementById('filtroTabTodos').classList.remove('active');
+            }
+            renderizarListaParadasModal();
+        }
+
+        function renderizarListaParadasModal() {
+            let container = document.getElementById('listaParadasModal');
+            container.innerHTML = "";
+
+            if (Object.keys(mapaRotas).length === 0) {
+                container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center;'>Nenhuma rota carregada no momento.</div>";
+                return;
+            }
+
+            let enderecosUnificados = {};
+            let totalDuplosCount = 0;
+            let totalTodosCount = 0;
+
+            for (let end in mapaRotas) {
+                let pacs = mapaRotas[end];
+                if (end.startsWith("pacote_isolado_")) continue;
+                
+                let nomeEnd = nomeExibicao[end] || end;
+                let stopsDesteEnd = [];
+                pacs.forEach(p => {
+                    let st = stopCorrespondente[p] || 1;
+                    if (!stopsDesteEnd.includes(st)) stopsDesteEnd.push(st);
+                });
+                stopsDesteEnd.sort((a,b) => a - b);
+
+                if (!enderecosUnificados[end]) {
+                    enderecosUnificados[end] = { endereco: nomeEnd, stops: stopsDesteEnd, pacotes: pacs };
+                }
+            }
+
+            let chavesEnderecos = Object.keys(enderecosUnificados);
+            let listaCards = [];
+
+            chavesEnderecos.forEach(end => {
+                let dados = enderecosUnificados[end];
+                let qtd = dados.pacotes.length;
+                let ehDuplo = qtd > 1;
+
+                totalTodosCount++;
+                if (ehDuplo) totalDuplosCount++;
+
+                if (filtroAtualModal === 'duplos' && !ehDuplo) return;
+
+                let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
+                let badgeDestaque = ehDuplo 
+                    ? `<div class="tag-duplo-info">🔹 PACOTE DUPLO • ${qtd} pacotes</div>` 
+                    : `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
+
+                listaCards.push(`
+                    <div class="parada-box-pro ${ehDuplo ? 'duplo-pro' : ''}">
+                        <div class="parada-header-row">
+                            <div class="parada-badge-num ${ehDuplo ? 'destaque-duplo' : ''}">PARADA ${paradaFormatada}</div>
+                            ${badgeDestaque}
+                        </div>
+                        
+                        <div class="endereco-texto-pro">📍 ${dados.endereco}</div>
+
+                        <div class="acoes-footer-pro">
+                            <button class="btn-acao-card" onclick="perguntarGps('${dados.endereco}', '${paradaFormatada}')">
+                                🚗 Waze / Maps
+                            </button>
+                        </div>
+                    </div>
+                `);
+            });
+
+            document.getElementById('contadorTodos').innerText = totalTodosCount;
+            document.getElementById('contadorDuplos').innerText = totalDuplosCount;
+
+            if (listaCards.length === 0) {
+                container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;'>Nenhum pacote duplo encontrado nesta rota.</div>";
+            } else {
+                container.innerHTML = listaCards.join('');
+            }
+        }
+
+        function perguntarGps(endereco, paradaNome) {
+            enderecoSelecionadoGps = endereco;
+            document.getElementById('tituloGpsParada').innerText = `Navegar para Parada ${paradaNome}`;
+            document.getElementById('modalEscolhaGps').style.display = 'flex';
+        }
+
+        function fecharModalGps() {
+            document.getElementById('modalEscolhaGps').style.display = 'none';
+        }
+
+        function abrirGpsSelecionado(app) {
+            let query = encodeURIComponent(enderecoSelecionadoGps);
+            if (app === 'waze') {
                 window.open(`https://waze.com/ul?q=${query}&navigate=yes`, '_blank');
             } else {
                 window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
             }
+            fecharModalGps();
         }
 
-        function abrirNavegacaoGpsAtual() {
-            if (!pontoAtualParada) return;
-            abrirGps(pontoAtualParada.endereco);
-        }
-
-        // ==========================================
-        // SCANNER & BIPAGEM
-        // ==========================================
-        async function iniciarScanner() {
-            if (html5QrCode) {
-                try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e) {}
+        function toggleSidebar() {
+            let sb = document.getElementById('sidebar');
+            let ov = document.getElementById('overlay');
+            if (sb.classList.contains('active')) {
+                sb.classList.remove('active');
+                ov.style.display = 'none';
+            } else {
+                sb.classList.add('active');
+                ov.style.display = 'block';
             }
+        }
+
+        async function ativarWakeLock() {
+            try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e) {}
+        }
+        ativarWakeLock();
+
+        async function finalizarCameraHardware() {
+            if (html5QrCode) {
+                try {
+                    if (html5QrCode.isScanning) await html5QrCode.stop();
+                    await html5QrCode.clear();
+                } catch(e) {}
+                html5QrCode = null;
+            }
+            let videoEl = document.querySelector('#reader video');
+            if (videoEl && videoEl.srcObject) {
+                try { videoEl.srcObject.getTracks().forEach(t => t.stop()); } catch(e) {}
+            }
+            let viewport = document.querySelector('.camera-viewport');
+            if (viewport) {
+                viewport.innerHTML = `
+                    <button class="cam-overlay-btn" style="top:10px; left:10px;" onclick="alternarCamera()">
+                        <svg viewBox="0 0 24 24"><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm5 14H4V6h3.17l1.83-2h6l1.83 2H20v12zM12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
+                        <span>Virar</span>
+                    </button>
+                    <button class="cam-overlay-btn" id="btn-flash" style="top:10px; right:10px;" onclick="alternarFlash()">
+                        <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l3-8z"/></svg>
+                        <span id="txt-flash">Flash</span>
+                    </button>
+                    <div id="reader"></div>
+                `;
+            }
+        }
+
+        async function iniciarScanner() {
+            if (processandoTroca) return;
+            processandoTroca = true;
+
+            await finalizarCameraHardware();
+            await new Promise(r => setTimeout(r, 150));
+
             html5QrCode = new Html5Qrcode("reader");
-            const config = { fps: 12, qrbox: { width: 250, height: 250 } };
+
+            const config = {
+                fps: 12,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
             try {
-                await html5QrCode.start({ facingMode: sensorAtual }, config, (txt) => { processarCodigo(txt); }, () => {});
-            } catch(e) {}
+                await html5QrCode.start({ facingMode: sensorAtual }, config, (txt) => { processarCodigo(txt); }, (err) => {});
+                processandoTroca = false;
+            } catch (e) {
+                processandoTroca = false;
+            }
         }
 
         async function alternarCamera() {
-            sensorAtual = sensorAtual === "environment" ? "user" : "environment";
+            if (processandoTroca) return;
+            sensorAtual = (sensorAtual === "environment") ? "user" : "environment";
+            let btnFlash = document.getElementById('btn-flash');
+            if (sensorAtual === "user") {
+                btnFlash.style.display = 'none';
+            } else {
+                btnFlash.style.display = 'flex';
+                btnFlash.classList.remove('active-flash');
+                flashLigado = false;
+                document.getElementById('txt-flash').innerText = "Flash";
+            }
             await iniciarScanner();
         }
 
         async function alternarFlash() {
-            if (!html5QrCode) return;
+            if (sensorAtual === "user" || !html5QrCode) return;
             try {
                 flashLigado = !flashLigado;
                 await html5QrCode.applyVideoConstraints({ advanced: [{ torch: flashLigado }] });
+                let btnFlash = document.getElementById('btn-flash');
+                if (flashLigado) {
+                    btnFlash.classList.add('active-flash');
+                    document.getElementById('txt-flash').innerText = "On";
+                } else {
+                    btnFlash.classList.remove('active-flash');
+                    document.getElementById('txt-flash').innerText = "Flash";
+                }
             } catch(e) {}
         }
 
-        function processarCodigo(codigoBruto) {
-            if (!codigoBruto) return;
-            let codLimpo = codigoBruto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
-            let paradaNum = stopCorrespondente[codLimpo];
+        function normalizarEndereco(texto) {
+            if (!texto) return "";
+            let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop|package)\b/gi, '').trim();
+            let m = t.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa|rod(?:ovia)?\.?)\s+([^,]+?)\s*,\s*(\d+)/i);
+            if (m) return m[1].toLowerCase().replace(/[^a-z0-9]/g, '') + "_" + m[2].trim();
+            let m2 = t.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
+            if (m2) return m2[1].toLowerCase().replace(/[^a-z0-9]/g, '') + "_" + m2[2].trim();
+            return "";
+        }
 
-            if (!paradaNum) {
-                for (let c in stopCorrespondente) {
-                    if (c.includes(codLimpo) || codLimpo.includes(c)) {
-                        paradaNum = stopCorrespondente[c];
-                        codLimpo = c;
-                        break;
+        function extrairCodigoChave(texto) {
+            if (!texto) return "";
+            let m = texto.match(/BR[A-Za-z0-9]{8,25}/i);
+            if (m) return m[0].toUpperCase().trim();
+            return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
+        }
+
+        document.getElementById('pdfInput').addEventListener('change', async function(e) {
+            let file = e.target.files[0];
+            if (!file) return;
+
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            let dict = traducoes[lang] || traducoes.pt;
+
+            document.getElementById('cardResult').style.display = 'none';
+            document.getElementById('cardResult').classList.remove('error-state');
+            document.getElementById('boxAviso').style.display = 'none';
+            document.getElementById('inputManual').value = "";
+            document.getElementById('btnUploadTxt').innerHTML = "⏳ Lendo " + file.name.substring(0, 20) + "...";
+
+            chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
+
+            let reader = new FileReader();
+
+            reader.onerror = function() {
+                notificar(dict.pdf_erro);
+                document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+            };
+
+            reader.onload = async function() {
+                try {
+                    let typedarray = new Uint8Array(this.result);
+                    let pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let linhasPdf = [];
+
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        let page = await pdf.getPage(i);
+                        let content = await page.getTextContent();
+                        
+                        let gruposY = {};
+                        content.items.forEach(item => {
+                            let y = Math.round(item.transform[5]);
+                            let achouGrupo = null;
+                            for (let k in gruposY) {
+                                if (Math.abs(k - y) <= 4) {
+                                    achouGrupo = k;
+                                    break;
+                                }
+                            }
+                            if (achouGrupo !== null) {
+                                gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
+                            } else {
+                                gruposY[y] = [{ x: item.transform[4], str: item.str }];
+                            }
+                        });
+
+                        let chaves = Object.keys(gruposY).sort((a, b) => b - a);
+                        chaves.forEach(k => {
+                            gruposY[k].sort((a, b) => a.x - b.x);
+                            let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
+                            if (linhaTexto) linhasPdf.push(linhaTexto);
+                        });
                     }
+
+                    if (linhasPdf.length === 0) {
+                        throw new Error("PDF sem texto reconhecível.");
+                    }
+
+                    processarLinhasExatas(linhasPdf, file.name);
+
+                } catch (err) {
+                    notificar(dict.pdf_erro);
+                    document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+                    document.getElementById('btnVerParadasModal').style.display = 'none';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function processarLinhasExatas(linhas, nomeArquivo) {
+            mapaRotas = {};
+            stopCorrespondente = {};
+            nomeExibicao = {};
+            todosPacotes = new Set();
+            pacotesBipados = new Set();
+
+            let seqStopAuto = 0;
+            let termosIgnorar = ["ADDRESS", "NOTES", "CIRCUIT", "OPTIMIZED", "STOP", "DELIVERY", "ROUTE", "DISPATCH", "TOTAL", "PACKAGE", "POWERED BY"];
+
+            linhas.forEach((linhaStr, idx) => {
+                linhaStr = linhaStr.trim();
+                if (!linhaStr) return;
+
+                let codsValidos = linhaStr.match(/BR[A-Za-z0-9]{10,20}/gi) || [];
+
+                if (codsValidos.length === 0) {
+                    let candidatos = linhaStr.match(/\b[A-Za-z0-9]{10,22}\b/g) || [];
+                    candidatos.forEach(c => {
+                        let cUp = c.toUpperCase();
+                        let ehNum = /^\d+$/.test(c);
+                        let ehAlpha = /^[A-Za-z]+$/.test(c);
+                        let temIgnorar = termosIgnorar.some(t => cUp.includes(t));
+                        if (!ehNum && !ehAlpha && !temIgnorar) codsValidos.push(c);
+                    });
+                }
+
+                codsValidos = codsValidos.map(c => c.toUpperCase());
+
+                if (codsValidos.length > 0) {
+                    seqStopAuto++;
+                    let stopNum = seqStopAuto;
+                    let mNum = linhaStr.match(/^(\d{1,3})\b/);
+                    if (mNum) stopNum = parseInt(mNum[1]);
+
+                    let endKey = normalizarEndereco(linhaStr) || ("pacote_isolado_" + codsValidos[0]);
+
+                    if (!mapaRotas[endKey]) {
+                        mapaRotas[endKey] = [];
+                        nomeExibicao[endKey] = linhaStr.substring(0, 55);
+                    }
+
+                    codsValidos.forEach(c => {
+                        todosPacotes.add(c);
+                        if (!mapaRotas[endKey].includes(c)) mapaRotas[endKey].push(c);
+                        stopCorrespondente[c] = stopNum;
+                    });
+                }
+            });
+
+            if (todosPacotes.size === 0) {
+                let lang = localStorage.getItem('idioma_preferido') || 'pt';
+                let dict = traducoes[lang] || traducoes.pt;
+                notificar(dict.pdf_erro);
+                document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+                return;
+            }
+
+            if (chaveStorageAtual) {
+                let salvos = localStorage.getItem(chaveStorageAtual);
+                if (salvos) {
+                    try { pacotesBipados = new Set(JSON.parse(salvos)); } catch (e) {}
+                }
+            }
+
+            document.getElementById('btnUploadTxt').innerHTML = "📄 " + nomeArquivo.substring(0, 20) + "...";
+            document.getElementById('btnVerParadasModal').style.display = 'flex';
+            document.getElementById('areaExecucao').style.display = 'block';
+            document.getElementById('cardRetomarRota').style.display = 'none';
+
+            salvarEstadoCompletoRota(nomeArquivo);
+            salvarHistoricoRotaConcluida(nomeArquivo, todosPacotes.size, Object.keys(mapaRotas).length);
+            atualizarStats();
+            iniciarScanner();
+        }
+
+        // ==========================================
+        // TRAVAS ANTI-BIP REPETIDO E DISPARO ÚNICO
+        // ==========================================
+        let ultimoCodigoBipado = "";
+        let tempoUltimoBip = 0;
+        let processandoLeituraAtual = false;
+
+        function processarCodigo(codigoBruto) {
+            if (!codigoBruto || processandoLeituraAtual) return;
+            
+            let agora = Date.now();
+            let codLimpo = extrairCodigoChave(codigoBruto);
+
+            if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 2500)) return;
+
+            processandoLeituraAtual = true;
+
+            let identificado = null;
+            let lang = localStorage.getItem('idioma_preferido') || 'pt';
+            let dict = traducoes[lang] || traducoes.pt;
+
+            for (let c of todosPacotes) {
+                if (c === codLimpo || codigoBruto.toUpperCase().includes(c) || c.includes(codLimpo)) {
+                    identificado = c;
+                    break;
                 }
             }
 
@@ -846,114 +3429,163 @@
             let resStop = document.getElementById('resStop');
             let resEndereco = document.getElementById('resEndereco');
             let resPacote = document.getElementById('resPacote');
-            let resObs = document.getElementById('resObservacao');
+            let aviso = document.getElementById('boxAviso');
 
-            if (paradaNum) {
-                pontoAtualParada = rotaOtimizada.find(p => p.stop === paradaNum);
-                pacotesBipados.add(codLimpo);
+            if (identificado) {
+                ultimoCodigoBipado = identificado;
+                tempoUltimoBip = agora;
 
-                playBeepSucesso();
-                card.style.display = 'block';
-                resStop.innerText = "P" + paradaNum;
-                resEndereco.innerText = "📍 " + (pontoAtualParada ? pontoAtualParada.endereco : '');
-                resPacote.innerText = "Pacote: " + codLimpo;
+                pacotesBipados.add(identificado);
+                if (chaveStorageAtual) localStorage.setItem(chaveStorageAtual, JSON.stringify(Array.from(pacotesBipados)));
+                salvarEstadoCompletoRota();
 
-                if (pontoAtualParada && pontoAtualParada.obs) {
-                    resObs.innerText = "📝 Obs: " + pontoAtualParada.obs;
-                    resObs.style.display = 'block';
-                } else {
-                    resObs.style.display = 'none';
+                let numP = stopCorrespondente[identificado] || "?";
+                let endMatch = "";
+                let listaDuplos = [];
+                for (let end in mapaRotas) {
+                    if (mapaRotas[end].includes(identificado)) {
+                        endMatch = end;
+                        listaDuplos = mapaRotas[end];
+                        break;
+                    }
                 }
 
-                falarVoz(`Parada ${paradaNum}`);
-                atualizarStats();
-            } else {
-                notificar("Pacote não encontrado na rota.");
-            }
-            document.getElementById('inputManual').value = "";
-        }
+                playBeepSucesso();
+                card.classList.remove('error-state');
+                card.style.display = 'block';
+                resStop.innerText = "P" + numP;
+                
+                let textoEndereco = nomeExibicao[endMatch] || "Endereço identificado no PDF";
+                resEndereco.innerText = "📍 " + textoEndereco;
+                resPacote.innerText = "Pacote: " + identificado;
 
-        function marcarStatusAtual(status) {
-            if (!pontoAtualParada) return;
-            statusEntregas[pontoAtualParada.stop] = status;
-            renderizarListaEntregasOtimizadas();
-            atualizarStats();
-            notificar(status === 'entregue' ? "✅ Parada concluída!" : "❌ Marcada como não entregue.");
+                let outrosStops = listaDuplos.filter(p => p !== identificado).map(p => "P" + stopCorrespondente[p]);
+
+                if (outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_")) {
+                    aviso.style.display = 'block';
+                    aviso.innerText = dict.same_address_alert + outrosStops.join(", ");
+                } else {
+                    aviso.style.display = 'none';
+                }
+
+                falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
+                atualizarStats();
+                document.getElementById('inputManual').value = "";
+            } else {
+                if (agora - tempoUltimoBip > 2000) {
+                    tempoUltimoBip = agora;
+                    playBeepErro();
+
+                    card.classList.add('error-state');
+                    card.style.display = 'block';
+                    resStop.innerText = lang === 'en' ? "NOT FOUND" : (lang === 'es' ? "NO ENCONTRADO" : "NÃO LOCALIZADO");
+                    resEndereco.innerText = "Verifique se o pacote consta no manifesto importado.";
+                    resPacote.innerText = "Código: " + (codLimpo || codigoBruto);
+                    aviso.style.display = 'none';
+                    document.getElementById('inputManual').value = "";
+                }
+            }
+
+            setTimeout(() => {
+                processandoLeituraAtual = false;
+            }, 1000);
         }
 
         function atualizarStats() {
-            let entregues = Object.values(statusEntregas).filter(s => s === 'entregue').length;
-            document.getElementById('valEntregues').innerText = entregues;
+            let bip = pacotesBipados.size;
+            let tot = todosPacotes.size;
+            let paradas = Object.keys(mapaRotas).length;
+
+            document.getElementById('valPacotes').innerText = `${bip} / ${tot}`;
+            document.getElementById('valParadas').innerText = paradas;
+            document.getElementById('valFaltam').innerText = Math.max(0, tot - bip);
         }
 
         function playBeepSucesso() {
             try {
-                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let ctx = getAudioContext();
                 let osc = ctx.createOscillator();
                 let gain = ctx.createGain();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(950, ctx.currentTime);
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start();
-                osc.stop(ctx.currentTime + 0.1);
+                osc.stop(ctx.currentTime + 0.08);
+
+                if (navigator.vibrate) {
+                    navigator.vibrate(80);
+                }
             } catch(e) {}
         }
 
-        function falarVoz(texto) {
+        function playBeepErro() {
+            try {
+                let ctx = getAudioContext();
+                let osc = ctx.createOscillator();
+                let gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, ctx.currentTime);
+                gain.gain.setValueAtTime(0.18, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.22);
+
+                if (navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+            } catch(e) {}
+        }
+
+        function falarParada(num, ehDuplo, stopOutro) {
             let tipo = localStorage.getItem('voz_preferida') || 'rapida';
             if (tipo === 'mudo') return;
+
             try {
                 window.speechSynthesis.cancel();
-                let msg = new SpeechSynthesisUtterance(texto);
-                msg.lang = 'pt-BR';
-                msg.rate = 1.45;
+                let lang = localStorage.getItem('idioma_preferido') || 'pt';
+                let frase = "" + num;
+                if (ehDuplo) {
+                    if (lang === 'en') frase += ". Attention! Same address as stop " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                    else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                    else frase += ". Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
+                }
+
+                let msg = new SpeechSynthesisUtterance(frase);
+                msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
+                
+                if (tipo === "grave") {
+                    msg.pitch = 0.5;
+                    msg.rate = 1.15;
+                } else if (tipo === "normal") {
+                    msg.pitch = 1.0;
+                    msg.rate = 1.1;
+                } else {
+                    msg.pitch = 1.15;
+                    msg.rate = 1.55;
+                }
+
                 window.speechSynthesis.speak(msg);
             } catch(e) {}
         }
 
         function zerarRota() {
-            rotaOtimizada = [];
-            stopCorrespondente = {};
-            statusEntregas = {};
             pacotesBipados.clear();
-            document.getElementById('boardMetricas').style.display = 'none';
-            document.getElementById('listaEntregasOtimizadas').innerHTML = "";
+            if (chaveStorageAtual) localStorage.removeItem(chaveStorageAtual);
+            salvarEstadoCompletoRota();
+            atualizarStats();
             document.getElementById('cardResult').style.display = 'none';
+            document.getElementById('cardResult').classList.remove('error-state');
+            document.getElementById('boxAviso').style.display = 'none';
             toggleSidebar();
-            notificar("Rota zerada!");
-        }
-
-        function mudarTema(tipo) {
-            const cores = {
-                black_oled: { bg: "#000000", s1: "#0b0b0d", s2: "#141417", border: "rgba(255,255,255,0.12)", text: "#ffffff" },
-                light: { bg: "#f8fafc", s1: "#ffffff", s2: "#f1f5f9", border: "rgba(0,0,0,0.08)", text: "#0f172a" },
-                gray: { bg: "#18181b", s1: "#27272a", s2: "#3f3f46", border: "rgba(255,255,255,0.1)", text: "#fafafa" }
-            };
-            let c = cores[tipo] || cores.black_oled;
-            document.documentElement.style.setProperty('--bg-body', c.bg);
-            document.documentElement.style.setProperty('--surface-1', c.s1);
-            document.documentElement.style.setProperty('--surface-2', c.s2);
-            document.documentElement.style.setProperty('--surface-border', c.border);
-            document.documentElement.style.setProperty('--text-main', c.text);
-            localStorage.setItem('tema_preferido', tipo);
-        }
-
-        function salvarVoz(tipo) {
-            localStorage.setItem('voz_preferida', tipo);
-        }
-
-        function sairDoApp() {
-            notificar("🔒 Desconectado.");
+            notificar("Bipagens desta rota foram zeradas.");
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            mudarTema(localStorage.getItem('tema_preferido') || 'black_oled');
-            setTimeout(() => {
-                let splash = document.getElementById('splashScreenPs2');
-                if (splash) splash.style.display = 'none';
-            }, 1200);
+            carregarConfiguracoesSalvas();
+            dispararAberturaPs2();
         });
     </script>
 </body>
