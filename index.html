@@ -195,17 +195,23 @@
         }
 
         #bannerBroadcast {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
-            border: 1px solid #f59e0b;
-            color: #fbbf24;
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 0.8rem;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(220, 38, 38, 0.2));
+            border: 1.5px solid #f59e0b;
+            color: #ffffff;
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 0.82rem;
             font-weight: 800;
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             display: none;
-            animation: fadeIn 0.3s ease;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+            animation: pulseGlowAviso 2s infinite alternate, slideDown 0.3s ease;
+        }
+
+        @keyframes pulseGlowAviso {
+            0% { transform: scale(0.99); box-shadow: 0 0 10px rgba(245, 158, 11, 0.25); }
+            100% { transform: scale(1.01); box-shadow: 0 0 24px rgba(245, 158, 11, 0.7); }
         }
 
         #toastNotificacao {
@@ -1228,17 +1234,28 @@
                     </button>
                 </div>
 
-                <!-- ABA AVISO BROADCAST -->
+                <!-- ABA AVISO BROADCAST COM DURAÇÃO -->
                 <div id="viewAdminAviso" style="display:none; flex-direction:column; gap:8px;">
                     <label class="form-label-pro">Mensagem para todos os motoristas</label>
-                    <textarea id="inputBroadcastTexto" class="input-auth" style="height:80px; padding-left:14px; resize:none;" placeholder="Ex: Servidor em manutenção hoje às 23h..."></textarea>
+                    <textarea id="inputBroadcastTexto" class="input-auth" style="height:75px; padding-left:14px; resize:none;" placeholder="Ex: Servidor em manutenção rápida hoje às 23h..."></textarea>
                     
-                    <div style="display:flex; gap:6px;">
+                    <label class="form-label-pro">Duração do Aviso na Tela</label>
+                    <select id="selDuracaoAviso" class="input-auth" style="padding-left:10px; margin-bottom:4px;">
+                        <option value="1">1 Hora</option>
+                        <option value="3">3 Horas</option>
+                        <option value="6">6 Horas</option>
+                        <option value="12">12 Horas</option>
+                        <option value="24" selected>24 Horas (1 Dia)</option>
+                        <option value="72">3 Dias</option>
+                        <option value="99999">Permanente (Até eu apagar)</option>
+                    </select>
+
+                    <div style="display:flex; gap:6px; margin-top:4px;">
                         <button onclick="salvarBroadcastGlobal(true)" class="btn-action-primary" style="background:#f59e0b; color:#000;">
                             📢 Publicar Aviso
                         </button>
                         <button onclick="salvarBroadcastGlobal(false)" class="btn-action-primary" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">
-                            ✕ Remover
+                            ✕ Apagar
                         </button>
                     </div>
                 </div>
@@ -1315,7 +1332,7 @@
     </div>
 
     <div class="container">
-        <!-- BANNER DE AVISO GERAL (BROADCAST) -->
+        <!-- BANNER DE AVISO GERAL (BROADCAST) COM ANIMAÇÃO -->
         <div id="bannerBroadcast"></div>
 
         <button id="btnDownloadPrincipal" class="btn-instalar-dinamico" onclick="dispararInstalacaoPWA()">
@@ -2576,29 +2593,49 @@
 
         async function salvarBroadcastGlobal(ativo) {
             let txt = document.getElementById('inputBroadcastTexto').value.trim();
+            let horas = parseFloat(document.getElementById('selDuracaoAviso').value) || 24;
+
             if (ativo && !txt) {
-                notificar("Digite uma mensagem antes de publicar.");
+                notificar("⚠️ Digite o texto do aviso antes de publicar.");
                 return;
             }
+
+            let expiraEm = ativo ? (Date.now() + (horas * 60 * 60 * 1000)) : 0;
 
             try {
                 await db.collection("sistema_config").doc("broadcast").set({
                     ativo: ativo,
                     mensagem: txt,
+                    expiraEm: expiraEm,
                     atualizadoEm: Date.now()
                 });
-                notificar(ativo ? "📢 Mensagem publicada para todos os motoristas!" : "Aviso removido.");
+
+                if (ativo) {
+                    notificar(`📢 Aviso publicado por ${horas === 99999 ? 'tempo indeterminado' : horas + 'h'}!`);
+                } else {
+                    document.getElementById('inputBroadcastTexto').value = "";
+                    notificar("Aviso global removido da tela de todos.");
+                }
             } catch(e) {
-                notificar("Erro ao salvar aviso global.");
+                console.error("Erro broadcast:", e);
+                notificar("Erro ao salvar aviso no Firebase. Verifique as regras.");
             }
         }
 
         function iniciarMonitoramentoBroadcast() {
             db.collection("sistema_config").doc("broadcast").onSnapshot(doc => {
                 let banner = document.getElementById('bannerBroadcast');
-                if (doc.exists && doc.data().ativo && doc.data().mensagem) {
-                    banner.innerText = "📢 " + doc.data().mensagem;
-                    banner.style.display = 'block';
+                if (doc.exists) {
+                    let data = doc.data();
+                    let agora = Date.now();
+
+                    // Verifica se está ativo e se ainda não expirou
+                    if (data.ativo && data.mensagem && (agora <= data.expiraEm || !data.expiraEm)) {
+                        banner.innerHTML = `<span style="font-size:1.1rem; vertical-align:middle;">📢</span> <b>AVISO GERAL:</b> ${data.mensagem}`;
+                        banner.style.display = 'block';
+                    } else {
+                        banner.style.display = 'none';
+                    }
                 } else {
                     banner.style.display = 'none';
                 }
