@@ -1199,6 +1199,7 @@
         </div>
     </div>
 
+    <!-- MODAL PIX COM BOTÃO DE FORÇAR VERIFICAÇÃO -->
     <div id="modalPix" class="modal-backdrop">
         <div class="modal-card">
             <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
@@ -1214,7 +1215,13 @@
             <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
                 📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
             </button>
-            <button onclick="fecharModalPix()" style="margin-top:10px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
+
+            <!-- NOVO BOTÃO DE FORÇAR VERIFICAÇÃO MANUALMENTE -->
+            <button class="btn-action-primary" style="background:#3b82f6; margin-top:6px;" onclick="forcarChecagemPagamentoManual()">
+                🔄 Já fiz o pagamento, liberar acesso!
+            </button>
+
+            <button onclick="fecharModalPix()" style="margin-top:8px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
                 Cancelar
             </button>
         </div>
@@ -2092,6 +2099,71 @@
             gerarPixAutomatico(planoSelecionadoAtual.dias, planoSelecionadoAtual.valor, planoSelecionadoAtual.nomePlano, planoSelecionadoAtual.senha);
         }
 
+        let paymentIdGlobalAtual = null;
+        let planoNomeGlobalAtual = "";
+        let planoValorGlobalAtual = 0;
+        let planoDiasGlobalAtual = 0;
+
+        function registrarDadosPixAtual(paymentId, nomePlano, valor, dias) {
+            paymentIdGlobalAtual = paymentId;
+            planoNomeGlobalAtual = nomePlano;
+            planoValorGlobalAtual = valor;
+            planoDiasGlobalAtual = dias;
+        }
+
+        async function forcarChecagemPagamentoManual() {
+            if (!paymentIdGlobalAtual) {
+                notificar("Nenhum pagamento ativo no momento.");
+                return;
+            }
+            notificar("Verificando pagamento no banco...");
+            
+            let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
+            let senha = document.getElementById('inputSenha').value.trim();
+
+            try {
+                const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentIdGlobalAtual}`);
+                const payData = await res.json();
+
+                if (payData && payData.status === "approved") {
+                    clearInterval(timerVerificadorPix);
+                    
+                    let diasTotais = planoDiasGlobalAtual;
+                    let expiraEm = Date.now() + (diasTotais * 24 * 60 * 60 * 1000);
+                    
+                    await db.collection("usuarios").doc(zap).set({
+                        whatsapp: zap,
+                        senha: senha,
+                        expiraEm: expiraEm,
+                        ativo: true,
+                        bloqueado: false,
+                        deviceId: MEU_DEVICE_ID,
+                        plano: planoNomeGlobalAtual,
+                        duracaoDias: diasTotais,
+                        tipo: "pago",
+                        atualizadoEm: Date.now()
+                    }, { merge: true });
+
+                    await db.collection("pagamentos_concluidos").doc(String(paymentIdGlobalAtual)).set({
+                        whatsapp: zap,
+                        plano: planoNomeGlobalAtual,
+                        valor: planoValorGlobalAtual,
+                        data: new Date().toLocaleString('pt-BR'),
+                        timestamp: Date.now()
+                    }, { merge: true });
+
+                    fecharModalPix();
+                    localStorage.setItem('usuario_zap_salvo', zap);
+                    notificar("🎉 Pagamento confirmado e liberado com sucesso!");
+                    iniciarMonitoramentoSessao(zap);
+                } else {
+                    notificar("⏳ O pagamento ainda não foi identificado pelo banco. Tente novamente em alguns segundos.");
+                }
+            } catch(e) {
+                notificar("Erro ao verificar o pagamento. Verifique sua internet.");
+            }
+        }
+
         async function gerarPixAutomatico(dias, valor, nomePlano, senha) {
             let zap = document.getElementById('inputTel').value.replace(/\D/g, '');
             let cupomIndicador = document.getElementById('inputCupomIndicacao').value.replace(/\D/g, '');
@@ -2123,6 +2195,7 @@
                     const copiaCola = data.point_of_interaction.transaction_data.qr_code;
                     const paymentId = String(data.id);
 
+                    registrarDadosPixAtual(paymentId, nomePlano, valor, dias);
                     document.getElementById('pixCopiaColaOut').value = copiaCola;
 
                     document.getElementById('qrContainer').innerHTML = "";
@@ -2156,7 +2229,6 @@
                     if (payData && payData.status === "approved") {
                         clearInterval(timerVerificadorPix);
                         
-                        // Bônus de +3 dias se usou código de indicação válido
                         let bonusDias = (cupomIndicador && cupomIndicador !== zap && validarNumeroWhatsApp(cupomIndicador)) ? 3 : 0;
                         let diasTotais = dias + bonusDias;
                         let expiraEm = Date.now() + (diasTotais * 24 * 60 * 60 * 1000);
@@ -2175,7 +2247,6 @@
                             atualizadoEm: Date.now()
                         }, { merge: true });
 
-                        // Bonificar quem indicou com +7 dias no Firestore
                         if (cupomIndicador && cupomIndicador !== zap && validarNumeroWhatsApp(cupomIndicador)) {
                             aplicarBonusQuemIndicou(cupomIndicador, zap);
                         }
@@ -2209,7 +2280,7 @@
                     let u = doc.data();
                     let agora = Date.now();
                     let baseExpira = (u.expiraEm && u.expiraEm > agora) ? u.expiraEm : agora;
-                    let novoExpira = baseExpira + (7 * 24 * 60 * 60 * 1000); // +7 dias grátis
+                    let novoExpira = baseExpira + (7 * 24 * 60 * 60 * 1000);
 
                     await docRef.update({
                         expiraEm: novoExpira,
@@ -3491,9 +3562,6 @@
             iniciarScanner();
         }
 
-        // ==========================================
-        // TRAVAS ANTI-BIP REPETIDO E DISPARO ÚNICO
-        // ==========================================
         let ultimoCodigoBipado = "";
         let tempoUltimoBip = 0;
         let processandoLeituraAtual = false;
