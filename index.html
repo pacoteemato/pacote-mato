@@ -1008,9 +1008,10 @@
         }
 
         /* MODAL DE TUTORIAL EM VÍDEO */
-        .tutorial-video-card { max-width: 410px; padding: 14px; }
-        .tutorial-video { width: 100%; max-height: 72vh; border-radius: 14px; background:#000; display:block; }
+        .tutorial-video-card { max-width: 390px; padding: 14px; }
+        .tutorial-video { width:min(100%,320px); aspect-ratio:9/16; max-height:68dvh; margin:0 auto; border-radius:14px; background:#000; display:block; object-fit:contain; }
         .tutorial-video-title { color:#34d399; font-weight:900; font-size:1rem; margin:4px 0 10px; }
+        @media (max-height:700px){ .tutorial-video{max-height:60dvh;width:auto;} }
     </style>
 </head>
 <body>
@@ -1042,21 +1043,7 @@
     </div>
 
     <div id="toastNotificacao"></div>
-
-    <!-- CAMADA DO BONECO INSTRUTOR NO MODO PILOTO AUTOMÁTICO -->
-    <div id="tourGuiaReal">
-        <button class="btn-abort-tour" onclick="abortarTourInterativo()">✕ Sair do Tutorial</button>
-        <div class="tour-avatar-box" id="tourAvatarBox">
-            <div class="tour-bubble" id="tourTextoBolha">E aí motorista! Vou te ensinar na prática.</div>
-            <div class="tour-char-body">
-                <div class="tour-char-head">
-                    <div class="tour-char-visor"></div>
-                </div>
-                <div class="tour-char-torso">
-                    <div class="tour-char-hand"></div>
-                </div>
-            </div>
-        </div>
+</div>
     </div>
 
     <div id="telaBloqueio">
@@ -1094,9 +1081,6 @@
 
             <button class="btn-action-primary" onclick="abrirTutorialVideo()" style="margin-bottom:8px; background:linear-gradient(135deg,#059669,#10b981);">
                 ▶️ <span>Assistir Tutorial em Vídeo</span>
-            </button>
-            <button class="btn-action-trial" onclick="iniciarPilotoAutomaticoReal()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
-                🤖 <span data-i18n="tutorial_btn">Tutorial Interativo</span>
             </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
@@ -1418,10 +1402,6 @@
             ▶️ <span>Assistir Tutorial em Vídeo</span>
         </button>
 
-        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:10px;" onclick="iniciarPilotoAutomaticoReal(); toggleSidebar();">
-            🤖 <span>Guia com Boneco Real</span>
-        </button>
-
         <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:14px;" onclick="abrirModalHistorico(); toggleSidebar();">
             📊 <span>Histórico de Rotas</span>
         </button>
@@ -1432,15 +1412,6 @@
                     💬 Suporte
                 </button>
             </a>
-        </div>
-
-        <div style="margin-bottom:14px;">
-            <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🌐 <span data-i18n="language_label">Idioma</span></label>
-            <div class="segmented-control" id="controlLangReal">
-                <button class="segmented-btn active" id="lang_pt" onclick="mudarIdioma('pt')">PT</button>
-                <button class="segmented-btn" id="lang_es" onclick="mudarIdioma('es')">ES</button>
-                <button class="segmented-btn" id="lang_en" onclick="mudarIdioma('en')">EN</button>
-            </div>
         </div>
 
         <div style="margin-bottom:14px;">
@@ -2023,8 +1994,9 @@
         }
 
         function carregarConfiguracoesSalvas() {
-            let lang = localStorage.getItem('idioma_preferido') || 'pt';
-            mudarIdioma(lang);
+            let lang = 'pt';
+            localStorage.setItem('idioma_preferido','pt');
+            mudarIdioma('pt');
 
             let tema = localStorage.getItem('tema_preferido') || 'black_oled';
             mudarTema(tema);
