@@ -1029,7 +1029,59 @@
         .tutorial-video-card { max-width: 410px; padding: 14px; }
         .tutorial-video { width: 100%; max-height: 72vh; border-radius: 14px; background:#000; display:block; }
         .tutorial-video-title { color:#34d399; font-weight:900; font-size:1rem; margin:4px 0 10px; }
-    </style>
+    
+        /* LOGIN PREMIUM — Pacote É Mato */
+        #telaBloqueio {
+            background:
+                radial-gradient(circle at 50% -10%, rgba(16,185,129,.20), transparent 34%),
+                radial-gradient(circle at 0% 45%, rgba(5,150,105,.08), transparent 28%),
+                #070908;
+            padding: 18px 14px 32px;
+        }
+        #telaBloqueio::before {
+            content:""; position:fixed; inset:0; pointer-events:none; opacity:.18;
+            background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size:28px 28px;
+        }
+        .auth-wrapper-premium { max-width:440px; background:transparent; border:0; box-shadow:none; padding:8px 0 24px; position:relative; z-index:1; }
+        .auth-hero-premium { margin:0 0 18px; padding:12px 16px 4px; }
+        .auth-logo-shell { width:82px; height:82px; margin:0 auto 13px; padding:6px; border-radius:25px; background:linear-gradient(145deg,rgba(52,211,153,.16),rgba(255,255,255,.02)); border:1px solid rgba(52,211,153,.22); box-shadow:0 16px 45px rgba(0,0,0,.42),0 0 34px rgba(16,185,129,.09); }
+        .auth-logo-shell .app-logo-pro { width:100%; height:100%; display:block; }
+        .auth-kicker,.auth-section-eyebrow { color:#34d399; font-size:.62rem; font-weight:900; letter-spacing:1.5px; }
+        .auth-title-premium { font-size:1.62rem; letter-spacing:-.7px; margin:5px 0 5px; }
+        .auth-copy-premium { color:#a8b0ad; font-size:.79rem; line-height:1.5; max-width:330px; margin:0 auto; }
+        .auth-benefits { display:flex; justify-content:center; flex-wrap:wrap; gap:7px; margin-top:12px; }
+        .auth-benefits span { color:#c8d0cd; font-size:.65rem; font-weight:700; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.06); padding:6px 9px; border-radius:999px; }
+        .auth-access-card,.auth-plans-card { background:linear-gradient(180deg,rgba(19,22,21,.97),rgba(12,14,13,.98)); border:1px solid rgba(255,255,255,.075); border-radius:20px; padding:19px; box-shadow:0 20px 55px rgba(0,0,0,.32); margin-bottom:12px; }
+        .auth-section-heading,.auth-plans-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:17px; }
+        .auth-section-heading h2,.auth-plans-header h3 { margin:3px 0 0; font-size:1.03rem; color:#f7faf9; letter-spacing:-.2px; }
+        .auth-secure-badge { font-size:.62rem; color:#6ee7b7; border:1px solid rgba(52,211,153,.2); background:rgba(16,185,129,.08); padding:6px 8px; border-radius:999px; font-weight:800; }
+        .auth-access-card .form-label-pro { color:#aeb6b3; font-size:.65rem; margin-bottom:7px; }
+        .auth-access-card .input-group { margin-bottom:13px; }
+        .auth-access-card .input-auth { min-height:48px; border-radius:13px; background:#0b0e0d; border-color:rgba(255,255,255,.09); font-size:.88rem; }
+        .auth-access-card .input-auth:focus { border-color:#10b981; background:#0d1110; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+        .referral-details { margin:1px 0 15px; border-top:1px solid rgba(255,255,255,.055); border-bottom:1px solid rgba(255,255,255,.055); }
+        .referral-details summary { list-style:none; cursor:pointer; padding:11px 2px; color:#9ea8a4; font-size:.7rem; font-weight:750; }
+        .referral-details summary::-webkit-details-marker { display:none; }
+        .referral-content { padding:2px 0 12px; }
+        .referral-content small { display:block; color:#717b77; font-size:.61rem; line-height:1.4; margin-top:7px; }
+        .auth-main-button { min-height:49px; border-radius:13px; margin:0 0 9px; font-size:.86rem; box-shadow:0 9px 25px rgba(16,185,129,.22); }
+        .auth-trial-button { min-height:44px; margin:0; background:transparent; color:#d9dfdc; border-color:rgba(255,255,255,.1); }
+        .auth-error-message { color:#f87171; font-size:.72rem; font-weight:700; margin-top:10px; padding:9px 10px; background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.14); border-radius:10px; }
+        .auth-plans-card { padding:17px 18px 18px; }
+        .auth-plans-header { margin-bottom:13px; align-items:center; }
+        .auth-plans-note { color:#7f8a86; font-size:.62rem; font-weight:700; }
+        .auth-plan-stack .plan-item { background:#0b0e0d; border-color:rgba(255,255,255,.075); border-radius:13px; padding:12px 13px; }
+        .auth-plan-stack .plan-item.featured { border-color:rgba(52,211,153,.42); background:linear-gradient(90deg,rgba(16,185,129,.10),#0b0e0d 45%); }
+        .auth-payment-button { min-height:46px; border-radius:13px; margin-top:4px; }
+        .auth-footer-premium { text-align:center; padding:4px 10px 0; }
+        .auth-support-link { appearance:none; border:0; background:transparent; color:#9ca6a2; font-size:.7rem; cursor:pointer; padding:8px; }
+        .auth-support-link strong { color:#34d399; }
+        .auth-footer-status { color:#5e6864; font-size:.58rem; margin-top:2px; }
+        .auth-footer-status span { display:inline-block; width:6px; height:6px; border-radius:50%; background:#22c55e; margin-right:4px; box-shadow:0 0 8px rgba(34,197,94,.55); }
+        #btnDownloadAuth { display:none !important; }
+        @media (max-width:380px) { .auth-access-card,.auth-plans-card{padding:16px 14px}.auth-title-premium{font-size:1.48rem}.auth-benefits span{font-size:.6rem} }
+</style>
 </head>
 <body>
 
@@ -1062,107 +1114,130 @@
     <div id="toastNotificacao"></div>
 
     <div id="telaBloqueio">
-        <div class="auth-wrapper">
-            <div class="auth-header-center">
-                <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
-                    <defs>
-                        <linearGradient id="logoBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#059669"/>
-                            <stop offset="100%" stop-color="#047857"/>
-                        </linearGradient>
-                        <linearGradient id="logoPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#34d399"/>
-                            <stop offset="100%" stop-color="#10b981"/>
-                        </linearGradient>
-                    </defs>
-                    <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
-                    <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGrad)"/>
-                    <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGrad)"/>
-                    <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
-                    <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGrad)" stroke="#047857" stroke-width="1.5"/>
-                    <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
-                    <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
-                    <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
-                    <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
-                </svg>
-                <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
-                <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
-                <p style="max-width:320px;margin:8px auto 0;color:var(--text-muted);font-size:.78rem;line-height:1.45;text-align:center;">Confira seus pacotes, organize sua rota e saia para entrega com mais segurança.</p>
+        <div class="auth-wrapper auth-wrapper-premium">
+            <div class="auth-header-center auth-hero-premium">
+                <div class="auth-logo-shell">
+                    <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
+                        <defs>
+                            <linearGradient id="logoBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#059669"/>
+                                <stop offset="100%" stop-color="#047857"/>
+                            </linearGradient>
+                            <linearGradient id="logoPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#34d399"/>
+                                <stop offset="100%" stop-color="#10b981"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="100" height="100" rx="24" fill="#0b0b0d" stroke="rgba(52,211,153,0.3)" stroke-width="2"/>
+                        <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#logoPlantGrad)"/>
+                        <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#logoPlantGrad)"/>
+                        <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+                        <polygon points="22,36 50,50 50,78 22,64" fill="url(#logoBoxGrad)" stroke="#047857" stroke-width="1.5"/>
+                        <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+                        <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+                        <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+                        <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
+                    </svg>
+                </div>
+                <div class="auth-kicker">LOGÍSTICA NA PALMA DA MÃO</div>
+                <h1 class="brand-title-pro auth-title-premium" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
+                <p class="auth-copy-premium">Bipe, confira e organize seus pacotes antes de sair para a rota.</p>
+                <div class="auth-benefits">
+                    <span>✓ Conferência rápida</span>
+                    <span>✓ Mais segurança na rota</span>
+                </div>
             </div>
 
-            <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
-                📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
-            </button>
+            <div class="auth-access-card">
+                <div class="auth-section-heading">
+                    <div>
+                        <span class="auth-section-eyebrow">ÁREA DO MOTORISTA</span>
+                        <h2>Acesse sua conta</h2>
+                    </div>
+                    <span class="auth-secure-badge">● Seguro</span>
+                </div>
 
-            
-            <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
-            <div class="input-group">
-                <span class="input-icon-left">📱</span>
-                <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
-            </div>
+                <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
+                <div class="input-group">
+                    <span class="input-icon-left">📱</span>
+                    <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" maxlength="15" data-i18n-placeholder="whatsapp_placeholder">
+                </div>
 
-            <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
-            <div class="input-group">
-                <span class="input-icon-left">🔑</span>
-                <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
-                <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">👁️</span>
-            </div>
+                <label class="form-label-pro" data-i18n="password_label">Sua Senha Pessoal</label>
+                <div class="input-group">
+                    <span class="input-icon-left">🔑</span>
+                    <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Crie ou digite sua senha" data-i18n-placeholder="password_placeholder">
+                    <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">👁️</span>
+                </div>
 
-            <!-- CAMPO DE CUPOM / INDICAÇÃO -->
-            <label class="form-label-pro" style="color:#34d399;">🎁 Código de Indicação (Opcional - Ganhe +3 Dias)</label>
-            <div class="input-group">
-                <span class="input-icon-left">🎟️</span>
-                <input type="tel" id="inputCupomIndicacao" class="input-auth" placeholder="WhatsApp de quem indicou" maxlength="15">
-            </div>
-            
-            <button class="btn-action-primary" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
-                ⚡ <span data-i18n="btn_enter">Entrar no Sistema</span>
-            </button>
-            <button class="btn-action-trial" id="btnTesteGratis" onclick="ativarTesteGratis()">
-                🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
-            </button>
+                <details class="referral-details">
+                    <summary>🎁 Tenho um código de indicação</summary>
+                    <div class="referral-content">
+                        <label class="form-label-pro" style="color:#34d399;">Código de Indicação <span style="color:var(--text-muted);font-weight:600;">(opcional)</span></label>
+                        <div class="input-group" style="margin-bottom:0;">
+                            <span class="input-icon-left">🎟️</span>
+                            <input type="tel" id="inputCupomIndicacao" class="input-auth" placeholder="WhatsApp de quem indicou" maxlength="15">
+                        </div>
+                        <small>Ao usar um código válido, você pode receber dias extras de acesso.</small>
+                    </div>
+                </details>
 
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" style="text-decoration:none;">
-                <button class="btn-support-login">
-                    💬 Suporte
+                <button class="btn-action-primary auth-main-button" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
+                    <span data-i18n="btn_enter">Entrar no Sistema</span> <span aria-hidden="true">→</span>
                 </button>
-            </a>
-            
-            <div id="msgErro" style="color:#ef4444; font-size:0.78rem; font-weight:700; margin-bottom:12px; display:none;"></div>
+                <button class="btn-action-trial auth-trial-button" id="btnTesteGratis" onclick="ativarTesteGratis()">
+                    🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
+                </button>
 
-            <div class="divider-label" data-i18n="choose_plan">Planos de Acesso</div>
-            
-            <div class="plan-stack">
-                <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
-                    <div>
-                        <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
-                        <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
-                    </div>
-                    <div class="plan-val">R$ 4,99</div>
-                </div>
-
-                <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
-                    <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
-                    <div>
-                        <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
-                        <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
-                    </div>
-                    <div class="plan-val">R$ 9,99</div>
-                </div>
-
-                <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
-                    <div>
-                        <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
-                        <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
-                    </div>
-                    <div class="plan-val">R$ 24,99</div>
-                </div>
+                <div id="msgErro" class="auth-error-message" style="display:none;"></div>
             </div>
 
-            <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm" onclick="iniciarPixPlanoSelecionado()">
-                ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
-            </button>
+            <div class="auth-plans-card">
+                <div class="auth-plans-header">
+                    <div>
+                        <span class="auth-section-eyebrow">ASSINATURA</span>
+                        <h3>Escolha seu plano</h3>
+                    </div>
+                    <span class="auth-plans-note">Acesso completo</span>
+                </div>
+
+                <div class="plan-stack auth-plan-stack">
+                    <div class="plan-item" id="cardPlano7" onclick="selecionarPlano(7, 4.99, '7 Dias (Semanal)', 'cardPlano7')">
+                        <div>
+                            <div class="plan-name" data-i18n="plan_weekly_name">Plano Semanal</div>
+                            <div class="plan-meta" data-i18n="plan_weekly_meta">7 dias de acesso total</div>
+                        </div>
+                        <div class="plan-val">R$ 4,99</div>
+                    </div>
+
+                    <div class="plan-item featured" id="cardPlano30" onclick="selecionarPlano(30, 9.99, '30 Dias (Mensal)', 'cardPlano30')">
+                        <span class="plan-badge-top" data-i18n="most_popular">Popular</span>
+                        <div>
+                            <div class="plan-name" data-i18n="plan_monthly_name">Plano Mensal (1 Mês)</div>
+                            <div class="plan-meta" data-i18n="plan_monthly_meta">30 dias • Melhor custo-benefício</div>
+                        </div>
+                        <div class="plan-val">R$ 9,99</div>
+                    </div>
+
+                    <div class="plan-item" id="cardPlano90" onclick="selecionarPlano(90, 24.99, '90 Dias (3 Meses)', 'cardPlano90')">
+                        <div>
+                            <div class="plan-name" data-i18n="plan_quarterly_name">Plano Trimestral (3 Meses)</div>
+                            <div class="plan-meta" data-i18n="plan_quarterly_meta">90 dias com desconto</div>
+                        </div>
+                        <div class="plan-val">R$ 24,99</div>
+                    </div>
+                </div>
+
+                <button id="btnConfirmarPagamento" class="btn-gerar-pix-confirm auth-payment-button" onclick="iniciarPixPlanoSelecionado()">
+                    ⚡ <span data-i18n="generate_pix">Gerar Pagamento Pix</span>
+                </button>
+            </div>
+
+            <div class="auth-footer-premium">
+                <button type="button" class="auth-support-link" onclick="abrirSuporteWhatsApp()">💬 Precisa de ajuda? <strong>Falar com o suporte</strong></button>
+                <div class="auth-footer-status"><span></span> Sistema online • Pacote É Mato</div>
+            </div>
         </div>
     </div>
 
@@ -3820,5 +3895,13 @@
             dispararAberturaPs2();
         });
     </script>
+
+<script>
+function abrirSuporteWhatsApp() {
+    const numero = '5511990059547';
+    const mensagem = encodeURIComponent('Olá, preciso de suporte no app Pacote É Mato');
+    window.location.href = `https://wa.me/${numero}?text=${mensagem}`;
+}
+</script>
 </body>
 </html>
