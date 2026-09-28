@@ -1061,22 +1061,6 @@
 
     <div id="toastNotificacao"></div>
 
-    <!-- CAMADA DO BONECO INSTRUTOR NO MODO PILOTO AUTOMÁTICO -->
-    <div id="tourGuiaReal">
-        <button class="btn-abort-tour" onclick="abortarTourInterativo()">✕ Sair do Tutorial</button>
-        <div class="tour-avatar-box" id="tourAvatarBox">
-            <div class="tour-bubble" id="tourTextoBolha">E aí motorista! Vou te ensinar na prática.</div>
-            <div class="tour-char-body">
-                <div class="tour-char-head">
-                    <div class="tour-char-visor"></div>
-                </div>
-                <div class="tour-char-torso">
-                    <div class="tour-char-hand"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="telaBloqueio">
         <div class="auth-wrapper">
             <div class="auth-header-center">
@@ -1104,18 +1088,13 @@
                 </svg>
                 <h1 class="brand-title-pro" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
                 <p class="brand-subtitle-pro" data-i18n="brand_subtitle">Plataforma de Logística</p>
+                <p style="max-width:320px;margin:8px auto 0;color:var(--text-muted);font-size:.78rem;line-height:1.45;text-align:center;">Confira seus pacotes, organize sua rota e saia para entrega com mais segurança.</p>
             </div>
 
             <button class="btn-instalar-dinamico" id="btnDownloadAuth" onclick="dispararInstalacaoPWA()">
                 📲 <span data-i18n="download_app">Baixar Aplicativo no Celular</span>
             </button>
 
-            <button class="btn-action-primary" onclick="abrirTutorialVideo()" style="margin-bottom:8px; background:linear-gradient(135deg,#059669,#10b981);">
-                ▶️ <span>Assistir Tutorial em Vídeo</span>
-            </button>
-            <button class="btn-action-trial" onclick="iniciarPilotoAutomaticoReal()" style="margin-bottom:12px; border-color:rgba(52, 211, 153, 0.35); color:#34d399;">
-                🤖 <span data-i18n="tutorial_btn">Tutorial Interativo</span>
-            </button>
             
             <label class="form-label-pro" data-i18n="whatsapp_label">WhatsApp / Acesso</label>
             <div class="input-group">
@@ -1144,7 +1123,7 @@
                 🎁 <span data-i18n="btn_trial">Testar 3 Dias Grátis</span>
             </button>
 
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" style="text-decoration:none;">
                 <button class="btn-support-login">
                     💬 Suporte
                 </button>
@@ -1199,6 +1178,17 @@
                 Seu navegador não suporta reprodução de vídeo.
             </video>
             <button class="btn-action-primary" onclick="fecharTutorialVideo()" style="margin-top:10px;">Entendi, começar a usar</button>
+        </div>
+    </div>
+
+    <!-- AVISO DE TUTORIAL NO PRIMEIRO ACESSO -->
+    <div id="modalPrimeiroTutorial" class="modal-backdrop">
+        <div class="modal-card tutorial-video-card" style="text-align:center;">
+            <div style="width:54px;height:54px;margin:0 auto 12px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.14);border:1px solid rgba(52,211,153,.28);font-size:1.45rem;">▶️</div>
+            <div class="tutorial-video-title" style="font-size:1.08rem;">Bem-vindo ao Pacote É Mato</div>
+            <p style="color:var(--text-muted);font-size:.82rem;line-height:1.5;margin:0 0 14px;">Antes da sua primeira rota, recomendamos assistir ao tutorial rápido para conhecer as principais funções do aplicativo.</p>
+            <button class="btn-action-primary" onclick="assistirTutorialPrimeiroAcesso()">▶️ Assistir tutorial</button>
+            <button class="btn-action-trial" onclick="fecharAvisoPrimeiroTutorial()" style="margin-top:8px;">Agora não</button>
         </div>
     </div>
 
@@ -1436,16 +1426,12 @@
             ▶️ <span>Assistir Tutorial em Vídeo</span>
         </button>
 
-        <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15); color:#34d399; border:1px solid rgba(16, 185, 129, 0.3); margin-bottom:10px;" onclick="iniciarPilotoAutomaticoReal(); toggleSidebar();">
-            🤖 <span>Guia com Boneco Real</span>
-        </button>
-
         <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:14px;" onclick="abrirModalHistorico(); toggleSidebar();">
             📊 <span>Histórico de Rotas</span>
         </button>
 
         <div style="margin-bottom:16px;">
-            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" target="_blank" style="text-decoration:none;">
+            <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" style="text-decoration:none;">
                 <button class="btn-action-primary" id="btnSuporteSidebar" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
                     💬 Suporte
                 </button>
@@ -1686,6 +1672,25 @@
             const video = document.getElementById('videoTutorialApp');
             if (video) video.pause();
             if (modal) modal.style.display = 'none';
+        }
+
+        function verificarTutorialPrimeiroAcesso(zap) {
+            if (!zap) return;
+            const chave = 'tutorial_video_primeiro_acesso_' + zap;
+            if (localStorage.getItem(chave) === '1') return;
+            localStorage.setItem(chave, '1');
+            const modal = document.getElementById('modalPrimeiroTutorial');
+            if (modal) setTimeout(() => { modal.style.display = 'flex'; }, 450);
+        }
+
+        function fecharAvisoPrimeiroTutorial() {
+            const modal = document.getElementById('modalPrimeiroTutorial');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function assistirTutorialPrimeiroAcesso() {
+            fecharAvisoPrimeiroTutorial();
+            abrirTutorialVideo();
         }
 
         function iniciarPilotoAutomaticoReal() {
@@ -2585,6 +2590,7 @@
                 let dias = Math.ceil((data.expiraEm - agora) / (1000 * 60 * 60 * 24));
                 document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
                 document.getElementById('telaBloqueio').style.display = 'none';
+                verificarTutorialPrimeiroAcesso(zap);
             });
         }
 
