@@ -1438,6 +1438,39 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 }
 </style>
 
+
+<style id="context-toast-fix">
+.context-toast{
+  display:none;
+  position:fixed;
+  top:18px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:999999;
+  width:min(92vw,520px);
+  padding:12px 16px;
+  border-radius:14px;
+  background:#111827;
+  color:#f8fafc;
+  border:1px solid rgba(52,211,153,.45);
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+  font-size:.78rem;
+  font-weight:800;
+  line-height:1.4;
+  text-align:center;
+}
+#toastAdmin{
+  top:28px;
+  background:#0f172a;
+  border-color:rgba(96,165,250,.45);
+}
+#toastPix{
+  top:28px;
+  background:#111827;
+  border-color:rgba(52,211,153,.45);
+}
+</style>
+
 </head>
 <body>
 
@@ -1736,6 +1769,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
   <!-- MODAL PIX COM BOTÃO DE FORÇAR VERIFICAÇÃO -->
   <div id="modalPix" class="modal-backdrop">
+    <div id="toastPix" class="context-toast"></div>
     <div class="modal-card">
       <div style="font-size:0.7rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px;" data-i18n="secure_payment">Pagamento Seguro Pix</div>
       <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin-top:2px;" id="pixPlanoNome">Plano Mensal - R$ 9,99</h3>
@@ -1800,6 +1834,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
   <!-- MODAL MODO DONO / PAINEL MASTER -->
   <div id="modalAdmin" class="modal-backdrop">
+    <div id="toastAdmin" class="context-toast"></div>
     <div class="modal-card" style="max-width:1100px; text-align:left; max-height:92vh; overflow-y:auto;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">Central de administração</h3>
@@ -2461,10 +2496,29 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     function notificar(msg) {
+      const modalAdmin = document.getElementById('modalAdmin');
+      const modalPix = document.getElementById('modalPix');
+
       let t = document.getElementById('toastNotificacao');
+
+      // Mensagens administrativas aparecem dentro do Modo Dono.
+      if (modalAdmin && getComputedStyle(modalAdmin).display !== 'none') {
+        t = document.getElementById('toastAdmin') || t;
+      }
+      // Mensagens de pagamento aparecem dentro da janela do Pix.
+      else if (modalPix && getComputedStyle(modalPix).display !== 'none') {
+        t = document.getElementById('toastPix') || t;
+      }
+
+      if (!t) return;
+
       t.innerText = msg;
       t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 3500);
+
+      clearTimeout(t._timerPacoteEmato);
+      t._timerPacoteEmato = setTimeout(() => {
+        t.style.display = 'none';
+      }, 4200);
     }
 
     function normalizarTelefone(valor) {
