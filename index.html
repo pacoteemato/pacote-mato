@@ -1397,6 +1397,47 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 }
 </style>
 
+
+<style id="pacote-emato-recovery-admin-email-v3">
+.recovery-premium{
+  padding:16px !important;
+  border:1px solid rgba(16,185,129,.20) !important;
+  background:linear-gradient(180deg,rgba(16,185,129,.07),rgba(255,255,255,.02)) !important;
+}
+.recovery-brand{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.recovery-logo-mini{
+  width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  background:rgba(16,185,129,.10);border:1px solid rgba(52,211,153,.24);
+  box-shadow:0 8px 20px rgba(16,185,129,.10)
+}
+.recovery-logo-mini svg{width:32px;height:32px}
+.recovery-kicker{font-size:.56rem;letter-spacing:1.4px;color:#10b981;font-weight:900}
+.recovery-title{font-size:.94rem;color:var(--text-main);font-weight:900;margin-top:2px}
+.recovery-copy{font-size:.7rem !important;line-height:1.55 !important;color:var(--text-muted) !important;margin-bottom:13px !important}
+.recovery-send-btn{min-height:44px;margin:0}
+.recovery-success-card{
+  margin-top:12px;padding:12px;border-radius:12px;display:flex;align-items:flex-start;gap:10px;
+  background:rgba(16,185,129,.10);border:1px solid rgba(52,211,153,.25)
+}
+.recovery-success-icon{
+  width:28px;height:28px;min-width:28px;border-radius:50%;display:grid;place-items:center;
+  color:#fff;background:#10b981;font-weight:900
+}
+.recovery-success-card strong{display:block;color:var(--text-main);font-size:.76rem;margin-bottom:3px}
+.recovery-success-card p{margin:0;color:var(--text-muted);font-size:.65rem;line-height:1.45}
+
+.adm-email{
+  font-size:.66rem;color:var(--text-muted);margin-top:4px;word-break:break-all;
+  display:flex;align-items:center;gap:5px
+}
+.adm-email strong{color:var(--text-main)}
+.adm-email-empty{opacity:.65;font-style:italic}
+.adm-email-action{
+  border:0!important;background:rgba(16,185,129,.10)!important;color:#10b981!important;
+  font-size:.61rem!important;font-weight:800!important;padding:6px 8px!important;border-radius:8px!important;
+}
+</style>
+
 </head>
 <body>
 
@@ -1432,7 +1473,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     <div class="auth-wrapper auth-wrapper-premium">
       <div class="auth-header-center auth-hero-premium">
         <div class="auth-logo-shell">
-          <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin()">
+          <svg class="app-logo-pro" viewBox="0 0 100 100" onclick="registrarCliqueAdmin(event)">
             <defs>
               <linearGradient id="logoBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#059669"/>
@@ -1456,7 +1497,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           </svg>
         </div>
         <div class="auth-kicker">LOGÍSTICA INTELIGENTE NA PALMA DA MÃO</div>
-        <h1 class="brand-title-pro auth-title-premium" onclick="registrarCliqueAdmin()">PACOTE É MATO</h1>
+        <h1 class="brand-title-pro auth-title-premium">PACOTE É MATO</h1>
         <p class="auth-copy-premium">Sistema inteligente para organizar pacotes, conferir entregas e deixar sua rota mais segura e eficiente.</p>
         
       </div>
@@ -1464,10 +1505,10 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       <div class="auth-access-card">
         <div class="auth-section-heading">
           <div>
-            <span class="auth-section-eyebrow">ÁREA DO MOTORISTA</span>
+            <span class="auth-section-eyebrow">ACESSO SEGURO</span>
             <h2 id="tituloAuthModo">Acesse sua conta</h2>
           </div>
-          <span class="auth-secure-badge">● Firebase Auth</span>
+          <span class="auth-secure-badge">● Segurança</span>
         </div>
 
         <div class="auth-mode-tabs" role="tablist" aria-label="Acesso da conta">
@@ -1492,14 +1533,36 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
           <button type="button" class="auth-inline-link" onclick="toggleRecuperarSenha()">Esqueci minha senha</button>
 
-          <div id="boxRecuperarSenha" class="auth-recovery-box">
-            <p>Digite o e-mail cadastrado. O Firebase enviará um link para criar uma nova senha.</p>
-            <label class="form-label-pro">E-mail de recuperação</label>
+          <div id="boxRecuperarSenha" class="auth-recovery-box recovery-premium">
+            <div class="recovery-brand">
+              <div class="recovery-logo-mini" aria-hidden="true">
+                <svg viewBox="0 0 100 100">
+                  <polygon points="50,18 82,34 50,50 18,34" fill="#34d399"/>
+                  <polygon points="18,34 50,50 50,80 18,64" fill="#059669"/>
+                  <polygon points="82,34 50,50 50,80 82,64" fill="#047857"/>
+                  <path d="M50 80 Q40 61 50 43 Q60 61 50 80 Z" fill="#6ee7b7"/>
+                </svg>
+              </div>
+              <div>
+                <div class="recovery-kicker">PACOTE É MATO</div>
+                <div class="recovery-title">Redefinir sua senha</div>
+              </div>
+            </div>
+            <p class="recovery-copy">Informe o e-mail da sua conta. Você receberá uma mensagem segura com as instruções para criar uma nova senha.</p>
+            <label class="form-label-pro">E-mail cadastrado</label>
             <div class="input-group">
               <span class="input-icon-left">✉️</span>
               <input type="email" id="inputEmailRecuperacao" class="input-auth" placeholder="seuemail@exemplo.com" autocomplete="email">
             </div>
-            <button type="button" class="auth-secondary-button" onclick="recuperarSenhaFirebase()">Enviar link de redefinição</button>
+            <button type="button" class="btn-action-primary recovery-send-btn" id="btnEnviarReset" onclick="recuperarSenhaFirebase()">Enviar e-mail para redefinir</button>
+
+            <div id="recoverySuccessCard" class="recovery-success-card" style="display:none;">
+              <div class="recovery-success-icon">✓</div>
+              <div>
+                <strong>E-mail enviado com segurança</strong>
+                <p>Abra sua caixa de entrada e procure uma mensagem para redefinir a senha do Pacote É Mato. Se não encontrar, confira a pasta de spam.</p>
+              </div>
+            </div>
           </div>
 
           <button class="btn-action-primary auth-main-button" id="btnEntrarAuth" onclick="autenticarUsuarioFirebase()">
@@ -1548,7 +1611,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             </div>
           </details>
 
-          <p class="auth-helper">Sua senha passa a ser protegida pelo Firebase Authentication e não fica salva em texto no Firestore.</p>
+          <p class="auth-helper">Sua senha é protegida com segurança e não fica exposta no sistema.</p>
           <button type="button" class="btn-action-primary auth-main-button" id="btnCriarConta" onclick="criarContaFirebase()">Criar minha conta</button>
           <button type="button" class="btn-action-trial auth-trial-button" id="btnTesteGratis" onclick="ativarTesteGratis()">🎁 TESTE GRÁTIS — 10 DIAS</button>
         </div>
@@ -1858,10 +1921,10 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     <div style="margin-bottom:14px;">
       <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;"> <span data-i18n="voice_label">Voz do Sintetizador</span></label>
       <div class="segmented-control-grid4" id="controlVoiceReal">
-        <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida')"> ⚡ Voz Turbo</button>
-        <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave')"> 📍 Voz Navegação</button>
-        <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal')"> 🗣️ Voz Natural</button>
-        <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo')" style="color:#ef4444;"> 🔇 Silencioso</button>
+        <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida', false)"> ⚡ Voz Turbo</button>
+        <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave', false)"> 📍 Voz Navegação</button>
+        <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal', false)"> 🗣️ Voz Natural</button>
+        <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)" style="color:#ef4444;"> 🔇 Silencioso</button>
       </div>
     </div>
 
@@ -1879,7 +1942,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     <!-- BANNER DE AVISO GERAL (BROADCAST) COM ANIMAÇÃO -->
     <div id="bannerBroadcast"></div>
     
-    <div class="hero-banner" onclick="registrarCliqueAdmin()">
+    <div class="hero-banner">
       <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:62px; height:62px; margin:0 auto 4px;">
         <defs>
           <linearGradient id="logoBoxGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2291,13 +2354,71 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       );
       const lista = compativeis.length ? compativeis : vozes;
 
-      // Quando o aparelho oferece mais de uma voz, cada perfil tenta usar uma voz diferente.
-      if (tipo === 'grave' && lista.length >= 2) return lista[1];
-      if (tipo === 'rapida' && lista.length >= 3) return lista[2];
-      return lista[0] || null;
+      const nome = v => String(v.name || '').toLowerCase();
+
+      if (tipo === 'grave') {
+        return (
+          lista.find(v => /antonio|ricardo|daniel|felipe|mascul|male/.test(nome(v))) ||
+          lista[1] ||
+          lista[0]
+        );
+      }
+
+      if (tipo === 'rapida') {
+        return (
+          lista.find(v => /google|premium|enhanced|natural/.test(nome(v))) ||
+          lista[2] ||
+          lista[0]
+        );
+      }
+
+      return (
+        lista.find(v => /natural|premium|enhanced|google/.test(nome(v))) ||
+        lista[0]
+      );
     }
 
-    function salvarVoz(tipo) {
+    function falarComPerfil(texto, tipo) {
+      if (tipo === 'mudo') return false;
+      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) return false;
+
+      try {
+        const lang = localStorage.getItem('idioma_preferido') || 'pt';
+        const synth = window.speechSynthesis;
+
+        synth.cancel();
+        synth.resume();
+
+        const msg = new SpeechSynthesisUtterance(String(texto));
+        msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
+        msg.volume = 1;
+
+        const voz = selecionarVozDisponivel(lang, tipo);
+        if (voz) msg.voice = voz;
+
+        if (tipo === 'rapida') {
+          // TURBO: curta, rápida e mais viva
+          msg.rate = 1.75;
+          msg.pitch = 1.18;
+        } else if (tipo === 'grave') {
+          // NAVEGAÇÃO: firme, grave e mais cadenciada
+          msg.rate = 0.88;
+          msg.pitch = 0.52;
+        } else {
+          // NATURAL: velocidade e tom naturais
+          msg.rate = 1.00;
+          msg.pitch = 1.00;
+        }
+
+        synth.speak(msg);
+        return true;
+      } catch (e) {
+        console.error('Falha na voz:', e);
+        return false;
+      }
+    }
+
+    function salvarVoz(tipo, testarAgora = false) {
       localStorage.setItem('voz_preferida', tipo);
 
       ['rapida', 'grave', 'normal', 'mudo'].forEach(v => {
@@ -2307,20 +2428,36 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         else btn.classList.remove('active');
       });
 
-      // IMPORTANTE: não fala "voz ... ativada".
-      // A configuração só será percebida quando o pacote for bipado.
+      // Apenas salva a escolha. Não reproduz nenhuma fala ao tocar na opção.
+      if (tipo === 'mudo') {
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+      }
+    }
+
+    function desbloquearSinteseDeVoz() {
+      if (!('speechSynthesis' in window)) return;
       try {
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        window.speechSynthesis.resume();
+        carregarVozesSistema();
       } catch (_) {}
     }
 
     if ('speechSynthesis' in window) {
       carregarVozesSistema();
+
       try {
         window.speechSynthesis.addEventListener('voiceschanged', carregarVozesSistema);
       } catch (_) {
         window.speechSynthesis.onvoiceschanged = carregarVozesSistema;
       }
+
+      // Android/Chrome/PWA podem manter o sintetizador suspenso até o primeiro toque.
+      document.addEventListener('pointerdown', desbloquearSinteseDeVoz, { passive: true });
+      document.addEventListener('touchstart', desbloquearSinteseDeVoz, { passive: true });
+      document.addEventListener('click', desbloquearSinteseDeVoz, { passive: true });
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) desbloquearSinteseDeVoz();
+      });
     }
 
     function notificar(msg) {
@@ -2381,7 +2518,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       mudarTema(tema);
 
       let voz = localStorage.getItem('voz_preferida') || 'rapida';
-      salvarVoz(voz);
+      salvarVoz(voz, false);
       
       verificarRotaSalvaAnterior();
 
@@ -2392,14 +2529,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         document.getElementById('telaBloqueio').style.display = 'flex';
       }
 
-      if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
-        let btnTeste = document.getElementById('btnTesteGratis');
-        if (btnTeste) {
-          btnTeste.style.display = 'flex';
-          btnTeste.disabled = true;
-          btnTeste.innerText = '🎁 TESTE GRÁTIS JÁ UTILIZADO';
-        }
-      }
+      atualizarVisibilidadeTesteGratis();
     }
 
     const firebaseConfig = {
@@ -2428,6 +2558,13 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     function mostrarModoAuth(modo) {
+      // Limpa aviso visual antigo ao trocar de aba.
+      // O status real da assinatura será reavaliado no login/monitoramento.
+      const avisoRenovacaoAtual = document.getElementById('avisoRenovacao');
+      if (avisoRenovacaoAtual) avisoRenovacaoAtual.style.display = 'none';
+      const tituloPlanosAtual = document.getElementById('areaPlanosRenovacao')?.querySelector('h3');
+      if (tituloPlanosAtual) tituloPlanosAtual.textContent = 'Escolha seu plano';
+
       const login = modo === 'login';
       document.getElementById('paneLogin').classList.toggle('active', login);
       document.getElementById('paneCadastro').classList.toggle('active', !login);
@@ -2462,15 +2599,33 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     async function recuperarSenhaFirebase() {
       const email = (document.getElementById('inputEmailRecuperacao').value || '').trim().toLowerCase();
+      const btn = document.getElementById('btnEnviarReset');
+      const card = document.getElementById('recoverySuccessCard');
+
       if (!email || !email.includes('@')) {
-        mostrarMensagemAuth('erro', 'Digite o e-mail cadastrado para receber o link.');
+        if (card) card.style.display = 'none';
+        mostrarMensagemAuth('erro', 'Digite o e-mail cadastrado para receber as instruções.');
         return;
       }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Enviando e-mail...';
+      }
+
       try {
         await auth.sendPasswordResetEmail(email);
-        mostrarMensagemAuth('sucesso', 'Link de redefinição enviado. Confira sua caixa de entrada e também o spam.');
+
+        if (card) card.style.display = 'flex';
+        mostrarMensagemAuth('sucesso', 'Pronto! Enviamos as instruções para redefinir sua senha.');
       } catch (e) {
+        if (card) card.style.display = 'none';
         mostrarMensagemAuth('erro', traduzirErroAuthFirebase(e));
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = 'Enviar e-mail para redefinir';
+        }
       }
     }
 
@@ -2564,6 +2719,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
     }
 
+    let adminTokenAtual = sessionStorage.getItem('admin_token_pacote_emato') || '';
+
     async function autenticarAdmin() {
       let passInput = document.getElementById('passAdmin');
       let pass = passInput ? passInput.value.trim() : "";
@@ -2576,22 +2733,33 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           body: JSON.stringify({ senha: pass })
         });
         const data = await res.json();
-        
-        if (data.sucesso) {
+
+        if (data.sucesso && data.adminToken) {
+          adminTokenAtual = data.adminToken;
+          sessionStorage.setItem('admin_token_pacote_emato', adminTokenAtual);
+
           passInput.value = "";
           document.getElementById('areaLoginAdmin').style.display = 'none';
           document.getElementById('areaGeradorAdmin').style.display = 'flex';
           carregarUsuariosAdmin();
           carregarPagamentosAdmin();
           notificar("👑 Painel Dono Desbloqueado!");
+        } else if (data.sucesso) {
+          passInput.value = "";
+          document.getElementById('areaLoginAdmin').style.display = 'none';
+          document.getElementById('areaGeradorAdmin').style.display = 'flex';
+          carregarUsuariosAdmin();
+          carregarPagamentosAdmin();
+          notificar("Painel aberto. Entre novamente depois para habilitar a edição de e-mail.");
         } else {
-          notificar("Senha incorreta.");
+          notificar(data.erro || "Senha incorreta.");
         }
       } catch (err) {
+        console.error(err);
         notificar("Erro ao validar acesso.");
       }
     }
-    
+
     let timerVerificadorPix = null;
     let listenerSessaoRealtime = null;
 
@@ -2897,6 +3065,23 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       notificar("📋 Código Pix Copiado com sucesso!");
     }
 
+    function atualizarVisibilidadeTesteGratis() {
+      const btn = document.getElementById('btnTesteGratis');
+      if (!btn) return;
+
+      const usadoLocal = localStorage.getItem('teste_gratis_bloqueado_local') === 'true';
+
+      if (usadoLocal) {
+        btn.style.display = 'none';
+        btn.disabled = true;
+        return;
+      }
+
+      btn.style.display = 'flex';
+      btn.disabled = false;
+      btn.innerText = '🎁 TESTE GRÁTIS — 10 DIAS';
+    }
+
     async function ativarTesteGratis() {
       const msgErro = document.getElementById('msgErro');
       const btn = document.getElementById('btnTesteGratis');
@@ -2970,7 +3155,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         usuarioAtualZap = zap;
         localStorage.setItem('teste_gratis_bloqueado_local', 'true');
         localStorage.setItem('usuario_zap_salvo', zap);
-        btn.style.display = 'none';
+        atualizarVisibilidadeTesteGratis();
         mostrarMensagemAuth('sucesso', 'Teste de 10 dias ativado com sucesso!');
         iniciarMonitoramentoSessao(zap);
       } catch (e) {
@@ -3042,7 +3227,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         localStorage.setItem('usuario_zap_salvo', zap);
         await ref.update({ deviceId: MEU_DEVICE_ID, ultimoLoginEm: Date.now() });
 
-        if (!data.ativo || (!adminVitalicio(data, agora) && agora >= adminExpiry(data))) {
+        if (!contaTemAcessoAtivo(data, agora)) {
           mostrarRenovacao(zap);
           mostrarMensagemAuth('erro', 'Acesso expirado. Selecione um plano abaixo para renovar.');
           return;
@@ -3078,8 +3263,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
     function limparAvisoRenovacao() {
       document.getElementById('avisoRenovacao').style.display = 'none';
-      document.getElementById('btnTesteGratis').style.display = '';
       document.getElementById('areaPlanosRenovacao').querySelector('h3').textContent = 'Escolha seu plano';
+      atualizarVisibilidadeTesteGratis();
     }
     async function salvarAcessoPago(zap, dados) {
       const ref = db.collection('usuarios').doc(zap);
@@ -3117,7 +3302,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           return;
         }
 
-        if (!data.ativo || (!adminVitalicio(data, agora) && agora >= adminExpiry(data))) {
+        if (!contaTemAcessoAtivo(data, agora)) {
           desconectarForcado("Assinatura expirada.", zap);
           return;
         }
@@ -3127,7 +3312,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           return;
         }
 
-        if (!adminVitalicio(data, agora)) {
+        const expiraSessao = adminExpiry(data);
+        if (!adminVitalicio(data, agora) && expiraSessao > 0) {
           const checarPrazo = () => {
             const restante = adminExpiry(data) - Date.now();
             if (restante <= 0) desconectarForcado('Assinatura expirada.', zap);
@@ -3135,9 +3321,17 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           };
           checarPrazo();
         }
+
         limparAvisoRenovacao();
-        let dias = Math.ceil((adminExpiry(data) - agora) / (1000 * 60 * 60 * 24));
-        document.getElementById('diasRestantes').innerText = adminVitalicio(data, agora) ? "Vitalício" : `Ativo (${dias}d rest.)`;
+
+        if (adminVitalicio(data, agora)) {
+          document.getElementById('diasRestantes').innerText = "Vitalício";
+        } else if (expiraSessao > 0) {
+          const dias = Math.max(1, Math.ceil((expiraSessao - agora) / (1000 * 60 * 60 * 24)));
+          document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
+        } else {
+          document.getElementById('diasRestantes').innerText = "Acesso Ativo";
+        }
         document.getElementById('telaBloqueio').style.display = 'none';
         verificarTutorialPrimeiroAcesso(zap);
       });
@@ -3246,7 +3440,21 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     let cliquesAdmin = 0;
     let timerCliques = null;
 
-    function registrarCliqueAdmin() {
+    function registrarCliqueAdmin(event) {
+      // O Modo Dono só pode ser aberto pela LOGO da tela de login.
+      const telaLogin = document.getElementById('telaBloqueio');
+      const alvo = event && event.currentTarget;
+
+      if (!telaLogin || telaLogin.style.display === 'none') {
+        cliquesAdmin = 0;
+        return;
+      }
+
+      if (!alvo || !alvo.closest('.auth-logo-shell')) {
+        cliquesAdmin = 0;
+        return;
+      }
+
       cliquesAdmin++;
       clearTimeout(timerCliques);
       timerCliques = setTimeout(() => { cliquesAdmin = 0; }, 2000);
@@ -3254,7 +3462,9 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       if (cliquesAdmin >= 5) {
         cliquesAdmin = 0;
         document.getElementById('modalAdmin').style.display = 'flex';
-        if (document.getElementById('areaGeradorAdmin').style.display === 'flex') carregarUsuariosAdmin();
+        if (document.getElementById('areaGeradorAdmin').style.display === 'flex') {
+          carregarUsuariosAdmin();
+        }
       }
     }
 
@@ -3274,9 +3484,68 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     let adminUnsubscribe = null;
     let adminClock = null;
     function adminEscape(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-    function adminExpiry(u) { return u.expiraEm && typeof u.expiraEm.toMillis === 'function' ? u.expiraEm.toMillis() : Number(u.expiraEm || 0); }
+    function adminExpiry(u) {
+      if (!u) return 0;
+
+      const valor = u.expiraEm;
+
+      // Firestore Timestamp normal
+      if (valor && typeof valor.toMillis === 'function') {
+        return valor.toMillis();
+      }
+
+      // Objeto Timestamp serializado: {seconds, nanoseconds}
+      if (valor && typeof valor === 'object') {
+        if (Number.isFinite(Number(valor.seconds))) {
+          return Number(valor.seconds) * 1000;
+        }
+        if (Number.isFinite(Number(valor._seconds))) {
+          return Number(valor._seconds) * 1000;
+        }
+      }
+
+      // Número ou string numérica.
+      // Alguns cadastros antigos podem ter sido salvos em segundos (10 dígitos)
+      // em vez de milissegundos (13 dígitos).
+      if (valor !== undefined && valor !== null && valor !== '') {
+        const numero = Number(valor);
+        if (Number.isFinite(numero) && numero > 0) {
+          return numero < 100000000000 ? numero * 1000 : numero;
+        }
+
+        // Datas em formato de texto/ISO
+        const dataTexto = Date.parse(String(valor));
+        if (Number.isFinite(dataTexto)) return dataTexto;
+      }
+
+      // Compatibilidade com cadastros antigos que tinham duração e data de ativação,
+      // mas não possuíam expiraEm corretamente gravado.
+      const dias = Number(u.duracaoDias || 0);
+      const inicio = Number(u.ativadoEm || u.criadoEm || 0);
+      if (dias > 0 && inicio > 0) {
+        return inicio + (dias * 24 * 60 * 60 * 1000);
+      }
+
+      return 0;
+    }
     function adminVitalicio(u, now = Date.now()) {
       return u.vitalicio === true || /vital[ií]cio/i.test(u.plano || '') || Number(u.duracaoDias) >= ADMIN_LIFETIME_DAYS || (adminExpiry(u)-now)/ADMIN_DAY >= ADMIN_LIFETIME_DAYS;
+    }
+    function contaTemAcessoAtivo(u, now = Date.now()) {
+      if (!u || u.bloqueado === true) return false;
+      if (adminVitalicio(u, now)) return true;
+
+      const expira = adminExpiry(u);
+
+      // Se há vencimento válido, ele é a fonte de verdade.
+      if (expira > 0) return expira > now;
+
+      // Compatibilidade com contas antigas:
+      // algumas foram cadastradas apenas com ativo:true e sem expiraEm utilizável.
+      // Não marca essas contas como expiradas automaticamente.
+      if (u.ativo === true) return true;
+
+      return false;
     }
     function adminPlano(u, now = Date.now()) {
       if (adminVitalicio(u,now)) return 'vitalicio';
@@ -3289,7 +3558,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
     function adminCategoria(u, now = Date.now()) {
       if (u.bloqueado === true) return 'bloqueados';
-      if (!u.ativo || (!adminVitalicio(u,now) && adminExpiry(u) <= now)) return 'expirados';
+      if (!contaTemAcessoAtivo(u, now)) return 'expirados';
       return adminPlano(u,now);
     }
     async function carregarUsuariosAdmin() {
@@ -3320,7 +3589,12 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         const days = Math.max(0,Math.ceil((adminExpiry(u)-now)/ADMIN_DAY));
         const status = cat==='bloqueados' ? 'Bloqueado' : cat==='expirados' ? 'Expirado' : plan==='vitalicio' ? 'Acesso vitalício' : `${days} dias restantes`;
         const date = plan==='vitalicio' ? 'Sem prazo de vencimento' : adminExpiry(u) ? `Vencimento: ${new Date(adminExpiry(u)).toLocaleDateString('pt-BR')}` : 'Sem vencimento cadastrado';
-        groups[cat].push(`<article class="adm-account"><div class="adm-account-top"><div><div class="adm-phone">${zap}</div><div class="adm-plan">${adminLabels[plan]}${plan==='outros' ? ' · '+adminEscape(u.plano || 'Acesso personalizado') : ''}</div></div><span class="adm-status ${cat}">${status}</span></div><div class="adm-account-meta"><span>${date}</span><span>${Number(u.totalIndicacoes)||0} indicações</span></div><div class="adm-account-actions"><button onclick="prepararRenovacaoAdmin(${arg})">Renovar / trocar plano</button><a href="https://wa.me/${phone.startsWith('55') && phone.length>11 ? phone : '55'+phone}" target="_blank" rel="noopener">WhatsApp</a><details><summary>Gerenciar conta</summary><div class="adm-extra-actions"><button onclick="ajustarDiasRapido(${arg})">Ajustar dias</button><button onclick="redefinirSenhaAdmin(${arg})">Redefinir senha</button><button onclick="desconectarAparelhoAdmin(${arg})">Resetar aparelho</button><button onclick="alternarBloqueioUsuario(${arg},${u.bloqueado!==true})">${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button><button class="adm-danger" onclick="deletarUsuarioAdmin(${arg})">Excluir conta</button></div></details></div></article>`);
+        const emailConta = String(u.email || '').trim();
+        const emailHtml = emailConta
+          ? `<div class="adm-email">✉️ <strong>${adminEscape(emailConta)}</strong></div>`
+          : `<div class="adm-email adm-email-empty">✉️ E-mail não cadastrado</div>`;
+
+        groups[cat].push(`<article class="adm-account"><div class="adm-account-top"><div><div class="adm-phone">${zap}</div><div class="adm-plan">${adminLabels[plan]}${plan==='outros' ? ' · '+adminEscape(u.plano || 'Acesso personalizado') : ''}</div>${emailHtml}</div><span class="adm-status ${cat}">${status}</span></div><div class="adm-account-meta"><span>${date}</span><span>${Number(u.totalIndicacoes)||0} indicações</span></div><div class="adm-account-actions"><button onclick="prepararRenovacaoAdmin(${arg})">Renovar / trocar plano</button><a href="https://wa.me/${phone.startsWith('55') && phone.length>11 ? phone : '55'+phone}" target="_blank" rel="noopener">WhatsApp</a><details><summary>Gerenciar conta</summary><div class="adm-extra-actions"><button onclick="ajustarDiasRapido(${arg})">Ajustar dias</button><button onclick="redefinirSenhaAdmin(${arg})">Enviar redefinição de senha</button><button class="adm-email-action" onclick="editarEmailAdmin(${arg})">✏️ Editar e-mail</button><button onclick="desconectarAparelhoAdmin(${arg})">Resetar aparelho</button><button onclick="alternarBloqueioUsuario(${arg},${u.bloqueado!==true})">${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button><button class="adm-danger" onclick="deletarUsuarioAdmin(${arg})">Excluir conta</button></div></details></div></article>`);
       });
       Object.keys(groups).forEach(k=> {
         document.getElementById('countAdmin'+adminSections[k]).textContent=counts[k];
@@ -3380,12 +3654,12 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         notificar("Nenhum usuário para exportar.");
         return;
       }
-      let csv = "WhatsApp,Senha,Plano,DuracaoDias,Indicacoes,Status\n";
+      let csv = "WhatsApp,Email,Plano,DuracaoDias,Indicacoes,Status\n";
       let agora = Date.now();
 
       listaUsuariosCache.forEach(u => {
         let status = u.bloqueado ? "Bloqueado" : (u.ativo && agora <= (u.expiraEm || 0) ? "Ativo" : "Expirado");
-        csv += `"${u.whatsapp || u.id}","${u.senha || ''}","${u.plano || ''}","${u.duracaoDias || ''}","${u.totalIndicacoes || 0}","${status}"\n`;
+        csv += `"${u.whatsapp || u.id}","${u.email || ''}","${u.plano || ''}","${u.duracaoDias || ''}","${u.totalIndicacoes || 0}","${status}"\n`;
       });
 
       let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -3408,18 +3682,104 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     async function redefinirSenhaAdmin(zap) {
-      let novaSenha = prompt(`Digite a nova senha para o entregador ${zap}:`);
-      if (!novaSenha) return;
+      const conta = listaUsuariosCache.find(u => String(u.id || u.whatsapp) === String(zap));
+      const email = String(conta?.email || '').trim().toLowerCase();
+
+      if (!email) {
+        notificar('Esta conta ainda não possui e-mail cadastrado.');
+        return;
+      }
 
       try {
-        await db.collection("usuarios").doc(zap).update({ 
-          senha: novaSenha.trim(),
-          deviceId: ""
+        await auth.sendPasswordResetEmail(email);
+        notificar(`✉️ E-mail de redefinição enviado para ${email}`);
+      } catch (e) {
+        console.error(e);
+        notificar('Não foi possível enviar o e-mail de redefinição.');
+      }
+    }
+
+    async function editarEmailAdmin(zap) {
+      const conta = listaUsuariosCache.find(u => String(u.id || u.whatsapp) === String(zap));
+      if (!conta) {
+        notificar('Conta não encontrada no painel.');
+        return;
+      }
+
+      const authUid = String(conta.authUid || '').trim();
+      const atual = String(conta.email || '').trim().toLowerCase();
+
+      if (!authUid) {
+        notificar('Esta conta ainda não possui vínculo com o login seguro.');
+        return;
+      }
+
+      const novo = prompt(
+        `Alterar e-mail da conta ${zap}\n\nE-mail atual: ${atual || 'não cadastrado'}\n\nDigite o novo e-mail:`,
+        atual
+      );
+
+      if (novo === null) return;
+
+      const emailNovo = String(novo).trim().toLowerCase();
+
+      if (!emailNovo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNovo)) {
+        notificar('Digite um e-mail válido.');
+        return;
+      }
+
+      if (emailNovo === atual) {
+        notificar('Esse já é o e-mail atual da conta.');
+        return;
+      }
+
+      if (!adminTokenAtual) {
+        notificar('Sua sessão do Modo Dono expirou. Entre novamente.');
+        return;
+      }
+
+      const confirmar = confirm(
+        `Confirmar alteração?\n\n${atual || 'Sem e-mail'}\n→ ${emailNovo}\n\nO novo e-mail será usado no login e na recuperação de senha.`
+      );
+
+      if (!confirmar) return;
+
+      try {
+        notificar('Atualizando e-mail com segurança...');
+
+        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/alterar-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminTokenAtual}`
+          },
+          body: JSON.stringify({
+            whatsapp: String(conta.whatsapp || conta.id || zap).replace(/\D/g, ''),
+            authUid,
+            novoEmail: emailNovo
+          })
         });
-        notificar(`Senha do ${zap} alterada para: ${novaSenha}`);
+
+        const data = await res.json();
+
+        if (res.status === 401) {
+          adminTokenAtual = '';
+          sessionStorage.removeItem('admin_token_pacote_emato');
+          notificar('Sessão do Modo Dono expirada. Entre novamente.');
+          return;
+        }
+
+        if (!res.ok || !data.sucesso) {
+          throw new Error(data.erro || 'Não foi possível alterar o e-mail.');
+        }
+
+        conta.email = data.novoEmail || emailNovo;
+        notificar(`✉️ E-mail alterado para ${conta.email}`);
         carregarUsuariosAdmin();
-      } catch(e) {
-        notificar("Erro ao redefinir senha.");
+
+      } catch (e) {
+        console.error('Erro ao editar e-mail:', e);
+        notificar(e.message || 'Erro ao alterar e-mail.');
       }
     }
 
@@ -4256,7 +4616,6 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     function falarParada(num, ehDuplo, stopOutro) {
       const tipo = localStorage.getItem('voz_preferida') || 'rapida';
       if (tipo === 'mudo') return;
-      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) return;
 
       const lang = localStorage.getItem('idioma_preferido') || 'pt';
       let frase = String(num);
@@ -4268,42 +4627,10 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         else frase += ". Atenção! Mesmo endereço da parada " + outra + "!";
       }
 
-      try {
-        const synth = window.speechSynthesis;
-        synth.cancel();
-        synth.resume();
+      desbloquearSinteseDeVoz();
 
-        const msg = new SpeechSynthesisUtterance(frase);
-        msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
-
-        const voz = selecionarVozDisponivel(lang, tipo);
-        if (voz) msg.voice = voz;
-
-        // Perfis diferentes de verdade:
-        // TURBO = rápida e um pouco mais aguda
-        // NAVEGAÇÃO = mais grave, firme e mais lenta
-        // NATURAL = ritmo e tom normais
-        if (tipo === 'rapida') {
-          msg.rate = 1.60;
-          msg.pitch = 1.12;
-          msg.volume = 1.0;
-        } else if (tipo === 'grave') {
-          msg.rate = 0.92;
-          msg.pitch = 0.58;
-          msg.volume = 1.0;
-        } else {
-          msg.rate = 1.00;
-          msg.pitch = 1.00;
-          msg.volume = 1.0;
-        }
-
-        setTimeout(() => {
-          try {
-            synth.resume();
-            synth.speak(msg);
-          } catch (_) {}
-        }, 60);
-      } catch (_) {}
+      // pequeno atraso depois do bip/câmera ajuda em Android/PWA
+      setTimeout(() => falarComPerfil(frase, tipo), 100);
     }
 
     function zerarRota() {
