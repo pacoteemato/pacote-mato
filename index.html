@@ -1581,7 +1581,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
                 <div class="recovery-title">Redefinir sua senha</div>
               </div>
             </div>
-            <p class="recovery-copy">Informe o e-mail da sua conta. Você receberá uma mensagem segura com as instruções para criar uma nova senha.</p>
+            <p class="recovery-copy">Informe o e-mail cadastrado. Você receberá uma mensagem do Pacote É Mato com um botão para criar uma nova senha.</p>
             <label class="form-label-pro">E-mail cadastrado</label>
             <div class="input-group">
               <span class="input-icon-left">✉️</span>
@@ -1593,7 +1593,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
               <div class="recovery-success-icon">✓</div>
               <div>
                 <strong>E-mail enviado com segurança</strong>
-                <p>Abra sua caixa de entrada e procure uma mensagem para redefinir a senha do Pacote É Mato. Se não encontrar, confira a pasta de spam.</p>
+                <p>Confira sua caixa de entrada, spam e promoções. O e-mail terá o botão “Criar nova senha”.</p>
               </div>
             </div>
           </div>
@@ -1835,6 +1835,85 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
   </div>
 
   <!-- MODAL MODO DONO / PAINEL MASTER -->
+
+  <!-- MODAL DONO - ALTERAR SENHA COM VISUALIZAÇÃO -->
+  <div id="modalSenhaAdmin" class="modal-backdrop" style="display:none; z-index:1000200;">
+    <div class="modal-card" style="max-width:380px;text-align:left; position:relative; z-index:1000201;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 style="color:var(--primary);font-size:1.05rem;font-weight:800;">🔑 Alterar senha</h3>
+        <span onclick="fecharModalSenhaAdmin()" style="cursor:pointer;color:var(--text-muted);font-weight:bold;">✕</span>
+      </div>
+
+      <div id="senhaAdminContaLabel" style="font-size:.78rem;color:var(--text-muted);margin-bottom:12px;"></div>
+
+      <label class="form-label-pro">Nova senha</label>
+      <div class="input-group">
+        <span class="input-icon-left">🔑</span>
+        <input id="adminNovaSenha" type="password" class="input-auth com-icone-direita" placeholder="Mínimo de 6 caracteres">
+        <span class="input-icon-right" onclick="alternarSenhaAdminVisivel('adminNovaSenha', this)">👁️</span>
+      </div>
+
+      <label class="form-label-pro">Confirmar nova senha</label>
+      <div class="input-group">
+        <span class="input-icon-left">🔑</span>
+        <input id="adminConfirmarSenha" type="password" class="input-auth com-icone-direita" placeholder="Digite novamente">
+        <span class="input-icon-right" onclick="alternarSenhaAdminVisivel('adminConfirmarSenha', this)">👁️</span>
+      </div>
+
+      <div style="font-size:.70rem;color:var(--text-muted);line-height:1.4;margin:4px 0 14px;">
+        Você pode visualizar a <strong>nova senha que está definindo</strong>. A senha atual do Firebase não pode ser recuperada ou exibida.
+      </div>
+
+      <button class="btn-action-primary" onclick="confirmarNovaSenhaAdmin()">Salvar nova senha</button>
+      <button onclick="fecharModalSenhaAdmin()" style="width:100%;margin-top:8px;background:none;border:none;color:var(--text-muted);font-weight:700;cursor:pointer;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+
+  <!-- MODAL DONO - EDITAR E-MAIL -->
+  <div id="modalEmailAdmin" class="modal-backdrop" style="display:none; z-index:1000210;">
+    <div class="modal-card" style="max-width:390px;text-align:left;position:relative;z-index:1000211;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <div style="font-size:.62rem;color:#34d399;font-weight:900;letter-spacing:.8px;text-transform:uppercase;">Modo Dono</div>
+          <h3 style="color:var(--text-main);font-size:1.08rem;font-weight:900;margin-top:2px;">✉️ Editar e-mail</h3>
+        </div>
+        <span onclick="fecharModalEmailAdmin()" style="cursor:pointer;color:var(--text-muted);font-weight:bold;font-size:1.05rem;">✕</span>
+      </div>
+
+      <div id="emailAdminContaInfo" style="padding:10px 12px;background:var(--surface-2);border:1px solid var(--surface-border);border-radius:12px;font-size:.74rem;color:var(--text-muted);line-height:1.5;margin-bottom:14px;"></div>
+
+      <label class="form-label-pro">E-mail atual</label>
+      <div class="input-group">
+        <span class="input-icon-left">📧</span>
+        <input id="emailAdminAtual" type="email" class="input-auth" readonly style="opacity:.78;">
+      </div>
+
+      <label class="form-label-pro">Novo e-mail</label>
+      <div class="input-group">
+        <span class="input-icon-left">✉️</span>
+        <input id="emailAdminNovo" type="email" class="input-auth" placeholder="novoemail@exemplo.com">
+      </div>
+
+      <label class="form-label-pro">Confirmar novo e-mail</label>
+      <div class="input-group">
+        <span class="input-icon-left">✅</span>
+        <input id="emailAdminConfirmar" type="email" class="input-auth" placeholder="Digite novamente">
+      </div>
+
+      <div style="font-size:.70rem;color:var(--text-muted);line-height:1.45;margin:4px 0 14px;">
+        O novo e-mail será usado no login e na recuperação de senha. Plano, dias e vencimento não serão alterados.
+      </div>
+
+      <button id="btnSalvarEmailAdmin" class="btn-action-primary" onclick="confirmarEmailAdmin()">Salvar novo e-mail</button>
+      <button onclick="fecharModalEmailAdmin()" style="width:100%;margin-top:8px;background:none;border:none;color:var(--text-muted);font-weight:700;cursor:pointer;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
   <div id="modalAdmin" class="modal-backdrop">
     <div id="toastAdmin" class="context-toast"></div>
     <div class="modal-card" style="max-width:1100px; text-align:left; max-height:92vh; overflow-y:auto;">
@@ -1957,12 +2036,16 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     </div>
 
     <div style="margin-bottom:14px;">
-      <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;"> <span data-i18n="voice_label">Voz do Sintetizador</span></label>
-      <div class="segmented-control-grid4" id="controlVoiceReal">
-        <button class="segmented-btn active" id="voice_rapida" onclick="salvarVoz('rapida', false)"> ⚡ Voz Turbo</button>
-        <button class="segmented-btn" id="voice_grave" onclick="salvarVoz('grave', false)"> 📍 Voz Navegação</button>
-        <button class="segmented-btn" id="voice_normal" onclick="salvarVoz('normal', false)"> 🗣️ Voz Natural</button>
-        <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)" style="color:#ef4444;"> 🔇 Silencioso</button>
+      <label style="font-size:0.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">
+        Voz
+      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px;border:1px solid var(--surface-border);">
+        <button class="segmented-btn active" id="voice_navegacao_feminina" onclick="salvarVoz('navegacao_feminina', false)">
+          🗣️ Voz Navegação
+        </button>
+        <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)" style="color:#ef4444;">
+          🔇 Silencioso
+        </button>
       </div>
     </div>
 
@@ -2017,7 +2100,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     <div class="upload-section" id="elSecaoUpload">
       <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div><div style="font-size:.58rem;color:var(--text-muted);opacity:.65;margin-bottom:12px;">Leitor Circuit v5</div>
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div><div style="font-size:.58rem;color:var(--text-muted);opacity:.65;margin-bottom:12px;">Leitor Circuit v6 • leitura conferida</div>
       
       <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
         📄 Escolher Arquivo PDF
@@ -2372,13 +2455,19 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     let vozesSistemaCache = [];
+    let vozLiberadaPorInteracao = false;
+    let filaUltimaFala = null;
 
     function carregarVozesSistema() {
       try {
-        vozesSistemaCache = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+        vozesSistemaCache =
+          ('speechSynthesis' in window)
+            ? window.speechSynthesis.getVoices()
+            : [];
       } catch (_) {
         vozesSistemaCache = [];
       }
+
       return vozesSistemaCache;
     }
 
@@ -2386,94 +2475,185 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       const vozes = carregarVozesSistema();
       if (!vozes.length) return null;
 
-      const idiomaAlvo = lang === 'en' ? 'en' : (lang === 'es' ? 'es' : 'pt');
+      const idiomaAlvo =
+        lang === 'en'
+          ? 'en'
+          : (lang === 'es' ? 'es' : 'pt');
+
       const compativeis = vozes.filter(v =>
         String(v.lang || '').toLowerCase().startsWith(idiomaAlvo)
       );
+
       const lista = compativeis.length ? compativeis : vozes;
-
       const nome = v => String(v.name || '').toLowerCase();
+      const idioma = v => String(v.lang || '').toLowerCase();
 
-      if (tipo === 'grave') {
-        return (
-          lista.find(v => /antonio|ricardo|daniel|felipe|mascul|male/.test(nome(v))) ||
-          lista[1] ||
-          lista[0]
-        );
-      }
-
-      if (tipo === 'rapida') {
-        return (
-          lista.find(v => /google|premium|enhanced|natural/.test(nome(v))) ||
-          lista[2] ||
-          lista[0]
-        );
-      }
-
+      /*
+       * Busca primeiro a voz do Google em português do Brasil.
+       * É a opção que normalmente fica mais próxima da voz usada
+       * por navegação em aparelhos Android.
+       *
+       * Se o aparelho não disponibilizar essa voz ao navegador/PWA,
+       * usa a voz pt-BR padrão do próprio sistema.
+       */
       return (
-        lista.find(v => /natural|premium|enhanced|google/.test(nome(v))) ||
+        lista.find(v =>
+          /google/.test(nome(v)) &&
+          (
+            idioma(v) === 'pt-br' ||
+            /portugu|brasil|brazil/.test(nome(v))
+          )
+        ) ||
+        lista.find(v =>
+          idioma(v) === 'pt-br' && v.default
+        ) ||
+        lista.find(v =>
+          idioma(v) === 'pt-br'
+        ) ||
+        lista.find(v => v.default) ||
         lista[0]
       );
     }
 
-    function falarComPerfil(texto, tipo) {
-      if (tipo === 'mudo') return false;
-      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) return false;
+    /*
+     * Android/Chrome/PWA podem bloquear a primeira fala até existir
+     * uma interação real do usuário. Fazemos uma fala silenciosa UMA vez
+     * no primeiro toque. O usuário não escuta nada.
+     */
+    function liberarVozPorInteracao() {
+      if (vozLiberadaPorInteracao) return;
+      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) return;
+
+      try {
+        const synth = window.speechSynthesis;
+
+        carregarVozesSistema();
+        synth.resume();
+
+        const silenciosa = new SpeechSynthesisUtterance('.');
+        silenciosa.volume = 0;
+        silenciosa.rate = 2;
+        silenciosa.lang = 'pt-BR';
+
+        synth.speak(silenciosa);
+        vozLiberadaPorInteracao = true;
+      } catch (_) {}
+    }
+
+    function executarFala(texto, tipo, tentativa = 0) {
+      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) {
+        return false;
+      }
 
       try {
         const lang = localStorage.getItem('idioma_preferido') || 'pt';
         const synth = window.speechSynthesis;
 
-        synth.cancel();
         synth.resume();
 
         const msg = new SpeechSynthesisUtterance(String(texto));
-        msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
+        msg.lang =
+          lang === 'en'
+            ? 'en-US'
+            : (lang === 'es' ? 'es-ES' : 'pt-BR');
+
         msg.volume = 1;
 
         const voz = selecionarVozDisponivel(lang, tipo);
         if (voz) msg.voice = voz;
 
-        if (tipo === 'rapida') {
-          // TURBO: curta, rápida e mais viva
-          msg.rate = 1.75;
-          msg.pitch = 1.18;
-        } else if (tipo === 'grave') {
-          // NAVEGAÇÃO: firme, grave e mais cadenciada
-          msg.rate = 0.88;
-          msg.pitch = 0.52;
-        } else {
-          // NATURAL: velocidade e tom naturais
-          msg.rate = 1.00;
-          msg.pitch = 1.00;
-        }
+        // Voz de navegação: usa o timbre original da voz do sistema.
+        msg.rate = 1.00;
+        msg.pitch = 1.00;
+
+        msg.onerror = function(event) {
+          const erro = String(event?.error || '');
+
+          // "interrupted" e "canceled" podem acontecer ao trocar rapidamente
+          // de pacote e não significam que a voz do aparelho está quebrada.
+          if (
+            tentativa < 1 &&
+            erro !== 'interrupted' &&
+            erro !== 'canceled'
+          ) {
+            setTimeout(() => executarFala(texto, 'normal', tentativa + 1), 180);
+          }
+        };
 
         synth.speak(msg);
         return true;
+
       } catch (e) {
         console.error('Falha na voz:', e);
+
+        if (tentativa < 1) {
+          setTimeout(() => executarFala(texto, 'normal', tentativa + 1), 180);
+        }
+
+        return false;
+      }
+    }
+
+    function falarComPerfil(texto, tipo) {
+      if (tipo === 'mudo') return false;
+
+      filaUltimaFala = {
+        texto: String(texto),
+        tipo
+      };
+
+      if (!('speechSynthesis' in window)) return false;
+
+      try {
+        const synth = window.speechSynthesis;
+
+        /*
+         * Cancela a fala anterior, espera o motor realmente liberar a fila
+         * e só então fala. Isso evita o bug comum de Android em que
+         * cancel()+speak() imediatamente resulta em silêncio.
+         */
+        synth.cancel();
+        synth.resume();
+
+        setTimeout(() => {
+          executarFala(
+            filaUltimaFala.texto,
+            filaUltimaFala.tipo,
+            0
+          );
+        }, 90);
+
+        return true;
+      } catch (_) {
         return false;
       }
     }
 
     function salvarVoz(tipo, testarAgora = false) {
-      localStorage.setItem('voz_preferida', tipo);
+      const escolha = tipo === 'mudo' ? 'mudo' : 'navegacao_feminina';
+      localStorage.setItem('voz_preferida', escolha);
 
-      ['rapida', 'grave', 'normal', 'mudo'].forEach(v => {
+      ['navegacao_feminina', 'mudo'].forEach(v => {
         const btn = document.getElementById('voice_' + v);
         if (!btn) return;
-        if (v === tipo) btn.classList.add('active');
+
+        if (v === escolha) btn.classList.add('active');
         else btn.classList.remove('active');
       });
 
-      // Apenas salva a escolha. Não reproduz nenhuma fala ao tocar na opção.
-      if (tipo === 'mudo') {
-        try { window.speechSynthesis.cancel(); } catch (_) {}
+      if (escolha === 'mudo') {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {}
+        return;
       }
+
+      liberarVozPorInteracao();
     }
 
     function desbloquearSinteseDeVoz() {
       if (!('speechSynthesis' in window)) return;
+
       try {
         window.speechSynthesis.resume();
         carregarVozesSistema();
@@ -2484,15 +2664,26 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       carregarVozesSistema();
 
       try {
-        window.speechSynthesis.addEventListener('voiceschanged', carregarVozesSistema);
+        window.speechSynthesis.addEventListener(
+          'voiceschanged',
+          carregarVozesSistema
+        );
       } catch (_) {
         window.speechSynthesis.onvoiceschanged = carregarVozesSistema;
       }
 
-      // Android/Chrome/PWA podem manter o sintetizador suspenso até o primeiro toque.
-      document.addEventListener('pointerdown', desbloquearSinteseDeVoz, { passive: true });
-      document.addEventListener('touchstart', desbloquearSinteseDeVoz, { passive: true });
-      document.addEventListener('click', desbloquearSinteseDeVoz, { passive: true });
+      document.addEventListener(
+        'pointerdown',
+        liberarVozPorInteracao,
+        { passive: true }
+      );
+
+      document.addEventListener(
+        'touchstart',
+        liberarVozPorInteracao,
+        { passive: true }
+      );
+
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) desbloquearSinteseDeVoz();
       });
@@ -2574,7 +2765,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       let tema = localStorage.getItem('tema_preferido') || 'black_Preto';
       mudarTema(tema);
 
-      let voz = localStorage.getItem('voz_preferida') || 'rapida';
+      let voz = localStorage.getItem('voz_preferida') || 'navegacao_feminina';
       salvarVoz(voz, false);
       
       verificarRotaSalvaAnterior();
@@ -2659,7 +2850,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       const btn = document.getElementById('btnEnviarReset');
       const card = document.getElementById('recoverySuccessCard');
 
-      if (!email || !email.includes('@')) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         if (card) card.style.display = 'none';
         mostrarMensagemAuth('erro', 'Digite o e-mail cadastrado para receber as instruções.');
         return;
@@ -2671,13 +2862,34 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
 
       try {
-        await auth.sendPasswordResetEmail(email);
+        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/solicitar-recuperacao-senha`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
 
-        if (card) card.style.display = 'flex';
-        mostrarMensagemAuth('sucesso', 'Solicitação enviada ao Firebase. Verifique caixa de entrada, spam e lixo eletrônico.');
+        const data = await res.json();
+
+        if (!res.ok || !data.sucesso) {
+          throw new Error(data.erro || 'Não foi possível solicitar a recuperação.');
+        }
+
+        if (card) {
+          card.style.display = 'flex';
+          const strong = card.querySelector('strong');
+          const p = card.querySelector('p');
+          if (strong) strong.textContent = 'Confira seu e-mail';
+          if (p) p.textContent = 'Se este e-mail estiver cadastrado, você receberá uma mensagem do Pacote É Mato com o botão “Criar nova senha”. Confira também spam e promoções.';
+        }
+
+        mostrarMensagemAuth(
+          'sucesso',
+          'Se esse e-mail estiver cadastrado, enviaremos as instruções para criar uma nova senha.'
+        );
+
       } catch (e) {
         if (card) card.style.display = 'none';
-        mostrarMensagemAuth('erro', traduzirErroAuthFirebase(e));
+        mostrarMensagemAuth('erro', e.message || 'Não foi possível enviar o e-mail agora.');
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -3789,7 +4001,41 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       filtrarListaAdminLocal();
     }
 
-    async function redefinirSenhaAdmin(zap) {
+    let senhaAdminZapAtual = null;
+
+    function alternarSenhaAdminVisivel(inputId, iconeEl) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+
+      const mostrando = input.type === 'text';
+      input.type = mostrando ? 'password' : 'text';
+
+      if (iconeEl) {
+        iconeEl.textContent = mostrando ? '👁️' : '🙈';
+      }
+    }
+
+    function fecharModalSenhaAdmin() {
+      const modal = document.getElementById('modalSenhaAdmin');
+      if (modal) modal.style.display = 'none';
+
+      const a = document.getElementById('adminNovaSenha');
+      const b = document.getElementById('adminConfirmarSenha');
+
+      if (a) {
+        a.value = '';
+        a.type = 'password';
+      }
+
+      if (b) {
+        b.value = '';
+        b.type = 'password';
+      }
+
+      senhaAdminZapAtual = null;
+    }
+
+    function redefinirSenhaAdmin(zap) {
       const conta = listaUsuariosCache.find(
         u => String(u.id || u.whatsapp) === String(zap)
       );
@@ -3799,29 +4045,62 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         return;
       }
 
-      const authUid = String(conta.authUid || '').trim();
+      senhaAdminZapAtual = String(zap);
 
-      if (!authUid) {
-        notificar('Esta conta ainda não possui vínculo com o login seguro.');
+      const label = document.getElementById('senhaAdminContaLabel');
+      if (label) {
+        label.innerHTML =
+          `Conta: <strong style="color:var(--text-main)">${adminEscape(String(zap))}</strong><br>` +
+          `E-mail: <strong style="color:var(--text-main)">${adminEscape(String(conta.email || 'não cadastrado'))}</strong>`;
+      }
+
+      const a = document.getElementById('adminNovaSenha');
+      const b = document.getElementById('adminConfirmarSenha');
+
+      if (a) {
+        a.value = '';
+        a.type = 'password';
+      }
+
+      if (b) {
+        b.value = '';
+        b.type = 'password';
+      }
+
+      const modal = document.getElementById('modalSenhaAdmin');
+      if (modal) modal.style.display = 'flex';
+
+      setTimeout(() => a?.focus(), 80);
+    }
+
+    async function confirmarNovaSenhaAdmin() {
+      const zap = senhaAdminZapAtual;
+      if (!zap) {
+        notificar('Nenhuma conta selecionada.');
         return;
       }
 
-      const novaSenha = prompt(
-        `Digite a NOVA senha para ${zap}:\n\nMínimo de 6 caracteres.\n\nO plano e os dias restantes NÃO serão alterados.`
+      const conta = listaUsuariosCache.find(
+        u => String(u.id || u.whatsapp) === String(zap)
       );
 
-      if (novaSenha === null) return;
+      if (!conta) {
+        notificar('Conta não encontrada no painel.');
+        return;
+      }
+
+      const novaSenha = String(
+        document.getElementById('adminNovaSenha')?.value || ''
+      );
+
+      const confirmarSenha = String(
+        document.getElementById('adminConfirmarSenha')?.value || ''
+      );
 
       if (novaSenha.length < 6) {
         notificar('A nova senha precisa ter pelo menos 6 caracteres.');
         return;
       }
-
-      const confirmarSenha = prompt(
-        'Digite a nova senha novamente para confirmar:'
-      );
-
-      if (confirmarSenha === null) return;
 
       if (novaSenha !== confirmarSenha) {
         notificar('As duas senhas não são iguais.');
@@ -3839,44 +4118,111 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           method: 'POST',
           body: JSON.stringify({
             whatsapp: zap,
-            authUid,
             novaSenha
           })
         });
 
-        notificar(data.mensagem || '🔑 Senha alterada. Plano e dias mantidos.');
+        if (data.authUid && conta) {
+          conta.authUid = data.authUid;
+        }
+
+        fecharModalSenhaAdmin();
+
+        notificar(
+          data.mensagem ||
+          '🔑 Senha alterada. Plano e dias mantidos.'
+        );
+
+        await carregarUsuariosAdmin();
+
       } catch (e) {
         console.error('Erro alterar senha:', e);
         notificar(e.message || 'Não foi possível alterar a senha.');
       }
     }
 
-    async function editarEmailAdmin(zap) {
-      const conta = listaUsuariosCache.find(u => String(u.id || u.whatsapp) === String(zap));
+    let emailAdminZapAtual = null;
+
+    function fecharModalEmailAdmin() {
+      const modal = document.getElementById('modalEmailAdmin');
+      if (modal) modal.style.display = 'none';
+
+      const novo = document.getElementById('emailAdminNovo');
+      const confirmar = document.getElementById('emailAdminConfirmar');
+
+      if (novo) novo.value = '';
+      if (confirmar) confirmar.value = '';
+
+      emailAdminZapAtual = null;
+    }
+
+    function editarEmailAdmin(zap) {
+      const conta = listaUsuariosCache.find(
+        u => String(u.id || u.whatsapp) === String(zap)
+      );
+
       if (!conta) {
         notificar('Conta não encontrada no painel.');
         return;
       }
 
-      const authUid = String(conta.authUid || '').trim();
+      emailAdminZapAtual = String(zap);
+
       const atual = String(conta.email || '').trim().toLowerCase();
 
-      if (!authUid) {
-        notificar('Esta conta ainda não possui vínculo com o login seguro.');
+      const info = document.getElementById('emailAdminContaInfo');
+      if (info) {
+        info.innerHTML =
+          `Conta: <strong style="color:var(--text-main)">${adminEscape(String(zap))}</strong>`;
+      }
+
+      const campoAtual = document.getElementById('emailAdminAtual');
+      const campoNovo = document.getElementById('emailAdminNovo');
+      const campoConfirmar = document.getElementById('emailAdminConfirmar');
+
+      if (campoAtual) campoAtual.value = atual;
+      if (campoNovo) campoNovo.value = '';
+      if (campoConfirmar) campoConfirmar.value = '';
+
+      const modal = document.getElementById('modalEmailAdmin');
+      if (modal) modal.style.display = 'flex';
+
+      setTimeout(() => campoNovo?.focus(), 80);
+    }
+
+    async function confirmarEmailAdmin() {
+      const zap = emailAdminZapAtual;
+
+      if (!zap) {
+        notificar('Nenhuma conta selecionada.');
         return;
       }
 
-      const novo = prompt(
-        `Alterar e-mail da conta ${zap}\n\nE-mail atual: ${atual || 'não cadastrado'}\n\nDigite o novo e-mail:`,
-        atual
+      const conta = listaUsuariosCache.find(
+        u => String(u.id || u.whatsapp) === String(zap)
       );
 
-      if (novo === null) return;
+      if (!conta) {
+        notificar('Conta não encontrada no painel.');
+        return;
+      }
 
-      const emailNovo = String(novo).trim().toLowerCase();
+      const atual = String(conta.email || '').trim().toLowerCase();
+      const emailNovo = String(
+        document.getElementById('emailAdminNovo')?.value || ''
+      ).trim().toLowerCase();
+
+      const confirmar = String(
+        document.getElementById('emailAdminConfirmar')?.value || ''
+      ).trim().toLowerCase();
 
       if (!emailNovo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNovo)) {
         notificar('Digite um e-mail válido.');
+        return;
+      }
+
+      if (emailNovo !== confirmar) {
+        notificar('Os dois campos de e-mail não são iguais.');
         return;
       }
 
@@ -3890,48 +4236,35 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         return;
       }
 
-      const confirmar = confirm(
-        `Confirmar alteração?\n\n${atual || 'Sem e-mail'}\n→ ${emailNovo}\n\nO novo e-mail será usado no login e na recuperação de senha.`
-      );
-
-      if (!confirmar) return;
+      const btn = document.getElementById('btnSalvarEmailAdmin');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+      }
 
       try {
-        notificar('Atualizando e-mail com segurança...');
-
-        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/admin/alterar-email`, {
+        const data = await adminWorkerFetch('/admin/alterar-email', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminTokenAtual}`
-          },
           body: JSON.stringify({
             whatsapp: String(conta.whatsapp || conta.id || zap).replace(/\D/g, ''),
-            authUid,
             novoEmail: emailNovo
           })
         });
 
-        const data = await res.json();
-
-        if (res.status === 401) {
-          adminTokenAtual = '';
-          sessionStorage.removeItem('admin_token_pacote_emato');
-          notificar('Sessão do Modo Dono expirada. Entre novamente.');
-          return;
-        }
-
-        if (!res.ok || !data.sucesso) {
-          throw new Error(data.erro || 'Não foi possível alterar o e-mail.');
-        }
-
         conta.email = data.novoEmail || emailNovo;
+
+        fecharModalEmailAdmin();
         notificar(`✉️ E-mail alterado para ${conta.email}`);
-        carregarUsuariosAdmin();
+        await carregarUsuariosAdmin();
 
       } catch (e) {
         console.error('Erro ao editar e-mail:', e);
         notificar(e.message || 'Erro ao alterar e-mail.');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Salvar novo e-mail';
+        }
       }
     }
 
@@ -4627,7 +4960,9 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         try {
           const typedarray = new Uint8Array(this.result);
           const pdf = await pdfjsLib.getDocument(typedarray).promise;
+
           const registrosCircuit = [];
+          const codigosGlobais = new Set();
 
           for (let pagina = 1; pagina <= pdf.numPages; pagina++) {
             const page = await pdf.getPage(pagina);
@@ -4637,92 +4972,121 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
             const itens = content.items
               .map(item => ({
-                str: String(item.str || '').trim(),
+                str: String(item.str || '').replace(/\s+/g, ' ').trim(),
                 x: Number(item.transform?.[4] || 0),
                 y: Number(item.transform?.[5] || 0)
               }))
               .filter(item => item.str);
 
-            // Usa a coluna "#" do Circuit como âncora fixa da linha.
-            const marcadores = itens
+            // Conta TODOS os códigos BR diretamente do PDF.
+            // Essa contagem é independente do agrupamento de endereços.
+            itens.forEach(item => {
+              const codigos = item.str.match(/BR[A-Za-z0-9]{8,25}/gi) || [];
+              codigos.forEach(c => codigosGlobais.add(c.toUpperCase()));
+            });
+
+            /*
+             * Âncoras da coluna "#" do Circuit.
+             * Não agrupamos mais linhas por arredondamento variável.
+             * Cada número da coluna esquerda define matematicamente a faixa
+             * vertical daquela entrega.
+             */
+            const candidatosNumero = itens
               .filter(item =>
-                item.x < width * 0.075 &&
+                item.x < width * 0.10 &&
                 /^\d{1,3}$/.test(item.str)
               )
               .map(item => ({
                 numero: parseInt(item.str, 10),
+                x: item.x,
                 y: item.y
               }))
               .filter(item =>
                 Number.isFinite(item.numero) &&
                 item.numero > 0 &&
                 item.numero <= 999
-              )
+              );
+
+            // Elimina falsos números escolhendo a sequência crescente do Circuit.
+            const ordenadosY = candidatosNumero
+              .slice()
               .sort((a, b) => b.y - a.y);
+
+            let marcadores = [];
+
+            for (const candidato of ordenadosY) {
+              if (marcadores.length === 0) {
+                marcadores.push(candidato);
+                continue;
+              }
+
+              const ultimo = marcadores[marcadores.length - 1];
+
+              // Dentro da mesma página os números da rota sempre avançam.
+              if (candidato.numero > ultimo.numero) {
+                marcadores.push(candidato);
+              }
+            }
 
             for (let m = 0; m < marcadores.length; m++) {
               const atual = marcadores[m];
 
               const ySuperior = m === 0
-                ? atual.y + 18
+                ? atual.y + 20
                 : (marcadores[m - 1].y + atual.y) / 2;
 
               const yInferior = m === marcadores.length - 1
-                ? atual.y - 18
+                ? atual.y - 20
                 : (atual.y + marcadores[m + 1].y) / 2;
 
-              const itensDaLinha = itens.filter(item =>
-                item.y <= ySuperior &&
-                item.y > yInferior
-              );
-
-              const itensEndereco = itensDaLinha
+              const itensDaLinha = itens
                 .filter(item =>
-                  item.x >= width * 0.075 &&
-                  item.x < width * 0.70
+                  item.y <= ySuperior &&
+                  item.y > yInferior
                 )
-                .sort((a, b) => {
-                  if (Math.abs(a.y - b.y) > 2) return b.y - a.y;
-                  return a.x - b.x;
-                });
-
-              const itensNotes = itensDaLinha
-                .filter(item => item.x >= width * 0.82)
-                .sort((a, b) => {
-                  if (Math.abs(a.y - b.y) > 2) return b.y - a.y;
-                  return a.x - b.x;
-                });
-
-              const endereco = itensEndereco
-                .map(item => item.str)
-                .join(' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-
-              const notes = itensNotes
-                .map(item => item.str)
-                .join(' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-
-              const linhaCompleta = itensDaLinha
                 .slice()
                 .sort((a, b) => {
-                  if (Math.abs(a.y - b.y) > 2) return b.y - a.y;
-                  return a.x - b.x;
-                })
+                  // Primeiro lê da esquerda para a direita.
+                  // Para pequenos desalinhamentos verticais, preserva a coluna.
+                  if (Math.abs(a.y - b.y) <= 3) return a.x - b.x;
+                  return b.y - a.y;
+                });
+
+              const textoCompleto = itensDaLinha
                 .map(item => item.str)
-                .join(' ');
+                .join(' ')
+                .replace(/\s+/g, ' ')
+                .trim();
 
               const codigos = [...new Set(
-                ((notes + ' ' + linhaCompleta)
-                  .match(/BR[A-Za-z0-9]{8,25}/gi) || [])
+                (textoCompleto.match(/BR[A-Za-z0-9]{8,25}/gi) || [])
                   .map(c => c.toUpperCase())
               )];
 
-              if (!endereco || codigos.length === 0) {
-                continue;
+              if (codigos.length === 0) continue;
+
+              /*
+               * O endereço está antes do horário estimado.
+               * Não dependemos da largura exata das colunas para capturá-lo.
+               */
+              let endereco = textoCompleto
+                .replace(new RegExp(`^${atual.numero}\\s+`), '')
+                .trim();
+
+              const posHorario = endereco.search(/\b\d{1,2}:\d{2}\b/);
+              if (posHorario >= 0) {
+                endereco = endereco.slice(0, posHorario).trim();
+              } else {
+                endereco = endereco.replace(/\s+BR[A-Za-z0-9]{8,25}.*$/i, '').trim();
               }
+
+              // Remove eventual número da coluna # que tenha ficado duplicado.
+              endereco = endereco
+                .replace(/^\d{1,3}\s+/, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+              if (!endereco) continue;
 
               registrosCircuit.push({
                 numeroParada: atual.numero,
@@ -4733,21 +5097,159 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             }
           }
 
-          if (registrosCircuit.length === 0) {
-            throw new Error("Nenhuma entrega do Circuit reconhecida.");
+          const codigosLidos = new Set();
+          registrosCircuit.forEach(r =>
+            r.codigos.forEach(c => codigosLidos.add(c))
+          );
+
+          const numerosParada = [...new Set(
+            registrosCircuit.map(r => Number(r.numeroParada))
+          )].sort((a, b) => a - b);
+
+          const maiorParada = numerosParada.length
+            ? numerosParada[numerosParada.length - 1]
+            : 0;
+
+          const sequenciaCompleta =
+            maiorParada > 0 &&
+            numerosParada.length === maiorParada &&
+            numerosParada.every((n, i) => n === i + 1);
+
+          /*
+           * TRAVA DE QUALIDADE:
+           * se o PDF contém 97 códigos BR, o leitor só aceita a rota se tiver
+           * associado exatamente os mesmos 97 códigos às linhas do Circuit.
+           * Assim o app não exibe 78 num celular e 79 em outro silenciosamente.
+           */
+          if (
+            codigosGlobais.size === 0 ||
+            codigosLidos.size !== codigosGlobais.size ||
+            !sequenciaCompleta
+          ) {
+            throw new Error(
+              `LEITURA_INCOMPLETA|PDF:${codigosGlobais.size}|LIDOS:${codigosLidos.size}|PARADAS:${numerosParada.length}/${maiorParada}`
+            );
           }
 
           processarRegistrosCircuit(registrosCircuit, file.name);
 
+          notificar(
+            `✅ Leitura conferida: ${codigosLidos.size}/${codigosGlobais.size} pacotes reconhecidos`
+          );
+
         } catch (err) {
           console.error("Erro leitura PDF Circuit:", err);
-          notificar("Não foi possível ler este PDF do Circuit.");
-          document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+
+          const msg = String(err?.message || err || '');
+
+          if (msg.startsWith('LEITURA_INCOMPLETA|')) {
+            const partes = Object.fromEntries(
+              msg.split('|')
+                .slice(1)
+                .map(p => p.split(':'))
+            );
+
+            notificar(
+              `⚠️ Leitura incompleta bloqueada. PDF: ${partes.PDF || '?'} pacotes • reconhecidos: ${partes.LIDOS || '?'}. Tente abrir novamente; o app não vai mostrar uma contagem possivelmente errada.`
+            );
+          } else {
+            notificar("Não foi possível ler este PDF do Circuit com segurança.");
+          }
+
+          document.getElementById('btnUploadTxt').innerHTML =
+            "📄 Escolher Arquivo PDF";
           document.getElementById('btnVerParadasModal').style.display = 'none';
+          document.getElementById('areaExecucao').style.display = 'none';
         }
       };
       reader.readAsArrayBuffer(file);
     });
+
+    function decomporChaveEndereco(endKey) {
+      const m = String(endKey || '').match(/^(.*)_(\d{1,6})$/);
+      if (!m) return null;
+      return { rua: m[1], numero: m[2] };
+    }
+
+    function tokensRuaCanonica(texto) {
+      return removerAcentosEndereco(String(texto || ''))
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter(t => !['r','rua','av','avenida','al','alameda','tv','travessa','est','estrada','rod','rodovia','da','de','do','das','dos'].includes(t));
+    }
+
+    function ruasProvavelmenteIguais(a, b) {
+      const ta = tokensRuaCanonica(a);
+      const tb = tokensRuaCanonica(b);
+
+      if (!ta.length || !tb.length) return false;
+
+      const menor = ta.length <= tb.length ? ta : tb;
+      const maior = ta.length <= tb.length ? tb : ta;
+
+      let usados = new Set();
+      let acertos = 0;
+
+      for (const token of menor) {
+        let achou = -1;
+
+        for (let i = 0; i < maior.length; i++) {
+          if (usados.has(i)) continue;
+
+          const alvo = maior[i];
+
+          const igual = token === alvo;
+          const abreviado =
+            token.length === 1
+              ? alvo.startsWith(token)
+              : alvo.length === 1
+                ? token.startsWith(alvo)
+                : false;
+
+          const prefixo =
+            token.length >= 3 &&
+            alvo.length >= 3 &&
+            (token.startsWith(alvo) || alvo.startsWith(token));
+
+          if (igual || abreviado || prefixo) {
+            achou = i;
+            break;
+          }
+        }
+
+        if (achou >= 0) {
+          usados.add(achou);
+          acertos++;
+        }
+      }
+
+      // Para nomes de rua com 2+ tokens relevantes, exige praticamente todos.
+      return acertos >= Math.min(menor.length, 2) &&
+             acertos / menor.length >= 0.75;
+    }
+
+    function encontrarChaveEnderecoEquivalente(endKey, enderecoExibicao) {
+      const atual = decomporChaveEndereco(endKey);
+      if (!atual) return endKey;
+
+      for (const existente of Object.keys(mapaRotas)) {
+        const ex = decomporChaveEndereco(existente);
+        if (!ex) continue;
+
+        // Mesmo número é obrigatório para evitar juntar prédios diferentes.
+        if (String(ex.numero) !== String(atual.numero)) continue;
+
+        const nomeExistente = nomeExibicao[existente] || ex.rua;
+
+        if (ruasProvavelmenteIguais(nomeExistente, enderecoExibicao)) {
+          return existente;
+        }
+      }
+
+      return endKey;
+    }
 
     function processarRegistrosCircuit(registros, nomeArquivo) {
       mapaRotas = {};
@@ -4794,6 +5296,11 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
         if (!endKey) {
           endKey = `parada_circuit_${entrega.numeroParada}`;
+        } else {
+          // Une abreviações do próprio Circuit, por exemplo:
+          // "R Alexandrino da S Bueno, 369" e
+          // "Rua Alexandrino da Silveira Bueno, 369".
+          endKey = encontrarChaveEnderecoEquivalente(endKey, entrega.endereco);
         }
 
         if (!mapaRotas[endKey]) {
@@ -4858,7 +5365,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       );
 
       notificar(
-        `Leitor Circuit v5 • 📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
+        `Leitor Circuit v6 • leitura conferida • 📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
       );
     }
 
@@ -5214,7 +5721,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     function falarParada(num, ehDuplo, stopOutro) {
-      const tipo = localStorage.getItem('voz_preferida') || 'rapida';
+      const tipo = localStorage.getItem('voz_preferida') || 'navegacao_feminina';
       if (tipo === 'mudo') return;
 
       const lang = localStorage.getItem('idioma_preferido') || 'pt';
