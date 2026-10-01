@@ -3805,7 +3805,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
 
       const novaSenha = prompt(
-        `Digite a NOVA senha para ${zap}:\n\nMínimo de 6 caracteres.`
+        `Digite a NOVA senha para ${zap}:\n\nMínimo de 6 caracteres.\n\nO plano e os dias restantes NÃO serão alterados.`
       );
 
       if (novaSenha === null) return;
@@ -3827,7 +3827,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
 
       if (!confirm(
-        `Alterar a senha da conta ${zap} agora?\n\nO usuário passará a entrar usando a nova senha imediatamente.`
+        `Alterar somente a senha da conta ${zap}?\n\nO plano, vencimento e dias restantes serão mantidos exatamente como estão.`
       )) {
         return;
       }
@@ -3842,9 +3842,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           })
         });
 
-        notificar(data.mensagem || '🔑 Senha alterada com sucesso.');
-        await carregarUsuariosAdmin();
-
+        notificar(data.mensagem || '🔑 Senha alterada. Plano e dias mantidos.');
       } catch (e) {
         console.error('Erro alterar senha:', e);
         notificar(e.message || 'Não foi possível alterar a senha.');
