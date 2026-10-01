@@ -1644,7 +1644,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             </div>
           </details>
 
-          <p class="auth-helper">Sua senha é protegida com segurança e não fica exposta no sistema.</p>
+          <p class="auth-helper">Crie uma nova senha com no mínimo 6 caracteres. Se este WhatsApp for de uma conta antiga, o sistema pedirá separadamente a senha antiga apenas para confirmar a vinculação.</p>
           <button type="button" class="btn-action-primary auth-main-button" id="btnCriarConta" onclick="criarContaFirebase()">Criar minha conta</button>
           <button type="button" class="btn-action-trial auth-trial-button" id="btnTesteGratis" onclick="ativarTesteGratis()">🎁 TESTE GRÁTIS — 10 DIAS</button>
         </div>
@@ -2720,9 +2720,20 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           return false;
         }
 
-        if (antigo && antigo.senha && antigo.senha !== senha) {
-          mostrarMensagemAuth('erro', 'Para vincular uma conta antiga, use exatamente a senha antiga desse WhatsApp.');
-          return false;
+        if (antigo && antigo.senha) {
+          const senhaAntiga = prompt(
+            `Esta é uma conta antiga.\n\nDigite a SENHA ANTIGA desse WhatsApp para confirmar a vinculação.\n\nEla pode ter 4 dígitos. A senha nova, criada nesta tela, continuará com no mínimo 6 caracteres.`
+          );
+
+          if (senhaAntiga === null) {
+            mostrarMensagemAuth('erro', 'Vinculação cancelada.');
+            return false;
+          }
+
+          if (String(senhaAntiga).trim() !== String(antigo.senha).trim()) {
+            mostrarMensagemAuth('erro', 'Senha antiga incorreta para este WhatsApp.');
+            return false;
+          }
         }
 
         cred = await auth.createUserWithEmailAndPassword(email, senha);
