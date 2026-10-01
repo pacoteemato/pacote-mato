@@ -1581,7 +1581,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
                 <div class="recovery-title">Redefinir sua senha</div>
               </div>
             </div>
-            <p class="recovery-copy">Informe o e-mail cadastrado. Você receberá uma mensagem do Pacote É Mato com um botão para criar uma nova senha.</p>
+            <p class="recovery-copy">Informe o e-mail cadastrado. O Firebase enviará um link para você criar uma nova senha.</p>
             <label class="form-label-pro">E-mail cadastrado</label>
             <div class="input-group">
               <span class="input-icon-left">✉️</span>
@@ -1593,7 +1593,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
               <div class="recovery-success-icon">✓</div>
               <div>
                 <strong>E-mail enviado com segurança</strong>
-                <p>Confira sua caixa de entrada, spam e promoções. O e-mail terá o botão “Criar nova senha”.</p>
+                <p>Verifique a Caixa de entrada. Se não encontrar, confira Spam, Lixo eletrônico e Promoções. Se estiver no Spam, marque como “Não é spam”.</p>
               </div>
             </div>
           </div>
@@ -2100,7 +2100,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     <div class="upload-section" id="elSecaoUpload">
       <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div><div style="font-size:.58rem;color:var(--text-muted);opacity:.65;margin-bottom:12px;">Leitor Circuit v6 • leitura conferida</div>
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div><div style="font-size:.58rem;color:var(--text-muted);opacity:.65;margin-bottom:12px;">Leitor Circuit v7 • leitura especializada</div>
       
       <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
         📄 Escolher Arquivo PDF
@@ -2846,13 +2846,19 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     async function recuperarSenhaFirebase() {
-      const email = (document.getElementById('inputEmailRecuperacao').value || '').trim().toLowerCase();
+      const email = (
+        document.getElementById('inputEmailRecuperacao').value || ''
+      ).trim().toLowerCase();
+
       const btn = document.getElementById('btnEnviarReset');
       const card = document.getElementById('recoverySuccessCard');
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         if (card) card.style.display = 'none';
-        mostrarMensagemAuth('erro', 'Digite o e-mail cadastrado para receber as instruções.');
+        mostrarMensagemAuth(
+          'erro',
+          'Digite o e-mail cadastrado para receber as instruções.'
+        );
         return;
       }
 
@@ -2862,34 +2868,51 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
 
       try {
-        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/solicitar-recuperacao-senha`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
+        const res = await fetch(
+          `${CLOUDFLARE_WORKER_URL}/solicitar-reset-firebase`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          }
+        );
 
         const data = await res.json();
 
         if (!res.ok || !data.sucesso) {
-          throw new Error(data.erro || 'Não foi possível solicitar a recuperação.');
+          throw new Error(
+            data.erro || 'Não foi possível solicitar a redefinição.'
+          );
         }
 
         if (card) {
           card.style.display = 'flex';
-          const strong = card.querySelector('strong');
-          const p = card.querySelector('p');
-          if (strong) strong.textContent = 'Confira seu e-mail';
-          if (p) p.textContent = 'Se este e-mail estiver cadastrado, você receberá uma mensagem do Pacote É Mato com o botão “Criar nova senha”. Confira também spam e promoções.';
+
+          const titulo = card.querySelector('strong');
+          const texto = card.querySelector('p');
+
+          if (titulo) {
+            titulo.textContent = 'E-mail solicitado com sucesso';
+          }
+
+          if (texto) {
+            texto.textContent =
+              'Confira a Caixa de entrada. Se não aparecer, veja Spam, Lixo eletrônico e Promoções. No Gmail, se estiver no Spam, toque em “Não é spam”.';
+          }
         }
 
         mostrarMensagemAuth(
           'sucesso',
-          'Se esse e-mail estiver cadastrado, enviaremos as instruções para criar uma nova senha.'
+          'Pedido enviado ao Firebase. Confira Caixa de entrada, Spam e Promoções.'
         );
 
       } catch (e) {
         if (card) card.style.display = 'none';
-        mostrarMensagemAuth('erro', e.message || 'Não foi possível enviar o e-mail agora.');
+
+        mostrarMensagemAuth(
+          'erro',
+          'Falha ao enviar: ' + (e.message || 'erro desconhecido')
+        );
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -4824,61 +4847,105 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       return t.trim();
     }
 
-    function normalizarEndereco(texto) {
-      if (!texto) return "";
+    function normalizarTokenLogradouroCircuit(token) {
+      const mapa = {
+        'doutor':'dr', 'dr':'dr',
+        'doutora':'dra', 'dra':'dra',
+        'professor':'prof', 'prof':'prof',
+        'professora':'profa', 'profa':'profa',
+        'engenheiro':'eng', 'eng':'eng',
+        'engenheira':'enga', 'enga':'enga',
+        'desembargador':'des', 'des':'des',
+        'comendador':'com', 'com':'com',
+        'coronel':'cel', 'cel':'cel',
+        'capitao':'cap', 'cap':'cap',
+        'tenente':'ten', 'ten':'ten',
+        'padre':'pe', 'pe':'pe',
+        'frei':'frei',
+        'santa':'sta', 'sta':'sta',
+        'santo':'sto', 'sto':'sto',
+        'barao':'br', 'br':'br',
+        'baronesa':'brsa', 'brsa':'brsa',
+        'vereador':'ver', 'ver':'ver',
+        'deputado':'dep', 'dep':'dep',
+        'dom':'dom',
+        'dona':'dona'
+      };
+      return mapa[token] || token;
+    }
+
+    function decomporEnderecoCircuit(texto) {
+      if (!texto) return null;
 
       let original = extrairEnderecoExibicao(texto);
       let t = removerAcentosEndereco(original)
         .toLowerCase()
-        .replace(/[º°]/g, '')
+        .replace(/[º°ª]/g, '')
+        .replace(/[;|]/g, ',')
         .replace(/\s+/g, ' ')
         .trim();
 
-      // Padroniza abreviações comuns encontradas nos PDFs do Circuit.
+      // Padroniza apenas o tipo de logradouro. Ele não participa da identidade
+      // da parada física, porque "R", "Rua" e ausência do prefixo podem variar
+      // no mesmo PDF exportado pelo Circuit.
       t = t
         .replace(/\bavenida\b/g, ' av ')
         .replace(/\bav\.?\b/g, ' av ')
         .replace(/\brua\b/g, ' r ')
         .replace(/\br\.?\b/g, ' r ')
-        .replace(/\bdoutor\b/g, ' dr ')
-        .replace(/\bdr\.?\b/g, ' dr ')
-        .replace(/\bdesembargador\b/g, ' des ')
-        .replace(/\bdes\.?\b/g, ' des ')
         .replace(/\balameda\b/g, ' al ')
         .replace(/\btravessa\b/g, ' tv ')
         .replace(/\bestrada\b/g, ' est ')
         .replace(/\brodovia\b/g, ' rod ')
+        .replace(/\bpraca\b/g, ' pca ')
         .replace(/\s+/g, ' ')
         .trim();
 
-      /*
-       * A parada física é definida por LOGRADOURO + NÚMERO.
-       * Apartamento, bloco, casa, complemento e observações não criam
-       * uma nova parada. Assim:
-       * Rua X, 100, Ap 1
-       * Rua X, 100, Ap 20
-       * são a mesma parada com dois pacotes.
-       */
       let m = t.match(
-        /(?:^|\s)(?:r|av|al|tv|est|rod)\s+(.+?)\s*,\s*(\d{1,6})\b/i
+        /(?:^|\s)(?:r|av|al|tv|est|rod|pca)\s+(.+?)\s*,\s*(\d{1,6})\b/i
       );
 
       if (!m) {
-        // Alguns PDFs trazem o logradouro sem "Rua/Av.".
+        // O Circuit às vezes exporta somente "Nome da via, número".
         m = t.match(/^(.+?)\s*,\s*(\d{1,6})\b/i);
       }
 
-      if (!m) return "";
+      if (!m) return null;
 
-      let rua = m[1]
-        .replace(/^(?:r|av|al|tv|est|rod)\s+/i, '')
-        .replace(/[^a-z0-9]/g, '');
+      let ruaBruta = m[1]
+        .replace(/^(?:r|av|al|tv|est|rod|pca)\s+/i, '')
+        .replace(/[.,\-_/]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
-      let numero = String(m[2]).replace(/\D/g, '');
+      const numero = String(m[2]).replace(/\D/g, '');
+      if (!ruaBruta || !numero) return null;
 
-      if (!rua || !numero) return "";
+      // Preposições não diferenciam um logradouro do mesmo número e os
+      // títulos são padronizados para evitar "Dr" x "Doutor", etc.
+      const tokens = ruaBruta
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter(token => ![
+          'da','de','do','das','dos','e'
+        ].includes(token))
+        .map(normalizarTokenLogradouroCircuit)
+        .filter(Boolean);
 
-      return `${rua}_${numero}`;
+      if (!tokens.length) return null;
+
+      return {
+        original,
+        numero,
+        tokens,
+        ruaCanonica: tokens.join(' ')
+      };
+    }
+
+    function normalizarEndereco(texto) {
+      const d = decomporEnderecoCircuit(texto);
+      if (!d) return "";
+      return `${d.tokens.join('')}_${d.numero}`;
     }
 
     function linhaPareceEnderecoCircuit(texto) {
@@ -5115,6 +5182,10 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             numerosParada.length === maiorParada &&
             numerosParada.every((n, i) => n === i + 1);
 
+          const paradasSemEnderecoValido = registrosCircuit
+            .filter(r => !decomporEnderecoCircuit(r.endereco))
+            .map(r => r.numeroParada);
+
           /*
            * TRAVA DE QUALIDADE:
            * se o PDF contém 97 códigos BR, o leitor só aceita a rota se tiver
@@ -5124,10 +5195,11 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           if (
             codigosGlobais.size === 0 ||
             codigosLidos.size !== codigosGlobais.size ||
-            !sequenciaCompleta
+            !sequenciaCompleta ||
+            paradasSemEnderecoValido.length > 0
           ) {
             throw new Error(
-              `LEITURA_INCOMPLETA|PDF:${codigosGlobais.size}|LIDOS:${codigosLidos.size}|PARADAS:${numerosParada.length}/${maiorParada}`
+              `LEITURA_INCOMPLETA|PDF:${codigosGlobais.size}|LIDOS:${codigosLidos.size}|PARADAS:${numerosParada.length}/${maiorParada}|SEMEND:${paradasSemEnderecoValido.length}`
             );
           }
 
@@ -5172,12 +5244,39 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     function tokensRuaCanonica(texto) {
+      const d = decomporEnderecoCircuit(texto);
+      if (d) return d.tokens;
+
       return removerAcentosEndereco(String(texto || ''))
         .toLowerCase()
         .replace(/[^a-z0-9 ]/g, ' ')
         .split(/\s+/)
         .filter(Boolean)
-        .filter(t => !['r','rua','av','avenida','al','alameda','tv','travessa','est','estrada','rod','rodovia','da','de','do','das','dos'].includes(t));
+        .filter(t => ![
+          'r','rua','av','avenida','al','alameda','tv','travessa',
+          'est','estrada','rod','rodovia','pca','praca',
+          'da','de','do','das','dos','e'
+        ].includes(t))
+        .map(normalizarTokenLogradouroCircuit);
+    }
+
+    function tokenRuaEquivalente(a, b) {
+      if (a === b) return true;
+
+      // Abreviação de uma letra: "S" x "Silveira".
+      if (a.length === 1 && b.startsWith(a)) return true;
+      if (b.length === 1 && a.startsWith(b)) return true;
+
+      // Abreviações maiores do próprio relatório: "Alexandr" x "Alexandrino".
+      if (
+        a.length >= 3 &&
+        b.length >= 3 &&
+        (a.startsWith(b) || b.startsWith(a))
+      ) {
+        return true;
+      }
+
+      return false;
     }
 
     function ruasProvavelmenteIguais(a, b) {
@@ -5189,7 +5288,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       const menor = ta.length <= tb.length ? ta : tb;
       const maior = ta.length <= tb.length ? tb : ta;
 
-      let usados = new Set();
+      const usados = new Set();
       let acertos = 0;
 
       for (const token of menor) {
@@ -5197,23 +5296,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
         for (let i = 0; i < maior.length; i++) {
           if (usados.has(i)) continue;
-
-          const alvo = maior[i];
-
-          const igual = token === alvo;
-          const abreviado =
-            token.length === 1
-              ? alvo.startsWith(token)
-              : alvo.length === 1
-                ? token.startsWith(alvo)
-                : false;
-
-          const prefixo =
-            token.length >= 3 &&
-            alvo.length >= 3 &&
-            (token.startsWith(alvo) || alvo.startsWith(token));
-
-          if (igual || abreviado || prefixo) {
+          if (tokenRuaEquivalente(token, maior[i])) {
             achou = i;
             break;
           }
@@ -5225,30 +5308,22 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         }
       }
 
-      // Para nomes de rua com 2+ tokens relevantes, exige praticamente todos.
-      return acertos >= Math.min(menor.length, 2) &&
-             acertos / menor.length >= 0.75;
+      // Para uma via de um único token, exige equivalência total.
+      if (menor.length === 1) return acertos === 1;
+
+      // Para nomes maiores, exige pelo menos dois tokens compatíveis e 75%.
+      return acertos >= 2 && (acertos / menor.length) >= 0.75;
     }
 
-    function encontrarChaveEnderecoEquivalente(endKey, enderecoExibicao) {
-      const atual = decomporChaveEndereco(endKey);
-      if (!atual) return endKey;
-
-      for (const existente of Object.keys(mapaRotas)) {
-        const ex = decomporChaveEndereco(existente);
-        if (!ex) continue;
-
-        // Mesmo número é obrigatório para evitar juntar prédios diferentes.
-        if (String(ex.numero) !== String(atual.numero)) continue;
-
-        const nomeExistente = nomeExibicao[existente] || ex.rua;
-
-        if (ruasProvavelmenteIguais(nomeExistente, enderecoExibicao)) {
-          return existente;
-        }
+    function hashLeituraCircuit(texto) {
+      // FNV-1a 32-bit: diagnóstico simples e determinístico entre aparelhos.
+      let h = 0x811c9dc5;
+      const s = String(texto || '');
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
       }
-
-      return endKey;
+      return (h >>> 0).toString(16).padStart(8, '0').toUpperCase();
     }
 
     function processarRegistrosCircuit(registros, nomeArquivo) {
@@ -5259,6 +5334,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       pacotesBipados = new Set();
 
       const porNumeroParada = new Map();
+      const pacoteParaParada = new Map();
 
       registros.forEach(registro => {
         const numero = Number(registro.numeroParada);
@@ -5275,11 +5351,23 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         const destino = porNumeroParada.get(numero);
 
         registro.codigos.forEach(codigo => {
-          if (!destino.codigos.includes(codigo)) {
-            destino.codigos.push(codigo);
+          const cod = String(codigo || '').toUpperCase();
+
+          if (pacoteParaParada.has(cod) &&
+              pacoteParaParada.get(cod) !== numero) {
+            throw new Error(
+              `PACOTE_EM_DUAS_PARADAS|${cod}|${pacoteParaParada.get(cod)}|${numero}`
+            );
+          }
+
+          pacoteParaParada.set(cod, numero);
+
+          if (!destino.codigos.includes(cod)) {
+            destino.codigos.push(cod);
           }
         });
 
+        // Conserva a versão mais completa do endereço da mesma linha.
         if (
           String(registro.endereco || '').length >
           String(destino.endereco || '').length
@@ -5291,39 +5379,126 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       const entregas = Array.from(porNumeroParada.values())
         .sort((a, b) => a.numeroParada - b.numeroParada);
 
-      entregas.forEach(entrega => {
-        let endKey = normalizarEndereco(entrega.endereco);
+      // Como todos os PDFs são do mesmo modelo do Circuit, nenhuma entrega
+      // é aceita sem LOGRADOURO + NÚMERO. É melhor bloquear do que inventar.
+      const semEndereco = entregas.filter(e => !decomporEnderecoCircuit(e.endereco));
 
-        if (!endKey) {
-          endKey = `parada_circuit_${entrega.numeroParada}`;
-        } else {
-          // Une abreviações do próprio Circuit, por exemplo:
-          // "R Alexandrino da S Bueno, 369" e
-          // "Rua Alexandrino da Silveira Bueno, 369".
-          endKey = encontrarChaveEnderecoEquivalente(endKey, entrega.endereco);
+      if (semEndereco.length) {
+        throw new Error(
+          `ENDERECO_NAO_IDENTIFICADO|${semEndereco.map(e => e.numeroParada).join(',')}`
+        );
+      }
+
+      /*
+       * AGRUPAMENTO DETERMINÍSTICO DE PARADAS FÍSICAS
+       *
+       * Em vez de unir endereços conforme eles aparecem (dependente da ordem
+       * retornada pelo PDF.js), comparamos todas as entregas de mesmo número
+       * de imóvel e formamos grupos por equivalência de logradouro.
+       *
+       * Isso estabiliza casos como:
+       * "R Dr Valentim Amaral, 100" x "Rua Doutor Valentim Amaral, 100"
+       * "R Alexandrino da S Bueno, 369" x
+       * "Rua Alexandrino da Silveira Bueno, 369"
+       */
+      const parent = entregas.map((_, i) => i);
+
+      function find(i) {
+        while (parent[i] !== i) {
+          parent[i] = parent[parent[i]];
+          i = parent[i];
         }
+        return i;
+      }
 
-        if (!mapaRotas[endKey]) {
-          mapaRotas[endKey] = [];
-          nomeExibicao[endKey] = entrega.endereco;
+      function union(a, b) {
+        const ra = find(a);
+        const rb = find(b);
+        if (ra !== rb) {
+          // Sempre mantém a raiz de menor índice: resultado determinístico.
+          if (ra < rb) parent[rb] = ra;
+          else parent[ra] = rb;
         }
+      }
 
-        entrega.codigos.forEach(codigo => {
-          todosPacotes.add(codigo);
+      const dadosEndereco = entregas.map(e => decomporEnderecoCircuit(e.endereco));
 
-          if (!mapaRotas[endKey].includes(codigo)) {
-            mapaRotas[endKey].push(codigo);
+      for (let i = 0; i < entregas.length; i++) {
+        for (let j = i + 1; j < entregas.length; j++) {
+          const a = dadosEndereco[i];
+          const b = dadosEndereco[j];
+
+          // Mesmo número do imóvel é obrigatório.
+          if (a.numero !== b.numero) continue;
+
+          if (ruasProvavelmenteIguais(entregas[i].endereco, entregas[j].endereco)) {
+            union(i, j);
           }
+        }
+      }
 
-          stopCorrespondente[codigo] = entrega.numeroParada;
+      const grupos = new Map();
+
+      entregas.forEach((entrega, i) => {
+        const raiz = find(i);
+
+        if (!grupos.has(raiz)) {
+          grupos.set(raiz, []);
+        }
+
+        grupos.get(raiz).push(entrega);
+      });
+
+      // Cria as chaves finais em ordem estável pelo menor número de parada.
+      const gruposOrdenados = Array.from(grupos.values())
+        .map(grupo => grupo.sort((a, b) => a.numeroParada - b.numeroParada))
+        .sort((a, b) => a[0].numeroParada - b[0].numeroParada);
+
+      const diagnostico = [];
+
+      gruposOrdenados.forEach(grupo => {
+        // Usa o endereço mais descritivo do grupo somente para exibição.
+        const exibicao = grupo
+          .map(g => String(g.endereco || ''))
+          .sort((a, b) => b.length - a.length || a.localeCompare(b))[0];
+
+        const d = decomporEnderecoCircuit(exibicao);
+        let endKey = `${d.tokens.join('')}_${d.numero}`;
+
+        // Se, por extrema exceção, duas vias diferentes produzirem a mesma
+        // chave textual, acrescenta o primeiro stop para não perder pacote.
+        if (mapaRotas[endKey]) {
+          endKey = `${endKey}_s${grupo[0].numeroParada}`;
+        }
+
+        mapaRotas[endKey] = [];
+        nomeExibicao[endKey] = exibicao;
+
+        grupo.forEach(entrega => {
+          entrega.codigos.forEach(codigo => {
+            todosPacotes.add(codigo);
+
+            if (!mapaRotas[endKey].includes(codigo)) {
+              mapaRotas[endKey].push(codigo);
+            }
+
+            stopCorrespondente[codigo] = entrega.numeroParada;
+          });
         });
+
+        diagnostico.push(
+          `${grupo.map(g => g.numeroParada).join('-')}|${endKey}|${mapaRotas[endKey].slice().sort().join(',')}`
+        );
       });
 
       if (todosPacotes.size === 0) {
-        notificar("Nenhum pacote válido foi encontrado neste PDF do Circuit.");
-        document.getElementById('btnUploadTxt').innerHTML =
-          "📄 Escolher Arquivo PDF";
-        return;
+        throw new Error("NENHUM_PACOTE_VALIDO");
+      }
+
+      if (todosPacotes.size !== pacoteParaParada.size) {
+        throw new Error(
+          `CONTAGEM_INTERNA_DIVERGENTE|${todosPacotes.size}|${pacoteParaParada.size}`
+        );
       }
 
       if (chaveStorageAtual) {
@@ -5337,6 +5512,22 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
 
       const totalParadasFisicas = Object.keys(mapaRotas).length;
+      const assinatura = hashLeituraCircuit(diagnostico.join('\n'));
+
+      // Guarda um diagnóstico mínimo. Se dois aparelhos lerem o mesmo PDF,
+      // a assinatura deve ser a mesma.
+      try {
+        localStorage.setItem(
+          'circuit_ultima_leitura_diagnostico',
+          JSON.stringify({
+            arquivo: nomeArquivo,
+            pacotes: todosPacotes.size,
+            paradas: totalParadasFisicas,
+            assinatura,
+            data: Date.now()
+          })
+        );
+      } catch (_) {}
 
       document.getElementById('btnUploadTxt').innerHTML =
         "📄 " + nomeArquivo.substring(0, 20) + "...";
@@ -5365,7 +5556,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       );
 
       notificar(
-        `Leitor Circuit v6 • leitura conferida • 📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
+        `Leitor Circuit v7 • ✅ ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
       );
     }
 
