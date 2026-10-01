@@ -4277,8 +4277,6 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
       for (let end in mapaRotas) {
         let pacs = mapaRotas[end];
-        if (end.startsWith("pacote_isolado_")) continue;
-        
         let nomeEnd = nomeExibicao[end] || end;
         let stopsDesteEnd = [];
         pacs.forEach(p => {
@@ -4307,7 +4305,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
         let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
         let badgeDestaque = ehDuplo 
-          ? `<div class="tag-duplo-info">🔹 PACOTE DUPLO • ${qtd} pacotes</div>` 
+          ? `<div class="tag-duplo-info">🔹 MESMA PARADA • ${qtd} pacotes</div>` 
           : `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
 
         listaCards.push(`
@@ -4457,14 +4455,130 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       } catch(e) {}
     }
 
+    function removerAcentosEndereco(texto) {
+      return String(texto || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function extrairEnderecoExibicao(texto) {
+      if (!texto) return '';
+
+      let t = String(texto).replace(/\s+/g, ' ').trim();
+
+      // Remove número da parada no começo.
+      t = t.replace(/^\s*\d{1,3}\s+/, '');
+
+      // Remove código do pacote e qualquer conteúdo posterior.
+      t = t.replace(/\s+BR[A-Za-z0-9]{8,25}.*$/i, '');
+
+      // Remove horário no fim da parte do endereço.
+      t = t.replace(/\s+\d{1,2}:\d{2}\s*$/, '');
+
+      return t.trim();
+    }
+
     function normalizarEndereco(texto) {
       if (!texto) return "";
-      let t = texto.replace(/\b(circuit|powered by|dispatch|delivery|notes|address|total|stop|package)\b/gi, '').trim();
-      let m = t.match(/(?:r(?:ua)?\.?|av(?:enida)?\.?|al(?:ameda)?\.?|est(?:rada)?\.?|tv|travessa|rod(?:ovia)?\.?)\s+([^,]+?)\s*,\s*(\d+)/i);
-      if (m) return m[1].toLowerCase().replace(/[^a-z0-9]/g, '') + "_" + m[2].trim();
-      let m2 = t.match(/([a-zA-Z0-9\s]{3,35})\s*,\s*(\d{1,5})/i);
-      if (m2) return m2[1].toLowerCase().replace(/[^a-z0-9]/g, '') + "_" + m2[2].trim();
-      return "";
+
+      let original = extrairEnderecoExibicao(texto);
+      let t = removerAcentosEndereco(original)
+        .toLowerCase()
+        .replace(/[º°]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      // Padroniza abreviações comuns encontradas nos PDFs do Circuit.
+      t = t
+        .replace(/\bavenida\b/g, ' av ')
+        .replace(/\bav\.?\b/g, ' av ')
+        .replace(/\brua\b/g, ' r ')
+        .replace(/\br\.?\b/g, ' r ')
+        .replace(/\bdoutor\b/g, ' dr ')
+        .replace(/\bdr\.?\b/g, ' dr ')
+        .replace(/\bdesembargador\b/g, ' des ')
+        .replace(/\bdes\.?\b/g, ' des ')
+        .replace(/\balameda\b/g, ' al ')
+        .replace(/\btravessa\b/g, ' tv ')
+        .replace(/\bestrada\b/g, ' est ')
+        .replace(/\brodovia\b/g, ' rod ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      /*
+       * A parada física é definida por LOGRADOURO + NÚMERO.
+       * Apartamento, bloco, casa, complemento e observações não criam
+       * uma nova parada. Assim:
+       * Rua X, 100, Ap 1
+       * Rua X, 100, Ap 20
+       * são a mesma parada com dois pacotes.
+       */
+      let m = t.match(
+        /(?:^|\s)(?:r|av|al|tv|est|rod)\s+(.+?)\s*,\s*(\d{1,6})\b/i
+      );
+
+      if (!m) {
+        // Alguns PDFs trazem o logradouro sem "Rua/Av.".
+        m = t.match(/^(.+?)\s*,\s*(\d{1,6})\b/i);
+      }
+
+      if (!m) return "";
+
+      let rua = m[1]
+        .replace(/^(?:r|av|al|tv|est|rod)\s+/i, '')
+        .replace(/[^a-z0-9]/g, '');
+
+      let numero = String(m[2]).replace(/\D/g, '');
+
+      if (!rua || !numero) return "";
+
+      return `${rua}_${numero}`;
+    }
+
+    function linhaPareceEnderecoCircuit(texto) {
+      if (!texto) return false;
+
+      const limpo = removerAcentosEndereco(String(texto)).toLowerCase();
+
+      return (
+        /(?:\brua\b|\br\.?\s|\bavenida\b|\bav\.?\s|\balameda\b|\btravessa\b|\bestrada\b|\brodovia\b).+?,\s*\d{1,6}\b/i.test(limpo) ||
+        /^\s*\d{1,3}\s+.+?,\s*\d{1,6}\b/i.test(limpo)
+      );
+    }
+
+    function encontrarLinhaEnderecoCircuit(linhas, indice) {
+      const atual = String(linhas[indice] || '');
+
+      // Se endereço e código já vieram na mesma linha, usa a própria linha.
+      if (linhaPareceEnderecoCircuit(atual) && normalizarEndereco(atual)) {
+        return atual;
+      }
+
+      /*
+       * O PDF do Circuit frequentemente posiciona a coluna "Notes"
+       * alguns pixels acima/abaixo da coluna "Address".
+       * O PDF.js então pode criar duas linhas:
+       *   BR26874888166
+       *   1 Rua Doutor... 14:54
+       *
+       * Procuramos o endereço vizinho mais próximo do código.
+       */
+      const offsets = [-1, 1, -2, 2, -3, 3, -4, 4];
+
+      for (const off of offsets) {
+        const candidato = String(linhas[indice + off] || '');
+        if (linhaPareceEnderecoCircuit(candidato) && normalizarEndereco(candidato)) {
+          return candidato;
+        }
+      }
+
+      return atual;
+    }
+
+    function extrairNumeroParadaCircuit(texto, fallback) {
+      const t = String(texto || '').trim();
+      const m = t.match(/^(\d{1,3})\b/);
+      return m ? parseInt(m[1], 10) : fallback;
     }
 
     function extrairCodigoChave(texto) {
@@ -4554,72 +4668,121 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       pacotesBipados = new Set();
 
       let seqStopAuto = 0;
-      let termosIgnorar = ["ADDRESS", "NOTES", "CIRCUIT", "OPTIMIZED", "STOP", "DELIVERY", "ROUTE", "DISPATCH", "TOTAL", "PACKAGE", "POWERED BY"];
+      let termosIgnorar = [
+        "ADDRESS", "NOTES", "CIRCUIT", "OPTIMIZED", "STOP",
+        "DELIVERY", "ROUTE", "DISPATCH", "TOTAL", "PACKAGE", "POWERED BY"
+      ];
 
-      linhas.forEach((linhaStr, idx) => {
-        linhaStr = linhaStr.trim();
+      linhas.forEach((linhaOriginal, idx) => {
+        let linhaStr = String(linhaOriginal || '').trim();
         if (!linhaStr) return;
 
-        let codsValidos = linhaStr.match(/BR[A-Za-z0-9]{10,20}/gi) || [];
+        let codsValidos = linhaStr.match(/BR[A-Za-z0-9]{8,25}/gi) || [];
 
         if (codsValidos.length === 0) {
           let candidatos = linhaStr.match(/\b[A-Za-z0-9]{10,22}\b/g) || [];
+
           candidatos.forEach(c => {
             let cUp = c.toUpperCase();
             let ehNum = /^\d+$/.test(c);
             let ehAlpha = /^[A-Za-z]+$/.test(c);
             let temIgnorar = termosIgnorar.some(t => cUp.includes(t));
-            if (!ehNum && !ehAlpha && !temIgnorar) codsValidos.push(c);
+
+            if (!ehNum && !ehAlpha && !temIgnorar) {
+              codsValidos.push(c);
+            }
           });
         }
 
-        codsValidos = codsValidos.map(c => c.toUpperCase());
+        codsValidos = [...new Set(codsValidos.map(c => c.toUpperCase()))];
 
-        if (codsValidos.length > 0) {
-          seqStopAuto++;
-          let stopNum = seqStopAuto;
-          let mNum = linhaStr.match(/^(\d{1,3})\b/);
-          if (mNum) stopNum = parseInt(mNum[1]);
+        if (codsValidos.length === 0) return;
 
-          let endKey = normalizarEndereco(linhaStr) || ("pacote_isolado_" + codsValidos[0]);
+        seqStopAuto++;
 
-          if (!mapaRotas[endKey]) {
-            mapaRotas[endKey] = [];
-            nomeExibicao[endKey] = linhaStr.substring(0, 55);
+        // Liga a coluna Notes (código BR) à linha de Address mais próxima.
+        const linhaEndereco = encontrarLinhaEnderecoCircuit(linhas, idx);
+
+        let stopNum = extrairNumeroParadaCircuit(
+          linhaEndereco,
+          extrairNumeroParadaCircuit(linhaStr, seqStopAuto)
+        );
+
+        let endKey = normalizarEndereco(linhaEndereco);
+
+        // Se não encontrou endereço, ainda mantém o pacote como parada isolada.
+        if (!endKey) {
+          endKey = "pacote_isolado_" + codsValidos[0];
+        }
+
+        if (!mapaRotas[endKey]) {
+          mapaRotas[endKey] = [];
+
+          const enderecoLimpo = extrairEnderecoExibicao(linhaEndereco);
+
+          nomeExibicao[endKey] =
+            enderecoLimpo ||
+            "Endereço não identificado no PDF";
+        }
+
+        codsValidos.forEach(c => {
+          todosPacotes.add(c);
+
+          if (!mapaRotas[endKey].includes(c)) {
+            mapaRotas[endKey].push(c);
           }
 
-          codsValidos.forEach(c => {
-            todosPacotes.add(c);
-            if (!mapaRotas[endKey].includes(c)) mapaRotas[endKey].push(c);
-            stopCorrespondente[c] = stopNum;
-          });
-        }
+          stopCorrespondente[c] = stopNum;
+        });
       });
 
       if (todosPacotes.size === 0) {
         let lang = localStorage.getItem('idioma_preferido') || 'pt';
         let dict = traducoes[lang] || traducoes.pt;
+
         notificar(dict.pdf_erro);
-        document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+        document.getElementById('btnUploadTxt').innerHTML =
+          "📄 Escolher Arquivo PDF";
         return;
       }
 
       if (chaveStorageAtual) {
         let salvos = localStorage.getItem(chaveStorageAtual);
+
         if (salvos) {
-          try { pacotesBipados = new Set(JSON.parse(salvos)); } catch (e) {}
+          try {
+            pacotesBipados = new Set(JSON.parse(salvos));
+          } catch (e) {}
         }
       }
 
-      document.getElementById('btnUploadTxt').innerHTML = "📄 " + nomeArquivo.substring(0, 20) + "...";
+      document.getElementById('btnUploadTxt').innerHTML =
+        "📄 " + nomeArquivo.substring(0, 20) + "...";
+
       document.getElementById('btnVerParadasModal').style.display = 'flex';
       document.getElementById('areaExecucao').style.display = 'block';
       document.getElementById('cardRetomarRota').style.display = 'none';
 
       salvarEstadoCompletoRota(nomeArquivo);
-      salvarHistoricoRotaConcluida(nomeArquivo, todosPacotes.size, Object.keys(mapaRotas).length);
+
+      const totalParadasFisicas = Object.keys(mapaRotas).length;
+
+      salvarHistoricoRotaConcluida(
+        nomeArquivo,
+        todosPacotes.size,
+        totalParadasFisicas
+      );
+
       atualizarStats();
       iniciarScanner();
+
+      const qtdDuplos = Object.values(mapaRotas)
+        .filter(pacotes => pacotes.length > 1)
+        .length;
+
+      notificar(
+        `📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdDuplos} paradas com múltiplos pacotes`
+      );
     }
 
     let ultimoCodigoBipado = "";
