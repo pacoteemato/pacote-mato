@@ -1863,8 +1863,9 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           <label class="form-label-pro">WhatsApp do Entregador (DDD + Número)</label>
           <input type="tel" id="inputClienteZap" placeholder="Ex: 11999998888" class="input-auth" style="padding-left:14px;" inputmode="numeric" pattern="[0-9]*" autocomplete="tel-national" oninput="normalizarCampoTelefone(this)" onblur="validarCampoTelefone(this)">
 
-          <label class="form-label-pro">Senha de acesso</label>
-          <input type="text" id="inputClienteSenha" placeholder="Senha pessoal do entregador" class="input-auth" style="padding-left:14px;">
+          <div style="padding:10px 12px;border-radius:10px;background:rgba(16,185,129,.08);border:1px solid rgba(52,211,153,.18);font-size:.68rem;color:var(--text-muted);line-height:1.45;">
+            🔐 A senha não é mais definida pelo Modo Dono. A conta precisa ser criada pelo usuário no acesso seguro; aqui você apenas libera ou renova o período.
+          </div>
 
           <label class="form-label-pro">Duração do acesso</label><p class="adm-subheading">Escolha 30 dias para Mensal, 90 para Trimestral ou o atalho Vitalício. Outros valores ficam em Outros acessos.</p>
           <div style="display:flex; gap:6px;">
@@ -3615,17 +3616,70 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       if (!contaTemAcessoAtivo(u, now)) return 'expirados';
       return adminPlano(u,now);
     }
+    async function adminWorkerFetch(path, options = {}) {
+      if (!adminTokenAtual) {
+        throw new Error('Sua sessão do Modo Dono expirou. Entre novamente.');
+      }
+
+      const headers = {
+        ...(options.headers || {}),
+        'Authorization': `Bearer ${adminTokenAtual}`
+      };
+
+      if (options.body && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      const res = await fetch(`${CLOUDFLARE_WORKER_URL}${path}`, {
+        ...options,
+        headers
+      });
+
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (_) {
+        data = {};
+      }
+
+      if (res.status === 401) {
+        adminTokenAtual = '';
+        sessionStorage.removeItem('admin_token_pacote_emato');
+        throw new Error('Sessão do Modo Dono expirada. Feche e entre novamente.');
+      }
+
+      if (!res.ok || data.sucesso === false) {
+        throw new Error(data.erro || `Falha na operação (${res.status}).`);
+      }
+
+      return data;
+    }
+
     async function carregarUsuariosAdmin() {
-      if (adminUnsubscribe) adminUnsubscribe();
+      if (adminUnsubscribe) {
+        try { adminUnsubscribe(); } catch (_) {}
+        adminUnsubscribe = null;
+      }
+
       clearInterval(adminClock);
       document.getElementById('admListSummary').textContent = 'Carregando contas…';
-      adminUnsubscribe = db.collection('usuarios').onSnapshot(snapshot => {
-        listaUsuariosCache = [];
-        snapshot.forEach(doc => listaUsuariosCache.push({...doc.data(), id:doc.id}));
+
+      try {
+        const data = await adminWorkerFetch('/admin/usuarios', { method: 'GET' });
+        listaUsuariosCache = Array.isArray(data.usuarios) ? data.usuarios : [];
         filtrarListaAdminLocal();
-      }, () => { document.getElementById('admListSummary').textContent = 'Não foi possível carregar as contas. Clique em Atualizar dados para tentar novamente.'; });
-      adminClock = setInterval(filtrarListaAdminLocal, 60000);
+
+        adminClock = setInterval(() => {
+          filtrarListaAdminLocal();
+        }, 60000);
+      } catch (e) {
+        console.error('Erro carregar usuários:', e);
+        document.getElementById('admListSummary').textContent =
+          e.message || 'Não foi possível carregar as contas.';
+        notificar(e.message || 'Erro ao carregar contas.');
+      }
     }
+
     function renderizarUsuariosAdminList(lista) {
       const now = Date.now();
       const groups = Object.fromEntries(Object.keys(adminSections).slice(0,7).map(k=>[k,[]]));
@@ -3664,42 +3718,50 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       const u = listaUsuariosCache.find(u=>String(u.id || u.whatsapp)===id);
       if (!u) return;
       document.getElementById('inputClienteZap').value=u.whatsapp || u.id;
-      document.getElementById('inputClienteSenha').value=u.senha || '';
+      
       document.getElementById('inputDiasCustom').value=adminPlano(u)==='90d' ? 90 : 30;
       alternarTabAdmin('add');
       document.getElementById('inputDiasCustom').focus();
     }
 
     async function carregarPagamentosAdmin() {
-      let viewPagos = document.getElementById('viewAdminPagos');
+      const viewPagos = document.getElementById('viewAdminPagos');
       if (!viewPagos) return;
-      viewPagos.innerHTML = "<div style='font-size:0.75rem; color:#888;'>Carregando pagamentos...</div>";
+
+      viewPagos.innerHTML =
+        "<div style='font-size:0.75rem; color:#888;'>Carregando pagamentos...</div>";
 
       try {
-        let snapshot = await db.collection("pagamentos_concluidos").orderBy("timestamp", "desc").get();
+        const data = await adminWorkerFetch('/admin/pagamentos', { method: 'GET' });
+        const pagamentos = Array.isArray(data.pagamentos) ? data.pagamentos : [];
+
         let htmlPagos = "";
         let totalFaturado = 0;
 
-        snapshot.forEach(doc => {
-          let p = doc.data();
-          let valorNum = Number(p.valor || 0);
+        pagamentos.forEach(p => {
+          const valorNum = Number(p.valor || 0);
           totalFaturado += valorNum;
 
           htmlPagos += `
             <div class="user-row">
               <div>
-                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${p.whatsapp}</div>
-                <div style="font-size:0.68rem; color:var(--text-main);"><b>${p.plano}</b> • R$ ${valorNum.toFixed(2).replace('.', ',')}</div>
-                <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${p.data}</div>
+                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${adminEscape(p.whatsapp || '')}</div>
+                <div style="font-size:0.68rem; color:var(--text-main);"><b>${adminEscape(p.plano || '')}</b> • R$ ${valorNum.toFixed(2).replace('.', ',')}</div>
+                <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${adminEscape(p.data || '')}</div>
               </div>
-            </div>
-          `;
+            </div>`;
         });
 
-        document.getElementById('txtTotalFaturamento').innerText = `R$ ${totalFaturado.toFixed(2).replace('.', ',')}`;
-        viewPagos.innerHTML = htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento registrado ainda.</div>";
-      } catch(e) {
-        viewPagos.innerHTML = "Erro ao carregar histórico de pagamentos.";
+        viewPagos.innerHTML =
+          htmlPagos || "<div style='font-size:0.75rem; color:#888;'>Nenhum pagamento registrado.</div>";
+
+        const total = document.getElementById('txtTotalFaturamento');
+        if (total) total.innerText = `R$ ${totalFaturado.toFixed(2).replace('.', ',')}`;
+      } catch (e) {
+        console.error('Erro carregar pagamentos:', e);
+        viewPagos.innerHTML =
+          `<div style="font-size:0.75rem;color:#ef4444;">${adminEscape(e.message || 'Erro ao carregar pagamentos.')}</div>`;
+        notificar(e.message || 'Erro ao carregar pagamentos.');
       }
     }
 
@@ -3839,154 +3901,152 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     async function desconectarAparelhoAdmin(zap) {
       try {
-        await db.collection("usuarios").doc(zap).update({ deviceId: "" });
-        notificar(`📲 Celular de ${zap} desconectado. Ele já pode logar em outro aparelho.`);
-        carregarUsuariosAdmin();
-      } catch(e) {
-        notificar("Erro ao resetar aparelho.");
+        await adminWorkerFetch('/admin/resetar-aparelho', {
+          method: 'POST',
+          body: JSON.stringify({ whatsapp: zap })
+        });
+
+        notificar(`📲 Celular de ${zap} desconectado. Ele já pode entrar em outro aparelho.`);
+        await carregarUsuariosAdmin();
+      } catch (e) {
+        notificar(e.message || 'Erro ao resetar aparelho.');
       }
     }
 
     async function ajustarDiasRapido(zap) {
-      let diasStr = prompt(`Quantos dias deseja adicionar (ex: 7) ou remover (ex: -5) para ${zap}?`);
+      const diasStr = prompt(`Quantos dias deseja adicionar (ex: 7) ou remover (ex: -5) para ${zap}?`);
       if (!diasStr) return;
-      
-      let dias = parseInt(diasStr);
-      if (isNaN(dias)) {
-        notificar("Valor inválido.");
+
+      const dias = parseInt(diasStr, 10);
+
+      if (!Number.isFinite(dias) || dias === 0) {
+        notificar('Valor inválido.');
         return;
       }
 
       try {
-        let doc = await db.collection("usuarios").doc(zap).get();
-        if (!doc.exists) return;
-
-        let u = doc.data();
-        let agora = Date.now();
-        let base = (u.expiraEm && u.expiraEm > agora) ? u.expiraEm : agora;
-        let novoExpira = base + (dias * 24 * 60 * 60 * 1000);
-
-        await db.collection("usuarios").doc(zap).update({
-          expiraEm: novoExpira,
-          ativo: novoExpira > agora
+        await adminWorkerFetch('/admin/ajustar-dias', {
+          method: 'POST',
+          body: JSON.stringify({ whatsapp: zap, dias })
         });
 
         notificar(`Acesso de ${zap} ajustado em ${dias} dias.`);
-        carregarUsuariosAdmin();
-      } catch(e) {
-        notificar("Erro ao ajustar dias.");
+        await carregarUsuariosAdmin();
+      } catch (e) {
+        notificar(e.message || 'Erro ao ajustar dias.');
       }
     }
 
     async function alternarBloqueioUsuario(zap, statusBloqueio) {
       try {
-        await db.collection("usuarios").doc(zap).update({ bloqueado: statusBloqueio });
+        await adminWorkerFetch('/admin/bloqueio', {
+          method: 'POST',
+          body: JSON.stringify({
+            whatsapp: zap,
+            bloqueado: statusBloqueio === true
+          })
+        });
+
         notificar(`Usuário ${zap} ${statusBloqueio ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
-        carregarUsuariosAdmin();
-      } catch(e) {
-        notificar("Erro ao atualizar status de bloqueio.");
+        await carregarUsuariosAdmin();
+      } catch (e) {
+        notificar(e.message || 'Erro ao atualizar bloqueio.');
       }
     }
 
     async function deletarUsuarioAdmin(zap) {
-      if (!confirm(`Deseja realmente apagar o cadastro de ${zap}?`)) return;
+      if (!confirm(`Deseja realmente excluir a conta ${zap}?\n\nIsso também removerá o usuário do login seguro quando houver vínculo.`)) {
+        return;
+      }
+
       try {
-        await db.collection("usuarios").doc(zap).delete();
-        notificar(`Acesso de ${zap} removido com sucesso.`);
-        carregarUsuariosAdmin();
-      } catch(e) {
-        notificar("Erro ao remover usuário.");
+        await adminWorkerFetch('/admin/excluir-usuario', {
+          method: 'POST',
+          body: JSON.stringify({ whatsapp: zap })
+        });
+
+        notificar(`Conta ${zap} excluída com sucesso.`);
+        await carregarUsuariosAdmin();
+      } catch (e) {
+        notificar(e.message || 'Erro ao excluir conta.');
       }
     }
 
     async function liberarClienteManual() {
-      let zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
-      let senha = document.getElementById('inputClienteSenha').value.trim();
-      let diasInput = parseInt(document.getElementById('inputDiasCustom').value);
+      const zap = document.getElementById('inputClienteZap').value.replace(/\D/g, '');
+      const diasInput = parseInt(document.getElementById('inputDiasCustom').value, 10);
 
       if (!validarNumeroWhatsApp(zap)) {
-        notificar("⚠️ Digite um WhatsApp válido com DDD.");
+        notificar('⚠️ Digite um WhatsApp válido com DDD.');
         return;
       }
 
-      if (!senha) {
-        notificar("⚠️ Digite uma senha para o usuário.");
-        return;
-      }
-
-      if (isNaN(diasInput) || diasInput <= 0) {
-        notificar("⚠️ Informe uma quantidade de dias válida.");
+      if (!Number.isFinite(diasInput) || diasInput <= 0) {
+        notificar('⚠️ Informe uma quantidade de dias válida.');
         return;
       }
 
       try {
-        let userDocRef = db.collection("usuarios").doc(zap);
-        let userDoc = await userDocRef.get();
-        let agora = Date.now();
-        let expiraEmBase = agora;
+        const data = await adminWorkerFetch('/admin/liberar-acesso', {
+          method: 'POST',
+          body: JSON.stringify({
+            whatsapp: zap,
+            dias: diasInput
+          })
+        });
 
-        if (userDoc.exists) {
-          let dadosAntigos = userDoc.data();
-          if (!adminVitalicio(dadosAntigos, agora) && dadosAntigos.expiraEm && dadosAntigos.expiraEm > agora) {
-            expiraEmBase = dadosAntigos.expiraEm;
-          }
-        }
+        notificar(
+          data.vitalicio
+            ? `✅ Acesso vitalício ativado para ${zap}.`
+            : `✅ ${zap} liberado/renovado por ${diasInput} dias.`
+        );
 
-        let novoExpiraEm = expiraEmBase + (diasInput * 24 * 60 * 60 * 1000);
+        document.getElementById('inputClienteZap').value = '';
 
-        await userDocRef.set({
-          whatsapp: zap,
-          senha: senha,
-          expiraEm: novoExpiraEm,
-          ativo: true,
-          bloqueado: false,
-          deviceId: "",
-          tipo: "pago",
-          plano: diasInput >= ADMIN_LIFETIME_DAYS ? "Vitalício" : diasInput === 30 ? "Mensal" : diasInput === 90 ? "Trimestral" : `${diasInput} Dias (Liberado)`,
-          vitalicio: diasInput >= ADMIN_LIFETIME_DAYS,
-          duracaoDias: diasInput,
-          atualizadoEm: agora
-        }, { merge: true });
+        alternarTabAdmin(
+          data.vitalicio
+            ? 'vitalicio'
+            : diasInput === 30
+              ? '30d'
+              : diasInput === 90
+                ? '90d'
+                : 'outros'
+        );
 
-        notificar(diasInput >= ADMIN_LIFETIME_DAYS ? `✅ Acesso vitalício ativado para ${zap}.` : `✅ ${zap} liberado com sucesso por ${diasInput} dias!`);
-        document.getElementById('inputClienteZap').value = "";
-        document.getElementById('inputClienteSenha').value = "";
-        
-        alternarTabAdmin(diasInput >= ADMIN_LIFETIME_DAYS ? 'vitalicio' : diasInput === 30 ? '30d' : diasInput === 90 ? '90d' : 'outros');
-        carregarUsuariosAdmin();
-      } catch(e) {
-        notificar("Erro ao salvar no banco: " + e.message);
+        await carregarUsuariosAdmin();
+      } catch (e) {
+        notificar(e.message || 'Erro ao liberar/renovar acesso.');
       }
     }
 
     async function salvarBroadcastGlobal(ativo) {
-      let txt = document.getElementById('inputBroadcastTexto').value.trim();
-      let horas = parseFloat(document.getElementById('selDuracaoAviso').value) || 24;
+      const txt = document.getElementById('inputBroadcastTexto').value.trim();
+      const horas = parseFloat(document.getElementById('selDuracaoAviso').value) || 24;
 
       if (ativo && !txt) {
-        notificar("⚠️ Digite o texto do aviso antes de publicar.");
+        notificar('⚠️ Digite o texto do aviso antes de publicar.');
         return;
       }
 
-      let expiraEm = ativo ? (Date.now() + (horas * 60 * 60 * 1000)) : 0;
-
       try {
-        await db.collection("sistema_config").doc("broadcast").set({
-          ativo: ativo,
-          mensagem: txt,
-          expiraEm: expiraEm,
-          atualizadoEm: Date.now()
+        await adminWorkerFetch('/admin/broadcast', {
+          method: 'POST',
+          body: JSON.stringify({
+            ativo: ativo === true,
+            mensagem: txt,
+            horas
+          })
         });
 
         if (ativo) {
           notificar(`📢 Aviso publicado por ${horas === 99999 ? 'tempo indeterminado' : horas + 'h'}!`);
         } else {
-          document.getElementById('inputBroadcastTexto').value = "";
-          notificar("Aviso global removido da tela de todos.");
+          document.getElementById('inputBroadcastTexto').value = '';
+          notificar('Aviso global removido.');
         }
-      } catch(e) {
-        console.error("Erro broadcast:", e);
-        notificar("Erro ao salvar aviso no Firebase. Verifique as regras.");
+      } catch (e) {
+        console.error('Erro broadcast:', e);
+        notificar(e.message || 'Erro ao salvar comunicado.');
       }
     }
 
