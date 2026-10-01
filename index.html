@@ -1803,10 +1803,12 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
       </div>
       
-      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px;">
-        <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Todos (<span id="contadorTodos">0</span>)</button>
-        <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Apenas Duplos (<span id="contadorDuplos">0</span>)</button>
+      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:8px;">
+        <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Paradas (<span id="contadorTodos">0</span>)</button>
+        <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Pacotes Múltiplos (<span id="contadorDuplos">0</span>)</button>
       </div>
+
+      <div id="resumoMultiplosRota" style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin:0 2px 10px;text-align:center;"></div>
 
       <div class="modal-rota-conteudo" id="listaParadasModal"></div>
 
@@ -4272,7 +4274,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
 
       let enderecosUnificados = {};
-      let totalDuplosCount = 0;
+      let totalPacotesMultiplos = 0;
+      let totalParadasMultiplas = 0;
       let totalTodosCount = 0;
 
       for (let end in mapaRotas) {
@@ -4299,13 +4302,17 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         let ehDuplo = qtd > 1;
 
         totalTodosCount++;
-        if (ehDuplo) totalDuplosCount++;
+
+        if (ehDuplo) {
+          totalParadasMultiplas++;
+          totalPacotesMultiplos += qtd;
+        }
 
         if (filtroAtualModal === 'duplos' && !ehDuplo) return;
 
         let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
         let badgeDestaque = ehDuplo 
-          ? `<div class="tag-duplo-info">🔹 MESMA PARADA • ${qtd} pacotes</div>` 
+          ? `<div class="tag-duplo-info">🔹 PARADA MÚLTIPLA • ${qtd} pacotes</div>` 
           : `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
 
         listaCards.push(`
@@ -4327,10 +4334,16 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       });
 
       document.getElementById('contadorTodos').innerText = totalTodosCount;
-      document.getElementById('contadorDuplos').innerText = totalDuplosCount;
+      document.getElementById('contadorDuplos').innerText = totalPacotesMultiplos;
+
+      const resumo = document.getElementById('resumoMultiplosRota');
+      if (resumo) {
+        resumo.innerText =
+          `${totalParadasMultiplas} parada(s) com múltiplos pacotes • ${totalPacotesMultiplos} pacote(s) nessas paradas`;
+      }
 
       if (listaCards.length === 0) {
-        container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;'>Nenhum pacote duplo encontrado nesta rota.</div>";
+        container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;'>Nenhuma parada com múltiplos pacotes encontrada nesta rota.</div>";
       } else {
         container.innerHTML = listaCards.join('');
       }
@@ -4776,12 +4789,15 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       atualizarStats();
       iniciarScanner();
 
-      const qtdDuplos = Object.values(mapaRotas)
-        .filter(pacotes => pacotes.length > 1)
-        .length;
+      const gruposMultiplos = Object.values(mapaRotas)
+        .filter(pacotes => pacotes.length > 1);
+
+      const qtdParadasMultiplas = gruposMultiplos.length;
+      const qtdPacotesMultiplos = gruposMultiplos
+        .reduce((total, pacotes) => total + pacotes.length, 0);
 
       notificar(
-        `📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdDuplos} paradas com múltiplos pacotes`
+        `📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
       );
     }
 
