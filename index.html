@@ -2882,52 +2882,46 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         notificar("Nenhum pagamento ativo no momento.");
         return;
       }
+
+      if (!contaPixAtual) {
+        notificar("Gere um pagamento para sua conta primeiro.");
+        return;
+      }
+
       notificar("Verificando pagamento no banco...");
-      
-      if (!contaPixAtual) { notificar('Gere um pagamento para sua conta primeiro.'); return; }
-      let {zap, senha} = contaPixAtual;
 
       try {
-        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentIdGlobalAtual}`);
-        const payRaw = await res.json();
-        const payData = payRaw && payRaw.pagamento ? payRaw.pagamento : payRaw;
+        const { zap, cupomIndicador } = contaPixAtual;
 
-        if (payData && payData.status === "approved") {
+        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/finalizar-pix`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentId: String(paymentIdGlobalAtual),
+            whatsapp: zap,
+            cupomIndicador: cupomIndicador || ""
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.sucesso) {
           clearInterval(timerVerificadorPix);
-          
-          let diasTotais = planoDiasGlobalAtual;
-          let expiraEm = Date.now() + (diasTotais * 24 * 60 * 60 * 1000);
-          
-          await salvarAcessoPago(zap, {
-            whatsapp: zap,
-            senha: senha,
-            expiraEm: expiraEm,
-            ativo: true,
-            bloqueado: false,
-            deviceId: MEU_DEVICE_ID,
-            plano: planoNomeGlobalAtual,
-            duracaoDias: diasTotais,
-            vitalicio: false,
-            tipo: "pago",
-            atualizadoEm: Date.now()
-          });
-
-          await db.collection("pagamentos_concluidos").doc(String(paymentIdGlobalAtual)).set({
-            whatsapp: zap,
-            plano: planoNomeGlobalAtual,
-            valor: planoValorGlobalAtual,
-            data: new Date().toLocaleString('pt-BR'),
-            timestamp: Date.now()
-          }, { merge: true });
-
           fecharModalPix();
-          localStorage.setItem('usuario_zap_salvo', zap);
-          notificar("🎉 Pagamento confirmado e liberado com sucesso!");
+          localStorage.setItem("usuario_zap_salvo", zap);
+          notificar(
+            data.bonusDias
+              ? "🎉 Pagamento confirmado com bônus de indicação!"
+              : "🎉 Pagamento confirmado e acesso liberado!"
+          );
           iniciarMonitoramentoSessao(zap);
+        } else if (data.pendente) {
+          notificar("⏳ O pagamento ainda não foi aprovado. Tente novamente em alguns segundos.");
         } else {
-          notificar("⏳ O pagamento ainda não foi identificado pelo banco. Tente novamente em alguns segundos.");
+          notificar(data.erro || "Não foi possível liberar o pagamento.");
         }
-      } catch(e) {
+      } catch (e) {
+        console.error("Erro finalizar Pix:", e);
         notificar("Erro ao verificar o pagamento. Verifique sua internet.");
       }
     }
@@ -2982,7 +2976,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
         if (response.ok && copiaCola && paymentId) {
           registrarDadosPixAtual(String(paymentId), nomePlano, valor, dias);
-          contaPixAtual = {zap, senha};
+          contaPixAtual = {zap, cupomIndicador};
           document.getElementById('pixCopiaColaOut').value = copiaCola;
 
           const qr = document.getElementById('qrContainer');
@@ -3035,76 +3029,42 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     function iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha, cupomIndicador) {
       clearInterval(timerVerificadorPix);
-      
+
       timerVerificadorPix = setInterval(async () => {
         try {
-          const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentId}`);
-          const payData = await res.json();
-
-          if (payData && payData.status === "approved") {
-            clearInterval(timerVerificadorPix);
-            
-            let bonusDias = (cupomIndicador && cupomIndicador !== zap && validarNumeroWhatsApp(cupomIndicador)) ? 3 : 0;
-            let diasTotais = dias + bonusDias;
-            let expiraEm = Date.now() + (diasTotais * 24 * 60 * 60 * 1000);
-            
-            await salvarAcessoPago(zap, {
+          const res = await fetch(`${CLOUDFLARE_WORKER_URL}/finalizar-pix`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentId: String(paymentId),
               whatsapp: zap,
-              senha: senha,
-              expiraEm: expiraEm,
-              ativo: true,
-              bloqueado: false,
-              deviceId: MEU_DEVICE_ID,
-              plano: nomePlano + (bonusDias ? ' (+3d Bônus Indicação)' : ''),
-              duracaoDias: dias,
-              vitalicio: false,
-              tipo: "pago",
-              indicadoPor: cupomIndicador || "",
-              atualizadoEm: Date.now()
-            });
+              cupomIndicador: cupomIndicador || ""
+            })
+          });
 
-            if (cupomIndicador && cupomIndicador !== zap && validarNumeroWhatsApp(cupomIndicador)) {
-              aplicarBonusQuemIndicou(cupomIndicador, zap);
-            }
+          const data = await res.json();
 
-            let docPagamentoRef = db.collection("pagamentos_concluidos").doc(paymentId);
-            let docCheck = await docPagamentoRef.get();
-            if (!docCheck.exists) {
-              await docPagamentoRef.set({
-                whatsapp: zap,
-                plano: nomePlano,
-                valor: valor,
-                data: new Date().toLocaleString('pt-BR'),
-                timestamp: Date.now()
-              });
-            }
-
+          if (res.ok && data.sucesso) {
+            clearInterval(timerVerificadorPix);
             fecharModalPix();
-            localStorage.setItem('usuario_zap_salvo', zap);
-            notificar(bonusDias ? "🎉 Pagamento Aprovado com +3 Dias de Bônus!" : "🎉 Pagamento Aprovado com sucesso!");
+            localStorage.setItem("usuario_zap_salvo", zap);
+
+            notificar(
+              data.bonusDias
+                ? "🎉 Pagamento Aprovado com +3 Dias de Bônus!"
+                : "🎉 Pagamento Aprovado com sucesso!"
+            );
+
             iniciarMonitoramentoSessao(zap);
           }
-        } catch(e) {}
+        } catch (e) {}
       }, 2000);
     }
 
     async function aplicarBonusQuemIndicou(zapIndicador, zapNovoUsuario) {
-      try {
-        let docRef = db.collection("usuarios").doc(zapIndicador);
-        let doc = await docRef.get();
-        if (doc.exists) {
-          let u = doc.data();
-          let agora = Date.now();
-          let baseExpira = (u.expiraEm && u.expiraEm > agora) ? u.expiraEm : agora;
-          let novoExpira = baseExpira + (7 * 24 * 60 * 60 * 1000);
-
-          await docRef.update({
-            expiraEm: novoExpira,
-            ativo: true,
-            totalIndicacoes: (u.totalIndicacoes || 0) + 1
-          });
-        }
-      } catch(e) {}
+      // Mantido apenas por compatibilidade com versões anteriores.
+      // O bônus agora é processado de forma segura pelo Worker junto com o pagamento.
+      return;
     }
 
     function fecharModalPix() {
@@ -3322,20 +3282,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       atualizarVisibilidadeTesteGratis();
     }
     async function salvarAcessoPago(zap, dados) {
-      const ref = db.collection('usuarios').doc(zap);
-      await db.runTransaction(async transaction => {
-        const doc = await transaction.get(ref);
-        const antigo = doc.exists ? doc.data() : {};
-        const novo = {...dados};
-        if (antigo.authUid || auth.currentUser) {
-          delete novo.senha;
-          novo.authUid = antigo.authUid || auth.currentUser.uid;
-          novo.email = antigo.email || auth.currentUser.email || '';
-        } else if (antigo.senha || dados.senha) {
-          novo.senha = antigo.senha || dados.senha;
-        }
-        transaction.set(ref, novo, {merge:true});
-      });
+      throw new Error("A liberação de assinatura agora é processada somente pelo servidor.");
     }
 
     function iniciarMonitoramentoSessao(zap) {
