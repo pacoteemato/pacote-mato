@@ -1349,6 +1349,54 @@ h1 {
 .auth-success-message{color:#047857;font-size:.72rem;font-weight:800;margin-top:10px;padding:9px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:10px;display:none}
 .auth-secondary-button{width:100%;background:transparent;color:var(--text-main);border:1px solid var(--surface-border);border-radius:12px;padding:11px;font-weight:800;font-size:.82rem;cursor:pointer;margin-bottom:8px}
 </style>
+
+<style id="fix-final-teste-pix-voz">
+/* TESTE GRÁTIS — contraste forte e texto sempre legível */
+#btnTesteGratis.auth-trial-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  background: rgba(16,185,129,.11) !important;
+  color: #047857 !important;
+  -webkit-text-fill-color: #047857 !important;
+  border: 1.5px solid rgba(16,185,129,.48) !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+  visibility: visible;
+  text-shadow: none !important;
+  box-shadow: 0 5px 18px rgba(16,185,129,.10);
+}
+body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
+.theme-Preto #btnTesteGratis.auth-trial-button {
+  color: #6ee7b7 !important;
+  -webkit-text-fill-color: #6ee7b7 !important;
+  background: rgba(16,185,129,.09) !important;
+  border-color: rgba(52,211,153,.42) !important;
+}
+#btnTesteGratis:disabled {
+  opacity: .65 !important;
+}
+
+/* Erro do Pix fica visível dentro do modal em vez de o modal sumir */
+#qrContainer.pix-error-visible {
+  width: 100%;
+  height: auto;
+  min-height: 95px;
+  padding: 14px;
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.30);
+  color: #ef4444;
+  border-radius: 12px;
+  font-size: .76rem;
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+</style>
+
 </head>
 <body>
 
@@ -1502,7 +1550,7 @@ h1 {
 
           <p class="auth-helper">Sua senha passa a ser protegida pelo Firebase Authentication e não fica salva em texto no Firestore.</p>
           <button type="button" class="btn-action-primary auth-main-button" id="btnCriarConta" onclick="criarContaFirebase()">Criar minha conta</button>
-          <button type="button" class="btn-action-trial auth-trial-button" id="btnTesteGratis" onclick="ativarTesteGratis()">🎁 Ativar 10 Dias Grátis</button>
+          <button type="button" class="btn-action-trial auth-trial-button" id="btnTesteGratis" onclick="ativarTesteGratis()">🎁 TESTE GRÁTIS — 10 DIAS</button>
         </div>
 
         <div id="avisoRenovacao" role="status" style="display:none;"><strong>Sua assinatura expirou</strong><p>Renove para continuar. Você mantém a mesma conta e o mesmo número.</p><button type="button" onclick="document.getElementById('areaPlanosRenovacao').scrollIntoView({behavior:'smooth',block:'start'})">Ver planos de renovação</button></div>
@@ -2222,15 +2270,57 @@ h1 {
       });
     }
 
+    let vozesSistemaCache = [];
+
+    function carregarVozesSistema() {
+      try {
+        vozesSistemaCache = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+      } catch (_) {
+        vozesSistemaCache = [];
+      }
+      return vozesSistemaCache;
+    }
+
+    function selecionarVozDisponivel(lang, tipo) {
+      const vozes = carregarVozesSistema();
+      if (!vozes.length) return null;
+
+      const idiomaAlvo = lang === 'en' ? 'en' : (lang === 'es' ? 'es' : 'pt');
+      const compativeis = vozes.filter(v =>
+        String(v.lang || '').toLowerCase().startsWith(idiomaAlvo)
+      );
+      const lista = compativeis.length ? compativeis : vozes;
+
+      // Quando o aparelho oferece mais de uma voz, cada perfil tenta usar uma voz diferente.
+      if (tipo === 'grave' && lista.length >= 2) return lista[1];
+      if (tipo === 'rapida' && lista.length >= 3) return lista[2];
+      return lista[0] || null;
+    }
+
     function salvarVoz(tipo) {
       localStorage.setItem('voz_preferida', tipo);
+
       ['rapida', 'grave', 'normal', 'mudo'].forEach(v => {
-        let btn = document.getElementById('voice_' + v);
-        if (btn) {
-          if (v === tipo) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
+        const btn = document.getElementById('voice_' + v);
+        if (!btn) return;
+        if (v === tipo) btn.classList.add('active');
+        else btn.classList.remove('active');
       });
+
+      // IMPORTANTE: não fala "voz ... ativada".
+      // A configuração só será percebida quando o pacote for bipado.
+      try {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+
+    if ('speechSynthesis' in window) {
+      carregarVozesSistema();
+      try {
+        window.speechSynthesis.addEventListener('voiceschanged', carregarVozesSistema);
+      } catch (_) {
+        window.speechSynthesis.onvoiceschanged = carregarVozesSistema;
+      }
     }
 
     function notificar(msg) {
@@ -2304,7 +2394,11 @@ h1 {
 
       if (localStorage.getItem('teste_gratis_bloqueado_local') === 'true') {
         let btnTeste = document.getElementById('btnTesteGratis');
-        if (btnTeste) btnTeste.style.display = 'none';
+        if (btnTeste) {
+          btnTeste.style.display = 'flex';
+          btnTeste.disabled = true;
+          btnTeste.innerText = '🎁 TESTE GRÁTIS JÁ UTILIZADO';
+        }
       }
     }
 
@@ -2572,7 +2666,8 @@ h1 {
 
       try {
         const res = await fetch(`${CLOUDFLARE_WORKER_URL}/status-pix/${paymentIdGlobalAtual}`);
-        const payData = await res.json();
+        const payRaw = await res.json();
+        const payData = payRaw && payRaw.pagamento ? payRaw.pagamento : payRaw;
 
         if (payData && payData.status === "approved") {
           clearInterval(timerVerificadorPix);
@@ -2648,33 +2743,70 @@ h1 {
           })
         });
 
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = null;
+        }
 
-        if (data && data.point_of_interaction && data.point_of_interaction.transaction_data) {
-          const copiaCola = data.point_of_interaction.transaction_data.qr_code;
-          const paymentId = String(data.id);
+        // Aceita tanto o retorno direto do Mercado Pago como
+        // o formato { sucesso, pagamento: {...} } do Worker.
+        const mpData = data && data.pagamento ? data.pagamento : data;
+        const transacaoPix = mpData?.point_of_interaction?.transaction_data;
+        const copiaCola = transacaoPix?.qr_code || data?.qr_code || "";
+        const paymentId = mpData?.id || data?.id;
 
-          registrarDadosPixAtual(paymentId, nomePlano, valor, dias);
+        if (response.ok && copiaCola && paymentId) {
+          registrarDadosPixAtual(String(paymentId), nomePlano, valor, dias);
           contaPixAtual = {zap, senha};
           document.getElementById('pixCopiaColaOut').value = copiaCola;
 
-          document.getElementById('qrContainer').innerHTML = "";
-          new QRCode(document.getElementById('qrContainer'), {
+          const qr = document.getElementById('qrContainer');
+          qr.classList.remove('pix-error-visible');
+          qr.innerHTML = "";
+
+          new QRCode(qr, {
             text: copiaCola,
             width: 150,
             height: 150,
             correctLevel: QRCode.CorrectLevel.M
           });
 
-          iniciarMonitoramentoPixAprovado(paymentId, zap, dias, nomePlano, valor, senha, cupomIndicador);
+          iniciarMonitoramentoPixAprovado(String(paymentId), zap, dias, nomePlano, valor, senha, cupomIndicador);
         } else {
-          notificar("Não foi possível gerar a cobrança Pix. Tente novamente.");
-          fecharModalPix();
+          const erroDetalhado =
+            data?.erro ||
+            data?.message ||
+            data?.detalhe?.message ||
+            data?.detalhe?.cause?.[0]?.description ||
+            mpData?.message ||
+            ("Falha HTTP " + response.status);
+
+          console.error("Mercado Pago / Worker:", data);
+
+          const qr = document.getElementById('qrContainer');
+          qr.classList.add('pix-error-visible');
+          qr.innerHTML =
+            "<div>❌ Não foi possível gerar o Pix.</div>" +
+            "<div style='margin-top:6px;font-weight:700;'>Motivo: " +
+            String(erroDetalhado).replace(/[<>&]/g, '') +
+            "</div><div style='margin-top:8px;color:var(--text-muted);font-weight:700;'>O plano continuará selecionado. Você pode tentar novamente.</div>";
+
+          // NÃO fecha o modal: agora o erro permanece visível para diagnóstico.
+          notificar("Pix não gerado. Veja o motivo na janela de pagamento.");
         }
 
       } catch (err) {
-        notificar("Erro de conexão com o Pix.");
-        fecharModalPix();
+        console.error("Erro de conexão com o Pix:", err);
+        const qr = document.getElementById('qrContainer');
+        qr.classList.add('pix-error-visible');
+        qr.innerHTML =
+          "<div>❌ Erro de conexão com o serviço Pix.</div>" +
+          "<div style='margin-top:6px;font-weight:700;'>" +
+          String(err?.message || err).replace(/[<>&]/g, '') +
+          "</div>";
+        notificar("Erro de conexão com o Pix. A janela foi mantida aberta.");
       }
     }
 
@@ -2844,7 +2976,7 @@ h1 {
       } catch (e) {
         mostrarMensagemAuth('erro', 'Erro ao ativar teste: ' + (e.message || e));
       } finally {
-        btn.innerText = '🎁 Ativar 10 Dias Grátis';
+        btn.innerText = '🎁 TESTE GRÁTIS — 10 DIAS';
         btn.disabled = false;
       }
     }
@@ -4122,35 +4254,56 @@ h1 {
     }
 
     function falarParada(num, ehDuplo, stopOutro) {
-      let tipo = localStorage.getItem('voz_preferida') || 'rapida';
+      const tipo = localStorage.getItem('voz_preferida') || 'rapida';
       if (tipo === 'mudo') return;
+      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) return;
+
+      const lang = localStorage.getItem('idioma_preferido') || 'pt';
+      let frase = String(num);
+
+      if (ehDuplo) {
+        const outra = stopOutro ? stopOutro.replace('P','') : '';
+        if (lang === 'en') frase += ". Attention! Same address as stop " + outra + "!";
+        else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + outra + "!";
+        else frase += ". Atenção! Mesmo endereço da parada " + outra + "!";
+      }
 
       try {
-        window.speechSynthesis.cancel();
-        let lang = localStorage.getItem('idioma_preferido') || 'pt';
-        let frase = "" + num;
-        if (ehDuplo) {
-          if (lang === 'en') frase += ". Attention! Same address as stop " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-          else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-          else frase += ". Atenção! Mesmo endereço da parada " + (stopOutro ? stopOutro.replace('P','') : '') + "!";
-        }
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        synth.resume();
 
-        let msg = new SpeechSynthesisUtterance(frase);
+        const msg = new SpeechSynthesisUtterance(frase);
         msg.lang = lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : 'pt-BR');
-        
-        if (tipo === "grave") {
-          msg.pitch = 0.5;
-          msg.rate = 1.15;
-        } else if (tipo === "normal") {
-          msg.pitch = 1.0;
-          msg.rate = 1.1;
+
+        const voz = selecionarVozDisponivel(lang, tipo);
+        if (voz) msg.voice = voz;
+
+        // Perfis diferentes de verdade:
+        // TURBO = rápida e um pouco mais aguda
+        // NAVEGAÇÃO = mais grave, firme e mais lenta
+        // NATURAL = ritmo e tom normais
+        if (tipo === 'rapida') {
+          msg.rate = 1.60;
+          msg.pitch = 1.12;
+          msg.volume = 1.0;
+        } else if (tipo === 'grave') {
+          msg.rate = 0.92;
+          msg.pitch = 0.58;
+          msg.volume = 1.0;
         } else {
-          msg.pitch = 1.15;
-          msg.rate = 1.55;
+          msg.rate = 1.00;
+          msg.pitch = 1.00;
+          msg.volume = 1.0;
         }
 
-        window.speechSynthesis.speak(msg);
-      } catch(e) {}
+        setTimeout(() => {
+          try {
+            synth.resume();
+            synth.speak(msg);
+          } catch (_) {}
+        }, 60);
+      } catch (_) {}
     }
 
     function zerarRota() {
