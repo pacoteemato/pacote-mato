@@ -2017,7 +2017,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     <div class="upload-section" id="elSecaoUpload">
       <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div><div style="font-size:.58rem;color:var(--text-muted);opacity:.65;margin-bottom:12px;">Leitor Circuit v5</div>
       
       <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
         📄 Escolher Arquivo PDF
@@ -4625,53 +4625,242 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
       reader.onload = async function() {
         try {
-          let typedarray = new Uint8Array(this.result);
-          let pdf = await pdfjsLib.getDocument(typedarray).promise;
-          let linhasPdf = [];
+          const typedarray = new Uint8Array(this.result);
+          const pdf = await pdfjsLib.getDocument(typedarray).promise;
+          const registrosCircuit = [];
 
-          for (let i = 1; i <= pdf.numPages; i++) {
-            let page = await pdf.getPage(i);
-            let content = await page.getTextContent();
-            
-            let gruposY = {};
-            content.items.forEach(item => {
-              let y = Math.round(item.transform[5]);
-              let achouGrupo = null;
-              for (let k in gruposY) {
-                if (Math.abs(k - y) <= 4) {
-                  achouGrupo = k;
-                  break;
-                }
-              }
-              if (achouGrupo !== null) {
-                gruposY[achouGrupo].push({ x: item.transform[4], str: item.str });
-              } else {
-                gruposY[y] = [{ x: item.transform[4], str: item.str }];
-              }
-            });
+          for (let pagina = 1; pagina <= pdf.numPages; pagina++) {
+            const page = await pdf.getPage(pagina);
+            const viewport = page.getViewport({ scale: 1 });
+            const width = viewport.width;
+            const content = await page.getTextContent();
 
-            let chaves = Object.keys(gruposY).sort((a, b) => b - a);
-            chaves.forEach(k => {
-              gruposY[k].sort((a, b) => a.x - b.x);
-              let linhaTexto = gruposY[k].map(it => it.str).join(" ").trim();
-              if (linhaTexto) linhasPdf.push(linhaTexto);
-            });
+            const itens = content.items
+              .map(item => ({
+                str: String(item.str || '').trim(),
+                x: Number(item.transform?.[4] || 0),
+                y: Number(item.transform?.[5] || 0)
+              }))
+              .filter(item => item.str);
+
+            // Usa a coluna "#" do Circuit como âncora fixa da linha.
+            const marcadores = itens
+              .filter(item =>
+                item.x < width * 0.075 &&
+                /^\d{1,3}$/.test(item.str)
+              )
+              .map(item => ({
+                numero: parseInt(item.str, 10),
+                y: item.y
+              }))
+              .filter(item =>
+                Number.isFinite(item.numero) &&
+                item.numero > 0 &&
+                item.numero <= 999
+              )
+              .sort((a, b) => b.y - a.y);
+
+            for (let m = 0; m < marcadores.length; m++) {
+              const atual = marcadores[m];
+
+              const ySuperior = m === 0
+                ? atual.y + 18
+                : (marcadores[m - 1].y + atual.y) / 2;
+
+              const yInferior = m === marcadores.length - 1
+                ? atual.y - 18
+                : (atual.y + marcadores[m + 1].y) / 2;
+
+              const itensDaLinha = itens.filter(item =>
+                item.y <= ySuperior &&
+                item.y > yInferior
+              );
+
+              const itensEndereco = itensDaLinha
+                .filter(item =>
+                  item.x >= width * 0.075 &&
+                  item.x < width * 0.70
+                )
+                .sort((a, b) => {
+                  if (Math.abs(a.y - b.y) > 2) return b.y - a.y;
+                  return a.x - b.x;
+                });
+
+              const itensNotes = itensDaLinha
+                .filter(item => item.x >= width * 0.82)
+                .sort((a, b) => {
+                  if (Math.abs(a.y - b.y) > 2) return b.y - a.y;
+                  return a.x - b.x;
+                });
+
+              const endereco = itensEndereco
+                .map(item => item.str)
+                .join(' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+              const notes = itensNotes
+                .map(item => item.str)
+                .join(' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+              const linhaCompleta = itensDaLinha
+                .slice()
+                .sort((a, b) => {
+                  if (Math.abs(a.y - b.y) > 2) return b.y - a.y;
+                  return a.x - b.x;
+                })
+                .map(item => item.str)
+                .join(' ');
+
+              const codigos = [...new Set(
+                ((notes + ' ' + linhaCompleta)
+                  .match(/BR[A-Za-z0-9]{8,25}/gi) || [])
+                  .map(c => c.toUpperCase())
+              )];
+
+              if (!endereco || codigos.length === 0) {
+                continue;
+              }
+
+              registrosCircuit.push({
+                numeroParada: atual.numero,
+                endereco,
+                codigos,
+                pagina
+              });
+            }
           }
 
-          if (linhasPdf.length === 0) {
-            throw new Error("PDF sem texto reconhecível.");
+          if (registrosCircuit.length === 0) {
+            throw new Error("Nenhuma entrega do Circuit reconhecida.");
           }
 
-          processarLinhasExatas(linhasPdf, file.name);
+          processarRegistrosCircuit(registrosCircuit, file.name);
 
         } catch (err) {
-          notificar(dict.pdf_erro);
+          console.error("Erro leitura PDF Circuit:", err);
+          notificar("Não foi possível ler este PDF do Circuit.");
           document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
           document.getElementById('btnVerParadasModal').style.display = 'none';
         }
       };
       reader.readAsArrayBuffer(file);
     });
+
+    function processarRegistrosCircuit(registros, nomeArquivo) {
+      mapaRotas = {};
+      stopCorrespondente = {};
+      nomeExibicao = {};
+      todosPacotes = new Set();
+      pacotesBipados = new Set();
+
+      const porNumeroParada = new Map();
+
+      registros.forEach(registro => {
+        const numero = Number(registro.numeroParada);
+        if (!Number.isFinite(numero)) return;
+
+        if (!porNumeroParada.has(numero)) {
+          porNumeroParada.set(numero, {
+            numeroParada: numero,
+            endereco: registro.endereco,
+            codigos: []
+          });
+        }
+
+        const destino = porNumeroParada.get(numero);
+
+        registro.codigos.forEach(codigo => {
+          if (!destino.codigos.includes(codigo)) {
+            destino.codigos.push(codigo);
+          }
+        });
+
+        if (
+          String(registro.endereco || '').length >
+          String(destino.endereco || '').length
+        ) {
+          destino.endereco = registro.endereco;
+        }
+      });
+
+      const entregas = Array.from(porNumeroParada.values())
+        .sort((a, b) => a.numeroParada - b.numeroParada);
+
+      entregas.forEach(entrega => {
+        let endKey = normalizarEndereco(entrega.endereco);
+
+        if (!endKey) {
+          endKey = `parada_circuit_${entrega.numeroParada}`;
+        }
+
+        if (!mapaRotas[endKey]) {
+          mapaRotas[endKey] = [];
+          nomeExibicao[endKey] = entrega.endereco;
+        }
+
+        entrega.codigos.forEach(codigo => {
+          todosPacotes.add(codigo);
+
+          if (!mapaRotas[endKey].includes(codigo)) {
+            mapaRotas[endKey].push(codigo);
+          }
+
+          stopCorrespondente[codigo] = entrega.numeroParada;
+        });
+      });
+
+      if (todosPacotes.size === 0) {
+        notificar("Nenhum pacote válido foi encontrado neste PDF do Circuit.");
+        document.getElementById('btnUploadTxt').innerHTML =
+          "📄 Escolher Arquivo PDF";
+        return;
+      }
+
+      if (chaveStorageAtual) {
+        const salvos = localStorage.getItem(chaveStorageAtual);
+
+        if (salvos) {
+          try {
+            pacotesBipados = new Set(JSON.parse(salvos));
+          } catch (e) {}
+        }
+      }
+
+      const totalParadasFisicas = Object.keys(mapaRotas).length;
+
+      document.getElementById('btnUploadTxt').innerHTML =
+        "📄 " + nomeArquivo.substring(0, 20) + "...";
+
+      document.getElementById('btnVerParadasModal').style.display = 'flex';
+      document.getElementById('areaExecucao').style.display = 'block';
+      document.getElementById('cardRetomarRota').style.display = 'none';
+
+      salvarEstadoCompletoRota(nomeArquivo);
+      salvarHistoricoRotaConcluida(
+        nomeArquivo,
+        todosPacotes.size,
+        totalParadasFisicas
+      );
+
+      atualizarStats();
+      iniciarScanner();
+
+      const gruposMultiplos = Object.values(mapaRotas)
+        .filter(pacotes => pacotes.length > 1);
+
+      const qtdParadasMultiplas = gruposMultiplos.length;
+      const qtdPacotesMultiplos = gruposMultiplos.reduce(
+        (total, pacotes) => total + pacotes.length,
+        0
+      );
+
+      notificar(
+        `Leitor Circuit v5 • 📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
+      );
+    }
 
     function processarLinhasExatas(linhas, nomeArquivo) {
       mapaRotas = {};
@@ -4680,72 +4869,156 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       todosPacotes = new Set();
       pacotesBipados = new Set();
 
-      let seqStopAuto = 0;
-      let termosIgnorar = [
-        "ADDRESS", "NOTES", "CIRCUIT", "OPTIMIZED", "STOP",
-        "DELIVERY", "ROUTE", "DISPATCH", "TOTAL", "PACKAGE", "POWERED BY"
-      ];
+      /*
+       * Leitura específica e robusta para PDF exportado pelo Circuit.
+       *
+       * A coluna "#" do Circuit é a fonte de verdade da parada original.
+       * Cada linha que começa com 1, 2, 3... abre uma nova linha de entrega.
+       * O código BR pode vir na mesma linha ou logo abaixo, por causa da forma
+       * como o PDF.js separa as colunas. Em vez de "adivinhar" pelo endereço
+       * vizinho, juntamos todo o conteúdo até a próxima parada numerada.
+       */
+      let registros = [];
 
-      linhas.forEach((linhaOriginal, idx) => {
-        let linhaStr = String(linhaOriginal || '').trim();
-        if (!linhaStr) return;
+      for (let i = 0; i < linhas.length; i++) {
+        const linha = String(linhas[i] || '').replace(/\s+/g, ' ').trim();
+        if (!linha) continue;
 
-        let codsValidos = linhaStr.match(/BR[A-Za-z0-9]{8,25}/gi) || [];
+        const inicio = linha.match(/^(\d{1,3})\s+(.+)$/);
+        if (!inicio) continue;
 
-        if (codsValidos.length === 0) {
-          let candidatos = linhaStr.match(/\b[A-Za-z0-9]{10,22}\b/g) || [];
+        const numeroParada = parseInt(inicio[1], 10);
 
-          candidatos.forEach(c => {
-            let cUp = c.toUpperCase();
-            let ehNum = /^\d+$/.test(c);
-            let ehAlpha = /^[A-Za-z]+$/.test(c);
-            let temIgnorar = termosIgnorar.some(t => cUp.includes(t));
-
-            if (!ehNum && !ehAlpha && !temIgnorar) {
-              codsValidos.push(c);
-            }
-          });
+        // Evita interpretar datas/horários/cabeçalhos como parada.
+        if (!Number.isFinite(numeroParada) || numeroParada <= 0 || numeroParada > 999) {
+          continue;
         }
 
-        codsValidos = [...new Set(codsValidos.map(c => c.toUpperCase()))];
+        let bloco = linha;
+        let j = i + 1;
 
-        if (codsValidos.length === 0) return;
+        // Junta linhas auxiliares dessa mesma linha da tabela até a próxima
+        // linha que claramente começa com outro número de parada.
+        while (j < linhas.length) {
+          const prox = String(linhas[j] || '').replace(/\s+/g, ' ').trim();
+          if (!prox) {
+            j++;
+            continue;
+          }
 
-        seqStopAuto++;
+          if (/^\d{1,3}\s+/.test(prox) && linhaPareceEnderecoCircuit(prox)) {
+            break;
+          }
 
-        // Liga a coluna Notes (código BR) à linha de Address mais próxima.
-        const linhaEndereco = encontrarLinhaEnderecoCircuit(linhas, idx);
+          // Cabeçalhos de página não pertencem à entrega.
+          if (/^(#|Address|Estimated Arrival|Time|Notes)$/i.test(prox)) {
+            j++;
+            continue;
+          }
 
-        let stopNum = extrairNumeroParadaCircuit(
-          linhaEndereco,
-          extrairNumeroParadaCircuit(linhaStr, seqStopAuto)
-        );
+          // Junta no máximo algumas linhas auxiliares. Normalmente é só a
+          // continuação da coluna Notes/código do pacote.
+          if (j - i <= 4) {
+            bloco += ' ' + prox;
+          } else {
+            break;
+          }
 
+          j++;
+        }
+
+        const codigos = [...new Set(
+          (bloco.match(/BR[A-Za-z0-9]{8,25}/gi) || [])
+            .map(c => c.toUpperCase())
+        )];
+
+        if (codigos.length === 0) {
+          continue;
+        }
+
+        // A linha inicial contém o endereço. O bloco completo contém também
+        // horário e Notes, mas extrairEnderecoExibicao remove o código BR.
+        const linhaEndereco = linha;
+        const enderecoExibicao = extrairEnderecoExibicao(linhaEndereco);
         let endKey = normalizarEndereco(linhaEndereco);
 
-        // Se não encontrou endereço, ainda mantém o pacote como parada isolada.
         if (!endKey) {
-          endKey = "pacote_isolado_" + codsValidos[0];
+          endKey = "pacote_isolado_" + codigos[0];
         }
+
+        registros.push({
+          numeroParada,
+          linhaEndereco,
+          enderecoExibicao,
+          endKey,
+          codigos
+        });
+      }
+
+      /*
+       * Fallback: caso uma versão do Circuit não traga o número da parada no
+       * começo da linha extraída pelo PDF.js, usa o método de proximidade.
+       */
+      if (registros.length === 0) {
+        let seqStopAuto = 0;
+
+        linhas.forEach((linhaOriginal, idx) => {
+          const linhaStr = String(linhaOriginal || '').replace(/\s+/g, ' ').trim();
+          if (!linhaStr) return;
+
+          let codigos = [...new Set(
+            (linhaStr.match(/BR[A-Za-z0-9]{8,25}/gi) || [])
+              .map(c => c.toUpperCase())
+          )];
+
+          if (codigos.length === 0) return;
+
+          seqStopAuto++;
+
+          const linhaEndereco = encontrarLinhaEnderecoCircuit(linhas, idx);
+          const numeroParada = extrairNumeroParadaCircuit(
+            linhaEndereco,
+            seqStopAuto
+          );
+
+          let endKey = normalizarEndereco(linhaEndereco);
+          if (!endKey) {
+            endKey = "pacote_isolado_" + codigos[0];
+          }
+
+          registros.push({
+            numeroParada,
+            linhaEndereco,
+            enderecoExibicao: extrairEnderecoExibicao(linhaEndereco),
+            endKey,
+            codigos
+          });
+        });
+      }
+
+      registros.forEach(registro => {
+        const {
+          numeroParada,
+          enderecoExibicao,
+          endKey,
+          codigos
+        } = registro;
 
         if (!mapaRotas[endKey]) {
           mapaRotas[endKey] = [];
-
-          const enderecoLimpo = extrairEnderecoExibicao(linhaEndereco);
-
           nomeExibicao[endKey] =
-            enderecoLimpo ||
+            enderecoExibicao ||
             "Endereço não identificado no PDF";
         }
 
-        codsValidos.forEach(c => {
-          todosPacotes.add(c);
+        codigos.forEach(codigo => {
+          todosPacotes.add(codigo);
 
-          if (!mapaRotas[endKey].includes(c)) {
-            mapaRotas[endKey].push(c);
+          if (!mapaRotas[endKey].includes(codigo)) {
+            mapaRotas[endKey].push(codigo);
           }
 
-          stopCorrespondente[c] = stopNum;
+          stopCorrespondente[codigo] = numeroParada;
         });
       });
 
