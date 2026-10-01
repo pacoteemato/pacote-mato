@@ -2672,7 +2672,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         await auth.sendPasswordResetEmail(email);
 
         if (card) card.style.display = 'flex';
-        mostrarMensagemAuth('sucesso', 'Pronto! Enviamos as instruções para redefinir sua senha.');
+        mostrarMensagemAuth('sucesso', 'Solicitação enviada ao Firebase. Verifique caixa de entrada, spam e lixo eletrônico.');
       } catch (e) {
         if (card) card.style.display = 'none';
         mostrarMensagemAuth('erro', traduzirErroAuthFirebase(e));
@@ -3649,7 +3649,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           ? `<div class="adm-email">✉️ <strong>${adminEscape(emailConta)}</strong></div>`
           : `<div class="adm-email adm-email-empty">✉️ E-mail não cadastrado</div>`;
 
-        groups[cat].push(`<article class="adm-account"><div class="adm-account-top"><div><div class="adm-phone">${zap}</div><div class="adm-plan">${adminLabels[plan]}${plan==='outros' ? ' · '+adminEscape(u.plano || 'Acesso personalizado') : ''}</div>${emailHtml}</div><span class="adm-status ${cat}">${status}</span></div><div class="adm-account-meta"><span>${date}</span><span>${Number(u.totalIndicacoes)||0} indicações</span></div><div class="adm-account-actions"><button onclick="prepararRenovacaoAdmin(${arg})">Renovar / trocar plano</button><a href="https://wa.me/${phone.startsWith('55') && phone.length>11 ? phone : '55'+phone}" target="_blank" rel="noopener">WhatsApp</a><details><summary>Gerenciar conta</summary><div class="adm-extra-actions"><button onclick="ajustarDiasRapido(${arg})">Ajustar dias</button><button onclick="redefinirSenhaAdmin(${arg})">Enviar redefinição de senha</button><button class="adm-email-action" onclick="editarEmailAdmin(${arg})">✏️ Editar e-mail</button><button onclick="desconectarAparelhoAdmin(${arg})">Resetar aparelho</button><button onclick="alternarBloqueioUsuario(${arg},${u.bloqueado!==true})">${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button><button class="adm-danger" onclick="deletarUsuarioAdmin(${arg})">Excluir conta</button></div></details></div></article>`);
+        groups[cat].push(`<article class="adm-account"><div class="adm-account-top"><div><div class="adm-phone">${zap}</div><div class="adm-plan">${adminLabels[plan]}${plan==='outros' ? ' · '+adminEscape(u.plano || 'Acesso personalizado') : ''}</div>${emailHtml}</div><span class="adm-status ${cat}">${status}</span></div><div class="adm-account-meta"><span>${date}</span><span>${Number(u.totalIndicacoes)||0} indicações</span></div><div class="adm-account-actions"><button onclick="prepararRenovacaoAdmin(${arg})">Renovar / trocar plano</button><a href="https://wa.me/${phone.startsWith('55') && phone.length>11 ? phone : '55'+phone}" target="_blank" rel="noopener">WhatsApp</a><details><summary>Gerenciar conta</summary><div class="adm-extra-actions"><button onclick="ajustarDiasRapido(${arg})">Ajustar dias</button><button onclick="redefinirSenhaAdmin(${arg})">🔑 Alterar senha</button><button class="adm-email-action" onclick="editarEmailAdmin(${arg})">✏️ Editar e-mail</button><button onclick="desconectarAparelhoAdmin(${arg})">Resetar aparelho</button><button onclick="alternarBloqueioUsuario(${arg},${u.bloqueado!==true})">${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button><button class="adm-danger" onclick="deletarUsuarioAdmin(${arg})">Excluir conta</button></div></details></div></article>`);
       });
       Object.keys(groups).forEach(k=> {
         document.getElementById('countAdmin'+adminSections[k]).textContent=counts[k];
@@ -3745,20 +3745,66 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     }
 
     async function redefinirSenhaAdmin(zap) {
-      const conta = listaUsuariosCache.find(u => String(u.id || u.whatsapp) === String(zap));
-      const email = String(conta?.email || '').trim().toLowerCase();
+      const conta = listaUsuariosCache.find(
+        u => String(u.id || u.whatsapp) === String(zap)
+      );
 
-      if (!email) {
-        notificar('Esta conta ainda não possui e-mail cadastrado.');
+      if (!conta) {
+        notificar('Conta não encontrada no painel.');
+        return;
+      }
+
+      const authUid = String(conta.authUid || '').trim();
+
+      if (!authUid) {
+        notificar('Esta conta ainda não possui vínculo com o login seguro.');
+        return;
+      }
+
+      const novaSenha = prompt(
+        `Digite a NOVA senha para ${zap}:\n\nMínimo de 6 caracteres.`
+      );
+
+      if (novaSenha === null) return;
+
+      if (novaSenha.length < 6) {
+        notificar('A nova senha precisa ter pelo menos 6 caracteres.');
+        return;
+      }
+
+      const confirmarSenha = prompt(
+        'Digite a nova senha novamente para confirmar:'
+      );
+
+      if (confirmarSenha === null) return;
+
+      if (novaSenha !== confirmarSenha) {
+        notificar('As duas senhas não são iguais.');
+        return;
+      }
+
+      if (!confirm(
+        `Alterar a senha da conta ${zap} agora?\n\nO usuário passará a entrar usando a nova senha imediatamente.`
+      )) {
         return;
       }
 
       try {
-        await auth.sendPasswordResetEmail(email);
-        notificar(`✉️ E-mail de redefinição enviado para ${email}`);
+        const data = await adminWorkerFetch('/admin/alterar-senha', {
+          method: 'POST',
+          body: JSON.stringify({
+            whatsapp: zap,
+            authUid,
+            novaSenha
+          })
+        });
+
+        notificar(data.mensagem || '🔑 Senha alterada com sucesso.');
+        await carregarUsuariosAdmin();
+
       } catch (e) {
-        console.error(e);
-        notificar('Não foi possível enviar o e-mail de redefinição.');
+        console.error('Erro alterar senha:', e);
+        notificar(e.message || 'Não foi possível alterar a senha.');
       }
     }
 
