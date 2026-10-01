@@ -2710,6 +2710,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       btn.disabled = true;
       btn.textContent = 'Criando conta...';
       let cred = null;
+      let senhaAntigaLegada = '';
       try {
         const ref = db.collection('usuarios').doc(zap);
         const antigoDoc = await ref.get();
@@ -2734,6 +2735,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             mostrarMensagemAuth('erro', 'Senha antiga incorreta para este WhatsApp.');
             return false;
           }
+
+          senhaAntigaLegada = String(senhaAntiga).trim();
         }
 
         cred = await auth.createUserWithEmailAndPassword(email, senha);
@@ -2757,9 +2760,28 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           });
         }
 
-        await ref.set(base, { merge: true });
-        if (antigo && antigo.senha) {
-          await ref.update({ senha: firebase.firestore.FieldValue.delete() });
+        if (antigo) {
+          const firebaseIdToken = await cred.user.getIdToken(true);
+
+          const vinculoRes = await fetch(`${CLOUDFLARE_WORKER_URL}/vincular-conta-antiga`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              whatsapp: zap,
+              senhaAntiga: senhaAntigaLegada,
+              firebaseIdToken,
+              firebaseApiKey: firebaseConfig.apiKey,
+              deviceId: MEU_DEVICE_ID
+            })
+          });
+
+          const vinculoData = await vinculoRes.json();
+
+          if (!vinculoRes.ok || !vinculoData.sucesso) {
+            throw new Error(vinculoData.erro || 'Não foi possível vincular a conta antiga.');
+          }
+        } else {
+          await ref.set(base, { merge: true });
         }
 
         usuarioAtualZap = zap;
@@ -2777,7 +2799,17 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         return true;
       } catch (e) {
         if (cred && cred.user) { try { await cred.user.delete(); } catch (_) {} }
-        mostrarMensagemAuth('erro', traduzirErroAuthFirebase(e));
+
+        const msg = String(e?.message || e || '');
+        if (
+          msg.includes('senha antiga') ||
+          msg.includes('vincular') ||
+          msg.includes('WhatsApp já')
+        ) {
+          mostrarMensagemAuth('erro', msg);
+        } else {
+          mostrarMensagemAuth('erro', traduzirErroAuthFirebase(e));
+        }
         return false;
       } finally {
         btn.disabled = false;
