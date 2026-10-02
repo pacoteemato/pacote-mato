@@ -629,7 +629,7 @@
       border-radius: 20px;
       border: 1px solid var(--surface-border);
       background: #000000;
-      margin-bottom: 14px;
+      margin-bottom: 8px;
       overflow: hidden;
       box-shadow: var(--shadow-card);
     }
@@ -663,17 +663,17 @@
 
     .result-panel {
       background: var(--surface-1);
-      padding: 18px 16px;
-      border-radius: 18px;
+      padding: 11px 12px;
+      border-radius: 14px;
       border: 1.5px solid var(--primary);
-      margin-bottom: 14px;
+      margin-bottom: 9px;
       text-align: center;
       box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
       display: none;
     }
-    .stop-number { font-size: 3.8rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 6px; }
-    .stop-address { font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; line-height: 1.35; }
-    .stop-package-id { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+    .stop-number { font-size: 2.65rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 3px; }
+    .stop-address { font-size: 0.82rem; font-weight: 700; color: #ffffff; margin-bottom: 3px; line-height: 1.22; }
+    .stop-package-id { font-size: 0.66rem; font-weight: 800; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
     
     .result-panel.error-state {
       border-color: var(--danger);
@@ -1439,6 +1439,80 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 </style>
 
 
+<style id="rota-pro-v8">
+  .route-focus-card{
+    margin-top:5px;
+    padding:6px 8px;
+    border-radius:9px;
+    background:var(--surface-2);
+    border:1px solid var(--surface-border);
+  }
+  .route-focus-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .route-focus-title{
+    font-size:.58rem;
+    color:var(--text-muted);
+    font-weight:900;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+  }
+  .route-focus-count{
+    font-size:.64rem;
+    font-weight:900;
+    color:#34d399;
+    white-space:nowrap;
+  }
+  .route-progress-track{
+    width:100%;
+    height:4px;
+    background:rgba(255,255,255,.08);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .route-progress-fill{
+    height:100%;
+    width:0%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#059669,#34d399);
+    transition:width .25s ease;
+  }
+  .route-focus-text{
+    margin-top:3px;
+    font-size:.58rem;
+    color:var(--text-muted);
+    font-weight:700;
+  }
+  .final-summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin:14px 0;
+  }
+  .final-summary-item{
+    padding:11px;
+    border-radius:12px;
+    background:var(--surface-2);
+    border:1px solid var(--surface-border);
+  }
+  .final-summary-value{
+    font-size:1.05rem;
+    font-weight:900;
+    color:var(--text-main);
+  }
+  .final-summary-label{
+    margin-top:3px;
+    font-size:.62rem;
+    color:var(--text-muted);
+    font-weight:800;
+    text-transform:uppercase;
+  }
+</style>
+
 <style id="context-toast-fix">
 .context-toast{
   display:none;
@@ -1471,8 +1545,238 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 }
 </style>
 
+
+<style id="pdf-loading-screen-style">
+  #pdfLoadingScreen{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:1000500;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(16,185,129,.16), transparent 34%),
+      rgba(6,10,15,.97);
+    backdrop-filter:blur(8px);
+  }
+  #pdfLoadingScreen.active{display:flex}
+  .pdf-loading-card{
+    width:min(92vw,390px);
+    text-align:center;
+    padding:30px 24px 24px;
+    border-radius:24px;
+    background:linear-gradient(180deg,rgba(20,27,36,.98),rgba(12,17,24,.98));
+    border:1px solid rgba(52,211,153,.18);
+    box-shadow:0 22px 70px rgba(0,0,0,.45);
+  }
+  .pdf-loading-logo-wrap{
+    width:92px;
+    height:92px;
+    margin:0 auto 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:24px;
+    background:rgba(16,185,129,.08);
+    border:1px solid rgba(52,211,153,.16);
+    box-shadow:0 0 40px rgba(16,185,129,.10);
+  }
+  .pdf-loading-brand{
+    font-size:1.18rem;
+    font-weight:950;
+    letter-spacing:.2px;
+    color:#f8fafc;
+  }
+  .pdf-loading-title{
+    margin-top:18px;
+    font-size:1rem;
+    font-weight:900;
+    color:#f8fafc;
+  }
+  .pdf-loading-subtitle{
+    min-height:38px;
+    margin:7px auto 16px;
+    max-width:290px;
+    font-size:.76rem;
+    line-height:1.5;
+    color:#94a3b8;
+  }
+  .pdf-loading-track{
+    height:8px;
+    width:100%;
+    overflow:hidden;
+    border-radius:999px;
+    background:rgba(255,255,255,.07);
+  }
+  .pdf-loading-bar{
+    height:100%;
+    width:8%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#059669,#34d399);
+    transition:width .28s ease;
+  }
+  .pdf-loading-status{
+    margin-top:10px;
+    font-size:.67rem;
+    font-weight:800;
+    color:#34d399;
+  }
+  .pdf-loading-file{
+    margin-top:13px;
+    padding:9px 10px;
+    border-radius:10px;
+    background:rgba(255,255,255,.035);
+    color:#94a3b8;
+    font-size:.67rem;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .pdf-loading-error-icon{
+    display:none;
+    width:58px;
+    height:58px;
+    margin:0 auto 12px;
+    border-radius:50%;
+    align-items:center;
+    justify-content:center;
+    background:rgba(239,68,68,.12);
+    border:1px solid rgba(239,68,68,.28);
+    color:#f87171;
+    font-size:1.65rem;
+    font-weight:900;
+  }
+  #pdfLoadingScreen.error .pdf-loading-logo-wrap,
+  #pdfLoadingScreen.error .pdf-loading-track,
+  #pdfLoadingScreen.error .pdf-loading-status{display:none}
+  #pdfLoadingScreen.error .pdf-loading-error-icon{display:flex}
+  #pdfLoadingScreen.error .pdf-loading-title{color:#f8fafc}
+  #pdfLoadingScreen.error .pdf-loading-subtitle{color:#cbd5e1}
+  .pdf-loading-back{
+    display:none;
+    width:100%;
+    margin-top:14px;
+    padding:12px;
+    border:0;
+    border-radius:12px;
+    background:linear-gradient(135deg,#059669,#10b981);
+    color:white;
+    font-weight:900;
+    cursor:pointer;
+  }
+  #pdfLoadingScreen.error .pdf-loading-back{display:block}
+</style>
+
+
+<style id="mobile-route-compact-v12">
+@media (max-width: 600px), (max-height: 850px) {
+  .metrics-board { margin-bottom: 8px !important; }
+  .metric-cell { padding: 4px 3px !important; }
+  .metric-val { font-size: 1.15rem !important; }
+  .metric-lbl { font-size: .58rem !important; }
+
+  .result-panel {
+    padding: 9px 10px !important;
+    margin-bottom: 7px !important;
+  }
+
+  .stop-number {
+    font-size: 2.3rem !important;
+    margin-bottom: 2px !important;
+  }
+
+  .stop-address {
+    font-size: .76rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 2px !important;
+  }
+
+  .stop-package-id {
+    font-size: .61rem !important;
+  }
+
+  .route-focus-card {
+    margin-top: 4px !important;
+    padding: 5px 7px !important;
+  }
+
+  .route-focus-title { font-size: .53rem !important; }
+  .route-focus-count { font-size: .58rem !important; }
+  .route-progress-track { height: 3px !important; }
+  .route-focus-text {
+    margin-top: 2px !important;
+    font-size: .54rem !important;
+  }
+
+  .camera-viewport {
+    height: 420px !important;
+    margin-bottom: 7px !important;
+    border-radius: 16px !important;
+  }
+
+  .cam-overlay-btn {
+    transform: scale(.92);
+    transform-origin: center;
+  }
+
+  #inputManual {
+    margin-bottom: 6px !important;
+    font-size: .78rem !important;
+    padding: 9px 11px !important;
+  }
+}
+</style>
+
 </head>
 <body>
+
+  <div id="pdfLoadingScreen" aria-live="polite" aria-busy="true">
+    <div class="pdf-loading-card">
+      <div class="pdf-loading-error-icon">!</div>
+
+      <div class="pdf-loading-logo-wrap">
+        <svg width="76" height="76" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="pdfLoadBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#059669"/>
+              <stop offset="100%" stop-color="#047857"/>
+            </linearGradient>
+            <linearGradient id="pdfLoadPlantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#34d399"/>
+              <stop offset="100%" stop-color="#10b981"/>
+            </linearGradient>
+          </defs>
+          <path d="M22 68 Q10 46 28 32 Q38 50 22 68 Z" fill="url(#pdfLoadPlantGrad)"/>
+          <path d="M78 68 Q90 46 72 32 Q62 50 78 68 Z" fill="url(#pdfLoadPlantGrad)"/>
+          <polygon points="50,22 78,36 50,50 22,36" fill="#10b981" stroke="#34d399" stroke-width="1.5"/>
+          <polygon points="22,36 50,50 50,78 22,64" fill="url(#pdfLoadBoxGrad)" stroke="#047857" stroke-width="1.5"/>
+          <polygon points="78,36 50,50 50,78 78,64" fill="#047857" stroke="#065f46" stroke-width="1.5"/>
+          <path d="M50 22 L50 50 M36 43 L64 43" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+          <path d="M50 78 Q40 60 50 42 Q60 60 50 78 Z" fill="#34d399"/>
+          <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
+          <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
+        </svg>
+      </div>
+
+      <div class="pdf-loading-brand">PACOTE É MATO</div>
+      <div class="pdf-loading-title" id="pdfLoadingTitle">Preparando sua rota</div>
+      <div class="pdf-loading-subtitle" id="pdfLoadingSubtitle">
+        Aguarde enquanto conferimos os pacotes e organizamos as paradas.
+      </div>
+
+      <div class="pdf-loading-track">
+        <div class="pdf-loading-bar" id="pdfLoadingBar"></div>
+      </div>
+      <div class="pdf-loading-status" id="pdfLoadingStatus">Iniciando leitura...</div>
+      <div class="pdf-loading-file" id="pdfLoadingFile"></div>
+
+      <button type="button" class="pdf-loading-back" onclick="voltarUploadAposErroPdf()">
+        Voltar e escolher outro PDF
+      </button>
+    </div>
+  </div>
+
 
     <!-- ABERTURA PS2 COM A CAIXA E MATO -->
     <div id="splashScreenPs2">
@@ -1816,6 +2120,43 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     </div>
   </div>
 
+
+  <div id="modalResumoFinalRota" class="modal-backdrop" style="display:none; z-index:1000300;">
+    <div class="modal-card" style="max-width:390px;text-align:left;">
+      <div style="text-align:center;margin-bottom:12px;">
+        <div style="font-size:2rem;margin-bottom:4px;">✅</div>
+        <div style="font-size:.64rem;color:#34d399;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Rota finalizada</div>
+        <h3 style="font-size:1.18rem;font-weight:900;color:var(--text-main);margin-top:3px;">Resumo da rota</h3>
+      </div>
+
+      <div class="final-summary-grid">
+        <div class="final-summary-item">
+          <div class="final-summary-value" id="finalPacotes">0</div>
+          <div class="final-summary-label">Pacotes</div>
+        </div>
+        <div class="final-summary-item">
+          <div class="final-summary-value" id="finalParadas">0</div>
+          <div class="final-summary-label">Paradas</div>
+        </div>
+        <div class="final-summary-item">
+          <div class="final-summary-value" id="finalMultiplas">0</div>
+          <div class="final-summary-label">Paradas múltiplas</div>
+        </div>
+        <div class="final-summary-item">
+          <div class="final-summary-value" id="finalDuracao">0 min</div>
+          <div class="final-summary-label">Duração</div>
+        </div>
+      </div>
+
+      <div style="padding:11px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--surface-border);font-size:.72rem;color:var(--text-muted);line-height:1.6;">
+        <div>Início: <strong id="finalInicio" style="color:var(--text-main);">--:--</strong></div>
+        <div>Fim: <strong id="finalFim" style="color:var(--text-main);">--:--</strong></div>
+      </div>
+
+      <button onclick="fecharResumoFinalRota()" class="btn-action-primary" style="margin-top:14px;">Concluir</button>
+    </div>
+  </div>
+
   <div id="modalEscolhaGps" class="modal-backdrop">
     <div class="modal-card" style="max-width:330px;">
       <div style="font-size:0.7rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Navegação GPS</div>
@@ -2100,7 +2441,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     <div class="upload-section" id="elSecaoUpload">
       <div style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:2px;" data-i18n="load_pdf_title">Carregar Rota em PDF</div>
-      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div><div style="font-size:.58rem;color:var(--text-muted);opacity:.65;margin-bottom:12px;">Leitor Circuit v7 • leitura especializada</div>
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
       
       <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
         📄 Escolher Arquivo PDF
@@ -2109,8 +2450,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
         👀 Visualizar Paradas da Rota
       </button>
-
-      <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
+<input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
     </div>
 
     <div id="areaExecucao" style="display:none;">
@@ -2134,6 +2474,17 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         <div class="stop-number" id="resStop">P1</div>
         <div class="stop-address" id="resEndereco">📍 Carregando endereço...</div>
         <div class="stop-package-id" id="resPacote">Pacote: BR...</div>
+
+        <div class="route-focus-card" id="progressoParadaAtual" style="display:none;">
+          <div class="route-focus-top">
+            <div class="route-focus-title">Progresso desta parada</div>
+            <div class="route-focus-count" id="progressoParadaContador">0 de 0</div>
+          </div>
+          <div class="route-progress-track">
+            <div class="route-progress-fill" id="progressoParadaBarra"></div>
+          </div>
+          <div class="route-focus-text" id="progressoParadaTexto"></div>
+        </div>
       </div>
 
       <div id="boxAviso" style="background:rgba(16, 185, 129, 0.12); border:1px solid var(--primary); color:#34d399; border-radius:12px; padding:10px; font-size:0.78rem; font-weight:800; text-align:center; margin-bottom:14px; display:none;"></div>
@@ -2150,7 +2501,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         <div id="reader"></div>
       </div>
 
-      <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:16px; font-size:0.88rem; padding-left:14px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
+      <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:8px; font-size:0.82rem; padding:10px 12px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
     </div>
   </div>
 
@@ -4525,6 +4876,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     let chaveStorageAtual = null;
     let enderecoSelecionadoGps = "";
     let filtroAtualModal = 'todos';
+    let rotaInicioEm = 0;
+    let resumoFinalJaExibido = false;
 
     let audioCtx = null;
     function getAudioContext() {
@@ -4563,6 +4916,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         nomeExibicao: nomeExibicao,
         todosPacotes: Array.from(todosPacotes),
         pacotesBipados: Array.from(pacotesBipados),
+        rotaInicioEm: rotaInicioEm || Date.now(),
+        resumoFinalJaExibido: resumoFinalJaExibido === true,
         salvoEm: Date.now()
       };
       localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
@@ -4580,6 +4935,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         todosPacotes = new Set(parsed.todosPacotes || []);
         pacotesBipados = new Set(parsed.pacotesBipados || []);
         chaveStorageAtual = parsed.chaveStorage;
+        rotaInicioEm = Number(parsed.rotaInicioEm || parsed.salvoEm || Date.now());
+        resumoFinalJaExibido = parsed.resumoFinalJaExibido === true;
 
         document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
         document.getElementById('btnVerParadasModal').style.display = 'flex';
@@ -4994,6 +5351,61 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       return m ? parseInt(m[1], 10) : fallback;
     }
 
+
+    function abrirTelaCarregamentoPdf(nomeArquivo) {
+      const tela = document.getElementById('pdfLoadingScreen');
+      if (!tela) return;
+      tela.classList.remove('error');
+      tela.classList.add('active');
+      document.getElementById('pdfLoadingFile').textContent = nomeArquivo || 'Arquivo PDF';
+      atualizarTelaCarregamentoPdf(8, 'Abrindo o arquivo...', 'Preparando sua rota');
+    }
+
+    function atualizarTelaCarregamentoPdf(percentual, status, titulo) {
+      const barra = document.getElementById('pdfLoadingBar');
+      const statusEl = document.getElementById('pdfLoadingStatus');
+      const titleEl = document.getElementById('pdfLoadingTitle');
+      const subEl = document.getElementById('pdfLoadingSubtitle');
+      if (barra) barra.style.width = `${Math.max(4, Math.min(100, percentual || 0))}%`;
+      if (statusEl && status) statusEl.textContent = status;
+      if (titleEl && titulo) titleEl.textContent = titulo;
+      if (subEl) subEl.textContent =
+        'Aguarde enquanto conferimos os pacotes e organizamos as paradas.';
+    }
+
+    function concluirTelaCarregamentoPdf() {
+      atualizarTelaCarregamentoPdf(100, 'Tudo certo. Rota pronta!', 'Leitura concluída');
+      const sub = document.getElementById('pdfLoadingSubtitle');
+      if (sub) sub.textContent = 'Sua rota foi conferida e já está pronta para bipar.';
+      setTimeout(() => {
+        const tela = document.getElementById('pdfLoadingScreen');
+        if (tela) tela.classList.remove('active');
+      }, 550);
+    }
+
+    function mostrarErroTelaCarregamentoPdf(mensagem) {
+      const tela = document.getElementById('pdfLoadingScreen');
+      if (!tela) return;
+      tela.classList.add('active', 'error');
+      document.getElementById('pdfLoadingTitle').textContent = 'Não foi possível carregar a rota';
+      document.getElementById('pdfLoadingSubtitle').textContent =
+        mensagem || 'O PDF não pôde ser lido com segurança. Escolha o arquivo novamente.';
+      document.getElementById('pdfLoadingFile').textContent =
+        'Nenhuma rota foi liberada para bipagem.';
+    }
+
+    function voltarUploadAposErroPdf() {
+      const tela = document.getElementById('pdfLoadingScreen');
+      if (tela) {
+        tela.classList.remove('active', 'error');
+      }
+      const input = document.getElementById('pdfInput');
+      if (input) input.value = '';
+      document.getElementById('btnUploadTxt').innerHTML = '📄 Escolher Arquivo PDF';
+      document.getElementById('btnVerParadasModal').style.display = 'none';
+      document.getElementById('areaExecucao').style.display = 'none';
+    }
+
     function extrairCodigoChave(texto) {
       if (!texto) return "";
       let m = texto.match(/BR[A-Za-z0-9]{8,25}/i);
@@ -5013,25 +5425,42 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       document.getElementById('boxAviso').style.display = 'none';
       document.getElementById('inputManual').value = "";
       document.getElementById('btnUploadTxt').innerHTML = "⏳ Lendo " + file.name.substring(0, 20) + "...";
+      document.getElementById('areaExecucao').style.display = 'none';
+      document.getElementById('btnVerParadasModal').style.display = 'none';
+      abrirTelaCarregamentoPdf(file.name);
+      const inicioVisualLeituraPdf = Date.now();
 
       chaveStorageAtual = "bipados_" + encodeURIComponent(file.name) + "_" + file.size;
+      rotaInicioEm = Date.now();
+      resumoFinalJaExibido = false;
 
       let reader = new FileReader();
 
       reader.onerror = function() {
-        notificar(dict.pdf_erro);
         document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+        document.getElementById('btnVerParadasModal').style.display = 'none';
+        document.getElementById('areaExecucao').style.display = 'none';
+        mostrarErroTelaCarregamentoPdf(
+          'Não conseguimos abrir este arquivo. Verifique o PDF e tente novamente.'
+        );
       };
 
       reader.onload = async function() {
         try {
           const typedarray = new Uint8Array(this.result);
+          atualizarTelaCarregamentoPdf(18, 'PDF aberto com sucesso...', 'Lendo sua rota');
           const pdf = await pdfjsLib.getDocument(typedarray).promise;
 
           const registrosCircuit = [];
           const codigosGlobais = new Set();
 
           for (let pagina = 1; pagina <= pdf.numPages; pagina++) {
+            const progressoPagina = 20 + Math.round((pagina / Math.max(1, pdf.numPages)) * 52);
+            atualizarTelaCarregamentoPdf(
+              progressoPagina,
+              `Lendo página ${pagina} de ${pdf.numPages}...`,
+              'Conferindo pacotes e paradas'
+            );
             const page = await pdf.getPage(pagina);
             const viewport = page.getViewport({ scale: 1 });
             const width = viewport.width;
@@ -5186,6 +5615,12 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             .filter(r => !decomporEnderecoCircuit(r.endereco))
             .map(r => r.numeroParada);
 
+          atualizarTelaCarregamentoPdf(
+            82,
+            'Validando a rota...',
+            'Fazendo a conferência final'
+          );
+
           /*
            * TRAVA DE QUALIDADE:
            * se o PDF contém 97 códigos BR, o leitor só aceita a rota se tiver
@@ -5203,35 +5638,54 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             );
           }
 
+          atualizarTelaCarregamentoPdf(
+            92,
+            'Organizando as paradas...',
+            'Quase pronto'
+          );
+
           processarRegistrosCircuit(registrosCircuit, file.name);
 
+          const tempoVisualDecorrido = Date.now() - inicioVisualLeituraPdf;
+          const esperaVisualRestante = Math.max(0, 1500 - tempoVisualDecorrido);
+
+          atualizarTelaCarregamentoPdf(
+            96,
+            'Finalizando sua rota...',
+            'Só mais um instante'
+          );
+
+          await new Promise(resolve => setTimeout(resolve, esperaVisualRestante));
+          concluirTelaCarregamentoPdf();
+
           notificar(
-            `✅ Leitura conferida: ${codigosLidos.size}/${codigosGlobais.size} pacotes reconhecidos`
+            `✅ PDF processado com sucesso`
           );
 
         } catch (err) {
           console.error("Erro leitura PDF Circuit:", err);
 
           const msg = String(err?.message || err || '');
+          let mensagemErro =
+            'Não conseguimos conferir este PDF com segurança. Nenhuma rota foi liberada.';
 
           if (msg.startsWith('LEITURA_INCOMPLETA|')) {
-            const partes = Object.fromEntries(
-              msg.split('|')
-                .slice(1)
-                .map(p => p.split(':'))
-            );
-
-            notificar(
-              `⚠️ Leitura incompleta bloqueada. PDF: ${partes.PDF || '?'} pacotes • reconhecidos: ${partes.LIDOS || '?'}. Tente abrir novamente; o app não vai mostrar uma contagem possivelmente errada.`
-            );
-          } else {
-            notificar("Não foi possível ler este PDF do Circuit com segurança.");
+            mensagemErro =
+              'A leitura ficou incompleta. Para evitar uma contagem errada, a rota não foi liberada. Escolha o PDF novamente.';
+          } else if (msg.startsWith('ENDERECO_NAO_IDENTIFICADO|')) {
+            mensagemErro =
+              'Encontramos uma informação de endereço que não pôde ser validada. A rota não foi liberada.';
+          } else if (msg.includes('NENHUM_PACOTE_VALIDO')) {
+            mensagemErro =
+              'Nenhum pacote válido foi encontrado neste PDF. Confira se escolheu a rota correta.';
           }
 
           document.getElementById('btnUploadTxt').innerHTML =
             "📄 Escolher Arquivo PDF";
           document.getElementById('btnVerParadasModal').style.display = 'none';
           document.getElementById('areaExecucao').style.display = 'none';
+
+          mostrarErroTelaCarregamentoPdf(mensagemErro);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -5537,13 +5991,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       document.getElementById('cardRetomarRota').style.display = 'none';
 
       salvarEstadoCompletoRota(nomeArquivo);
-      salvarHistoricoRotaConcluida(
-        nomeArquivo,
-        todosPacotes.size,
-        totalParadasFisicas
-      );
-
-      atualizarStats();
+atualizarStats();
       iniciarScanner();
 
       const gruposMultiplos = Object.values(mapaRotas)
@@ -5556,7 +6004,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       );
 
       notificar(
-        `Leitor Circuit v7 • ✅ ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
+        `✅ Rota pronta • ${todosPacotes.size} pacotes • ${totalParadasFisicas} paradas`
       );
     }
 
@@ -5750,14 +6198,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       salvarEstadoCompletoRota(nomeArquivo);
 
       const totalParadasFisicas = Object.keys(mapaRotas).length;
-
-      salvarHistoricoRotaConcluida(
-        nomeArquivo,
-        todosPacotes.size,
-        totalParadasFisicas
-      );
-
-      atualizarStats();
+atualizarStats();
       iniciarScanner();
 
       const gruposMultiplos = Object.values(mapaRotas)
@@ -5840,8 +6281,10 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           aviso.style.display = 'none';
         }
 
+        atualizarProgressoParada(endMatch);
         falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
         atualizarStats();
+        verificarConclusaoRota();
         document.getElementById('inputManual').value = "";
       } else {
         if (agora - tempoUltimoBip > 2000) {
@@ -5854,6 +6297,11 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
           resEndereco.innerText = "Verifique se o pacote consta no manifesto importado.";
           resPacote.innerText = "Código: " + (codLimpo || codigoBruto);
           aviso.style.display = 'none';
+
+          // Não deixa o progresso da parada anterior aparecendo em um erro.
+          const progressoAnterior = document.getElementById('progressoParadaAtual');
+          if (progressoAnterior) progressoAnterior.style.display = 'none';
+
           document.getElementById('inputManual').value = "";
         }
       }
@@ -5861,6 +6309,96 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       setTimeout(() => {
         processandoLeituraAtual = false;
       }, 1000);
+    }
+
+    function atualizarProgressoParada(endKey) {
+      const box = document.getElementById('progressoParadaAtual');
+      const contador = document.getElementById('progressoParadaContador');
+      const barra = document.getElementById('progressoParadaBarra');
+      const texto = document.getElementById('progressoParadaTexto');
+
+      if (!box || !contador || !barra || !texto || !endKey || !mapaRotas[endKey]) {
+        if (box) box.style.display = 'none';
+        return;
+      }
+
+      const pacotes = mapaRotas[endKey];
+      const total = pacotes.length;
+
+      const feitos = pacotes.filter(p => pacotesBipados.has(p)).length;
+      const percentual = Math.round((feitos / total) * 100);
+      const faltam = Math.max(0, total - feitos);
+
+      box.style.display = 'block';
+      contador.textContent = `${feitos} de ${total}`;
+      barra.style.width = `${percentual}%`;
+
+      if (faltam === 0) {
+        texto.textContent = total > 1
+          ? `✅ Parada concluída • ${total} pacotes`
+          : '✅ Parada concluída';
+      } else {
+        texto.textContent = `Falta${faltam === 1 ? '' : 'm'} ${faltam} pacote${faltam === 1 ? '' : 's'}`;
+      }
+    }
+
+    function formatarDuracaoRota(ms) {
+      const totalMin = Math.max(0, Math.floor(ms / 60000));
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      if (h <= 0) return `${m} min`;
+      return `${h}h ${String(m).padStart(2, '0')}min`;
+    }
+
+    function fecharResumoFinalRota() {
+      const modal = document.getElementById('modalResumoFinalRota');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function verificarConclusaoRota() {
+      if (
+        resumoFinalJaExibido ||
+        todosPacotes.size === 0 ||
+        pacotesBipados.size < todosPacotes.size
+      ) {
+        return;
+      }
+
+      resumoFinalJaExibido = true;
+      const fim = Date.now();
+      const inicio = rotaInicioEm || fim;
+      const totalParadas = Object.keys(mapaRotas).length;
+      const paradasMultiplas = Object.values(mapaRotas)
+        .filter(p => p.length > 1).length;
+
+      document.getElementById('finalPacotes').textContent = todosPacotes.size;
+      document.getElementById('finalParadas').textContent = totalParadas;
+      document.getElementById('finalMultiplas').textContent = paradasMultiplas;
+      document.getElementById('finalDuracao').textContent = formatarDuracaoRota(fim - inicio);
+      document.getElementById('finalInicio').textContent =
+        new Date(inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      document.getElementById('finalFim').textContent =
+        new Date(fim).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+      // Só agora entra no histórico como rota realmente concluída.
+      const rotaSalva = (() => {
+        try {
+          return JSON.parse(localStorage.getItem('rota_ativa_completa') || '{}');
+        } catch (_) {
+          return {};
+        }
+      })();
+
+      salvarHistoricoRotaConcluida(
+        rotaSalva.nomeArquivo || 'Rota concluída',
+        todosPacotes.size,
+        totalParadas
+      );
+
+      salvarEstadoCompletoRota(rotaSalva.nomeArquivo || undefined);
+
+      const modal = document.getElementById('modalResumoFinalRota');
+      if (modal) modal.style.display = 'flex';
     }
 
     function atualizarStats() {
@@ -5933,12 +6471,16 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     function zerarRota() {
       pacotesBipados.clear();
+      rotaInicioEm = Date.now();
+      resumoFinalJaExibido = false;
       if (chaveStorageAtual) localStorage.removeItem(chaveStorageAtual);
       salvarEstadoCompletoRota();
       atualizarStats();
       document.getElementById('cardResult').style.display = 'none';
       document.getElementById('cardResult').classList.remove('error-state');
       document.getElementById('boxAviso').style.display = 'none';
+      document.getElementById('progressoParadaAtual').style.display = 'none';
+      fecharResumoFinalRota();
       toggleSidebar();
       notificar("Bipagens desta rota foram zeradas.");
     }
