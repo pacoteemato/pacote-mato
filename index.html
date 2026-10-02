@@ -1728,6 +1728,410 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 }
 </style>
 
+
+<style id="layout-v14-clean">
+  html, body{
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar{
+    width:0 !important;
+    height:0 !important;
+    display:none !important;
+  }
+
+  .hero-banner-compacto{
+    padding:8px 10px !important;
+    margin-bottom:8px !important;
+    border-radius:14px !important;
+    min-height:0 !important;
+  }
+
+  .toolbar-rota-ativa{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    margin:0 0 10px;
+  }
+
+  .toolbar-rota-btn{
+    min-height:42px;
+    border-radius:12px;
+    border:1px solid var(--surface-border);
+    background:var(--surface-2);
+    color:var(--text-main);
+    font-size:.72rem;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .toolbar-rota-home{
+    color:#34d399;
+    border-color:rgba(52,211,153,.28);
+  }
+
+  /* Barra de métricas um pouco maior */
+  .metrics-board{
+    padding:10px !important;
+    margin-bottom:11px !important;
+    gap:7px !important;
+  }
+
+  .metric-cell{
+    padding:8px 5px !important;
+  }
+
+  .metric-val{
+    font-size:1.42rem !important;
+  }
+
+  .metric-lbl{
+    font-size:.64rem !important;
+  }
+
+  /* Card da parada um pouco maior que na versão compacta */
+  .result-panel{
+    padding:13px 13px !important;
+    margin-bottom:10px !important;
+  }
+
+  .stop-number{
+    font-size:3rem !important;
+    margin-bottom:4px !important;
+  }
+
+  .stop-address{
+    font-size:.84rem !important;
+    line-height:1.22 !important;
+    margin-bottom:4px !important;
+  }
+
+  .stop-package-id{
+    font-size:.67rem !important;
+  }
+
+  /* Câmera permanece no tamanho grande que você preferiu */
+  .camera-viewport{
+    height:420px !important;
+  }
+
+  @media (max-width:600px), (max-height:850px){
+    .metrics-board{
+      padding:9px !important;
+      margin-bottom:9px !important;
+    }
+    .metric-cell{
+      padding:7px 4px !important;
+    }
+    .metric-val{
+      font-size:1.3rem !important;
+    }
+    .metric-lbl{
+      font-size:.60rem !important;
+    }
+
+    .result-panel{
+      padding:11px 11px !important;
+      margin-bottom:8px !important;
+    }
+    .stop-number{
+      font-size:2.72rem !important;
+    }
+    .stop-address{
+      font-size:.80rem !important;
+    }
+
+    .camera-viewport{
+      height:420px !important;
+    }
+  }
+</style>
+
+
+<style id="fix-toolbar-rota-v15">
+  #toolbarRotaAtiva{
+    margin-top:0 !important;
+    margin-bottom:10px !important;
+  }
+  #toolbarRotaAtiva .toolbar-rota-btn{
+    min-height:44px !important;
+    font-size:.74rem !important;
+  }
+  #toolbarRotaAtiva .toolbar-rota-home{
+    background:rgba(16,185,129,.09) !important;
+    border-color:rgba(52,211,153,.35) !important;
+    color:#34d399 !important;
+  }
+</style>
+
+
+<style id="home-order-v16">
+  #elSecaoUpload{ margin-bottom:10px !important; }
+  #cardRetomarRota{ margin-top:0 !important; }
+  #cardRetomarRota .btn-action-primary{ font-size:.82rem !important; }
+</style>
+
+
+<style id="home-route-summary-v17">
+  .home-route-summary{
+    margin-top:10px;
+    padding:14px;
+    border-radius:16px;
+    background:linear-gradient(180deg,rgba(14,20,27,.98),rgba(10,15,21,.98));
+    border:1px solid rgba(52,211,153,.22);
+    box-shadow:0 10px 28px rgba(0,0,0,.20);
+  }
+
+  .home-route-summary-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+  }
+
+  .home-route-summary-kicker{
+    font-size:.61rem;
+    font-weight:900;
+    letter-spacing:.7px;
+    color:#34d399;
+  }
+
+  .home-route-summary-file{
+    margin-top:3px;
+    max-width:250px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:.75rem;
+    font-weight:800;
+    color:var(--text-main);
+  }
+
+  .home-route-status{
+    flex:0 0 auto;
+    padding:5px 8px;
+    border-radius:999px;
+    background:rgba(16,185,129,.10);
+    border:1px solid rgba(52,211,153,.20);
+    color:#34d399;
+    font-size:.56rem;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  .home-route-summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+  }
+
+  .home-route-summary-item{
+    padding:9px 5px;
+    text-align:center;
+    border-radius:11px;
+    background:rgba(255,255,255,.025);
+    border:1px solid rgba(255,255,255,.04);
+  }
+
+  .home-route-summary-item strong{
+    display:block;
+    font-size:1rem;
+    line-height:1.05;
+    color:var(--text-main);
+  }
+
+  .home-route-summary-item span{
+    display:block;
+    margin-top:3px;
+    font-size:.54rem;
+    font-weight:800;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+
+  .home-route-progress-row{
+    display:flex;
+    justify-content:flex-end;
+    margin:10px 1px 5px;
+    font-size:.60rem;
+    font-weight:900;
+    color:#34d399;
+  }
+
+  .home-route-progress-track{
+    width:100%;
+    height:6px;
+    border-radius:999px;
+    background:rgba(255,255,255,.07);
+    overflow:hidden;
+  }
+
+  .home-route-progress-fill{
+    width:0%;
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#059669,#34d399);
+    transition:width .25s ease;
+  }
+
+  .home-route-summary-footer{
+    margin-top:9px;
+    font-size:.62rem;
+    font-weight:800;
+    color:var(--text-muted);
+  }
+
+  @media (max-width:600px){
+    .home-route-summary{padding:12px}
+    .home-route-summary-file{max-width:200px}
+    .home-route-summary-item strong{font-size:.92rem}
+  }
+</style>
+
+
+<style id="historico-enderecos-v19">
+  .hist-rota-card{
+    background:var(--surface-2);
+    padding:11px;
+    border-radius:12px;
+    border:1px solid var(--surface-border);
+    margin-bottom:8px;
+  }
+  .hist-rota-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .hist-rota-nome{
+    min-width:0;
+    font-size:.76rem;
+    font-weight:900;
+    color:#34d399;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .hist-rota-data{
+    flex:0 0 auto;
+    font-size:.54rem;
+    color:var(--text-muted);
+  }
+  .hist-rota-metricas{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-top:9px;
+  }
+  .hist-rota-metricas>div{
+    padding:7px 4px;
+    border-radius:9px;
+    background:rgba(255,255,255,.025);
+    text-align:center;
+  }
+  .hist-rota-metricas strong{
+    display:block;
+    font-size:.90rem;
+    color:var(--text-main);
+  }
+  .hist-rota-metricas span{
+    display:block;
+    margin-top:2px;
+    font-size:.50rem;
+    font-weight:800;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  .hist-enderecos-btn{
+    width:100%;
+    margin-top:8px;
+    padding:8px 10px;
+    border-radius:9px;
+    border:1px solid rgba(52,211,153,.22);
+    background:rgba(16,185,129,.08);
+    color:#34d399;
+    font-size:.64rem;
+    font-weight:900;
+    cursor:pointer;
+  }
+  .hist-enderecos-lista{
+    margin-top:8px;
+    padding-top:3px;
+    max-height:240px;
+    overflow-y:auto;
+  }
+  .hist-endereco-item{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    gap:7px;
+    align-items:center;
+    padding:7px 2px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .hist-endereco-stop{
+    font-size:.58rem;
+    font-weight:900;
+    color:#34d399;
+  }
+  .hist-endereco-texto{
+    min-width:0;
+    font-size:.61rem;
+    line-height:1.25;
+    color:var(--text-main);
+  }
+  .hist-multi-tag{
+    padding:3px 5px;
+    border-radius:999px;
+    background:rgba(16,185,129,.09);
+    color:#34d399;
+    font-size:.50rem;
+    font-weight:900;
+    white-space:nowrap;
+  }
+  .hist-sem-endereco{
+    padding:10px 4px;
+    text-align:center;
+    color:var(--text-muted);
+    font-size:.60rem;
+  }
+</style>
+
+
+<style id="historico-status-v21">
+  .hist-status{
+    display:inline-block;
+    margin-top:4px;
+    padding:3px 6px;
+    border-radius:999px;
+    font-size:.49rem;
+    font-weight:900;
+  }
+  .hist-status.andamento{
+    color:#34d399;
+    background:rgba(16,185,129,.09);
+    border:1px solid rgba(52,211,153,.18);
+  }
+  .hist-status.concluida{
+    color:#a7f3d0;
+    background:rgba(5,150,105,.14);
+    border:1px solid rgba(52,211,153,.25);
+  }
+</style>
+
+
+<style id="historico-performance-v22">
+  .hist-rota-card{
+    contain:content;
+  }
+  .hist-enderecos-lista{
+    content-visibility:auto;
+    contain-intrinsic-size:240px;
+  }
+</style>
+
 </head>
 <body>
 
@@ -2404,8 +2808,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     <!-- BANNER DE AVISO GERAL (BROADCAST) COM ANIMAÇÃO -->
     <div id="bannerBroadcast"></div>
     
-    <div class="hero-banner">
-      <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:62px; height:62px; margin:0 auto 4px;">
+    <div class="hero-banner hero-banner-compacto">
+      <svg class="app-logo-pro" viewBox="0 0 100 100" style="width:38px; height:38px; margin:0 auto 2px;">
         <defs>
           <linearGradient id="logoBoxGradBanner" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#059669"/>
@@ -2427,15 +2831,16 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         <path d="M50 56 Q44 48 38 52 Q42 60 50 56 Z" fill="#6ee7b7"/>
         <path d="M50 50 Q56 42 62 46 Q58 54 50 50 Z" fill="#6ee7b7"/>
       </svg>
-      <div style="font-size:1.3rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
-      <div style="font-size:0.68rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:1px; margin-top:2px;" data-i18n="logistics_system">SISTEMA INTELIGENTE DE LOGÍSTICA</div>
+      <div style="font-size:.92rem; font-weight:900; color:var(--text-main);">PACOTE É MATO</div>
     </div>
 
-    <div class="card-retomar-rota" id="cardRetomarRota">
-      <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
-      <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
-      <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
-         <span data-i18n="resume_route">Retomar Rota Onde Parei</span>
+
+    <div id="toolbarRotaAtiva" class="toolbar-rota-ativa" style="display:none;">
+      <button type="button" class="toolbar-rota-btn toolbar-rota-home" onclick="voltarAoInicioRota()">
+        ← Voltar ao início
+      </button>
+      <button type="button" class="toolbar-rota-btn" onclick="abrirModalRota()">
+        👀 Visualizar Paradas
       </button>
     </div>
 
@@ -2446,11 +2851,55 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
         📄 Escolher Arquivo PDF
       </button>
-
-      <button class="btn-action-primary" id="btnVerParadasModal" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); display:none; margin-bottom:0;" onclick="abrirModalRota()">
-        👀 Visualizar Paradas da Rota
-      </button>
+<button id="btnVerParadasModal" type="button" style="display:none;" onclick="abrirModalRota()"></button>
 <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
+    </div>
+
+    
+
+<div class="card-retomar-rota" id="cardRetomarRota">
+      <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
+      <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
+      <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
+         <span data-i18n="resume_route">Voltar para rota anterior</span>
+      </button>
+    </div>
+
+    
+<div id="resumoRotaHome" class="home-route-summary" style="display:none;">
+      <div class="home-route-summary-head">
+        <div>
+          <div class="home-route-summary-kicker" id="resumoRotaTitulo">RESUMO DA ROTA ATUAL</div>
+          <div class="home-route-summary-file" id="resumoRotaArquivo">Rota</div>
+        </div>
+        <div class="home-route-status" id="resumoRotaStatus">Rota em andamento</div>
+      </div>
+
+      <div class="home-route-summary-grid">
+        <div class="home-route-summary-item">
+          <strong id="resumoRotaBipados">0 / 0</strong>
+          <span>Bipados</span>
+        </div>
+        <div class="home-route-summary-item">
+          <strong id="resumoRotaParadas">0</strong>
+          <span>Paradas</span>
+        </div>
+        <div class="home-route-summary-item">
+          <strong id="resumoRotaFaltam">0</strong>
+          <span>Faltam</span>
+        </div>
+      </div>
+
+      <div class="home-route-progress-row">
+        <span id="resumoRotaPercentual">0% concluído</span>
+      </div>
+      <div class="home-route-progress-track">
+        <div class="home-route-progress-fill" id="resumoRotaBarra"></div>
+      </div>
+
+      <div class="home-route-summary-footer" id="resumoRotaRodape">
+        🟢 Rota em andamento
+      </div>
     </div>
 
     <div id="areaExecucao" style="display:none;">
@@ -4815,32 +5264,288 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
     // ==========================================
     // HISTÓRICO DE ROTAS LOCAIS DO MOTORISTA
     // ==========================================
-    function salvarHistoricoRotaConcluida(nomeRota, totalPacotes, totalParadas) {
-      let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
-      hist.unshift({
-        nome: nomeRota,
-        data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR').substring(0,5),
-        pacotes: totalPacotes,
-        paradas: totalParadas
+
+    const HIST_DB_NOME = 'pacote_e_mato_historico_db';
+    const HIST_DB_VERSAO = 1;
+    const HIST_STORE = 'enderecos_rotas';
+
+    function abrirHistoricoDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(HIST_DB_NOME, HIST_DB_VERSAO);
+
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(HIST_STORE)) {
+            db.createObjectStore(HIST_STORE, { keyPath: 'id' });
+          }
+        };
+
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error || new Error('Falha ao abrir histórico local.'));
       });
-      if (hist.length > 20) hist.pop();
+    }
+
+    async function salvarEnderecosHistoricoDB(id, enderecos) {
+      if (!id || !Array.isArray(enderecos)) return;
+
+      try {
+        const db = await abrirHistoricoDB();
+
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(HIST_STORE, 'readwrite');
+          tx.objectStore(HIST_STORE).put({
+            id,
+            enderecos,
+            salvoEm: Date.now()
+          });
+          tx.oncomplete = resolve;
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(tx.error);
+        });
+
+        db.close();
+      } catch (e) {
+        console.warn('Não foi possível salvar endereços no IndexedDB:', e);
+      }
+    }
+
+    async function lerEnderecosHistoricoDB(id) {
+      if (!id) return [];
+
+      try {
+        const db = await abrirHistoricoDB();
+
+        const resultado = await new Promise((resolve, reject) => {
+          const tx = db.transaction(HIST_STORE, 'readonly');
+          const req = tx.objectStore(HIST_STORE).get(id);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+
+        db.close();
+        return Array.isArray(resultado?.enderecos) ? resultado.enderecos : [];
+      } catch (e) {
+        console.warn('Não foi possível ler endereços do IndexedDB:', e);
+        return [];
+      }
+    }
+
+    function montarDadosEnderecosHistorico() {
+      return Object.keys(mapaRotas || {})
+        .map(chave => ({
+          endereco: nomeExibicao[chave] || chave,
+          pacotes: Array.isArray(mapaRotas[chave]) ? mapaRotas[chave].length : 0,
+          stops: Array.isArray(mapaRotas[chave])
+            ? [...new Set(
+                mapaRotas[chave]
+                  .map(codigo => stopCorrespondente[codigo])
+                  .filter(n => Number.isFinite(Number(n)))
+                  .map(Number)
+              )].sort((a,b) => a-b)
+            : []
+        }))
+        .sort((a, b) => {
+          const pa = a.stops.length ? a.stops[0] : 999999;
+          const pb = b.stops.length ? b.stops[0] : 999999;
+          return pa - pb;
+        });
+    }
+
+    function salvarOuAtualizarHistoricoRota(
+      nomeRota,
+      totalPacotes,
+      totalParadas,
+      concluida = false,
+      duracaoMs = null
+    ) {
+      let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+
+      const nomeLimpo = limparNomeArquivoRota(nomeRota);
+      const enderecos = montarDadosEnderecosHistorico();
+      const paradasMultiplas = enderecos.filter(item => item.pacotes > 1).length;
+
+      const idRota =
+        chaveStorageAtual ||
+        `rota_${nomeLimpo}_${totalPacotes}_${totalParadas}`;
+
+      const dadosLeves = {
+        id: idRota,
+        nome: nomeLimpo,
+        data: new Date().toLocaleDateString('pt-BR') + ' ' +
+              new Date().toLocaleTimeString('pt-BR').substring(0,5),
+        pacotes: totalPacotes,
+        paradas: totalParadas,
+        paradasMultiplas,
+        duracaoMs: Number.isFinite(duracaoMs) ? duracaoMs : null,
+        status: concluida ? 'concluida' : 'em_andamento',
+        bipados: pacotesBipados.size,
+        temEnderecos: enderecos.length > 0
+      };
+
+      const indice = hist.findIndex(h => h && h.id === idRota);
+
+      if (indice >= 0) {
+        hist[indice] = {
+          ...hist[indice],
+          ...dadosLeves,
+          data: hist[indice].data || dadosLeves.data
+        };
+
+        const atualizada = hist.splice(indice, 1)[0];
+        hist.unshift(atualizada);
+      } else {
+        hist.unshift(dadosLeves);
+      }
+
+      if (hist.length > 20) hist = hist.slice(0, 20);
+
+      // Metadados pequenos e rápidos.
       localStorage.setItem('historico_rotas_usuario', JSON.stringify(hist));
+
+      // Endereços completos ficam fora do localStorage e são gravados de forma assíncrona.
+      salvarEnderecosHistoricoDB(idRota, enderecos);
+    }
+
+    // Compatibilidade com chamadas antigas.
+    function salvarHistoricoRotaConcluida(nomeRota, totalPacotes, totalParadas, duracaoMs = null) {
+      salvarOuAtualizarHistoricoRota(
+        nomeRota,
+        totalPacotes,
+        totalParadas,
+        true,
+        duracaoMs
+      );
+    }
+
+    function escaparHtmlHistorico(texto) {
+      return String(texto ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    let historicoCacheVisual = [];
+
+    async function toggleEnderecosHistorico(indice) {
+      const box = document.getElementById(`histEnderecos_${indice}`);
+      const btn = document.getElementById(`histBtn_${indice}`);
+      if (!box || !btn) return;
+
+      const aberto = box.style.display !== 'none';
+
+      if (aberto) {
+        box.style.display = 'none';
+        btn.textContent = 'Ver endereços';
+        return;
+      }
+
+      if (!box.dataset.carregado) {
+        const h = historicoCacheVisual[indice] || {};
+
+        btn.disabled = true;
+        btn.textContent = 'Carregando endereços...';
+
+        let enderecos = [];
+
+        // Compatibilidade com rotas antigas que ainda têm endereços dentro do localStorage.
+        if (Array.isArray(h.enderecos) && h.enderecos.length) {
+          enderecos = h.enderecos;
+
+          // Migra em segundo plano para o formato novo.
+          if (h.id) salvarEnderecosHistoricoDB(h.id, enderecos);
+        } else {
+          enderecos = await lerEnderecosHistoricoDB(h.id);
+        }
+
+        if (!enderecos.length) {
+          box.innerHTML =
+            '<div class="hist-sem-endereco">Esta rota não possui endereços salvos nesta versão.</div>';
+        } else {
+          box.innerHTML = enderecos.map((item, idx) => {
+            const stops = Array.isArray(item.stops) && item.stops.length
+              ? item.stops.map(n => `P${n}`).join('-')
+              : `#${idx + 1}`;
+
+            const qtdPacotes = Number(item.pacotes || 0);
+            const tag = qtdPacotes > 1
+              ? `<span class="hist-multi-tag">${qtdPacotes} pacotes</span>`
+              : '';
+
+            return `
+              <div class="hist-endereco-item">
+                <div class="hist-endereco-stop">${escaparHtmlHistorico(stops)}</div>
+                <div class="hist-endereco-texto">${escaparHtmlHistorico(item.endereco || '')}</div>
+                ${tag}
+              </div>
+            `;
+          }).join('');
+        }
+
+        box.dataset.carregado = '1';
+        btn.disabled = false;
+      }
+
+      box.style.display = 'block';
+      btn.textContent = 'Ocultar endereços';
     }
 
     function abrirModalHistorico() {
       let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+      hist = hist.slice(0, 15);
+      historicoCacheVisual = hist;
+
       let container = document.getElementById('listaHistoricoRotas');
+
       if (hist.length === 0) {
-        container.innerHTML = "<div style='font-size:0.75rem; color:#888; text-align:center;'>Nenhuma rota salva no histórico ainda.</div>";
+        container.innerHTML =
+          "<div style='font-size:0.75rem; color:#888; text-align:center;'>Nenhuma rota salva no histórico ainda.</div>";
       } else {
-        container.innerHTML = hist.map(h => `
-          <div style="background:var(--surface-2); padding:10px; border-radius:10px; border:1px solid var(--surface-border);">
-            <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📄 ${h.nome}</div>
-            <div style="font-size:0.68rem; color:#fff;">📦 ${h.pacotes} pacotes • 📍 ${h.paradas} paradas</div>
-            <div style="font-size:0.60rem; color:var(--text-muted);">🕒 Data e hora: ${h.data}</div>
-          </div>
-        `).join('');
+        container.innerHTML = hist.map((h, indice) => {
+          const nome = escaparHtmlHistorico(limparNomeArquivoRota(h.nome || 'Rota'));
+          const data = escaparHtmlHistorico(h.data || '');
+          const pacotes = Number(h.pacotes || 0);
+          const paradas = Number(h.paradas || 0);
+          const multiplas = Number(h.paradasMultiplas || 0);
+          const statusTexto = h.status === 'concluida' ? 'Concluída' : 'Em andamento';
+          const statusClasse = h.status === 'concluida' ? 'concluida' : 'andamento';
+
+          return `
+            <div class="hist-rota-card">
+              <div class="hist-rota-top">
+                <div style="min-width:0;">
+                  <div class="hist-rota-nome">📄 ${nome}</div>
+                  <div class="hist-status ${statusClasse}">${statusTexto}</div>
+                </div>
+                <div class="hist-rota-data">${data}</div>
+              </div>
+
+              <div class="hist-rota-metricas">
+                <div><strong>${pacotes}</strong><span>Pacotes</span></div>
+                <div><strong>${paradas}</strong><span>Paradas</span></div>
+                <div><strong>${multiplas}</strong><span>Múltiplas</span></div>
+              </div>
+
+              <button
+                type="button"
+                class="hist-enderecos-btn"
+                id="histBtn_${indice}"
+                onclick="toggleEnderecosHistorico(${indice})">
+                Ver endereços
+              </button>
+
+              <div
+                class="hist-enderecos-lista"
+                id="histEnderecos_${indice}"
+                data-carregado=""
+                style="display:none;">
+              </div>
+            </div>
+          `;
+        }).join('');
       }
+
       document.getElementById('modalHistoricoRotas').style.display = 'flex';
     }
 
@@ -4890,6 +5595,120 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       return audioCtx;
     }
 
+
+    function limparNomeArquivoRota(nome) {
+      let texto = String(nome || 'Rota salva').trim();
+
+      try {
+        texto = decodeURIComponent(texto);
+      } catch (_) {}
+
+      // Remove prefixo interno, caso tenha vindo da chave do localStorage.
+      texto = texto.replace(/^bipados_/i, '');
+
+      // Remove sufixo numérico interno usado para diferenciar arquivo/tamanho.
+      // Ex.: "Circuit (20).pdf_101720" -> "Circuit (20).pdf"
+      texto = texto.replace(/(\.pdf)_\d+$/i, '$1');
+
+      // Se por acaso vier qualquer conteúdo após ".pdf", conserva só o nome do PDF.
+      const pdfMatch = texto.match(/^(.*?\.pdf)/i);
+      if (pdfMatch) texto = pdfMatch[1];
+
+      return texto || 'Rota salva';
+    }
+
+    function calcularParadasSalvas(mapa) {
+      try {
+        return Object.keys(mapa || {}).length;
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    function atualizarResumoRotaHome() {
+      const card = document.getElementById('resumoRotaHome');
+      if (!card) return;
+
+      const dadosSalvos = localStorage.getItem('rota_ativa_completa');
+
+      if (dadosSalvos) {
+        try {
+          const rota = JSON.parse(dadosSalvos);
+          const total = Array.isArray(rota.todosPacotes) ? rota.todosPacotes.length : 0;
+          const feitos = Array.isArray(rota.pacotesBipados) ? rota.pacotesBipados.length : 0;
+
+          if (total > 0) {
+            const faltam = Math.max(0, total - feitos);
+            const paradas = calcularParadasSalvas(rota.mapaRotas);
+            const pct = Math.max(0, Math.min(100, Math.round((feitos / total) * 100)));
+            const concluida = feitos >= total;
+
+            document.getElementById('resumoRotaTitulo').textContent =
+              concluida ? 'ÚLTIMA ROTA CONCLUÍDA' : 'RESUMO DA ROTA ATUAL';
+
+            document.getElementById('resumoRotaArquivo').textContent =
+              limparNomeArquivoRota(rota.nomeArquivo || 'Rota salva');
+
+            document.getElementById('resumoRotaStatus').textContent =
+              concluida ? 'Concluída' : 'Em andamento';
+
+            document.getElementById('resumoRotaBipados').textContent =
+              `${feitos} / ${total}`;
+
+            document.getElementById('resumoRotaParadas').textContent =
+              paradas;
+
+            document.getElementById('resumoRotaFaltam').textContent =
+              faltam;
+
+            document.getElementById('resumoRotaPercentual').textContent =
+              `${pct}% concluído`;
+
+            document.getElementById('resumoRotaBarra').style.width =
+              `${pct}%`;
+
+            let rodape = concluida ? '✅ Rota concluída' : '🟢 Rota em andamento';
+
+            if (concluida && rota.rotaInicioEm && rota.salvoEm) {
+              rodape += ` • ${formatarDuracaoRota(Math.max(0, rota.salvoEm - rota.rotaInicioEm))}`;
+            }
+
+            document.getElementById('resumoRotaRodape').textContent = rodape;
+            card.style.display = 'block';
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // Sem rota ativa: se existir histórico, mostra a última concluída.
+      try {
+        const hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+        const ultima = hist && hist[0];
+
+        if (ultima) {
+          document.getElementById('resumoRotaTitulo').textContent = 'ÚLTIMA ROTA CONCLUÍDA';
+          document.getElementById('resumoRotaArquivo').textContent =
+            limparNomeArquivoRota(ultima.nome || 'Rota concluída');
+          document.getElementById('resumoRotaStatus').textContent = 'Concluída';
+          document.getElementById('resumoRotaBipados').textContent = `${ultima.pacotes} / ${ultima.pacotes}`;
+          document.getElementById('resumoRotaParadas').textContent = ultima.paradas || 0;
+          document.getElementById('resumoRotaFaltam').textContent = 0;
+          document.getElementById('resumoRotaPercentual').textContent = '100% concluído';
+          document.getElementById('resumoRotaBarra').style.width = '100%';
+
+          document.getElementById('resumoRotaRodape').textContent =
+            ultima.duracaoMs
+              ? `✅ Rota concluída • ${formatarDuracaoRota(ultima.duracaoMs)}`
+              : '✅ Rota concluída';
+
+          card.style.display = 'block';
+          return;
+        }
+      } catch (_) {}
+
+      card.style.display = 'none';
+    }
+
     function verificarRotaSalvaAnterior() {
       let dadosSalvos = localStorage.getItem('rota_ativa_completa');
       let cardRetomar = document.getElementById('cardRetomarRota');
@@ -4897,14 +5716,17 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         try {
           let parsed = JSON.parse(dadosSalvos);
           if (parsed.todosPacotes && parsed.todosPacotes.length > 0) {
-            document.getElementById('txtNomeRotaSalva').innerText = `${parsed.nomeArquivo || 'Rota'} (${parsed.pacotesBipados.length}/${parsed.todosPacotes.length} bipados)`;
+            document.getElementById('txtNomeRotaSalva').innerText =
+              limparNomeArquivoRota(parsed.nomeArquivo || 'Rota');
             cardRetomar.style.display = 'block';
-            document.getElementById('btnVerParadasModal').style.display = 'flex';
+            document.getElementById('btnVerParadasModal').style.display = 'none';
+            atualizarResumoRotaHome();
             return;
           }
         } catch(e) {}
       }
       cardRetomar.style.display = 'none';
+      atualizarResumoRotaHome();
     }
 
     function salvarEstadoCompletoRota(nomeArquivo) {
@@ -4942,7 +5764,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         document.getElementById('btnVerParadasModal').style.display = 'flex';
 
         document.getElementById('areaExecucao').style.display = 'block';
-        document.getElementById('cardRetomarRota').style.display = 'none';
+        entrarModoRotaAtiva();
+document.getElementById('cardRetomarRota').style.display = 'none';
 
         atualizarStats();
         iniciarScanner();
@@ -4951,6 +5774,51 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       } catch(e) {
         notificar("Erro ao carregar a rota anterior.");
       }
+    }
+
+
+    function entrarModoRotaAtiva() {
+      const upload = document.getElementById('elSecaoUpload');
+      const toolbar = document.getElementById('toolbarRotaAtiva');
+      const retomar = document.getElementById('cardRetomarRota');
+      const resumoHome = document.getElementById('resumoRotaHome');
+
+      if (upload) upload.style.display = 'none';
+      if (toolbar) toolbar.style.display = 'grid';
+      if (retomar) retomar.style.display = 'none';
+      if (resumoHome) resumoHome.style.display = 'none';
+    }
+
+    async function voltarAoInicioRota() {
+      // Preserva a rota e as bipagens para poder retomar depois.
+      try { salvarEstadoCompletoRota(); } catch (_) {}
+      try { await finalizarCameraHardware(); } catch (_) {}
+
+      const exec = document.getElementById('areaExecucao');
+      const upload = document.getElementById('elSecaoUpload');
+      const toolbar = document.getElementById('toolbarRotaAtiva');
+      const card = document.getElementById('cardResult');
+      const aviso = document.getElementById('boxAviso');
+
+      if (exec) exec.style.display = 'none';
+      if (upload) upload.style.display = 'block';
+      if (toolbar) toolbar.style.display = 'none';
+      if (card) card.style.display = 'none';
+      if (aviso) aviso.style.display = 'none';
+
+      const resumoHome = document.getElementById('resumoRotaHome');
+      if (resumoHome) resumoHome.style.display = 'none';
+
+      const btnVis = document.getElementById('btnVerParadasModal');
+      if (btnVis) btnVis.style.display = 'none';
+
+      verificarRotaSalvaAnterior();
+      atualizarResumoRotaHome();
+
+      const btn = document.getElementById('btnUploadTxt');
+      if (btn) btn.innerHTML = '📄 Escolher outro PDF';
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function abrirModalRota() {
@@ -5404,6 +6272,10 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       document.getElementById('btnUploadTxt').innerHTML = '📄 Escolher Arquivo PDF';
       document.getElementById('btnVerParadasModal').style.display = 'none';
       document.getElementById('areaExecucao').style.display = 'none';
+      const uploadSec = document.getElementById('elSecaoUpload');
+      const toolbarSec = document.getElementById('toolbarRotaAtiva');
+      if (uploadSec) uploadSec.style.display = 'block';
+      if (toolbarSec) toolbarSec.style.display = 'none';
     }
 
     function extrairCodigoChave(texto) {
@@ -5684,6 +6556,10 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             "📄 Escolher Arquivo PDF";
           document.getElementById('btnVerParadasModal').style.display = 'none';
           document.getElementById('areaExecucao').style.display = 'none';
+          const uploadSec = document.getElementById('elSecaoUpload');
+          const toolbarSec = document.getElementById('toolbarRotaAtiva');
+          if (uploadSec) uploadSec.style.display = 'block';
+          if (toolbarSec) toolbarSec.style.display = 'none';
 
           mostrarErroTelaCarregamentoPdf(mensagemErro);
         }
@@ -5988,10 +6864,21 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
       document.getElementById('btnVerParadasModal').style.display = 'flex';
       document.getElementById('areaExecucao').style.display = 'block';
+      entrarModoRotaAtiva();
       document.getElementById('cardRetomarRota').style.display = 'none';
 
       salvarEstadoCompletoRota(nomeArquivo);
-atualizarStats();
+
+      // O PDF entra no histórico assim que a leitura termina com sucesso.
+      salvarOuAtualizarHistoricoRota(
+        nomeArquivo,
+        todosPacotes.size,
+        totalParadasFisicas,
+        false,
+        null
+      );
+
+      atualizarStats();
       iniciarScanner();
 
       const gruposMultiplos = Object.values(mapaRotas)
@@ -6193,12 +7080,23 @@ atualizarStats();
 
       document.getElementById('btnVerParadasModal').style.display = 'flex';
       document.getElementById('areaExecucao').style.display = 'block';
+      entrarModoRotaAtiva();
       document.getElementById('cardRetomarRota').style.display = 'none';
 
       salvarEstadoCompletoRota(nomeArquivo);
 
       const totalParadasFisicas = Object.keys(mapaRotas).length;
-atualizarStats();
+
+      // Também salva no histórico no modo de compatibilidade.
+      salvarOuAtualizarHistoricoRota(
+        nomeArquivo,
+        todosPacotes.size,
+        totalParadasFisicas,
+        false,
+        null
+      );
+
+      atualizarStats();
       iniciarScanner();
 
       const gruposMultiplos = Object.values(mapaRotas)
@@ -6284,6 +7182,9 @@ atualizarStats();
         atualizarProgressoParada(endMatch);
         falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
         atualizarStats();
+
+        // Mantém o histórico leve durante a bipagem.
+        // O histórico completo já é salvo ao carregar o PDF e novamente ao concluir.
         verificarConclusaoRota();
         document.getElementById('inputManual').value = "";
       } else {
@@ -6392,7 +7293,8 @@ atualizarStats();
       salvarHistoricoRotaConcluida(
         rotaSalva.nomeArquivo || 'Rota concluída',
         todosPacotes.size,
-        totalParadas
+        totalParadas,
+        fim - inicio
       );
 
       salvarEstadoCompletoRota(rotaSalva.nomeArquivo || undefined);
@@ -6487,6 +7389,30 @@ atualizarStats();
 
     window.addEventListener('DOMContentLoaded', () => {
       carregarConfiguracoesSalvas();
+      atualizarResumoRotaHome();
+
+      // Migração silenciosa do histórico antigo:
+      // tira listas grandes do localStorage e move para IndexedDB.
+      setTimeout(async () => {
+        try {
+          let hist = JSON.parse(localStorage.getItem('historico_rotas_usuario') || '[]');
+          let mudou = false;
+
+          for (const item of hist) {
+            if (item?.id && Array.isArray(item.enderecos) && item.enderecos.length) {
+              await salvarEnderecosHistoricoDB(item.id, item.enderecos);
+              item.temEnderecos = true;
+              delete item.enderecos;
+              mudou = true;
+            }
+          }
+
+          if (mudou) {
+            localStorage.setItem('historico_rotas_usuario', JSON.stringify(hist));
+          }
+        } catch (_) {}
+      }, 500);
+
       dispararAberturaPs2();
     });
   </script>
