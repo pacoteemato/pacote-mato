@@ -3330,14 +3330,30 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         carregarVozesSistema();
         synth.resume();
 
-        const silenciosa = new SpeechSynthesisUtterance('.');
-        silenciosa.volume = 0;
-        silenciosa.rate = 2;
+        const silenciosa = new SpeechSynthesisUtterance(' ');
+        silenciosa.volume = 0.01;
+        silenciosa.rate = 1;
+        silenciosa.pitch = 1;
         silenciosa.lang = 'pt-BR';
 
+        silenciosa.onend = () => {
+          vozLiberadaPorInteracao = true;
+        };
+
+        silenciosa.onerror = () => {
+          vozLiberadaPorInteracao = true;
+        };
+
         synth.speak(silenciosa);
+
+        setTimeout(() => {
+          vozLiberadaPorInteracao = true;
+          try { synth.resume(); } catch (_) {}
+        }, 500);
+
+      } catch (_) {
         vozLiberadaPorInteracao = true;
-      } catch (_) {}
+      }
     }
 
     function executarFala(texto, tipo, tentativa = 0) {
@@ -3349,6 +3365,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         const lang = localStorage.getItem('idioma_preferido') || 'pt';
         const synth = window.speechSynthesis;
 
+        carregarVozesSistema();
         synth.resume();
 
         const msg = new SpeechSynthesisUtterance(String(texto));
@@ -3358,26 +3375,31 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
             : (lang === 'es' ? 'es-ES' : 'pt-BR');
 
         msg.volume = 1;
+        msg.rate = 1.00;
+        msg.pitch = 1.00;
 
         const voz = selecionarVozDisponivel(lang, tipo);
         if (voz) msg.voice = voz;
 
-        // Voz de navegação: usa o timbre original da voz do sistema.
-        msg.rate = 1.00;
-        msg.pitch = 1.00;
-
         msg.onerror = function(event) {
           const erro = String(event?.error || '');
 
-          // "interrupted" e "canceled" podem acontecer ao trocar rapidamente
-          // de pacote e não significam que a voz do aparelho está quebrada.
           if (
-            tentativa < 1 &&
+            tentativa < 2 &&
             erro !== 'interrupted' &&
             erro !== 'canceled'
           ) {
-            setTimeout(() => executarFala(texto, 'normal', tentativa + 1), 180);
+            setTimeout(() => {
+              try {
+                synth.resume();
+                executarFala(texto, tipo, tentativa + 1);
+              } catch (_) {}
+            }, 300);
           }
+        };
+
+        msg.onend = function() {
+          try { synth.resume(); } catch (_) {}
         };
 
         synth.speak(msg);
@@ -3386,8 +3408,8 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       } catch (e) {
         console.error('Falha na voz:', e);
 
-        if (tentativa < 1) {
-          setTimeout(() => executarFala(texto, 'normal', tentativa + 1), 180);
+        if (tentativa < 2) {
+          setTimeout(() => executarFala(texto, tipo, tentativa + 1), 300);
         }
 
         return false;
@@ -3396,32 +3418,33 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
     function falarComPerfil(texto, tipo) {
       if (tipo === 'mudo') return false;
-
-      filaUltimaFala = {
-        texto: String(texto),
-        tipo
-      };
-
-      if (!('speechSynthesis' in window)) return false;
+      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) return false;
 
       try {
         const synth = window.speechSynthesis;
 
-        /*
-         * Cancela a fala anterior, espera o motor realmente liberar a fila
-         * e só então fala. Isso evita o bug comum de Android em que
-         * cancel()+speak() imediatamente resulta em silêncio.
-         */
-        synth.cancel();
+        filaUltimaFala = {
+          texto: String(texto),
+          tipo
+        };
+
+        carregarVozesSistema();
         synth.resume();
 
+        if (synth.speaking || synth.pending) {
+          synth.cancel();
+        }
+
         setTimeout(() => {
-          executarFala(
-            filaUltimaFala.texto,
-            filaUltimaFala.tipo,
-            0
-          );
-        }, 90);
+          try {
+            synth.resume();
+            executarFala(
+              filaUltimaFala.texto,
+              filaUltimaFala.tipo,
+              0
+            );
+          } catch (_) {}
+        }, 180);
 
         return true;
       } catch (_) {
@@ -3480,6 +3503,18 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
 
       document.addEventListener(
         'touchstart',
+        liberarVozPorInteracao,
+        { passive: true }
+      );
+
+      document.addEventListener(
+        'click',
+        liberarVozPorInteracao,
+        { passive: true }
+      );
+
+      document.addEventListener(
+        'keydown',
         liberarVozPorInteracao,
         { passive: true }
       );
@@ -7261,7 +7296,16 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         }
 
         atualizarProgressoParada(endMatch);
-        falarParada(numP, outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"), outrosStops[0]);
+
+        liberarVozPorInteracao();
+        setTimeout(() => {
+          falarParada(
+            numP,
+            outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"),
+            outrosStops[0]
+          );
+        }, 220);
+
         atualizarStats();
 
         // Mantém o histórico leve durante a bipagem.
