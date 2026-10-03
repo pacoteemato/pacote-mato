@@ -2785,7 +2785,7 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
         Voz
       </label>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px;border:1px solid var(--surface-border);">
-        <button class="segmented-btn active" id="voice_navegacao_feminina" onclick="salvarVoz('navegacao_feminina', false)">
+        <button class="segmented-btn active" id="voice_navegacao_feminina" onclick="salvarVoz('navegacao_feminina', true)">
           🗣️ Voz Navegação
         </button>
         <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)" style="color:#ef4444;">
@@ -3472,6 +3472,14 @@ body[data-theme="Preto"] #btnTesteGratis.auth-trial-button,
       }
 
       liberarVozPorInteracao();
+
+      if (escolha !== 'mudo' && testarAgora) {
+        setTimeout(() => {
+          try {
+            falarComPerfil('Voz ativada', 'navegacao_feminina');
+          } catch (_) {}
+        }, 250);
+      }
     }
 
     function desbloquearSinteseDeVoz() {
@@ -7298,13 +7306,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         atualizarProgressoParada(endMatch);
 
         liberarVozPorInteracao();
-        setTimeout(() => {
-          falarParada(
-            numP,
-            outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"),
-            outrosStops[0]
-          );
-        }, 220);
+        falarParada(
+          numP,
+          outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"),
+          outrosStops[0]
+        );
 
         atualizarStats();
 
@@ -7477,7 +7483,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     }
 
     function falarParada(num, ehDuplo, stopOutro) {
-      const tipo = localStorage.getItem('voz_preferida') || 'navegacao_feminina';
+      // Versão reforçada: fala diretamente, sem depender da fila antiga.
+      // Nesta versão a voz inicia ATIVA por padrão.
+      let tipo = localStorage.getItem('voz_preferida') || 'navegacao_feminina';
       if (tipo === 'mudo') return;
 
       const lang = localStorage.getItem('idioma_preferido') || 'pt';
@@ -7490,10 +7498,74 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         else frase += ". Atenção! Mesmo endereço da parada " + outra + "!";
       }
 
-      desbloquearSinteseDeVoz();
+      if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) {
+        console.error('Este navegador/WebView não disponibilizou speechSynthesis.');
+        return;
+      }
 
-      // pequeno atraso depois do bip/câmera ajuda em Android/PWA
-      setTimeout(() => falarComPerfil(frase, tipo), 100);
+      const synth = window.speechSynthesis;
+      carregarVozesSistema();
+
+      let iniciou = false;
+      let finalizou = false;
+
+      const disparar = (tentativa = 0) => {
+        try {
+          synth.resume();
+
+          const msg = new SpeechSynthesisUtterance(frase);
+          msg.lang =
+            lang === 'en' ? 'en-US' :
+            (lang === 'es' ? 'es-ES' : 'pt-BR');
+          msg.volume = 1;
+          msg.rate = 1;
+          msg.pitch = 1;
+
+          const voz = selecionarVozDisponivel(lang, tipo);
+          if (voz) msg.voice = voz;
+
+          msg.onstart = () => {
+            iniciou = true;
+            console.log('Voz iniciou:', frase);
+          };
+
+          msg.onend = () => {
+            finalizou = true;
+            console.log('Voz finalizou:', frase);
+          };
+
+          msg.onerror = (ev) => {
+            console.warn('Erro de voz:', ev?.error || ev);
+            if (tentativa < 2 && ev?.error !== 'canceled' && ev?.error !== 'interrupted') {
+              setTimeout(() => disparar(tentativa + 1), 350);
+            }
+          };
+
+          synth.speak(msg);
+
+          // Alguns Android/PWA engolem a primeira chamada sem disparar erro.
+          setTimeout(() => {
+            if (!iniciou && !finalizou && tentativa < 2) {
+              try { synth.cancel(); } catch (_) {}
+              setTimeout(() => disparar(tentativa + 1), 160);
+            }
+          }, 900);
+
+        } catch (e) {
+          console.error('Falha ao falar parada:', e);
+          if (tentativa < 2) {
+            setTimeout(() => disparar(tentativa + 1), 350);
+          }
+        }
+      };
+
+      // Evita conflito com o bip e com uma fala antiga.
+      try {
+        if (synth.speaking || synth.pending) synth.cancel();
+        synth.resume();
+      } catch (_) {}
+
+      setTimeout(() => disparar(0), 260);
     }
 
     function zerarRota() {
@@ -7513,6 +7585,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      // Correção de voz: esta versão inicia com Voz Navegação ativa.
+      localStorage.setItem('voz_preferida', 'navegacao_feminina');
       carregarConfiguracoesSalvas();
       atualizarResumoRotaHome();
 
