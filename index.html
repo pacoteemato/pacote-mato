@@ -6126,13 +6126,19 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .replace(/\s+/g, ' ')
         .trim();
 
+      // Aceita número normal e também imóveis "sem número".
+      // Exemplos aceitos: 123, S/N, s/n, SN, "sem numero".
+      const numeroEnderecoPattern = '(\\d{1,6}|s\\s*\\/?\\s*n|sem\\s+numero)';
+
       let m = t.match(
-        /(?:^|\s)(?:r|av|al|tv|est|rod|pca)\s+(.+?)\s*,\s*(\d{1,6})\b/i
+        new RegExp('(?:^|\\s)(?:r|av|al|tv|est|rod|pca)\\s+(.+?)\\s*,\\s*' + numeroEnderecoPattern + '\\b', 'i')
       );
 
       if (!m) {
         // O Circuit às vezes exporta somente "Nome da via, número".
-        m = t.match(/^(.+?)\s*,\s*(\d{1,6})\b/i);
+        m = t.match(
+          new RegExp('^(.+?)\\s*,\\s*' + numeroEnderecoPattern + '\\b', 'i')
+        );
       }
 
       if (!m) return null;
@@ -6143,7 +6149,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .replace(/\s+/g, ' ')
         .trim();
 
-      const numero = String(m[2]).replace(/\D/g, '');
+      const numeroBruto = String(m[2] || '').trim().toLowerCase();
+      const numero = /^(?:s\s*\/?\s*n|sem\s+numero)$/i.test(numeroBruto)
+        ? 'sn'
+        : numeroBruto.replace(/\D/g, '');
+
       if (!ruaBruta || !numero) return null;
 
       // Preposições não diferenciam um logradouro do mesmo número e os
@@ -6326,6 +6336,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           const registrosCircuit = [];
           const codigosGlobais = new Set();
 
+          // Buffer compatível com o leitor antigo.
+          // Se o layout novo/estrito não reconhecer o PDF, usamos estas linhas
+          // para tentar a leitura por texto/proximidade em vez de bloquear a rota.
+          const linhasFallbackPdf = [];
+
           for (let pagina = 1; pagina <= pdf.numPages; pagina++) {
             const progressoPagina = 20 + Math.round((pagina / Math.max(1, pdf.numPages)) * 52);
             atualizarTelaCarregamentoPdf(
@@ -6345,6 +6360,44 @@ document.getElementById('cardRetomarRota').style.display = 'none';
                 y: Number(item.transform?.[5] || 0)
               }))
               .filter(item => item.str);
+
+            /*
+             * LEITOR UNIVERSAL / COMPATIBILIDADE
+             * Reconstrói linhas visuais usando a posição Y e X do PDF.js.
+             * Isso permite cair no leitor antigo se o formato da tabela mudar.
+             */
+            const gruposLinhaFallback = [];
+            const itensOrdenadosFallback = itens
+              .slice()
+              .sort((a, b) => {
+                if (Math.abs(a.y - b.y) <= 2.5) return a.x - b.x;
+                return b.y - a.y;
+              });
+
+            for (const item of itensOrdenadosFallback) {
+              let grupo = gruposLinhaFallback.find(g => Math.abs(g.y - item.y) <= 2.5);
+
+              if (!grupo) {
+                grupo = { y: item.y, itens: [] };
+                gruposLinhaFallback.push(grupo);
+              }
+
+              grupo.itens.push(item);
+            }
+
+            gruposLinhaFallback
+              .sort((a, b) => b.y - a.y)
+              .forEach(grupo => {
+                const linha = grupo.itens
+                  .slice()
+                  .sort((a, b) => a.x - b.x)
+                  .map(i => i.str)
+                  .join(' ')
+                  .replace(/\s+/g, ' ')
+                  .trim();
+
+                if (linha) linhasFallbackPdf.push(linha);
+              });
 
             // Conta TODOS os códigos BR diretamente do PDF.
             // Essa contagem é independente do agrupamento de endereços.
@@ -6494,29 +6547,57 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           );
 
           /*
-           * TRAVA DE QUALIDADE:
-           * se o PDF contém 97 códigos BR, o leitor só aceita a rota se tiver
-           * associado exatamente os mesmos 97 códigos às linhas do Circuit.
-           * Assim o app não exibe 78 num celular e 79 em outro silenciosamente.
+           * MODO HÍBRIDO:
+           * 1) Tenta primeiro a leitura estrita, que preserva melhor agrupamentos.
+           * 2) Se qualquer detalhe do layout divergir, NÃO rejeita mais o PDF.
+           *    O app cai automaticamente no leitor de compatibilidade antigo.
            */
-          if (
-            codigosGlobais.size === 0 ||
-            codigosLidos.size !== codigosGlobais.size ||
-            !sequenciaCompleta ||
-            paradasSemEnderecoValido.length > 0
-          ) {
-            throw new Error(
-              `LEITURA_INCOMPLETA|PDF:${codigosGlobais.size}|LIDOS:${codigosLidos.size}|PARADAS:${numerosParada.length}/${maiorParada}|SEMEND:${paradasSemEnderecoValido.length}`
-            );
-          }
+          const leituraEstritaOk =
+            codigosGlobais.size > 0 &&
+            codigosLidos.size === codigosGlobais.size &&
+            sequenciaCompleta &&
+            paradasSemEnderecoValido.length === 0;
 
           atualizarTelaCarregamentoPdf(
             92,
-            'Organizando as paradas...',
+            leituraEstritaOk
+              ? 'Organizando as paradas...'
+              : 'Formato diferente detectado. Usando modo compatível...',
             'Quase pronto'
           );
 
-          processarRegistrosCircuit(registrosCircuit, file.name);
+          let processado = false;
+
+          if (leituraEstritaOk) {
+            try {
+              processarRegistrosCircuit(registrosCircuit, file.name);
+              processado = todosPacotes && todosPacotes.size > 0;
+            } catch (erroEstrito) {
+              console.warn(
+                'Leitura estrita não serviu para este PDF. Tentando modo compatível:',
+                erroEstrito
+              );
+            }
+          }
+
+          if (!processado) {
+            processarLinhasExatas(linhasFallbackPdf, file.name);
+            processado = todosPacotes && todosPacotes.size > 0;
+          }
+
+          if (!processado) {
+            throw new Error('NENHUM_PACOTE_VALIDO');
+          }
+
+          // Apenas diagnóstico: não bloqueia a rota.
+          if (
+            codigosGlobais.size > 0 &&
+            todosPacotes.size !== codigosGlobais.size
+          ) {
+            console.warn(
+              `PDF lido em modo compatível: encontrados ${todosPacotes.size} de ${codigosGlobais.size} códigos BR detectados no texto.`
+            );
+          }
 
           const tempoVisualDecorrido = Date.now() - inicioVisualLeituraPdf;
           const esperaVisualRestante = Math.max(0, 1500 - tempoVisualDecorrido);
