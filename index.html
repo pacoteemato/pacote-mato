@@ -8270,12 +8270,7 @@ window.abrirDiagnosticoIntegrado = function(){
 </script>
 
 
-<style>
-#btnDiagNovo{position:fixed;bottom:20px;right:20px;z-index:99999;background:#10b981;color:#001;border:0;padding:12px 18px;border-radius:12px;font-weight:bold}
-#diagNovo{display:none;position:fixed;inset:5%;z-index:100000;background:#111;color:#fff;border:2px solid #10b981;border-radius:16px;padding:20px;overflow:auto;font-family:Arial}
-</style>
-<button id="btnDiagNovo">🔎 Diagnóstico da Rota</button>
-<div id="diagNovo"><button onclick="document.getElementById('diagNovo').style.display='none'">Fechar</button><pre id="diagTexto"></pre></div>
+
 <script>
 document.getElementById('btnDiagNovo').onclick=function(){
  const box=document.getElementById('diagNovo');
