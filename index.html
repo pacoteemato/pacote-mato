@@ -6145,7 +6145,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     function decomporEnderecoCircuit(texto) {
       if (!texto) return null;
 
-      let original = extrairEnderecoExibicao(texto);
+      const original = extrairEnderecoExibicao(texto);
+
       let t = removerAcentosEndereco(original)
         .toLowerCase()
         .replace(/[º°ª]/g, '')
@@ -6153,9 +6154,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .replace(/\s+/g, ' ')
         .trim();
 
-      // Padroniza apenas o tipo de logradouro. Ele não participa da identidade
-      // da parada física, porque "R", "Rua" e ausência do prefixo podem variar
-      // no mesmo PDF exportado pelo Circuit.
+      // Normaliza somente o tipo de via. Complementos continuam intactos.
       t = t
         .replace(/\bavenida\b/g, ' av ')
         .replace(/\bav\.?\b/g, ' av ')
@@ -6169,18 +6168,15 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .replace(/\s+/g, ' ')
         .trim();
 
-      // Aceita número normal e também imóveis "sem número".
-      // Exemplos aceitos: 123, S/N, s/n, SN, "sem numero".
       const numeroEnderecoPattern = '(\\d{1,6}|s\\s*\\/?\\s*n|sem\\s+numero)';
 
       let m = t.match(
-        new RegExp('(?:^|\\s)(?:r|av|al|tv|est|rod|pca)\\s+(.+?)\\s*,\\s*' + numeroEnderecoPattern + '\\b', 'i')
+        new RegExp('(?:^|\\s)(?:r|av|al|tv|est|rod|pca)\\s+(.+?)\\s*,\\s*' + numeroEnderecoPattern + '(.*)$', 'i')
       );
 
       if (!m) {
-        // O Circuit às vezes exporta somente "Nome da via, número".
         m = t.match(
-          new RegExp('^(.+?)\\s*,\\s*' + numeroEnderecoPattern + '\\b', 'i')
+          new RegExp('^(.+?)\\s*,\\s*' + numeroEnderecoPattern + '(.*)$', 'i')
         );
       }
 
@@ -6193,30 +6189,41 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .trim();
 
       const numeroBruto = String(m[2] || '').trim().toLowerCase();
+
       const numero = /^(?:s\s*\/?\s*n|sem\s+numero)$/i.test(numeroBruto)
         ? 'sn'
         : numeroBruto.replace(/\D/g, '');
 
       if (!ruaBruta || !numero) return null;
 
-      // Preposições não diferenciam um logradouro do mesmo número e os
-      // títulos são padronizados para evitar "Dr" x "Doutor", etc.
-      const tokens = ruaBruta
-        .split(/\s+/)
-        .filter(Boolean)
-        .filter(token => ![
-          'da','de','do','das','dos','e'
-        ].includes(token))
-        .map(normalizarTokenLogradouroCircuit)
-        .filter(Boolean);
+      // Complementos de unidade fazem parte da identidade física.
+      // Ex: Apt 12 != Apt 13
+      let complemento = String(m[3] || '')
+        .replace(/^[,\s]+/, '')
+        .replace(/[.,\-_/]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
-      if (!tokens.length) return null;
+      const normalizarTokens = (valor) =>
+        valor.split(/\s+/)
+          .filter(Boolean)
+          .filter(token => !['da','de','do','das','dos','e'].includes(token))
+          .map(normalizarTokenLogradouroCircuit)
+          .filter(Boolean);
+
+      const tokensRua = normalizarTokens(ruaBruta);
+      const tokensComplemento = normalizarTokens(complemento);
+
+      if (!tokensRua.length) return null;
 
       return {
         original,
         numero,
-        tokens,
-        ruaCanonica: tokens.join(' ')
+        tokens: [...tokensRua, ...tokensComplemento],
+        tokensRua,
+        complemento,
+        ruaCanonica: tokensRua.join(' '),
+        complementoCanonico: tokensComplemento.join(' ')
       };
     }
 
@@ -6875,7 +6882,53 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         }
       }
 
+      
+      console.log("===== DIAGNOSTICO BR GRUPO =====");
+
+      const brGrupoAlvos = new Set([
+        "BRGRUPO1001","BRGRUPO1002","BRGRUPO1003","BRGRUPO1004","BRGRUPO1005",
+        "BRGRUPO1006","BRGRUPO1007","BRGRUPO1008","BRGRUPO1009","BRGRUPO1010",
+        "BRGRUPO0501","BRGRUPO0502","BRGRUPO0503","BRGRUPO0504","BRGRUPO0505",
+        "BRGRUPO0301","BRGRUPO0302","BRGRUPO0303"
+      ]);
+
+      entregas.forEach(entrega => {
+        const codigos = Array.isArray(entrega.codigos) ? entrega.codigos : [];
+
+        codigos.forEach(codigo => {
+          if (brGrupoAlvos.has(codigo)) {
+            const dados = decomporEnderecoCircuit(entrega.endereco);
+
+            console.log(
+              codigo +
+              " → bruto=" + entrega.endereco +
+              " → normalizado=" + JSON.stringify(dados.tokens) +
+              " → numero=" + dados.numero +
+              " → complemento=" + dados.complementoCanonico +
+              " → parada=" + entrega.numeroParada
+            );
+          }
+        });
+      });
+
+      console.log("===== FIM DIAGNOSTICO BR GRUPO =====");
+
+
       const dadosEndereco = entregas.map(e => decomporEnderecoCircuit(e.endereco));
+
+      function complementosPodemSerUnidos(a, b) {
+        const ca = String(a.complementoCanonico || '').trim();
+        const cb = String(b.complementoCanonico || '').trim();
+
+        // Ambos sem complemento: mesma unidade física provável.
+        if (!ca && !cb) return true;
+
+        // Um tem complemento e outro não: não assumir que é o mesmo local.
+        if (!ca || !cb) return false;
+
+        // Ambos têm complemento: precisam ser exatamente a mesma unidade.
+        return ca === cb;
+      }
 
       for (let i = 0; i < entregas.length; i++) {
         for (let j = i + 1; j < entregas.length; j++) {
@@ -6884,6 +6937,10 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
           // Mesmo número do imóvel é obrigatório.
           if (a.numero !== b.numero) continue;
+
+          // Complemento/unidade física também faz parte da identidade.
+          // Apt 12 != Apt 13, Sala 1 != Sala 2, Bloco A != Bloco B.
+          if (!complementosPodemSerUnidos(a, b)) continue;
 
           if (ruasProvavelmenteIguais(entregas[i].endereco, entregas[j].endereco)) {
             union(i, j);
