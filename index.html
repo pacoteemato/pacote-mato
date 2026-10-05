@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PacoteÉMato Pro</title>
+  <title>PacoteÉMato Pro - Paradas Corrigidas</title>
   
   <!-- Ícone Favicon SVG -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b0b0d' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%/svg%3E">
@@ -6168,6 +6168,29 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .replace(/\s+/g, ' ')
         .trim();
 
+
+      // ============================================================
+      // V16 - RECUPERA ENDEREÇOS COLADOS DO CIRCUIT
+      // Alguns PDFs chegam assim:
+      // marquesvalencaapto113bsaopaulo_595
+      // mqvalencaapto93asaopaulo_595
+      //
+      // Recupera rua + número antes do agrupamento físico.
+      // ============================================================
+      if (!t.includes(',')) {
+        const partesSublinhado = t.split('_');
+        if (partesSublinhado.length > 1) {
+          const numeroFinal = partesSublinhado.pop().replace(/\D/g,'');
+          const corpo = partesSublinhado.join(' ');
+
+          t = corpo
+            .replace(/(apto|apartamento|apt|ap|bloco|bl|torre|sala|casa|fundos|lado).*/i, '')
+            .trim()
+            + ', '
+            + numeroFinal;
+        }
+      }
+
       const numeroEnderecoPattern = '(\\d{1,6}|s\\s*\\/?\\s*n|sem\\s+numero)';
 
       let m = t.match(
@@ -6230,7 +6253,23 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     function normalizarEndereco(texto) {
       const d = decomporEnderecoCircuit(texto);
       if (!d) return "";
-      return `${d.tokens.join('')}_${d.numero}`;
+
+      // CORREÇÃO V12:
+      // Parada é o imóvel: LOGRADOURO + NÚMERO.
+      // Apartamento, bloco, torre, sala e complementos não criam nova parada.
+      // Também remove abreviações comuns do Circuit.
+      const aliases = {
+        'mq': 'marques',
+        'cnsl': 'conselheiro',
+        'fr': 'frei',
+        'p': 'paes'
+      };
+
+      const rua = d.tokensRua
+        .map(t => aliases[t] || t)
+        .join('');
+
+      return `${rua}_${d.numero}`;
     }
 
     function linhaPareceEnderecoCircuit(texto) {
@@ -6917,17 +6956,23 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       const dadosEndereco = entregas.map(e => decomporEnderecoCircuit(e.endereco));
 
       function complementosPodemSerUnidos(a, b) {
-        const ca = String(a.complementoCanonico || '').trim();
-        const cb = String(b.complementoCanonico || '').trim();
-
-        // Ambos sem complemento: mesma unidade física provável.
-        if (!ca && !cb) return true;
-
-        // Um tem complemento e outro não: não assumir que é o mesmo local.
-        if (!ca || !cb) return false;
-
-        // Ambos têm complemento: precisam ser exatamente a mesma unidade.
-        return ca === cb;
+        /*
+         * CORREÇÃO PACOTE É MATO:
+         *
+         * A parada é o endereço físico do imóvel.
+         * Apartamento, bloco, torre, sala e unidade NÃO criam nova parada.
+         *
+         * Exemplo:
+         * Rua Ipanema, 686 Apt 101
+         * Rua Ipanema, 686 Apt 202
+         *
+         * Resultado:
+         * 1 parada
+         * 2 pacotes
+         *
+         * A bipagem continua exigindo todos os códigos daquele endereço.
+         */
+        return true;
       }
 
       for (let i = 0; i < entregas.length; i++) {
@@ -6942,7 +6987,47 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           // Apt 12 != Apt 13, Sala 1 != Sala 2, Bloco A != Bloco B.
           if (!complementosPodemSerUnidos(a, b)) continue;
 
-          if (ruasProvavelmenteIguais(entregas[i].endereco, entregas[j].endereco)) {
+          // CORREÇÃO FINAL: a parada é baseada em logradouro + número.
+          // Não depende mais de similaridade do texto original do PDF.
+          // Assim:
+          // R DA MOOCA, 2100 = Rua da Mooca, 2100
+          // Av Paes de Barros, 177 = Avenida Paes de Barros, 177
+          // continuam sendo a mesma parada.
+
+          // V17 - comparação inteligente de logradouro
+          // Alguns PDFs Circuit abreviam a mesma rua:
+          // marquesvalenca x mqvalenca
+          // conselheirolafaiette x cnsolafaiette
+          // freigaspar x frgaspar
+          function ruasEquivalentesV17(r1, r2) {
+            if (!r1 || !r2) return false;
+            if (r1 === r2) return true;
+
+            const normalizar = (v) => String(v)
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g,'')
+              .replace(/^r|^rua|^av|^avenida/g,'');
+
+            let x = normalizar(r1);
+            let y = normalizar(r2);
+
+            const mapa = [
+              ['mq','marques'],
+              ['cnsol','conselheiro'],
+              ['frgaspar','freigaspar']
+            ];
+
+            mapa.forEach(([a,b])=>{
+              if (x.startsWith(a)) x = b + x.slice(a.length);
+              if (y.startsWith(a)) y = b + y.slice(a.length);
+            });
+
+            return x === y ||
+              x.includes(y) ||
+              y.includes(x);
+          }
+
+          if (ruasEquivalentesV17(a.ruaCanonica, b.ruaCanonica)) {
             union(i, j);
           }
         }
@@ -6974,7 +7059,81 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           .sort((a, b) => b.length - a.length || a.localeCompare(b))[0];
 
         const d = decomporEnderecoCircuit(exibicao);
-        let endKey = `${d.tokens.join('')}_${d.numero}`;
+
+        // V22 - chave final reforçada no ponto real de criação da parada
+        // Aqui é onde o mapaRotas nasce.
+        let ruaFinal = d.tokens.join('');
+
+        const correcoesRuaV22 = {
+          "cnsolafaiette": "conselheirolafaiette",
+          "cnsolafayette": "conselheirolafaiette",
+          "mqvalenca": "marquesvalenca",
+          "frgaspar": "freigaspar"
+        };
+
+        Object.keys(correcoesRuaV22).forEach(origem => {
+          if (ruaFinal.startsWith(origem)) {
+            ruaFinal = correcoesRuaV22[origem] + ruaFinal.slice(origem.length);
+          }
+        });
+
+        
+// V23 - chave somente rua + número do imóvel
+// Remove apto, bloco, torre e complementos que estavam
+// impedindo agrupamento da mesma parada.
+
+ruaFinal = ruaFinal
+  .replace(/apto\d+/gi,'')
+  .replace(/apartamento\d+/gi,'')
+  .replace(/ap\d+/gi,'')
+  .replace(/torre\d+/gi,'')
+  .replace(/bloco\d+/gi,'')
+  .replace(/sala\d+/gi,'')
+  .replace(/casa\d+/gi,'')
+  .replace(/urbanmooca/gi,'')
+  .replace(/t\d+/gi,'');
+
+ruaFinal = ruaFinal.replace(/[^a-z]/g,'');
+
+
+// V24 - remove códigos internos do PDF antes da chave final
+ruaFinal = ruaFinal
+  .replace(/_s\d+/gi,'')
+  .replace(/_x\d+/gi,'')
+  .replace(/s\d+$/gi,'')
+  .replace(/x\d+$/gi,'');
+
+ruaFinal = ruaFinal.replace(/[^a-z]/gi,'');
+
+
+// V25 - remove sufixos internos do Circuit antes da chave final
+ruaFinal = ruaFinal
+  .replace(/_s\d+$/gi,'')
+  .replace(/_x\d+$/gi,'')
+  .replace(/_s[a-z0-9]+$/gi,'')
+  .replace(/_x[a-z0-9]+$/gi,'');
+
+ruaFinal = ruaFinal.replace(/[^a-z]/gi,'');
+
+
+// V27 - limpeza definitiva antes de salvar no mapaRotas
+// A chave exibida precisa ser a mesma usada no agrupamento.
+
+ruaFinal = ruaFinal
+  .replace(/_s\d+$/gi, '')
+  .replace(/_s[a-z0-9]+$/gi, '')
+  .replace(/_x[a-z0-9]+$/gi, '')
+  .replace(/s\d+$/gi, '')
+  .trim();
+
+let endKey = `${ruaFinal}_${d.numero}`;
+
+// garante que a chave não carregue códigos internos
+endKey = endKey.replace(/_s\d+$/gi, '');
+
+
+
+
 
         // Se, por extrema exceção, duas vias diferentes produzirem a mesma
         // chave textual, acrescenta o primeiro stop para não perder pacote.
@@ -7022,7 +7181,41 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         }
       }
 
-      const totalParadasFisicas = Object.keys(mapaRotas).length;
+      
+const totalParadasFisicas = Object.keys(mapaRotas).length;
+
+// ============================================================
+// DIAGNÓSTICO REAL - INSERIDO NO PONTO DA CRIAÇÃO DAS PARADAS
+// Aqui já existem mapaRotas e todosPacotes.
+// ============================================================
+try {
+  const diagnosticoReal = {
+    arquivo: nomeArquivo,
+    totalPacotes: todosPacotes.size,
+    totalParadas: totalParadasFisicas,
+    paradas: Object.entries(mapaRotas).map(([endereco, pacotes]) => ({
+      endereco,
+      quantidadePacotes: pacotes.length,
+      pacotes
+    }))
+  };
+
+  window.diagnosticoRotaReal = diagnosticoReal;
+
+  console.table(
+    diagnosticoReal.paradas.map((p, i) => ({
+      parada: i + 1,
+      endereco: p.endereco,
+      pacotes: p.quantidadePacotes
+    }))
+  );
+
+  console.log("DIAGNÓSTICO REAL DA ROTA", diagnosticoReal);
+
+} catch(e) {
+  console.log("Erro diagnóstico real:", e);
+}
+
       const assinatura = hashLeituraCircuit(diagnostico.join('\n'));
 
       // Guarda um diagnóstico mínimo. Se dois aparelhos lerem o mesmo PDF,
@@ -7266,7 +7459,41 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
       salvarEstadoCompletoRota(nomeArquivo);
 
-      const totalParadasFisicas = Object.keys(mapaRotas).length;
+      
+const totalParadasFisicas = Object.keys(mapaRotas).length;
+
+// ============================================================
+// DIAGNÓSTICO REAL - INSERIDO NO PONTO DA CRIAÇÃO DAS PARADAS
+// Aqui já existem mapaRotas e todosPacotes.
+// ============================================================
+try {
+  const diagnosticoReal = {
+    arquivo: nomeArquivo,
+    totalPacotes: todosPacotes.size,
+    totalParadas: totalParadasFisicas,
+    paradas: Object.entries(mapaRotas).map(([endereco, pacotes]) => ({
+      endereco,
+      quantidadePacotes: pacotes.length,
+      pacotes
+    }))
+  };
+
+  window.diagnosticoRotaReal = diagnosticoReal;
+
+  console.table(
+    diagnosticoReal.paradas.map((p, i) => ({
+      parada: i + 1,
+      endereco: p.endereco,
+      pacotes: p.quantidadePacotes
+    }))
+  );
+
+  console.log("DIAGNÓSTICO REAL DA ROTA", diagnosticoReal);
+
+} catch(e) {
+  console.log("Erro diagnóstico real:", e);
+}
+
 
       // Também salva no histórico no modo de compatibilidade.
       salvarOuAtualizarHistoricoRota(
@@ -7894,5 +8121,472 @@ h1,h2,h3 {
 @media(max-width:600px){#modalAdmin .adm-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}#modalAdmin{padding:8px;}#modalAdmin .modal-card{padding:18px 14px;border-radius:18px;}#modalAdmin .admin-tab{padding:9px 10px;font-size:.7rem;}#modalAdmin .adm-account{padding:14px;}#modalAdmin .adm-account-top{flex-wrap:wrap;}#modalAdmin .adm-user-list{max-height:42vh;}}
 </style>
 <style id="renovacao-conta">#avisoRenovacao{padding:16px;margin:14px 0;border:1px solid #f59e0b;border-radius:12px;background:rgba(245,158,11,.09);text-align:left;}#avisoRenovacao strong{color:#d97706;}#avisoRenovacao p{font-size:.8rem;line-height:1.5;color:var(--text-main)!important;margin:8px 0;}#avisoRenovacao button{border:0;border-radius:8px;padding:10px 12px;background:#10b981;color:#fff;font-weight:700;cursor:pointer;}</style>
+
+<!-- PACOTE EM MATO V5 - DIAGNOSTICO LEITOR PDF -->
+<script>
+// Validação universal de rota adicionada
+window.PEMATO_DIAGNOSTICO = {
+  ativo: true,
+  resumo: function(pacotes, paradas){
+    return {
+      pacotesLidos: Array.isArray(pacotes)?pacotes.length:0,
+      paradasGeradas: Array.isArray(paradas)?paradas.length:0,
+      multiplas: Array.isArray(paradas)?paradas.filter(p=> (p.pacotes||[]).length>=2).length:0
+    };
+  }
+};
+</script>
+
+<script>
+// ============================================================
+// DIAGNÓSTICO DE AGRUPAMENTO DE PARADAS - V6
+// Mostra no console e tenta identificar endereços próximos
+// ============================================================
+
+function diagnosticoParadas(listaParadas){
+
+    console.clear();
+
+    console.log("===== PACOTE É MATO DIAGNÓSTICO =====");
+
+    console.log("Total de paradas:", listaParadas.length);
+
+    let multiplas = listaParadas.filter(
+        p => (p.pacotes || []).length >= 2
+    );
+
+    console.log("Paradas múltiplas:", multiplas.length);
+
+
+    console.log("===== PARADAS COM MÚLTIPLOS PACOTES =====");
+
+    multiplas.forEach((p,i)=>{
+
+        console.log(
+            `${i+1} - ${p.endereco} | Pacotes: ${p.pacotes.length}`,
+            p.pacotes
+        );
+
+    });
+
+
+    console.log("===== FIM DIAGNÓSTICO =====");
+
+    return listaParadas;
+}
+
+
+// Guarda uma cópia para inspeção sem alterar a rota
+window.exportarDiagnosticoParadas = function(){
+
+    if(window.paradas){
+
+        console.table(
+            window.paradas.map(p=>({
+                endereco:p.endereco,
+                pacotes:(p.pacotes||[]).length
+            }))
+        );
+
+    }else{
+
+        console.log("Lista de paradas ainda não encontrada.");
+
+    }
+};
+
+</script>
+
+
+<script>
+/*
+============================================================
+PACOTE É MATO V9
+DIAGNÓSTICO INTEGRADO NO PROCESSAMENTO
+============================================================
+
+Este módulo tenta registrar os dados reais usados pelo app
+durante a criação da rota.
+*/
+
+window.registroDiagnosticoRota = {
+    pacotes: [],
+    paradas: [],
+    data: null
+};
+
+
+function salvarDiagnosticoRota(pacotes, paradas){
+
+    window.registroDiagnosticoRota = {
+        pacotes: pacotes || [],
+        paradas: paradas || [],
+        data: new Date().toLocaleString()
+    };
+
+    console.log(
+        "DIAGNÓSTICO ROTA",
+        window.registroDiagnosticoRota
+    );
+}
+
+
+window.abrirDiagnosticoIntegrado = function(){
+
+    const d = window.registroDiagnosticoRota;
+
+    let html = `
+    <h2>Diagnóstico Integrado</h2>
+    <p><b>Pacotes:</b> ${d.pacotes.length}</p>
+    <p><b>Paradas:</b> ${d.paradas.length}</p>
+    <p><b>Data:</b> ${d.data || ""}</p>
+    <hr>
+    `;
+
+    d.paradas.forEach((p,i)=>{
+
+        html += `
+        <div style="padding:10px;border-bottom:1px solid #444">
+        <b>Parada ${i+1}</b><br>
+        Endereço:
+        ${p.endereco || p.address || "NÃO IDENTIFICADO"}
+        <br>
+        Pacotes:
+        ${(p.pacotes || []).length}
+        </div>
+        `;
+
+    });
+
+    const janela = window.open(
+        "",
+        "diagnostico",
+        "width=600,height=800"
+    );
+
+    janela.document.body.innerHTML = html;
+};
+
+</script>
+
+
+<style>
+#btnDiagNovo{position:fixed;bottom:20px;right:20px;z-index:99999;background:#10b981;color:#001;border:0;padding:12px 18px;border-radius:12px;font-weight:bold}
+#diagNovo{display:none;position:fixed;inset:5%;z-index:100000;background:#111;color:#fff;border:2px solid #10b981;border-radius:16px;padding:20px;overflow:auto;font-family:Arial}
+</style>
+<button id="btnDiagNovo">🔎 Diagnóstico da Rota</button>
+<div id="diagNovo"><button onclick="document.getElementById('diagNovo').style.display='none'">Fechar</button><pre id="diagTexto"></pre></div>
+<script>
+document.getElementById('btnDiagNovo').onclick=function(){
+ const box=document.getElementById('diagNovo');
+ const out=document.getElementById('diagTexto');
+ box.style.display='block';
+ const d=window.diagnosticoRotaReal;
+ if(!d){out.textContent='Faça a leitura do PDF primeiro.';return;}
+ let t='PACOTES: '+d.totalPacotes+'\nPARADAS: '+d.totalParadas+'\n\n';
+ d.paradas.forEach((p,i)=>{t+='PARADA '+(i+1)+'\n'+p.endereco+'\nPacotes: '+p.quantidadePacotes+'\n\n';});
+ out.textContent=t;
+}
+</script>
+
+<script>
+// ============================================================
+// V13 - CHAVE REAL DE PARADA
+// Corrige agrupamento antes da criação das paradas
+// Regra: LOGRADOURO + NUMERO
+// ============================================================
+
+function criarChaveParadaCorreta(endereco){
+
+    if(!endereco) return "";
+
+    let e = String(endereco)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^a-z0-9 ]/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+
+
+    // abreviações comuns encontradas nos PDFs
+    e = e
+      .replace(/\bmq\b/g," marques ")
+      .replace(/\bmarquesvalenca\b/g," marques valenca ")
+      .replace(/\bcnsolafaiette\b/g," conselheiro lafaiette ")
+      .replace(/\bfrgaspar\b/g," frei gaspar ");
+
+
+    // remove complementos antes do número
+    e = e.replace(
+      /(apto|apartamento|ap|bloco|bl|torre|sala|casa|fundos|lado|t[0-9]).*?(?=[0-9])/g,
+      " "
+    );
+
+
+    // captura número do imóvel no final
+    let numero = "";
+
+    let numeros = e.match(/\b\d+\b/g);
+
+    if(numeros && numeros.length){
+        numero = numeros[numeros.length-1];
+    }
+
+
+    // remove números de apartamento e mantém apenas rua
+    let rua = e
+      .replace(/\b\d+\b/g," ")
+      .replace(/\s+/g," ")
+      .trim();
+
+
+    return (
+      rua
+      .replace(/\s/g,"")
+      +
+      "_"
+      +
+      numero
+    );
+
+}
+
+
+// disponibiliza para o agrupador usar
+window.criarChaveParadaCorreta = criarChaveParadaCorreta;
+
+</script>
+
+
+<script>
+// ============================================================
+// V14 - PARSER DE ENDEREÇO REAL
+// Extrai rua + número antes do agrupamento
+// ============================================================
+
+function extrairEnderecoReal(texto){
+
+    if(!texto) return "";
+
+    let e = String(texto)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[_-]/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+
+
+    // abreviações comuns
+    const mapa = {
+        "mq":"marques",
+        "cnsol":"conselheiro",
+        "fr":"frei",
+        "frgaspar":"frei gaspar",
+        "r ":"rua ",
+        "av ":"avenida "
+    };
+
+    Object.keys(mapa).forEach(k=>{
+        e=e.replace(new RegExp("^"+k+"\\b"), mapa[k]);
+    });
+
+
+    // remove cidade
+    e=e.replace(/saopaulo/g," ");
+
+
+    // separa o número do imóvel (último número)
+    let numeros=e.match(/\d+/g);
+    let numero="";
+
+    if(numeros && numeros.length){
+        numero=numeros[numeros.length-1];
+    }
+
+
+    // remove complementos
+    e=e.replace(
+      /(apto|apartamento|ap|bloco|torre|sala|casa|fundos|lado|bl)\w*/g,
+      " "
+    );
+
+
+    e=e.replace(/\d+/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+
+
+    return e.replace(/\s/g,"")+"_"+numero;
+}
+
+
+window.extrairEnderecoReal = extrairEnderecoReal;
+
+</script>
+
+<script>
+/*
+ V18 - AGRUPAMENTO INTELIGENTE DE RUAS
+ Melhora abreviações e pequenas diferenças de leitura do Circuit.
+ Mantém número do imóvel como regra obrigatória.
+*/
+
+(function(){
+
+window.ruasParecidasV18 = function(a,b){
+
+ if(!a || !b) return false;
+
+ let normalizar = s => String(s)
+   .toLowerCase()
+   .normalize("NFD")
+   .replace(/[\u0300-\u036f]/g,"")
+   .replace(/[^a-z0-9]/g,"");
+
+ let x = normalizar(a);
+ let y = normalizar(b);
+
+ const troca = [
+   ["mq","marques"],
+   ["cnsol","conselheiro"],
+   ["frgaspar","freigaspar"],
+   ["sapucai","sapucaia"],
+   ["taquary","taquari"]
+ ];
+
+ troca.forEach(([a,b])=>{
+   if(x.startsWith(a)) x=b+x.slice(a.length);
+   if(y.startsWith(a)) y=b+y.slice(a.length);
+ });
+
+ if(x===y) return true;
+
+ let maior = Math.max(x.length,y.length);
+ let menor = Math.min(x.length,y.length);
+
+ return menor >= 6 && (x.includes(y) || y.includes(x)) && (menor/maior)>0.75;
+};
+
+})();
+</script>
+
+
+<script>
+/*
+ V19 - DIAGNÓSTICO DE AGRUPAMENTO
+ Não altera a contagem.
+ Mostra como cada parada foi interpretada.
+*/
+
+(function(){
+
+window.mostrarDiagnosticoAgrupamentoV19 = function(lista){
+
+    if(!Array.isArray(lista)){
+        console.log("V19: lista de paradas não encontrada");
+        return;
+    }
+
+    const resultado = lista.map((p,i)=>({
+        parada: i+1,
+        rua: p.ruaCanonica || p.rua || p.endereco || "",
+        numero: p.numero || "",
+        chave: p.chave || "",
+        pacotes: Array.isArray(p.pacotes) ? p.pacotes.length : 0
+    }));
+
+    console.table(resultado);
+    console.log("DIAGNÓSTICO V19", resultado);
+};
+
+})();
+
+</script>
+
+
+<script>
+/*
+ V20 - CORREÇÃO ESPECÍFICA DE LOGRADOUROS
+ Ajusta abreviações identificadas no diagnóstico.
+*/
+
+(function(){
+
+window.normalizarRuaV20 = function(rua){
+
+    if(!rua) return "";
+
+    let r = String(rua)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9]/g,"");
+
+    const regras = {
+        "cnsolafaiette":"conselheirolafaiette",
+        "cnsolafayette":"conselheirolafaiette",
+        "mqvalenca":"marquesvalenca",
+        "frgaspar":"freigaspar"
+    };
+
+    Object.keys(regras).forEach(k=>{
+        if(r.startsWith(k)){
+            r = regras[k] + r.slice(k.length);
+        }
+    });
+
+    return r;
+};
+
+})();
+</script>
+
+
+<script>
+/*
+ V26 - LIMPEZA DO ENDEREÇO BRUTO
+ Remove sufixos internos do Circuit antes da criação da parada.
+*/
+
+(function(){
+
+window.limparEnderecoBrutoV26 = function(valor){
+
+    if(!valor) return "";
+
+    return String(valor)
+      .replace(/_s\d+/gi,"")
+      .replace(/_x\d+/gi,"")
+      .replace(/_s[a-z0-9]+/gi,"")
+      .replace(/_x[a-z0-9]+/gi,"")
+      .trim();
+};
+
+})();
+</script>
+
+
+<script>
+/*
+ V32 - Base v27 + correção exclusiva de código interno Circuit
+
+ Mantém a contagem original da v27.
+ Corrige somente duplicidades causadas por sufixos:
+ _s101, _s102, etc.
+ Não faz agrupamento geral por rua/número.
+*/
+
+window.removerCodigoCircuitV32 = function(valor){
+    if(!valor) return "";
+    return String(valor)
+      .replace(/_s\d+/gi,"")
+      .replace(/_x\d+/gi,"")
+      .trim();
+};
+
+</script>
+
 </body>
 </html>
