@@ -7313,7 +7313,12 @@ try {
             continue;
           }
 
-          if (/^\d{1,3}\s+/.test(prox) && linhaPareceEnderecoCircuit(prox)) {
+          // CORREÇÃO PONTUAL: qualquer nova linha numerada do Circuit
+          // encerra a parada atual. Antes, a próxima parada só encerrava o
+          // bloco se linhaPareceEnderecoCircuit() também reconhecesse o texto;
+          // quando o PDF.js fragmentava a linha, o BR da parada seguinte podia
+          // vazar para a parada anterior e gerar falso "mesmo endereço".
+          if (/^\d{1,3}\s+\S/.test(prox)) {
             break;
           }
 
@@ -7402,6 +7407,25 @@ try {
           });
         });
       }
+
+      // CORREÇÃO PONTUAL DE SEGURANÇA:
+      // cada código BR só pode pertencer a uma parada original do Circuit.
+      // Se uma leitura fragmentada ainda repetir um BR em registros consecutivos,
+      // mantém a ocorrência mais recente (a própria parada seguinte) e remove o
+      // vazamento da parada anterior. Isso não altera o agrupamento de endereços.
+      const donoCodigo = new Map();
+      registros.forEach((registro, indiceRegistro) => {
+        (registro.codigos || []).forEach(codigo => {
+          donoCodigo.set(String(codigo || '').toUpperCase(), indiceRegistro);
+        });
+      });
+
+      registros = registros.map((registro, indiceRegistro) => ({
+        ...registro,
+        codigos: (registro.codigos || []).filter(codigo =>
+          donoCodigo.get(String(codigo || '').toUpperCase()) === indiceRegistro
+        )
+      })).filter(registro => registro.codigos.length > 0);
 
       registros.forEach(registro => {
         const {
