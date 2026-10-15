@@ -70,7 +70,8 @@
       throw Object.assign(new Error('Geolocalização não disponível neste navegador.'), { code: 'GEO_INDISPONIVEL' });
     }
     const p = await permissao();
-    if (p === 'denied' || bloqueada) {
+    if (p === 'granted') bloqueada = false;
+    if (p === 'denied') {
       bloqueada = true;
       salvar(null, 'negada');
       throw Object.assign(new Error('Localização bloqueada no navegador. Libere o acesso nas configurações para usar sua posição.'), { code: 'GEO_NEGADA' });
@@ -105,6 +106,7 @@
 
   async function iniciarAutomaticamente() {
     const p = await permissao();
+    if (p === 'granted') bloqueada = false;
     if (p === 'denied') {
       bloqueada = true;
       salvar(null, 'negada');

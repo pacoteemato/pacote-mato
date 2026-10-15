@@ -30,3 +30,6 @@ A documentação de publicação e segurança está em:
 O Worker completo de referência permanece em:
 
 `cloudflare/WORKER-HOLY-FROG-SEGURO-COMPLETO.txt`
+
+## V60
+A localização agora possui onboarding dentro do app e controle em Configurações. O botão solicita a permissão de geolocalização diretamente; em WebView, a exibição da permissão nativa ainda depende da configuração do projeto Android.
