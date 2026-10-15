@@ -813,11 +813,15 @@ function tocarIntroPs2Audio() {
         }
 
         if (antigo && antigo.senha) {
-          const senhaAntiga = prompt(
-            `Esta é uma conta antiga.\n\nDigite a SENHA ANTIGA desse WhatsApp para confirmar a vinculação.\n\nEla pode ter 4 dígitos. A senha nova, criada nesta tela, continuará com no mínimo 6 caracteres.`
-          );
+          const senhaAntiga = await globalThis.PacoteEMatoDialog?.solicitarTexto?.({
+            titulo: 'Confirmar conta antiga',
+            mensagem: 'Digite a senha antiga desse WhatsApp para confirmar a vinculação. Ela pode ter 4 dígitos. A senha nova desta tela continua com no mínimo 6 caracteres.',
+            placeholder: 'Senha antiga',
+            confirmar: 'Confirmar senha',
+            cancelar: 'Cancelar'
+          });
 
-          if (senhaAntiga === null) {
+          if (senhaAntiga === null || senhaAntiga === undefined) {
             mostrarMensagemAuth('erro', 'Vinculação cancelada.');
             return false;
           }
@@ -2141,7 +2145,13 @@ function tocarIntroPs2Audio() {
     }
 
     async function ajustarDiasRapido(zap) {
-      const diasStr = prompt(`Quantos dias deseja adicionar (ex: 7) ou remover (ex: -5) para ${zap}?`);
+      const diasStr = await globalThis.PacoteEMatoDialog?.solicitarTexto?.({
+        titulo: 'Ajustar dias de acesso',
+        mensagem: `Informe quantos dias deseja adicionar ou remover para ${zap}. Use, por exemplo, 7 ou -5.`,
+        placeholder: 'Ex.: 7 ou -5',
+        confirmar: 'Aplicar',
+        cancelar: 'Cancelar'
+      });
       if (!diasStr) return;
 
       const dias = parseInt(diasStr, 10);

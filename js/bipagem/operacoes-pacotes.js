@@ -213,9 +213,11 @@
     if (!estado) return;
     const total = estado.indicePlanilha.size;
     const selecionados = estado.selecionados.size;
+    const confirmadosExistentes = estado.confirmadosExistentes?.size || 0;
+    const bipados = selecionados + confirmadosExistentes;
     $('pkgOpTotal') && ($('pkgOpTotal').textContent = String(total));
-    $('pkgOpSelected') && ($('pkgOpSelected').textContent = String(selecionados));
-    $('pkgOpPending') && ($('pkgOpPending').textContent = String(Math.max(0, total - selecionados)));
+    $('pkgOpSelected') && ($('pkgOpSelected').textContent = String(bipados));
+    $('pkgOpPending') && ($('pkgOpPending').textContent = String(Math.max(0, total - bipados)));
     const alert = $('pkgOpAlert');
     if (alert) {
       const partes = [];
@@ -252,6 +254,8 @@
       indicePlanilha: new Map(),
       indiceRota: pacotesDaRota(rota),
       selecionados: new Set(),
+      confirmadosExistentes: new Set(),
+      decisoesExistentesEmCurso: new Set(),
       invalidos: [],
       duplicados: [],
       bloqueados: [],
@@ -277,6 +281,8 @@
       estado.resultado = resultado;
       estado.indicePlanilha = indice;
       estado.selecionados.clear();
+      estado.confirmadosExistentes = new Set();
+      estado.decisoesExistentesEmCurso = new Set();
       estado.invalidos = [];
       estado.duplicados = [];
       estado.bloqueados = [];
@@ -325,6 +331,34 @@
     if ($('pkgOpManual')) $('pkgOpManual').value = '';
   }
 
+  async function decidirPacoteJaExistente(codigo, paradaRota) {
+    if (!estado || !codigo) return;
+    estado.decisoesExistentesEmCurso ||= new Set();
+    estado.confirmadosExistentes ||= new Set();
+    if (estado.decisoesExistentesEmCurso.has(codigo) || estado.confirmadosExistentes.has(codigo)) return;
+    estado.decisoesExistentesEmCurso.add(codigo);
+    try {
+      const manter = await global.PacoteEMatoDialog?.confirmar?.({
+        titulo: 'Pacote já está na rota',
+        mensagem: 'Este pacote já faz parte da rota atual. Deseja mantê-lo nessa rota? Ele será considerado conferido, mas não será duplicado.',
+        confirmar: 'Sim, manter na rota',
+        cancelar: 'Não considerar agora'
+      });
+      if (!estado) return;
+      if (manter === true) {
+        estado.confirmadosExistentes.add(codigo);
+        tocarSomOperacao('sucesso');
+        mostrarResultadoScanner(true, codigo, paradaRota, 'Pacote confirmado. Ele já estava na rota e será mantido sem duplicação.');
+      } else {
+        tocarSomOperacao('erro');
+        mostrarResultadoScanner(false, codigo, paradaRota, 'Pacote ignorado nesta adição. A rota atual não foi alterada.');
+      }
+      atualizarBanner();
+    } finally {
+      estado?.decisoesExistentesEmCurso?.delete?.(codigo);
+    }
+  }
+
   function processarCodigoOperacao(codigoBruto) {
     if (!estado || !estado.arquivo) return false;
     if (!codigoBruto || leituraRepetida(codigoBruto)) return true;
@@ -361,10 +395,7 @@
         return true;
       }
     } else if (paradaRota) {
-      estado.bloqueados.push({ codigo, motivo: 'ja_na_rota' });
-      tocarSomOperacao('erro')
-      mostrarResultadoScanner(false, codigo, paradaRota, 'Esse pacote já existe na sua rota e não será duplicado.');
-      atualizarBanner();
+      decidirPacoteJaExistente(codigo, paradaRota);
       return true;
     }
 
@@ -692,8 +723,13 @@
 
   async function cancelar() {
     if (!estado) return;
-    const confirmar = global.confirm?.('Cancelar esta operação? A rota atual não será modificada.');
-    if (confirmar === false) return;
+    const confirmar = await global.PacoteEMatoDialog?.confirmar?.({
+      titulo: 'Cancelar operação?',
+      mensagem: 'A rota atual não será modificada e as bipagens desta operação serão descartadas.',
+      confirmar: 'Sim, cancelar operação',
+      cancelar: 'Continuar bipando'
+    });
+    if (confirmar !== true) return;
     fecharConferencia();
     try { await global.finalizarCameraHardware?.(); } catch (_) {}
     if ($('pkgOpBanner')) $('pkgOpBanner').style.display = 'none';
@@ -715,6 +751,7 @@
       indicePlanilha,
       indiceRota: pacotesDaRota(rotaBase || null),
       selecionados: new Set((selecionados || []).map(String)),
+      confirmadosExistentes: new Set(), decisoesExistentesEmCurso: new Set(),
       invalidos: [], duplicados: [], bloqueados: []
     };
     try {

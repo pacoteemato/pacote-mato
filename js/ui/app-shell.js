@@ -6,102 +6,108 @@
   const IDS_CAMADAS_RETORNO = [
     'routingActionsBackdrop','routingBipagemChooserBackdrop','routingPackagesChooserBackdrop','navPackagesChooserBackdrop',
     'routeImportMappingModal','routingOptimizationReviewBackdrop','routeStopEditorModal','routeReoptDecisionModal',
-    'navCompletionBackdrop','routingRefineBackdrop','navRouteActionsBackdrop','routeHistoryDetailModal'
+    'navCompletionBackdrop','routingRefineBackdrop','navRouteActionsBackdrop','routeHistoryDetailModal','pkgOpReviewBackdrop'
   ];
   let iniciando = true;
+  let consumindoHistorico = false;
 
   function $(id) { return document.getElementById(id); }
 
   function idModulo(nome) {
     return {
-      roteirizacao: 'moduloRoteirizacao',
-      bipagem: 'moduloBipagem',
-      'operacoes-pacotes': 'moduloOperacoesPacotes',
-      navegacao: 'moduloNavegacao',
-      historico: 'moduloHistorico',
-      configuracoes: 'moduloConfiguracoes'
+      roteirizacao: 'moduloRoteirizacao', bipagem: 'moduloBipagem', 'operacoes-pacotes': 'moduloOperacoesPacotes',
+      navegacao: 'moduloNavegacao', historico: 'moduloHistorico', configuracoes: 'moduloConfiguracoes'
     }[nome];
   }
 
   function fecharSidebar() {
-    const sb = $('sidebar');
-    const ov = $('overlay');
-    sb?.classList.remove('active');
-    if (ov) ov.style.display = 'none';
+    $('sidebar')?.classList.remove('active');
+    if ($('overlay')) $('overlay').style.display = 'none';
   }
 
-  function fecharDialogosAbertos() {
-    document.querySelectorAll('.pemato-dialog-backdrop').forEach(el => {
-      const btn = el.querySelector('.pemato-dialog-cancel, .pemato-dialog-confirm');
-      if (btn) btn.click();
-      else el.remove();
-    });
+  function camadaVisivel(id) {
+    const el = $(id);
+    if (!el) return false;
+    const display = global.getComputedStyle ? global.getComputedStyle(el).display : el.style.display;
+    return display !== 'none';
+  }
+
+  function fecharCamadaVisualAtual() {
+    if ($('sidebar')?.classList.contains('active')) { fecharSidebar(); return true; }
+    const dialogo = document.querySelector('.pemato-dialog-backdrop');
+    if (dialogo) {
+      const cancelar = dialogo.querySelector('.pemato-dialog-cancel');
+      const confirmar = dialogo.querySelector('.pemato-dialog-confirm');
+      (cancelar || confirmar)?.click?.();
+      return true;
+    }
+    for (const id of IDS_CAMADAS_RETORNO) {
+      const el = $(id);
+      if (el && camadaVisivel(id)) {
+        el.style.display = 'none';
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        return true;
+      }
+    }
+    if ($('routeImportFlow')?.classList.contains('is-open')) {
+      global.PacoteEMatoFluxoImportacao?.fechar?.();
+      return true;
+    }
+    return false;
   }
 
   function liberarTravasVisuais() {
     try {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      ['modal-open', 'no-scroll', 'overflow-hidden', 'sheet-open'].forEach(cls => {
+      ['modal-open','no-scroll','overflow-hidden','sheet-open'].forEach(cls => {
         document.body.classList.remove(cls);
         document.documentElement.classList.remove(cls);
       });
-      IDS_CAMADAS_RETORNO.forEach(id => {
-        const el = $(id);
-        if (el) el.style.display = 'none';
-      });
-      fecharDialogosAbertos();
+      IDS_CAMADAS_RETORNO.forEach(id => { const el = $(id); if (el) el.style.display = 'none'; });
       $('routingWorkspace')?.classList.remove('is-draw-mode');
-      const importFlow = $('routeImportFlow');
-      if (importFlow) importFlow.classList.remove('is-open');
+      $('routeImportFlow')?.classList.remove('is-open');
     } catch (_) {}
   }
 
-  function registrarRetornoInterno(tag) {
+  function prepararHistoricoBase() {
     try {
-      global.history.pushState({ pematoInterno: true, tag: tag || 'camada', em: Date.now() }, '', global.location.href);
+      const atual = global.history.state || {};
+      if (!atual.pematoBase && !atual.pematoUi) {
+        global.history.replaceState(Object.assign({}, atual, { pematoBase: true, pematoUi: false }), '', global.location.href);
+      }
     } catch (_) {}
   }
 
-  function camadaVisivel(id) {
-    const el = $(id);
-    if (!el) return false;
-    return String(el.style.display || '').toLowerCase() !== 'none' && String(el.style.display || '').trim() !== '';
+  function registrarRetornoInterno(tag, opcoes) {
+    try {
+      const tipo = opcoes?.tipo || 'camada';
+      const atual = global.history.state || {};
+      const novo = { pematoUi: true, pematoTipo: tipo, pematoTag: tag || tipo, em: Date.now() };
+      // Troca uma camada por outra sem acumular passos extras. Camada sobre módulo
+      // cria um nível próprio para que Voltar feche a camada e mantenha o módulo.
+      if (tipo === 'modulo' && atual.pematoUi) global.history.replaceState(novo, '', global.location.href);
+      else if (tipo === 'camada' && atual.pematoUi && atual.pematoTipo === 'camada') global.history.replaceState(novo, '', global.location.href);
+      else global.history.pushState(novo, '', global.location.href);
+    } catch (_) {}
   }
 
-  function existeRetornoContextual() {
-    if ($('sidebar')?.classList.contains('active')) return true;
-    if (document.querySelector('.pemato-dialog-backdrop')) return true;
-    if ($('routeImportFlow')?.classList.contains('is-open')) return true;
-    return IDS_CAMADAS_RETORNO.some(camadaVisivel);
-  }
-
-  async function tratarRetornoInterno() {
-    if ($('sidebar')?.classList.contains('active')) {
-      fecharSidebar();
+  function consumirRetornoInterno() {
+    try {
+      const atual = global.history.state || {};
+      if (!atual.pematoUi || consumindoHistorico) return false;
+      consumindoHistorico = true;
+      global.history.back();
+      setTimeout(() => { consumindoHistorico = false; }, 120);
       return true;
-    }
-    const dialogo = document.querySelector('.pemato-dialog-backdrop');
-    if (dialogo) {
-      const btn = dialogo.querySelector('.pemato-dialog-cancel, .pemato-dialog-confirm');
-      if (btn) btn.click();
-      else dialogo.remove();
-      return true;
-    }
-    if (existeRetornoContextual()) {
-      liberarTravasVisuais();
-      return true;
-    }
-    const atual = document.body.dataset.pematoModule || global.appState?.ui?.moduloAtual || 'roteirizacao';
-    if (atual && atual !== 'roteirizacao') {
-      await abrirModulo('roteirizacao', { registrarHistorico: false });
-      return true;
-    }
-    return false;
+    } catch (_) { return false; }
   }
 
   async function abrirModulo(nome, opcoes) {
-    if (document.body.dataset.pematoModule === 'navegacao' && nome !== 'navegacao') await global.PacoteEMatoNavegacao?.persistirSelecao?.({ motivo: 'troca_modulo' });
+    if (document.body.dataset.pematoModule === 'navegacao' && nome !== 'navegacao') {
+      await global.PacoteEMatoNavegacao?.persistirSelecao?.({ motivo: 'troca_modulo' });
+    }
     await global.PacoteEMatoConfiguracoes?.aguardarAplicacao?.();
     if (nome === 'inicio') nome = 'roteirizacao';
     if (!modulos.includes(nome)) nome = 'roteirizacao';
@@ -112,19 +118,20 @@
         nome = 'roteirizacao';
       }
     }
-    if (!iniciando && document.body.dataset.pematoModule === nome) { fecharSidebar(); return; }
-    const anteriorRegistrado = document.body.dataset.pematoModule || global.appState?.ui?.moduloAtual || 'roteirizacao';
-    if (!iniciando && opcoes?.registrarHistorico !== false && nome !== 'roteirizacao' && anteriorRegistrado !== nome) {
-      registrarRetornoInterno('modulo:' + nome);
+
+    const anterior = document.body.dataset.pematoModule || global.appState?.ui?.moduloAtual || 'roteirizacao';
+    if (!iniciando && anterior === nome) { fecharSidebar(); return; }
+
+    if (!iniciando && opcoes?.registrarHistorico !== false && nome !== 'roteirizacao') {
+      registrarRetornoInterno('modulo:' + nome, { tipo: 'modulo' });
     }
+
     liberarTravasVisuais();
-    const anterior = anteriorRegistrado;
     if (anterior === 'navegacao' && nome !== 'navegacao') global.PacoteEMatoNavegacao?.pausar?.();
     if (anterior === 'operacoes-pacotes' && nome !== 'operacoes-pacotes') { try { await global.finalizarCameraHardware?.(); } catch (_) {} }
     if (anterior === 'roteirizacao' && nome !== 'roteirizacao') {
       global.PacoteEMatoMapa?.encerrarSelecaoDesenho?.({ limpar: true });
-      const draw = $('routingDrawToolbar');
-      if (draw) draw.style.display = 'none';
+      const draw = $('routingDrawToolbar'); if (draw) draw.style.display = 'none';
     }
 
     document.body.dataset.pematoModule = nome;
@@ -136,7 +143,6 @@
     if (global.appState?.ui) global.appState.ui.moduloAtual = nome;
     salvarEstadoUI();
     fecharSidebar();
-    if (nome !== 'navegacao') liberarTravasVisuais();
 
     if (nome === 'roteirizacao') {
       await global.PacoteEMatoRoteirizacao?.carregarRotaAtiva?.();
@@ -144,8 +150,6 @@
     } else if (nome === 'bipagem') {
       global.PacoteEMatoBipagemArea?.abrir?.('scanner');
       if (opcoes?.usarRotaAtiva === true) await global.PacoteEMatoBipagemBridge?.prepararRotaAtivaParaBipagem?.({ iniciarScanner: true });
-    } else if (nome === 'operacoes-pacotes') {
-      // A tela e o scanner desta operação são controlados pelo módulo de Adicionar/Remover pacotes.
     } else if (nome === 'historico') {
       global.PacoteEMatoHistorico?.renderizar?.();
     } else if (nome === 'configuracoes') {
@@ -154,13 +158,29 @@
       const rota = await global.PacoteEMatoRotaStore?.obterRotaAtiva?.();
       if (rota?.geometria) global.PacoteEMatoNavegacao?.iniciar?.(rota);
     }
+
+    // Quando o próprio app volta de uma tela interna para o mapa, consome o
+    // estado interno correspondente. Assim não ficam vários "voltar" presos.
+    if (!iniciando && nome === 'roteirizacao' && anterior !== 'roteirizacao' && opcoes?.veioDoPop !== true) {
+      setTimeout(() => consumirRetornoInterno(), 0);
+    }
+  }
+
+  async function tratarPopstate() {
+    consumindoHistorico = false;
+    if (fecharCamadaVisualAtual()) return true;
+    const atual = document.body.dataset.pematoModule || global.appState?.ui?.moduloAtual || 'roteirizacao';
+    if (atual !== 'roteirizacao') {
+      await abrirModulo('roteirizacao', { registrarHistorico: false, veioDoPop: true });
+      return true;
+    }
+    // No mapa principal não recriamos histórico: o navegador/PWA pode sair normalmente.
+    return false;
   }
 
   function formatarDistancia(m) {
-    const n = Number(m);
-    return Number.isFinite(n) ? `${(n / 1000).toFixed(1).replace('.', ',')} km` : '—';
+    const n = Number(m); return Number.isFinite(n) ? `${(n / 1000).toFixed(1).replace('.', ',')} km` : '—';
   }
-
   function formatarTempo(s) {
     const min = Math.max(0, Math.round(Number(s || 0) / 60));
     if (!Number.isFinite(min)) return '—';
@@ -169,21 +189,15 @@
 
   async function atualizarInicio() {
     const rota = await global.PacoteEMatoRotaStore?.obterRotaAtiva?.();
-    const card = $('homeActiveRouteCard');
-    const empty = $('homeNoRoute');
-    if (!rota) {
-      if (card) card.style.display = 'none';
-      if (empty) empty.style.display = 'block';
-      return;
-    }
-    if (card) card.style.display = 'block';
-    if (empty) empty.style.display = 'none';
+    const card = $('homeActiveRouteCard'), empty = $('homeNoRoute');
+    if (!rota) { if (card) card.style.display = 'none'; if (empty) empty.style.display = 'block'; return; }
+    if (card) card.style.display = 'block'; if (empty) empty.style.display = 'none';
     if ($('homeRouteName')) $('homeRouteName').textContent = rota.nome || 'Rota ativa';
     if ($('homeRouteStatus')) $('homeRouteStatus').textContent = rota.rotaOtimizada ? 'Otimizada' : 'Em planejamento';
     if ($('homeRouteStops')) $('homeRouteStops').textContent = String(rota.paradas.length);
     if ($('homeRouteDistance')) $('homeRouteDistance').textContent = formatarDistancia(rota.distanciaTotalMetros);
     if ($('homeRouteTime')) $('homeRouteTime').textContent = formatarTempo(rota.duracaoTotalSegundos);
-    const delivered = rota.paradas.filter(p => ['entregue', 'concluida'].includes(p.statusEntrega)).length;
+    const delivered = rota.paradas.filter(p => ['entregue','concluida'].includes(p.statusEntrega)).length;
     if ($('homeRouteProgress')) $('homeRouteProgress').textContent = `${delivered} de ${rota.paradas.length}`;
     const packages = rota.paradas.reduce((sum, p) => sum + (p.pacotes?.length || 0), 0);
     if ($('homeRoutePackages')) $('homeRoutePackages').textContent = String(packages);
@@ -191,40 +205,33 @@
 
   function salvarEstadoUI() {
     try {
-      const dados = {
-        modulo: document.body.dataset.pematoModule || 'roteirizacao',
-        painel: document.getElementById('routingBottomSheet')?.dataset?.state || null,
-        atualizadoEm: Date.now()
-      };
-      sessionStorage.setItem(CHAVE_UI, JSON.stringify(dados));
-      localStorage.setItem(CHAVE_UI, JSON.stringify(dados));
+      const dados = { modulo: document.body.dataset.pematoModule || 'roteirizacao', painel: $('routingBottomSheet')?.dataset?.state || null, atualizadoEm: Date.now() };
+      sessionStorage.setItem(CHAVE_UI, JSON.stringify(dados)); localStorage.setItem(CHAVE_UI, JSON.stringify(dados));
     } catch (_) {}
   }
-
   function recuperarEstadoUI() {
     try {
-      const raw = sessionStorage.getItem(CHAVE_UI) || localStorage.getItem(CHAVE_UI);
-      const d = JSON.parse(raw || 'null');
+      const raw = sessionStorage.getItem(CHAVE_UI) || localStorage.getItem(CHAVE_UI), d = JSON.parse(raw || 'null');
       let modulo = d?.modulo === 'inicio' ? 'roteirizacao' : d?.modulo;
       if (modulo === 'operacoes-pacotes') modulo = 'roteirizacao';
       return modulo && modulos.includes(modulo) ? modulo : null;
-    } catch (_) {
-      return null;
-    }
+    } catch (_) { return null; }
+  }
+
+  function bindFechamentosHistorico() {
+    const ids = ['routingActionsCloseBtn','routingPackagesChooserClose','routingBipagemChooserClose','routingReviewCloseBtn','routingRefineCloseBtn','navRouteActionsClose','navPackagesChooserClose','routeStopEditorClose','routeStopEditorCancel','routeHistoryDetailClose'];
+    ids.forEach(id => $(id)?.addEventListener('click', () => setTimeout(() => consumirRetornoInterno(), 0)));
   }
 
   async function bind() {
-    document.querySelectorAll('[data-pemato-nav]').forEach(btn => {
-      btn.addEventListener('click', () => abrirModulo(btn.dataset.pematoNav));
-    });
+    prepararHistoricoBase();
+    document.querySelectorAll('[data-pemato-nav]').forEach(btn => btn.addEventListener('click', () => abrirModulo(btn.dataset.pematoNav)));
+    bindFechamentosHistorico();
     global.addEventListener('pemato:rota:salva', atualizarInicio);
     global.addEventListener('pemato:rota:ativa-limpa', atualizarInicio);
     global.addEventListener('pagehide', salvarEstadoUI);
-    global.addEventListener('popstate', () => { tratarRetornoInterno().catch?.(() => {}); });
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) salvarEstadoUI();
-      else global.dispatchEvent(new CustomEvent('pemato:resume'));
-    });
+    global.addEventListener('popstate', () => { tratarPopstate().catch?.(() => {}); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) salvarEstadoUI(); else global.dispatchEvent(new CustomEvent('pemato:resume')); });
     global.addEventListener('pageshow', () => global.dispatchEvent(new CustomEvent('pemato:resume')));
 
     try { await global.PacoteEMatoSessao?.restaurar?.(); } catch (_) {}
@@ -237,12 +244,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { bind(); }, { once: true });
   else bind();
 
-  global.PacoteEMatoAppShell = Object.freeze({
-    abrirModulo,
-    atualizarInicio,
-    fecharSidebar,
-    liberarTravasVisuais,
-    registrarRetornoInterno,
-    tratarRetornoInterno
-  });
+  global.PacoteEMatoAppShell = Object.freeze({ abrirModulo, atualizarInicio, fecharSidebar, liberarTravasVisuais, registrarRetornoInterno, consumirRetornoInterno, tratarPopstate });
 })(window);

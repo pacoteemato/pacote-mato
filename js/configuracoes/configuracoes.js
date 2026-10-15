@@ -261,23 +261,38 @@
     $('settingsSaveBtn')?.addEventListener('click', () => salvarFormulario({ notificar: true }));
     $('settingsConfirmRequiredBtn')?.addEventListener('click', confirmarObrigatorias);
 
-    $('settingsNavigation')?.addEventListener('change', () => {
-      marcarCampoObrigatorio('navegacao');
-      salvarFormulario({ notificar: false });
-    });
-    $('settingsVehicle')?.addEventListener('change', () => {
-      marcarCampoObrigatorio('veiculo');
-      salvarFormulario({ notificar: false });
-    });
-    $('settingsStopMinutes')?.addEventListener('input', () => {
-      marcarCampoObrigatorio('tempoParada');
-      clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false, tempoParadaAlterado: true }), 350);
-    });
-    $('settingsStopMinutes')?.addEventListener('blur', () => {
-      marcarCampoObrigatorio('tempoParada');
-      salvarFormulario({ notificar: false, tempoParadaAlterado: true });
-    });
+    const nav = $('settingsNavigation');
+    const veic = $('settingsVehicle');
+    const tempo = $('settingsStopMinutes');
+
+    const revisarSelect = (el, campo) => {
+      if (!el) return;
+      const marcar = () => marcarCampoObrigatorio(campo);
+      el.addEventListener('pointerdown', marcar, { passive: true });
+      el.addEventListener('focus', marcar);
+      el.addEventListener('change', () => {
+        marcar();
+        salvarFormulario({ notificar: false });
+      });
+    };
+
+    revisarSelect(nav, 'navegacao');
+    revisarSelect(veic, 'veiculo');
+
+    if (tempo) {
+      const marcarTempo = () => marcarCampoObrigatorio('tempoParada');
+      tempo.addEventListener('pointerdown', marcarTempo, { passive: true });
+      tempo.addEventListener('focus', marcarTempo);
+      tempo.addEventListener('input', () => {
+        marcarTempo();
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false, tempoParadaAlterado: true }), 350);
+      });
+      tempo.addEventListener('blur', () => {
+        marcarTempo();
+        salvarFormulario({ notificar: false, tempoParadaAlterado: true });
+      });
+    }
     $('settingsReturnStart')?.addEventListener('change', () => salvarFormulario({ notificar: false }));
 
     renderizar();
