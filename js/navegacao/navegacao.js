@@ -49,6 +49,21 @@
 
   function $(id) { return document.getElementById(id); }
   function cfg() { return global.PEMATO_MAP_CONFIG || {}; }
+
+  function registrarRetornoInterno(tag) {
+    global.PacoteEMatoAppShell?.registrarRetornoInterno?.(tag || 'navegacao');
+  }
+
+  async function mostrarTutorialPacotesSeNecessario() {
+    try { if (localStorage.getItem('pemato_tutorial_pacotes_qr_v58') === '1') return false; } catch (_) {}
+    await global.PacoteEMatoDialog?.avisar?.({
+      titulo: 'Como usar Pacotes da rota',
+      mensagem: 'Escolha Adicionar pacotes ou Remover pacotes, importe a planilha dessa operação e depois bipe o QR code do pacote ou digite o código manualmente. Cada leitura marca somente os pacotes desejados para entrar ou sair da rota.',
+      confirmar: 'Entendi'
+    });
+    try { localStorage.setItem('pemato_tutorial_pacotes_qr_v58', '1'); } catch (_) {}
+    return true;
+  }
   function fc(features) { return { type: 'FeatureCollection', features: features || [] }; }
 
   function providerAtual() { return String(global.PacoteEMatoConfiguracoes?.obter?.().navegacao || global.appState?.navegacao?.provider || 'pacote_emato'); }
@@ -961,7 +976,7 @@
     persistirSelecao({motivo:'retorno_primeiro_plano'});
   }
 
-  function abrirAcoesRota(){const el=$('navRouteActionsBackdrop');if(el)el.style.display='flex';}
+  function abrirAcoesRota(){const el=$('navRouteActionsBackdrop');if(el)el.style.display='flex';registrarRetornoInterno('nav_menu');}
   function fecharAcoesRota(){const el=$('navRouteActionsBackdrop');if(el)el.style.display='none';}
   async function abrirRefinoDaNavegacao(){fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>{global.PacoteEMatoRoteirizacao?.abrirRevisaoOtimizacao?.();setTimeout(()=>$('routingReviewRefineBtn')?.click?.(),80);},140);}
   async function abrirBipagemDaNavegacao(){fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.abrirEscolhaBipagem?.(),140);}
@@ -1029,7 +1044,7 @@
     $('navActionImport')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>$('routingXlsxInput')?.click?.(),140);});
     $('navActionNewRoute')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.criarNovaRotaVazia?.(),140);});
     $('navActionAddStop')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.abrirEditor?.(null),140);});
-    $('navActionPackages')?.addEventListener('click',()=>{fecharAcoesRota();if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='flex';});
+    $('navActionPackages')?.addEventListener('click', async ()=>{fecharAcoesRota();await mostrarTutorialPacotesSeNecessario();if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='flex';registrarRetornoInterno('nav_pacotes');});
     $('navPackagesChooserClose')?.addEventListener('click',()=>{if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='none';});
     $('navPackagesChooserBackdrop')?.addEventListener('click',e=>{if(e.target===$('navPackagesChooserBackdrop'))e.currentTarget.style.display='none';});
     $('navAddPackagesBtn')?.addEventListener('click',()=>{if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='none';global.PacoteEMatoOperacoesPacotes?.iniciar?.('adicionar');});

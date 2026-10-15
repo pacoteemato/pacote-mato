@@ -58,6 +58,37 @@
     else console.log(msg);
   }
 
+  function registrarRetornoInterno(tag) {
+    global.PacoteEMatoAppShell?.registrarRetornoInterno?.(tag || 'roteirizacao');
+  }
+
+  async function mostrarTutorialUnico(chave, titulo, mensagem) {
+    try { if (localStorage.getItem(chave) === '1') return false; } catch (_) {}
+    await global.PacoteEMatoDialog?.avisar?.({ titulo, mensagem, confirmar: 'Entendi' });
+    try { localStorage.setItem(chave, '1'); } catch (_) {}
+    return true;
+  }
+
+  function garantirConfiguracoesObrigatorias(contexto) {
+    return global.PacoteEMatoConfiguracoes?.garantirObrigatorias?.(contexto);
+  }
+
+  async function mostrarTutorialPacotesSeNecessario() {
+    return mostrarTutorialUnico(
+      'pemato_tutorial_pacotes_qr_v58',
+      'Como usar Pacotes da rota',
+      'Quando você tocar nesta opção, escolha Adicionar pacotes ou Remover pacotes. Em seguida importe a planilha dessa operação e bipe o QR code ou digite o código manualmente. Cada leitura marca somente os pacotes desejados. Ao final, revise a conferência antes de concluir.'
+    );
+  }
+
+  async function mostrarTutorialRefinoSeNecessario() {
+    return mostrarTutorialUnico(
+      'pemato_tutorial_refino_v58',
+      'Como funciona o refinamento da rota',
+      'Refinar rota serve para ajustar somente as paradas pendentes. Você pode reorganizar pelo mapa, mover um grupo para ser o próximo, mandar um grupo para o fim ou inverter a ordem pendente. Depois do ajuste, o sistema recalcula a rota preservando o progresso já feito.'
+    );
+  }
+
   function idNovo(prefix) {
     if (global.crypto?.randomUUID) return `${prefix}-${global.crypto.randomUUID()}`;
     return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
@@ -231,6 +262,7 @@
     preencherRevisaoOtimizacao();
     const backdrop = $('routingOptimizationReviewBackdrop');
     if (backdrop) backdrop.style.display = 'flex';
+    registrarRetornoInterno('review_otimizacao');
   }
 
   function fecharRevisaoOtimizacao() {
@@ -255,6 +287,12 @@
     painel.style.display = 'grid';
     backdrop.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    registrarRetornoInterno('refino');
+  }
+
+  async function abrirRefinoComTutorial() {
+    await mostrarTutorialRefinoSeNecessario();
+    abrirRefinoStandalone();
   }
 
   function fecharRefinoStandalone() {
@@ -264,11 +302,15 @@
     document.documentElement.style.overflow = '';
   }
 
-  function alternarRefino() {
+  async function alternarRefino() {
     const backdrop = $('routingRefineBackdrop');
     if (!backdrop) return;
-    if (backdrop.style.display === 'flex') fecharRefinoStandalone();
-    else abrirRefinoStandalone();
+    if (backdrop.style.display === 'flex') {
+      fecharRefinoStandalone();
+      return;
+    }
+    await mostrarTutorialRefinoSeNecessario();
+    abrirRefinoStandalone();
   }
 
 
@@ -634,6 +676,7 @@
     atualizarDisponibilidadeAcoes();
     backdrop.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    registrarRetornoInterno('menu_rota');
   }
 
   function fecharMenuAcoes() {
@@ -1371,6 +1414,7 @@
 
   async function otimizarRota(opcoes) {
     if (!rotaAtual) return;
+    if (await garantirConfiguracoesObrigatorias('otimizar a rota') === false) return;
     if (!workerConfigurado() || !global.PacoteEMatoServicoRota?.endpoint?.('optimize')) {
       const msg = 'O serviço de otimização ainda não está disponível. As paradas foram preservadas.';
       definirStatusImportacao(msg, 'warning');
@@ -1784,9 +1828,12 @@
     }
   }
 
-  function abrirEscolhaPacotes() {
+  async function abrirEscolhaPacotes() {
     fecharMenuAcoes();
-    const backdrop=$('routingPackagesChooserBackdrop'); if(backdrop)backdrop.style.display='flex';
+    await mostrarTutorialPacotesSeNecessario();
+    const backdrop = $('routingPackagesChooserBackdrop');
+    if (backdrop) backdrop.style.display = 'flex';
+    registrarRetornoInterno('pacotes_rota');
   }
   function fecharEscolhaPacotes(){ const backdrop=$('routingPackagesChooserBackdrop'); if(backdrop)backdrop.style.display='none'; }
 
@@ -1794,6 +1841,7 @@
     fecharMenuAcoes();
     const backdrop = $('routingBipagemChooserBackdrop');
     if (backdrop) backdrop.style.display = 'flex';
+    registrarRetornoInterno('bipagem_chooser');
     const totalPacotes = (rotaAtual?.paradas || []).reduce((n, p) => n + (p.pacotes?.length || 0), 0);
     if ($('routingBipagemCurrentRouteBtn')) $('routingBipagemCurrentRouteBtn').disabled = !rotaAtual?.paradas?.length || !totalPacotes;
   }
@@ -1820,6 +1868,7 @@
   }
 
   async function abrirNavegacao() {
+    if (await garantirConfiguracoesObrigatorias('iniciar a rota') === false) return;
     if (rotaAtual?.precisaRecalculo) return notificar('A rota foi alterada. Recalcule o trajeto antes de iniciar a navegação.');
     if (!rotaAtual?.geometria) return notificar('Calcule a rota pelas ruas antes de iniciar a operação.');
     rotaAtual.status = rotaAtual.status === 'concluida' ? 'concluida' : 'ativa';
@@ -1870,7 +1919,7 @@
     $('routingMapSettingsBtn')?.addEventListener('click', () => global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes'));
     $('routingGeocodeBtn')?.addEventListener('click', () => { fecharMenuAcoes(); geocodificarTodas(); });
     $('routingOptimizeBtn')?.addEventListener('click', () => { fecharMenuAcoes(); otimizarRota(); });
-    $('routingRefineMenuBtn')?.addEventListener('click', () => { fecharMenuAcoes(); abrirRefinoStandalone(); });
+    $('routingRefineMenuBtn')?.addEventListener('click', async () => { fecharMenuAcoes(); await abrirRefinoComTutorial(); });
     $('routingMainOptimizeBtn')?.addEventListener('click', otimizarRota);
     $('routingInvertBtn')?.addEventListener('click', () => { fecharMenuAcoes(); inverterRota(); });
     $('routingExportPdfBtn')?.addEventListener('click', () => { fecharMenuAcoes(); exportarPdf(); });

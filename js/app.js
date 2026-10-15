@@ -4225,7 +4225,10 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
         // V22 - chave final reforçada no ponto real de criação da parada
         // Aqui é onde o mapaRotas nasce.
-        let ruaFinal = d.tokens.join('');
+        // A identidade física da parada deve considerar SOMENTE logradouro + número.
+        // Complementos (apto, bloco, torre, sala, casa etc.) não criam uma nova parada.
+        // Usar tokensRua evita que textos de complemento gerem chaves diferentes para o mesmo imóvel.
+        let ruaFinal = d.tokensRua.join('');
 
         const correcoesRuaV22 = {
           "cnsolafaiette": "conselheirolafaiette",
@@ -4291,6 +4294,11 @@ ruaFinal = ruaFinal
 
 let endKey = `${ruaFinal}_${d.numero}`;
 
+// V57 - usa a mesma normalização física do restante do sistema sempre que possível.
+// Isso faz "Rua X, 100 apto 1" e "R. X, 100 apto 2" convergirem para a mesma parada.
+const chaveFisicaCanonica = normalizarEndereco(exibicao);
+if (chaveFisicaCanonica) endKey = chaveFisicaCanonica;
+
 // garante que a chave não carregue códigos internos
 endKey = endKey.replace(/_s\d+$/gi, '');
 
@@ -4298,14 +4306,19 @@ endKey = endKey.replace(/_s\d+$/gi, '');
 
 
 
-        // Se, por extrema exceção, duas vias diferentes produzirem a mesma
-        // chave textual, acrescenta o primeiro stop para não perder pacote.
-        if (mapaRotas[endKey]) {
-          endKey = `${endKey}_s${grupo[0].numeroParada}`;
+        // V57 - múltiplas no mesmo endereço físico devem virar UMA parada.
+        // Versões anteriores acrescentavam _sN quando a mesma chave aparecia de novo.
+        // Isso protegia contra colisões, mas também quebrava o mesmo imóvel em 2+ paradas
+        // quando o PDF escrevia o logradouro de formas diferentes (abreviação/complemento).
+        // Agora, se a chave canônica rua+número já existe, apenas mesclamos os pacotes.
+        if (!mapaRotas[endKey]) {
+          mapaRotas[endKey] = [];
+          nomeExibicao[endKey] = exibicao;
+        } else {
+          // Mantém para exibição o endereço mais completo/descritivo.
+          const atual = String(nomeExibicao[endKey] || '');
+          if (String(exibicao || '').length > atual.length) nomeExibicao[endKey] = exibicao;
         }
-
-        mapaRotas[endKey] = [];
-        nomeExibicao[endKey] = exibicao;
 
         grupo.forEach(entrega => {
           entrega.codigos.forEach(codigo => {

@@ -73,7 +73,7 @@
     if (p === 'denied' || bloqueada) {
       bloqueada = true;
       salvar(null, 'negada');
-      throw Object.assign(new Error('Permissão de localização bloqueada. Libere o acesso nas configurações do navegador para usar sua posição.'), { code: 'GEO_NEGADA' });
+      throw Object.assign(new Error('Localização bloqueada no navegador. Libere o acesso nas configurações para usar sua posição.'), { code: 'GEO_NEGADA' });
     }
     if (solicitacaoEmAndamento) return solicitacaoEmAndamento;
 
@@ -95,7 +95,7 @@
         const status = code === 1 ? 'negada' : (code === 3 ? 'timeout' : 'erro');
         salvar(null, status);
         const msg = code === 1
-          ? 'Permissão de localização negada.'
+          ? 'Localização negada. Libere o acesso nas configurações do navegador e tente novamente.'
           : code === 3 ? 'Tempo limite ao obter sua localização.' : (erro?.message || 'Não foi possível obter sua localização.');
         reject(Object.assign(new Error(msg), { code: `GEO_${status.toUpperCase()}` }));
       }, { enableHighAccuracy: true, maximumAge: 15000, timeout: 12000 });

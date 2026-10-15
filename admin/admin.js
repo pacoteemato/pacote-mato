@@ -22,7 +22,16 @@
     if(r.status===401){logout(false); throw new Error('Sessão expirada. Entre novamente.');}
     if(!r.ok||d.sucesso===false||d.ok===false)throw new Error(d.erro||d.error||`Falha (${r.status})`); return d;
   }
-  async function login(email,pin){const d=await req('/session/login',{method:'POST',body:JSON.stringify({email,pin})});token=d.token;ownerEmail=d.email||email;sessionStorage.setItem('pemato_admin_session_v1',token);sessionStorage.setItem('pemato_admin_email_v1',ownerEmail);showApp();await refresh();}
+  async function login(email,pin){
+    const d=await req('/admin/login',{method:'POST',body:JSON.stringify({email,pin})});
+    token=d.token||d.adminToken||'';
+    if(!token) throw new Error('O Worker aceitou o login, mas não retornou a sessão administrativa.');
+    ownerEmail=d.email||email;
+    sessionStorage.setItem('pemato_admin_session_v1',token);
+    sessionStorage.setItem('pemato_admin_email_v1',ownerEmail);
+    showApp();
+    await refresh();
+  }
   function logout(reload=true){token='';ownerEmail='';sessionStorage.removeItem('pemato_admin_session_v1');sessionStorage.removeItem('pemato_admin_email_v1');if(reload)location.reload();}
   function showApp(){ $('loginView').hidden=true;$('appView').hidden=false;$('ownerIdentity').textContent=ownerEmail; }
   function showLogin(){ $('loginView').hidden=false;$('appView').hidden=true; }
@@ -42,8 +51,8 @@
   $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').hidden=true;const btn=$('loginBtn');btn.disabled=true;try{await login($('ownerEmail').value.trim(),$('ownerPin').value.trim());$('ownerPin').value='';}catch(err){$('loginError').hidden=false;$('loginError').textContent=err.message;}finally{btn.disabled=false;}});
   $('logoutBtn').onclick=()=>logout();$('refreshBtn').onclick=refresh;$('menuBtn').onclick=()=>document.querySelector('.sidebar').classList.toggle('open');$('modalClose').onclick=()=>$('modal').hidden=true;$('modal').onclick=e=>{if(e.target===$('modal'))$('modal').hidden=true;};
   document.querySelectorAll('.sidebar nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.view));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>switchView(b.dataset.go));$('clientSearch').oninput=renderClients;$('clientFilter').onchange=renderClients;
-  $('broadcastSend').onclick=async()=>{try{await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({texto:$('broadcastText').value.trim(),duracaoHoras:Number($('broadcastHours').value)})});toast('Comunicado publicado');}catch(e){toast(e.message);}};
-  $('broadcastClear').onclick=async()=>{try{await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({texto:'',duracaoHoras:0,apagar:true})});$('broadcastText').value='';toast('Comunicado removido');}catch(e){toast(e.message);}};
+  $('broadcastSend').onclick=async()=>{try{const mensagem=$('broadcastText').value.trim();if(!mensagem)throw new Error('Digite a mensagem do comunicado.');await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({ativo:true,mensagem,horas:Number($('broadcastHours').value)})});toast('Comunicado publicado');}catch(e){toast(e.message);}};
+  $('broadcastClear').onclick=async()=>{try{await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({ativo:false,mensagem:'',horas:0})});$('broadcastText').value='';toast('Comunicado removido');}catch(e){toast(e.message);}};
 
   (async()=>{if(!token){showLogin();return;}try{if(!requireApi())return;const d=await req('/session/check');ownerEmail=d.email||ownerEmail;showApp();await refresh();}catch(_){showLogin();}})();
 })();

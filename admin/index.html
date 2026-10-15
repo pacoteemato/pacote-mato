@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests">
   <title>Pacote É Mato · Painel do Dono</title>
   <link rel="icon" href="../icon-192.png">
-  <link rel="stylesheet" href="admin.css?v=54">
+  <link rel="stylesheet" href="admin.css?v=56">
 </head>
 <body>
   <div id="loginView" class="login-shell">
@@ -18,7 +18,7 @@
       <p>Administração do Pacote É Mato em uma área separada do aplicativo dos motoristas.</p>
       <form id="loginForm" autocomplete="off">
         <label>E-mail do proprietário<input id="ownerEmail" type="email" autocomplete="username" required maxlength="160" placeholder="seu@email.com"></label>
-        <label>PIN administrativo<input id="ownerPin" type="password" inputmode="numeric" autocomplete="current-password" required minlength="6" maxlength="12" placeholder="••••••"></label>
+        <label>PIN administrativo<input id="ownerPin" type="password" inputmode="text" autocomplete="current-password" autocapitalize="none" spellcheck="false" required minlength="6" maxlength="64" placeholder="Letras e números"></label>
         <button id="loginBtn" class="primary" type="submit">Entrar com segurança</button>
       </form>
       <div id="loginError" class="error" hidden></div>
@@ -70,7 +70,7 @@
 
   <div id="modal" class="modal-backdrop" hidden><section class="modal"><button id="modalClose" class="modal-close">×</button><span class="eyebrow">CLIENTE</span><h3 id="modalTitle">Gerenciar conta</h3><div id="modalBody"></div></section></div>
   <div id="toast" class="toast" hidden></div>
-  <script src="config.js?v=54"></script>
-  <script src="admin.js?v=54"></script>
+  <script src="config.js?v=56"></script>
+  <script src="admin.js?v=56"></script>
 </body>
 </html>

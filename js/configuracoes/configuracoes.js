@@ -11,37 +11,44 @@
     tempoParadaSegundos: 0,
     tempoParadaPersonalizado: false,
     pontoInicial: null,
-    retornarAoInicio: false
+    retornarAoInicio: false,
+    obrigatoriasConfirmadas: false,
+    camposObrigatorios: { navegacao: false, veiculo: false, tempoParada: false }
   };
 
   function $(id) { return document.getElementById(id); }
+
+  function clone(obj) {
+    try { return JSON.parse(JSON.stringify(obj)); } catch (_) { return obj; }
+  }
 
   function obter() {
     try {
       const salvo = JSON.parse(localStorage.getItem(KEY) || '{}');
       const dados = salvo && typeof salvo === 'object' ? salvo : {};
       const cfg = Object.assign({}, DEFAULTS, dados);
-      // V19: versões antigas gravavam 3 min por parada como padrão, mesmo sem o usuário escolher.
-      // Isso inflava a previsão de término em ~90 min numa rota de 30 paradas.
-      // Só aplicamos tempo de atendimento quando o usuário o configurou explicitamente na V19+.
+      cfg.camposObrigatorios = Object.assign({}, DEFAULTS.camposObrigatorios, dados.camposObrigatorios || {});
       if (dados.tempoParadaPersonalizado !== true) {
         cfg.tempoParadaSegundos = 0;
         cfg.tempoParadaPersonalizado = false;
       }
-      // V52: ponto de partida deixou de ser preferência do usuário.
-      // A roteirização atualiza a origem pelo GPS no momento de otimizar.
       cfg.pontoInicial = null;
       return cfg;
-    } catch (_) { return Object.assign({}, DEFAULTS); }
+    } catch (_) {
+      return clone(DEFAULTS);
+    }
   }
 
   function salvar(parcial) {
     const anterior = obter();
     const cfg = Object.assign({}, anterior, parcial || {});
+    cfg.camposObrigatorios = Object.assign({}, anterior.camposObrigatorios || DEFAULTS.camposObrigatorios, parcial?.camposObrigatorios || {});
     const campos = Object.keys(parcial || {}).filter(k => JSON.stringify(anterior[k]) !== JSON.stringify(cfg[k]));
     try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (_) {}
     renderizar();
-    aplicacaoPendente = aplicacaoPendente.then(() => global.PacoteEMatoRoteirizacao?.aplicarConfiguracoesNaRota?.({...cfg, camposAlterados:campos})).catch(erro => { status($('settingsAutosaveStatus'), erro.message || 'Não foi possível aplicar à rota.', 'error'); });
+    aplicacaoPendente = aplicacaoPendente
+      .then(() => global.PacoteEMatoRoteirizacao?.aplicarConfiguracoesNaRota?.({ ...cfg, camposAlterados: campos }))
+      .catch(erro => { status($('settingsAutosaveStatus'), erro.message || 'Não foi possível aplicar à rota.', 'error'); });
     try { global.dispatchEvent(new CustomEvent('pemato:config:update', { detail: cfg })); } catch (_) {}
     return cfg;
   }
@@ -53,17 +60,61 @@
     else delete el.dataset.status;
   }
 
-  function descricaoPonto(p) {
-    if (!p) return '';
-    return String(p.descricao || p.endereco || '').trim();
+  function obrigatoriasConcluidas() {
+    return obter().obrigatoriasConfirmadas === true;
   }
 
-  function pontoValido(p) {
-    if (!p || p.lat === null || p.lat === undefined || p.lon === null || p.lon === undefined) return false;
-    if (String(p.lat).trim() === '' || String(p.lon).trim() === '') return false;
-    const lat = Number(p.lat);
-    const lon = Number(p.lon);
-    return Number.isFinite(lat) && lat >= -90 && lat <= 90 && Number.isFinite(lon) && lon >= -180 && lon <= 180;
+  function camposObrigatoriosTocados() {
+    const cfg = obter();
+    return Object.assign({}, DEFAULTS.camposObrigatorios, cfg.camposObrigatorios || {});
+  }
+
+  function marcouTudoObrigatorio() {
+    const flags = camposObrigatoriosTocados();
+    return flags.navegacao === true && flags.veiculo === true && flags.tempoParada === true;
+  }
+
+  function marcarCampoObrigatorio(campo) {
+    if (!campo) return obter();
+    const cfg = obter();
+    const flags = Object.assign({}, DEFAULTS.camposObrigatorios, cfg.camposObrigatorios || {});
+    if (flags[campo] === true) return cfg;
+    flags[campo] = true;
+    return salvar({ camposObrigatorios: flags });
+  }
+
+  function renderizarObrigatorias() {
+    const cfg = obter();
+    const flags = Object.assign({}, DEFAULTS.camposObrigatorios, cfg.camposObrigatorios || {});
+    const mapa = {
+      settingsRequiredNav: flags.navegacao === true,
+      settingsRequiredVehicle: flags.veiculo === true,
+      settingsRequiredStopTime: flags.tempoParada === true
+    };
+    Object.entries(mapa).forEach(([id, done]) => {
+      const el = $(id);
+      if (el) el.classList.toggle('is-done', done === true);
+    });
+    const btn = $('settingsConfirmRequiredBtn');
+    const txt = $('settingsRequiredText');
+    const info = $('settingsRequiredStatus');
+    const pronto = marcouTudoObrigatorio();
+    if (cfg.obrigatoriasConfirmadas === true) {
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Configurações obrigatórias confirmadas';
+      }
+      if (txt) txt.textContent = 'Configurações obrigatórias já confirmadas. Alterações futuras continuam sendo salvas automaticamente.';
+      status(info, 'Preferências obrigatórias liberadas.', 'ok');
+      return;
+    }
+    if (btn) {
+      btn.disabled = !pronto;
+      btn.textContent = 'Confirmar configurações obrigatórias';
+    }
+    if (txt) txt.textContent = 'Revise a navegação, o tipo de veículo e o tempo na parada. Você pode deixar o tempo em 0 se não quiser somar atendimento.';
+    if (pronto) status(info, 'Agora confirme para liberar a otimização e a navegação.', 'warning');
+    else status(info, 'Toque nos 3 campos acima e depois confirme.', 'warning');
   }
 
   function renderizar() {
@@ -72,6 +123,7 @@
     if ($('settingsVehicle')) $('settingsVehicle').value = cfg.veiculo;
     if ($('settingsStopMinutes')) $('settingsStopMinutes').value = String(Math.round(Number(cfg.tempoParadaSegundos || 0) / 60));
     if ($('settingsReturnStart')) $('settingsReturnStart').checked = cfg.retornarAoInicio === true;
+    renderizarObrigatorias();
   }
 
   async function validarEnderecoPartida() {
@@ -157,7 +209,14 @@
     const tempoParadaSegundos = Math.max(0, Number($('settingsStopMinutes')?.value || 0) * 60);
     const retornarAoInicio = $('settingsReturnStart')?.checked === true;
 
-    const cfg = salvar({ navegacao, veiculo, tempoParadaSegundos, tempoParadaPersonalizado: opcoes?.tempoParadaAlterado === true ? true : atual.tempoParadaPersonalizado === true, retornarAoInicio, pontoInicial: null });
+    const cfg = salvar({
+      navegacao,
+      veiculo,
+      tempoParadaSegundos,
+      tempoParadaPersonalizado: opcoes?.tempoParadaAlterado === true ? true : atual.tempoParadaPersonalizado === true,
+      retornarAoInicio,
+      pontoInicial: null
+    });
     const hint = $('settingsAutosaveStatus');
     if (hint) {
       hint.textContent = 'Alterações salvas automaticamente.';
@@ -169,6 +228,30 @@
     return cfg;
   }
 
+  async function confirmarObrigatorias() {
+    salvarFormulario({ notificar: false, tempoParadaAlterado: true });
+    if (!marcouTudoObrigatorio()) {
+      renderizarObrigatorias();
+      global.notificar?.('Toque em navegação, veículo e tempo na parada antes de confirmar.');
+      return false;
+    }
+    salvar({ obrigatoriasConfirmadas: true });
+    status($('settingsRequiredStatus'), 'Preferências obrigatórias confirmadas com sucesso.', 'ok');
+    global.notificar?.('Configurações obrigatórias liberadas. Agora você pode otimizar e iniciar a rota.');
+    return true;
+  }
+
+  async function garantirObrigatorias(contexto) {
+    if (obrigatoriasConcluidas()) return true;
+    const mensagem = contexto
+      ? `Antes de ${contexto}, confirme as configurações obrigatórias de navegação, veículo e tempo na parada.`
+      : 'Antes de continuar, confirme as configurações obrigatórias de navegação, veículo e tempo na parada.';
+    status($('settingsRequiredStatus'), mensagem, 'warning');
+    global.notificar?.(mensagem);
+    await global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes');
+    return false;
+  }
+
   function agendarAutoSave(delay) {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false }), Number(delay || 250));
@@ -176,10 +259,26 @@
 
   function bind() {
     $('settingsSaveBtn')?.addEventListener('click', () => salvarFormulario({ notificar: true }));
-    ['settingsNavigation', 'settingsVehicle', 'settingsReturnStart'].forEach(id => {
-      $(id)?.addEventListener('change', () => salvarFormulario({ notificar: false }));
+    $('settingsConfirmRequiredBtn')?.addEventListener('click', confirmarObrigatorias);
+
+    $('settingsNavigation')?.addEventListener('change', () => {
+      marcarCampoObrigatorio('navegacao');
+      salvarFormulario({ notificar: false });
     });
-    $('settingsStopMinutes')?.addEventListener('input', () => { clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false, tempoParadaAlterado: true }), 350); });
+    $('settingsVehicle')?.addEventListener('change', () => {
+      marcarCampoObrigatorio('veiculo');
+      salvarFormulario({ notificar: false });
+    });
+    $('settingsStopMinutes')?.addEventListener('input', () => {
+      marcarCampoObrigatorio('tempoParada');
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false, tempoParadaAlterado: true }), 350);
+    });
+    $('settingsStopMinutes')?.addEventListener('blur', () => {
+      marcarCampoObrigatorio('tempoParada');
+      salvarFormulario({ notificar: false, tempoParadaAlterado: true });
+    });
+    $('settingsReturnStart')?.addEventListener('change', () => salvarFormulario({ notificar: false }));
 
     renderizar();
     const hint = $('settingsAutosaveStatus');
@@ -189,5 +288,18 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, { once: true });
   else bind();
 
-  global.PacoteEMatoConfiguracoes = Object.freeze({ aguardarAplicacao: () => aplicacaoPendente, obter, salvar, renderizar, validarEnderecoPartida, testarWorker });
+  global.PacoteEMatoConfiguracoes = Object.freeze({
+    aguardarAplicacao: () => aplicacaoPendente,
+    obter,
+    salvar,
+    renderizar,
+    validarEnderecoPartida,
+    testarWorker,
+    usarGpsPartida,
+    limparPonto,
+    obrigatoriasConcluidas,
+    garantirObrigatorias,
+    marcarCampoObrigatorio,
+    confirmarObrigatorias
+  });
 })(window);

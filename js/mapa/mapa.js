@@ -502,6 +502,18 @@
       if (pontoValido(p) && mapa && pronto) mapa.easeTo({ center: [Number(p.lon), Number(p.lat)], zoom: Math.max(mapa.getZoom(), 16), duration: 380 });
       renderizarMotorista();
     } catch (erro) {
+      if (erro?.code === 'GEO_NEGADA') {
+        await global.PacoteEMatoDialog?.avisar?.({
+          titulo: 'Ative a localização',
+          mensagem: 'A localização do navegador está bloqueada. Para usar o botão Minha localização, libere o acesso nas configurações do navegador ou do aparelho e depois toque novamente no botão.',
+          confirmar: 'Entendi'
+        });
+        return;
+      }
+      if (erro?.code === 'CONTEXTO_INSEGURO') {
+        global.notificar?.('A localização precisa de HTTPS para funcionar.');
+        return;
+      }
       global.notificar?.(erro?.message || 'Não foi possível obter sua localização.');
     }
   }
