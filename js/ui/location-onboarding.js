@@ -1,8 +1,9 @@
 (function iniciarOnboardingLocalizacao(global){
   'use strict';
 
-  const KEY_OK = 'pemato_localizacao_aceita_v60';
-  const KEY_LATER_SESSION = 'pemato_localizacao_depois_v60';
+  const KEY_OK = 'pemato_localizacao_aceita_v61';
+  const KEY_LATER_SESSION = 'pemato_localizacao_depois_v61';
+  const KEY_BLOCKED_SESSION = 'pemato_localizacao_bloqueada_v61';
   let verificando = false;
   let observador = null;
 
@@ -30,6 +31,21 @@
     if(el) el.textContent = texto;
   }
 
+  function setBotoesBloqueados(bloqueado){
+    const principal = $('locationOnboardingEnable');
+    const config = $('settingsLocationBtn');
+    const later = $('locationOnboardingLater');
+    if (principal) {
+      principal.disabled = false;
+      principal.textContent = bloqueado ? 'Tentar novamente' : 'Ativar localização';
+    }
+    if (config) {
+      config.disabled = false;
+      config.textContent = bloqueado ? 'Tentar novamente' : 'Ativar localização';
+    }
+    if (later) later.textContent = bloqueado ? 'Continuar sem localização' : 'Agora não';
+  }
+
   function abrir(){
     const el = $('locationOnboardingBackdrop');
     if(el) el.style.display = 'flex';
@@ -50,16 +66,23 @@
     if(p === 'granted'){
       tituloConfig('Localização permitida');
       statusUI('O Pacote É Mato pode usar sua posição durante a rota.', 'ok');
-      try{ localStorage.setItem(KEY_OK,'1'); }catch(_){}
+      setBotoesBloqueados(false);
+      try{
+        localStorage.setItem(KEY_OK,'1');
+        sessionStorage.removeItem(KEY_BLOCKED_SESSION);
+      }catch(_){}
       return p;
     }
     if(p === 'denied'){
-      tituloConfig('Localização bloqueada');
-      statusUI('A permissão foi bloqueada pelo Android/WebView. Toque em Ativar localização para tentar novamente.', 'error');
+      tituloConfig('Localização bloqueada pelo Android/WebView');
+      statusUI('A permissão nativa está bloqueada nesta versão do app. Você pode continuar sem localização e ativar isso quando o WebView Android for atualizado.', 'error');
+      setBotoesBloqueados(true);
+      try{ sessionStorage.setItem(KEY_BLOCKED_SESSION,'1'); }catch(_){}
       return p;
     }
     tituloConfig('Localização ainda não autorizada');
-    statusUI('Toque em Ativar localização para o sistema solicitar a permissão.', 'warning');
+    statusUI('Toque em Ativar localização para solicitar a permissão ao aparelho.', 'warning');
+    setBotoesBloqueados(false);
     return p;
   }
 
@@ -69,27 +92,34 @@
     const botoes = [$('locationOnboardingEnable'), $('settingsLocationBtn')].filter(Boolean);
     botoes.forEach(b=>b.disabled=true);
     tituloConfig('Solicitando localização...');
-    statusUI('Aguardando a resposta de permissão do aparelho.', 'warning');
+    statusUI('Aguardando a resposta do Android/WebView.', 'warning');
     try{
       const pos = await global.PacoteEMatoLocalizacaoAtual?.obter?.({forcar:true});
       if(!pos) throw new Error('O aparelho não retornou uma posição válida.');
-      try{ localStorage.setItem(KEY_OK,'1'); sessionStorage.removeItem(KEY_LATER_SESSION); }catch(_){}
+      try{
+        localStorage.setItem(KEY_OK,'1');
+        sessionStorage.removeItem(KEY_LATER_SESSION);
+        sessionStorage.removeItem(KEY_BLOCKED_SESSION);
+      }catch(_){}
       tituloConfig('Localização permitida');
       statusUI('Localização ativada com sucesso.', 'ok');
+      setBotoesBloqueados(false);
       global.notificar?.('Localização ativada.');
-      setTimeout(fechar, 450);
+      setTimeout(fechar, 350);
       return true;
     }catch(erro){
       const code = String(erro?.code || '');
       if(code === 'GEO_NEGADA'){
-        tituloConfig('Localização bloqueada');
-        statusUI('O WebView/Android bloqueou a permissão. Quando a versão Android estiver configurada para repassar a permissão, este mesmo botão abrirá a solicitação oficial.', 'error');
+        tituloConfig('Localização bloqueada pelo Android/WebView');
+        statusUI('O app tentou pedir a localização, mas o WebView não liberou a permissão nativa. Você não precisa ficar tocando novamente: continue sem localização por enquanto.', 'error');
+        setBotoesBloqueados(true);
+        try{ sessionStorage.setItem(KEY_BLOCKED_SESSION,'1'); }catch(_){}
       }else if(code === 'CONTEXTO_INSEGURO'){
         tituloConfig('Localização indisponível');
         statusUI('A localização exige uma conexão segura HTTPS.', 'error');
       }else{
         tituloConfig('Não foi possível ativar');
-        statusUI(erro?.message || 'Tente novamente em alguns segundos.', 'error');
+        statusUI(erro?.message || 'Não foi possível obter a localização agora.', 'error');
       }
       return false;
     }finally{
@@ -105,17 +135,20 @@
     try{
       if(localStorage.getItem(KEY_OK)==='1') return;
       if(sessionStorage.getItem(KEY_LATER_SESSION)==='1') return;
+      if(sessionStorage.getItem(KEY_BLOCKED_SESSION)==='1') return;
     }catch(_){}
     abrir();
+  }
+
+  function continuarSemLocalizacao(){
+    try{ sessionStorage.setItem(KEY_LATER_SESSION,'1'); }catch(_){}
+    fechar();
   }
 
   function bind(){
     $('locationOnboardingEnable')?.addEventListener('click', solicitar);
     $('settingsLocationBtn')?.addEventListener('click', solicitar);
-    $('locationOnboardingLater')?.addEventListener('click', ()=>{
-      try{ sessionStorage.setItem(KEY_LATER_SESSION,'1'); }catch(_){}
-      fechar();
-    });
+    $('locationOnboardingLater')?.addEventListener('click', continuarSemLocalizacao);
 
     global.addEventListener('pemato:localizacao-atual', atualizarStatus);
     global.addEventListener('pemato:resume', atualizarStatus);
@@ -136,5 +169,5 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind, {once:true});
   else bind();
 
-  global.PacoteEMatoLocalizacaoUI = Object.freeze({ solicitar, atualizarStatus, abrir, fechar });
+  global.PacoteEMatoLocalizacaoUI = Object.freeze({ solicitar, atualizarStatus, abrir, fechar, continuarSemLocalizacao });
 })(window);
