@@ -1,13 +1,13 @@
-# Pacote É Mato V79 — avisos no mapa e modo manutenção
+# Pacote É Mato — V80
 
-Alterações desta versão:
-- comunicado do dono aparece somente em Minha rota / mapa;
-- comunicado não aparece no login nem na Bipagem;
-- painel do dono ganhou Modo manutenção;
-- manutenção bloqueia a área interna do app após autenticação e libera automaticamente em tempo real quando encerrada;
-- login continua disponível durante manutenção;
-- aviso e manutenção usam o documento já existente `sistema_config/broadcast`;
-- não exige nova coleção nem nova regra do Firestore;
-- requer publicar o Worker `cloudflare/WORKER-HOLY-FROG-V79-AVISOS-MANUTENCAO-COMPLETO.txt`.
+Correção pontual do aviso normal do painel do dono.
 
-Fora desses pontos, a V78 foi preservada.
+- O aviso normal usa o mesmo documento e o mesmo listener em tempo real da manutenção.
+- Não aparece na tela de login.
+- Assim que a conta é liberada após o login, aparece como cartão/modal informativo.
+- O cliente fecha em **Entendi** ou no **X** e continua usando o app normalmente.
+- Se um novo aviso for publicado, ele pode aparecer novamente em tempo real.
+- Se o motorista estiver na Bipagem/Configurações, o aviso aguarda a volta à tela da rota/mapa.
+- A manutenção continua tendo prioridade e permanece bloqueante.
+
+Nenhuma alteração no Worker, Firebase, leitor de PDF, Bipagem, localização, câmera, áudio ou roteirização.

@@ -2305,22 +2305,73 @@ function tocarIntroPs2Audio() {
       return Boolean(zap && auth.currentUser && !loginVisivel);
     }
 
+    let avisoNormalDispensadoChave = '';
+    let avisoNormalSessaoAutenticada = false;
+
+    function chaveAvisoNormal(data) {
+      const mensagem = String(data?.mensagem || '').trim();
+      const atualizado = Number(data?.atualizadoEm || 0);
+      const expira = Number(data?.expiraEm || 0);
+      return `${atualizado}|${expira}|${mensagem}`;
+    }
+
+    function usuarioNaTelaDoMapaParaAviso() {
+      const modulo = String(document.body?.dataset?.pematoModule || '').trim();
+      // Durante a transição imediatamente após o login o módulo pode ainda não
+      // estar gravado no body. Nesse instante a tela de entrada do app é a rota.
+      return !modulo || modulo === 'roteirizacao';
+    }
+
+    function fecharAvisoNormalGlobal() {
+      const overlay = document.getElementById('broadcastNoticeOverlay');
+      avisoNormalDispensadoChave = chaveAvisoNormal(sistemaConfigGlobalAtual || {});
+      if (overlay) overlay.style.display = 'none';
+      document.body.classList.remove('pemato-notice-active');
+    }
+    window.fecharAvisoNormalGlobal = fecharAvisoNormalGlobal;
+
     function atualizarBannerBroadcast() {
-      const banner = document.getElementById('bannerBroadcast');
-      const mensagemEl = document.getElementById('bannerBroadcastMessage');
-      if (!banner || !mensagemEl) return;
+      // V80: o aviso normal usa o mesmo monitoramento em tempo real da manutenção,
+      // mas é apenas informativo e pode ser fechado. O banner antigo da rota fica
+      // desativado para o cliente não receber o mesmo comunicado duas vezes.
+      const bannerAntigo = document.getElementById('bannerBroadcast');
+      if (bannerAntigo) bannerAntigo.style.display = 'none';
+
+      const overlay = document.getElementById('broadcastNoticeOverlay');
+      const mensagemEl = document.getElementById('broadcastNoticeMessage');
+      if (!overlay || !mensagemEl) return;
+
+      const autenticado = usuarioAutenticadoNoApp();
+      if (!autenticado) {
+        avisoNormalSessaoAutenticada = false;
+        overlay.style.display = 'none';
+        document.body.classList.remove('pemato-notice-active');
+        return;
+      }
+
+      // Cada nova entrada autenticada pode exibir novamente o comunicado ativo.
+      // Isso garante o comportamento pedido: depois do login, o cliente vê o aviso.
+      if (!avisoNormalSessaoAutenticada) {
+        avisoNormalSessaoAutenticada = true;
+        avisoNormalDispensadoChave = '';
+      }
 
       const data = sistemaConfigGlobalAtual || {};
       const agora = Date.now();
       const expiraEm = Number(data.expiraEm || 0);
-      const ativo = data.ativo === true && Boolean(String(data.mensagem || '').trim()) && (!expiraEm || agora <= expiraEm);
+      const mensagem = String(data.mensagem || '').trim();
+      const ativo = data.ativo === true && Boolean(mensagem) && (!expiraEm || agora <= expiraEm);
+      const manutencaoAtiva = data.manutencaoAtiva === true;
+      const chave = chaveAvisoNormal(data);
+      const podeMostrar = ativo && !manutencaoAtiva && usuarioNaTelaDoMapaParaAviso() && chave !== avisoNormalDispensadoChave;
 
-      if (ativo && usuarioAutenticadoNoApp()) {
-        mensagemEl.textContent = String(data.mensagem || '').trim();
-        banner.style.display = 'flex';
+      if (podeMostrar) {
+        mensagemEl.textContent = mensagem;
+        overlay.style.display = 'flex';
+        document.body.classList.add('pemato-notice-active');
       } else {
-        mensagemEl.textContent = '';
-        banner.style.display = 'none';
+        overlay.style.display = 'none';
+        document.body.classList.remove('pemato-notice-active');
       }
     }
 
@@ -2357,6 +2408,19 @@ function tocarIntroPs2Audio() {
           window.__pematoSistemaConfigUnsub = null;
         }
       } catch (_) {}
+
+      // Observa a troca entre Mapa/Bipagem/Configurações. Um aviso publicado
+      // enquanto o motorista estiver fora do mapa fica aguardando e aparece ao
+      // retornar à rota, nunca por cima da tela de login.
+      if (!window.__pematoAvisoModuloObserver && document.body) {
+        try {
+          window.__pematoAvisoModuloObserver = new MutationObserver(() => atualizarCamadasSistemaConfig());
+          window.__pematoAvisoModuloObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['data-pemato-module']
+          });
+        } catch (_) {}
+      }
 
       window.__pematoSistemaConfigUnsub = db.collection("sistema_config").doc("broadcast").onSnapshot(doc => {
         sistemaConfigGlobalAtual = doc.exists ? (doc.data() || {}) : {};
@@ -2690,7 +2754,7 @@ function tocarIntroPs2Audio() {
     // Ao detectar troca de build, limpa apenas caches/Service Workers de interface;
     // os dados operacionais do usuário permanecem intactos.
     try {
-      const buildAtual = String(window.PEMATO_BUILD || '').trim() || '79';
+      const buildAtual = String(window.PEMATO_BUILD || '').trim() || '80';
       const buildAnterior = String(localStorage.getItem('pemato_build_carregado') || '').trim();
       localStorage.setItem('pemato_build_carregado', buildAtual);
       if (buildAnterior !== buildAtual) {
