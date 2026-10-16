@@ -373,3 +373,8 @@
 .route-editor-address-simple .optional-label{font-weight:600;color:#7b8794}
 .route-editor-address-simple #routeEdit_details{margin-top:0}
 .routing-endpoint-card .pemato-address-search-wrap{z-index:4}
+
+/* V76 — adicionar/editar endereço no mesmo campo de busca da lista */
+.routing-search-mode{align-items:center;justify-content:space-between;gap:8px;width:100%;padding:7px 9px;border:1px solid #bbdfcf;border-radius:11px;background:#f0faf5;color:#145d43;font-size:.62rem;font-weight:800}
+.routing-search-mode button{border:0;background:transparent;color:#356d59;font:800 .58rem/1.2 'Plus Jakarta Sans',sans-serif;padding:4px 2px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.routing-search-mode button:active{opacity:.7}

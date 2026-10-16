@@ -1,18 +1,11 @@
-# Pacote É Mato V75 — ajustes pontuais
+# Pacote É Mato V76 — correções pontuais
 
-Esta versão altera somente o que foi solicitado após a V74:
+Esta versão parte da V75 e altera somente os pontos solicitados:
 
-- corrige a exportação do PDF, com suporte ao salvamento nativo no Android (quando o MainActivity V75 estiver instalado), Web Share e download como fallback;
-- mantém o layout do PDF V74 (verde/branco/preto, ordem atual, SPX TN e ponto final);
-- adicionar parada, editar parada e ponto final agora usam a mesma busca de endereço com sugestões abaixo do campo;
-- evita repetição de número da casa/apartamento no editor separando endereço físico de complemento;
-- corrige “Voltar à rota” em Configurações para sair imediatamente sem aguardar processamento pendente e sem prender o histórico interno;
-- acrescenta no Painel do Dono a Central de problemas e Versões do app, além de versão/último uso na ficha do cliente;
-- registra somente telemetria operacional mínima no documento existente do usuário (versão, plataforma, último uso e último erro). Não registra endereços/rotas nem localização para o painel;
-- preserva o leitor/Bipagem V73 e as demais funções da V74 sem alteração funcional.
+- corrige o aviso de localização na importação: no Android/WebView, a posição real retornada pelo GPS passa a ser a fonte de verdade, mesmo quando `navigator.permissions` estiver desatualizado;
+- adicionar parada e editar parada passam a usar o mesmo campo de pesquisa da lista de paradas, com sugestões logo abaixo, igual à busca principal de endereços;
+- corrige exibição/salvamento de logradouro, número e complemento para não repetir número do imóvel nem apartamento;
+- corrige a operação “Adicionar pacotes à rota”: pacote que já estava na rota e foi confirmado em “Sim, manter na rota” agora permanece contado também na conferência e permite confirmar a operação sem duplicar o pacote;
+- a remoção por bipagem foi preservada e testada para não regredir.
 
-## Firebase / Worker
-Não é necessário criar nova coleção, rota no Worker ou secret. Os novos campos são gravados no documento já existente `usuarios/{whatsapp}`. Se as regras do Firestore bloquearem campos novos, ajuste as Rules para permitir esses campos ao próprio usuário.
-
-## Android
-Para o botão Exportar PDF abrir o seletor nativo “Salvar como” dentro do WebView, use também o pacote Android V75 fornecido junto da entrega. O Manifest não precisa de permissão de armazenamento.
+Não foram alterados o leitor PDF V73, desenho/refino, exportação PDF, Worker, Firebase, navegação, câmera, áudio ou demais regras da rota.

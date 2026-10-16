@@ -392,10 +392,10 @@
       atualizarBanner();
       return true;
     }
-    if (estado.selecionados.has(codigo)) {
+    if (estado.selecionados.has(codigo) || estado.confirmadosExistentes?.has(codigo)) {
       estado.duplicados.push(codigo);
       tocarSomOperacao('erro')
-      mostrarResultadoScanner(false, codigo, estado.indicePlanilha.get(codigo), 'Esse pacote já foi bipado nesta operação.');
+      mostrarResultadoScanner(false, codigo, estado.indiceRota.get(codigo) || estado.indicePlanilha.get(codigo), 'Esse pacote já foi conferido nesta operação.');
       atualizarBanner();
       return true;
     }
@@ -430,35 +430,41 @@
   }
 
   function dadosConferencia() {
-    const selecionados = [...(estado?.selecionados || [])];
+    const selecionadosNovos = [...(estado?.selecionados || [])];
+    const existentesConfirmados = [...(estado?.confirmadosExistentes || [])];
+    const todos = [
+      ...selecionadosNovos.map(codigo => ({ codigo, existente: false })),
+      ...existentesConfirmados.map(codigo => ({ codigo, existente: true }))
+    ];
     const porEndereco = new Map();
-    selecionados.forEach(codigo => {
-      const parada = estado.modo === 'remover' ? estado.indiceRota.get(codigo) : estado.indicePlanilha.get(codigo);
+    todos.forEach(({ codigo, existente }) => {
+      const parada = existente || estado.modo === 'remover' ? estado.indiceRota.get(codigo) : estado.indicePlanilha.get(codigo);
       const key = chaveFisica(parada);
       porEndereco.set(key, (porEndereco.get(key) || 0) + 1);
     });
-    const itens = selecionados.map(codigo => {
+    const itens = todos.map(({ codigo, existente }) => {
       const origem = estado.indicePlanilha.get(codigo);
       const atual = estado.indiceRota.get(codigo);
-      const paradaBase = estado.modo === 'remover' ? atual : origem;
+      const paradaBase = existente || estado.modo === 'remover' ? atual : origem;
       const quantidadeEndereco = porEndereco.get(chaveFisica(paradaBase)) || 1;
       let restante = null;
       if (estado.modo === 'remover' && atual) restante = Math.max(0, quantidadePacotesFisicos(estado.rotaBase, atual) - quantidadeEndereco);
-      return { codigo, origem, atual, restante, quantidadeEndereco };
+      return { codigo, origem, atual, restante, quantidadeEndereco, existente };
     });
-    return { selecionados, itens };
+    return { selecionadosNovos, existentesConfirmados, todos, itens };
   }
 
   function abrirConferencia() {
     if (!estado) return;
     garantirUI();
-    const { selecionados, itens } = dadosConferencia();
+    const { selecionadosNovos, existentesConfirmados, todos, itens } = dadosConferencia();
     const total = estado.indicePlanilha.size;
+    const totalConferidos = todos.length;
     const encontradosRota = estado.modo === 'remover' ? [...estado.indicePlanilha.keys()].filter(c => estado.indiceRota.has(c)).length : 0;
     $('pkgOpReviewTitle').textContent = estado.modo === 'adicionar' ? 'Conferir pacotes para adicionar' : 'Conferir pacotes para remover';
     $('pkgOpReviewSummary').innerHTML = estado.modo === 'adicionar'
-      ? `<div><strong>${total}</strong><span>na planilha</span></div><div><strong>${selecionados.length}</strong><span>bipados</span></div><div><strong>${Math.max(0,total-selecionados.length)}</strong><span>não bipados</span></div>`
-      : `<div><strong>${encontradosRota}</strong><span>presentes na rota</span></div><div><strong>${selecionados.length}</strong><span>para remover</span></div><div><strong>${estado.bloqueados.length}</strong><span>não permitidos</span></div>`;
+      ? `<div><strong>${total}</strong><span>na planilha</span></div><div><strong>${totalConferidos}</strong><span>bipados</span></div><div><strong>${Math.max(0,total-totalConferidos)}</strong><span>não bipados</span></div>`
+      : `<div><strong>${encontradosRota}</strong><span>presentes na rota</span></div><div><strong>${selecionadosNovos.length}</strong><span>para remover</span></div><div><strong>${estado.bloqueados.length}</strong><span>não permitidos</span></div>`;
 
     const list = $('pkgOpReviewList');
     list.replaceChildren();
@@ -469,10 +475,17 @@
         const row = document.createElement('article'); row.className = 'pkg-op-item';
         const address = item.origem?.enderecoOriginal || item.atual?.enderecoOriginal || 'Endereço não informado';
         const detalheEndereco = estado.modo === 'adicionar'
-          ? `${item.quantidadeEndereco} pacote(s) selecionado(s) neste endereço`
+          ? (item.existente
+              ? 'Já estava na rota · será mantido sem duplicação'
+              : `${item.quantidadeEndereco} pacote(s) selecionado(s) neste endereço`)
           : `${item.restante} pacote(s) permanecerão nesta parada física`;
         row.innerHTML = `<div><strong>${item.codigo}</strong><span>${address}</span><small>${detalheEndereco}</small></div><button type="button" data-pkg-remove="${item.codigo}">×</button>`;
-        row.querySelector('button')?.addEventListener('click', () => { estado.selecionados.delete(item.codigo); atualizarBanner(); abrirConferencia(); });
+        row.querySelector('button')?.addEventListener('click', () => {
+          if (item.existente) estado.confirmadosExistentes?.delete(item.codigo);
+          else estado.selecionados.delete(item.codigo);
+          atualizarBanner();
+          abrirConferencia();
+        });
         list.appendChild(row);
       });
     }
@@ -483,11 +496,11 @@
     if (rotaEmAndamento) avisos.push('A rota está em andamento. A alteração será salva somente após sua confirmação e o trajeto poderá precisar ser recalculado.');
     if (estado.invalidos.length) avisos.push(`${estado.invalidos.length} leitura(s) não foram encontradas na planilha.`);
     if (estado.duplicados.length) avisos.push(`${estado.duplicados.length} leitura(s) repetidas foram ignoradas.`);
-    if (estado.bloqueados.length) avisos.push(`${estado.bloqueados.length} pacote(s) foram bloqueados por não pertencerem à rota, já existirem nela ou possuírem status protegido.`);
+    if (estado.bloqueados.length) avisos.push(`${estado.bloqueados.length} pacote(s) foram bloqueados por não pertencerem à rota ou possuírem status protegido.`);
     warning.textContent = avisos.join(' ');
     warning.style.display = avisos.length ? 'block' : 'none';
     $('pkgOpAddOptions').style.display = estado.modo === 'adicionar' ? 'grid' : 'none';
-    $('pkgOpConfirmBtn').disabled = !selecionados.length;
+    $('pkgOpConfirmBtn').disabled = !todos.length;
     $('pkgOpConfirmBtn').textContent = estado.modo === 'adicionar' ? 'Confirmar adição' : 'Confirmar remoção';
     $('pkgOpReviewBackdrop').style.display = 'flex';
   }
@@ -704,7 +717,8 @@
   }
 
   async function confirmarOperacao() {
-    if (!estado || !estado.selecionados.size || processando) return;
+    const totalConferidos = (estado?.selecionados?.size || 0) + (estado?.confirmadosExistentes?.size || 0);
+    if (!estado || !totalConferidos || processando) return;
     processando = true;
     const btn = $('pkgOpConfirmBtn');
     const textoOriginal = btn?.textContent || '';
@@ -712,18 +726,25 @@
     try {
       if (estado.modo === 'adicionar') {
         const escolha = $('pkgOpOrderChoice')?.value || 'manter';
+        const existentes = estado.confirmadosExistentes?.size || 0;
         const resultado = adicionarSelecionados(estado.rotaBase);
         const rotaMutada = resultado.rota;
-        if (escolha === 'novas') await otimizarNovas(rotaMutada, resultado.novosIds);
-        else if (escolha === 'todas') await otimizarTudo(rotaMutada);
-        else {
-          limparCalculoSeNecessario(rotaMutada);
-          let recalculou = false;
-          try { recalculou = await recalcularTrajetoNaOrdem(rotaMutada); } catch (_) { recalculou = false; }
-          if (!recalculou) rotaMutada.precisaRecalculo = true;
+        let avisoRecalculo = '';
+        if (resultado.adicionados.length) {
+          if (escolha === 'novas') await otimizarNovas(rotaMutada, resultado.novosIds);
+          else if (escolha === 'todas') await otimizarTudo(rotaMutada);
+          else {
+            limparCalculoSeNecessario(rotaMutada);
+            let recalculou = false;
+            try { recalculou = await recalcularTrajetoNaOrdem(rotaMutada); } catch (_) { recalculou = false; }
+            if (!recalculou) rotaMutada.precisaRecalculo = true;
+          }
+          avisoRecalculo = rotaMutada.precisaRecalculo ? ' O trajeto atual foi preservado, mas precisa ser recalculado antes de confiar na sequência de navegação.' : '';
         }
-        const avisoRecalculo = rotaMutada.precisaRecalculo ? ' O trajeto atual foi preservado, mas precisa ser recalculado antes de confiar na sequência de navegação.' : '';
-        await finalizarComSucesso(rotaMutada, `${resultado.adicionados.length} pacote(s) adicionados à rota.${avisoRecalculo}`);
+        const partes = [];
+        if (resultado.adicionados.length) partes.push(`${resultado.adicionados.length} pacote(s) adicionados à rota.`);
+        if (existentes) partes.push(`${existentes} pacote(s) já estavam na rota e foram conferidos sem duplicação.`);
+        await finalizarComSucesso(rotaMutada, `${partes.join(' ')}${avisoRecalculo}`.trim());
       } else {
         const resultado = removerSelecionados(estado.rotaBase);
         if (!resultado.removidos.length) throw new Error('Nenhum pacote elegível foi removido.');
@@ -781,6 +802,21 @@
     } finally { estado = anterior; }
   }
 
+  function executarConferenciaTeste({ rotaBase, paradasPlanilha, selecionados, confirmadosExistentes }) {
+    const anterior = estado;
+    const indicePlanilha = new Map();
+    (paradasPlanilha || []).forEach(parada => (parada.pacotes || []).forEach(codigo => indicePlanilha.set(String(codigo), parada)));
+    estado = {
+      modo: 'adicionar', rotaBase: clone(rotaBase || null), arquivo: { name: 'teste.xlsx' }, resultado: { paradas: clone(paradasPlanilha || []) },
+      indicePlanilha, indiceRota: pacotesDaRota(rotaBase || null),
+      selecionados: new Set((selecionados || []).map(String)),
+      confirmadosExistentes: new Set((confirmadosExistentes || []).map(String)), decisoesExistentesEmCurso: new Set(),
+      invalidos: [], duplicados: [], bloqueados: []
+    };
+    try { return dadosConferencia(); }
+    finally { estado = anterior; }
+  }
+
   function estaAtiva() { return !!estado?.arquivo; }
 
   function bind() {
@@ -802,6 +838,6 @@
     processarCodigoOperacao,
     chaveFisica,
     quantidadePacotesFisicos,
-    _teste: Object.freeze({ identificarCodigo, adicionarSelecionados, removerSelecionados, recalcularTrajetoNaOrdem, executarMutacaoTeste, chaveFisica })
+    _teste: Object.freeze({ identificarCodigo, adicionarSelecionados, removerSelecionados, recalcularTrajetoNaOrdem, executarMutacaoTeste, executarConferenciaTeste, chaveFisica })
   });
 })(window);

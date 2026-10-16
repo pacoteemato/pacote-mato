@@ -71,11 +71,11 @@
     }
     const p = await permissao();
     if (p === 'granted') bloqueada = false;
-    if (p === 'denied') {
-      bloqueada = true;
-      salvar(null, 'negada');
-      throw Object.assign(new Error('Localização bloqueada no navegador. Libere o acesso nas configurações para usar sua posição.'), { code: 'GEO_NEGADA' });
-    }
+    // Em Android WebView, navigator.permissions pode informar "denied" ou
+    // "prompt" mesmo depois de a permissão nativa ter sido liberada. A fonte
+    // de verdade passa a ser getCurrentPosition: se o Android negar de fato,
+    // o callback de erro abaixo retornará GEO_NEGADA.
+    if (p === 'denied') bloqueada = true;
     if (solicitacaoEmAndamento) return solicitacaoEmAndamento;
 
     solicitacaoEmAndamento = new Promise((resolve, reject) => {
