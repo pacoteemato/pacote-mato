@@ -1526,6 +1526,35 @@
       if (!opcoes?.refinamento) notificar('Rota calculada. Confira a sequência e confirme.');
     } catch (erro) {
       console.error(erro);
+
+      // V62: se a sequência foi aceita pelo otimizador mas o provedor não
+      // conseguiu traçar o percurso completo, faz uma correção completa das
+      // coordenadas importadas e tenta novamente uma única vez. Nenhuma parada
+      // é apagada e a rota anterior continua preservada até uma geometria válida.
+      const falhaPercurso = /percurso completo|trecho .* rota|geometria/i.test(String(erro?.message || ''));
+      if (falhaPercurso && opcoes?.reparoAutomatico !== true && global.PacoteEMatoGeocodificacao?.validarCoordenadasImportadas) {
+        try {
+          atualizarProcessamento('Corrigindo posições da rota', 'O percurso veio incompleto. Conferindo todas as coordenadas antes de tentar novamente.');
+          const ids = (rotaAtual.paradas || [])
+            .filter(p => !paradaFinalizada(p) && paradaLocalizada(p))
+            .map(p => String(p.id));
+          if (ids.length) {
+            await global.PacoteEMatoGeocodificacao.validarCoordenadasImportadas(rotaAtual.paradas, {
+              limiteMetros: 90,
+              ids,
+              concorrencia: 4,
+              gapMs: 180
+            });
+            await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
+            renderizarTudo({ fit: true });
+          }
+          esconderProcessamento();
+          return await otimizarRota(Object.assign({}, opcoes || {}, { reparoAutomatico: true }));
+        } catch (erroReparo) {
+          console.warn('Pacote É Mato: reparo automático de coordenadas não concluiu.', erroReparo);
+        }
+      }
+
       esconderProcessamento();
       definirStatusImportacao(erro?.message || 'Não foi possível otimizar a rota.', 'error');
       notificar(erro?.message || 'Não foi possível otimizar a rota.');

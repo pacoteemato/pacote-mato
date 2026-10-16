@@ -241,15 +241,10 @@
     return true;
   }
 
-  async function garantirObrigatorias(contexto) {
-    if (obrigatoriasConcluidas()) return true;
-    const mensagem = contexto
-      ? `Antes de ${contexto}, confirme as configurações obrigatórias de navegação, veículo e tempo na parada.`
-      : 'Antes de continuar, confirme as configurações obrigatórias de navegação, veículo e tempo na parada.';
-    status($('settingsRequiredStatus'), mensagem, 'warning');
-    global.notificar?.(mensagem);
-    await global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes');
-    return false;
+  async function garantirObrigatorias() {
+    // V62: estas opções são recomendações operacionais.
+    // O motorista pode otimizar/iniciar sem alterar valores já válidos.
+    return true;
   }
 
   function agendarAutoSave(delay) {

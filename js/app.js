@@ -3324,6 +3324,31 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       return m ? parseInt(m[1], 10) : fallback;
     }
 
+    // V62 — códigos BR podem ser fragmentados pelo PDF.js em 2+ pedaços.
+    // Ex.: "BR2609" + "67904580Q" deve continuar virando BR260967904580Q.
+    // Para SPX/Shopee, o código normal tem 15 caracteres (BR + 13 alfanuméricos).
+    function extrairCodigosBrFlexiveis(texto) {
+      const bruto = String(texto || '');
+      const encontrados = new Set();
+
+      // Mantém compatibilidade com códigos já contínuos.
+      (bruto.match(/BR[A-Za-z0-9]{8,25}/gi) || []).forEach(c => {
+        const up = String(c).toUpperCase();
+        // Quando a captura ficou longa por texto colado depois do código, prioriza
+        // o formato SPX de 15 caracteres.
+        if (/^BR[0-9][A-Z0-9]{12}/.test(up)) encontrados.add(up.slice(0, 15));
+        else encontrados.add(up);
+      });
+
+      // Reconstrói o código mesmo quando há espaços, quebras ou pontuação no meio.
+      const compacto = bruto.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const rx = /BR[0-9][A-Z0-9]{12}/g;
+      let m;
+      while ((m = rx.exec(compacto))) encontrados.add(m[0]);
+
+      return [...encontrados];
+    }
+
 
     // V50 - leitor universal de PDFs de rota (Spoke, Circuit e layouts semelhantes).
     // Não depende da coluna #. A fonte de verdade passa a ser a associação visual/textual
@@ -3339,7 +3364,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       let sequencia = 0;
 
       function codigosDaLinha(texto) {
-        return [...new Set((String(texto || '').match(/BR[A-Za-z0-9]{8,25}/gi) || []).map(c => c.toUpperCase()))];
+        return extrairCodigosBrFlexiveis(texto);
       }
 
       function limparCandidatoEndereco(texto) {
@@ -3347,8 +3372,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         if (!t) return '';
         // Remove cabeçalhos/labels que alguns exportadores colocam na mesma linha.
         t = t.replace(/^\s*(?:#\s*)?(?:address|endereco|endereço)\s*[:\-]?\s*/i, '');
-        // Remove códigos e tudo que claramente pertence a Notes depois deles.
-        t = t.replace(/\s+BR[A-Za-z0-9]{8,25}[;,:]?\s*.*$/i, '');
+        // Remove códigos/Notes mesmo quando o PDF separa o BR em fragmentos.
+        const posCodigo = t.search(/\bBR(?:[\s._-]*[0-9])/i);
+        if (posCodigo >= 0) t = t.slice(0, posCodigo).trim();
         // Remove prefixos de parada do Circuit/Spoke quando existirem.
         t = t.replace(/^\s*(?:stop|parada)\s*#?\s*\d{1,4}\s*[:\-]?\s*/i, '');
         t = t.replace(/^\s*\d{1,4}\s+(?=(?:Rua|R\.?|Avenida|Av\.?|Alameda|Travessa|Estrada|Rodovia|Pra[cç]a|Largo|Viela|Passagem)\b)/i, '');
@@ -3472,8 +3498,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
     function extrairCodigoChave(texto) {
       if (!texto) return "";
-      let m = texto.match(/BR[A-Za-z0-9]{8,25}/i);
-      if (m) return m[0].toUpperCase().trim();
+      const flex = extrairCodigosBrFlexiveis(texto);
+      if (flex.length) return flex[0];
       return texto.replace(/[^A-Za-z0-9]/g, '').toUpperCase().trim();
     }
 
@@ -3597,13 +3623,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
                 let codigo = '';
                 let indiceCodigo = -1;
                 for (let i = 0; i < linhaItens.length; i++) {
-                  const compacto = String(linhaItens[i].str || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-                  const m = compacto.match(/BR[A-Z0-9]{8,25}/);
-                  if (m) { codigo = m[0]; indiceCodigo = i; break; }
-                  if (compacto === 'BR' && i + 1 < linhaItens.length) {
-                    const prox = String(linhaItens[i + 1].str || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-                    if (/^[A-Z0-9]{8,25}$/.test(prox)) { codigo = `BR${prox}`; indiceCodigo = i; break; }
-                  }
+                  const janela = linhaItens.slice(i, Math.min(linhaItens.length, i + 4)).map(x => x.str).join(' ');
+                  const achados = extrairCodigosBrFlexiveis(janela);
+                  if (achados.length) { codigo = achados[0]; indiceCodigo = i; break; }
                 }
                 if (!codigo || codigosGlobais.has(`VISUAL:${codigo}`)) return;
 
@@ -3638,12 +3660,14 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             // Remove marcadores internos antes da validação global.
             [...codigosGlobais].filter(c => c.startsWith('VISUAL:')).forEach(c => codigosGlobais.delete(c));
 
-            // Conta TODOS os códigos BR diretamente do PDF.
-            // Essa contagem é independente do agrupamento de endereços.
-            itens.forEach(item => {
-              const codigos = item.str.match(/BR[A-Za-z0-9]{8,25}/gi) || [];
-              codigos.forEach(c => codigosGlobais.add(c.toUpperCase()));
+            // Conta TODOS os códigos BR do PDF, inclusive quando o PDF.js
+            // separa um mesmo código em vários itens/fragmentos.
+            gruposLinhaFallback.forEach(grupo => {
+              const linhaCompleta = grupo.itens.slice().sort((a,b)=>a.x-b.x).map(i=>i.str).join(' ');
+              extrairCodigosBrFlexiveis(linhaCompleta).forEach(c => codigosGlobais.add(c));
             });
+            // Também preserva códigos que já vieram inteiros em itens isolados.
+            itens.forEach(item => extrairCodigosBrFlexiveis(item.str).forEach(c => codigosGlobais.add(c)));
 
             /*
              * Âncoras da coluna "#" do rota.
@@ -3719,8 +3743,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
                 .trim();
 
               const codigos = [...new Set(
-                (textoCompleto.match(/BR[A-Za-z0-9]{8,25}/gi) || [])
-                  .map(c => c.toUpperCase())
+                extrairCodigosBrFlexiveis(textoCompleto)
               )];
 
               if (codigos.length === 0) continue;
@@ -3737,7 +3760,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               if (posHorario >= 0) {
                 endereco = endereco.slice(0, posHorario).trim();
               } else {
-                endereco = endereco.replace(/\s+BR[A-Za-z0-9]{8,25}.*$/i, '').trim();
+                const posCodigoEndereco = endereco.search(/\bBR(?:[\s._-]*[0-9])/i);
+                if (posCodigoEndereco >= 0) endereco = endereco.slice(0, posCodigoEndereco).trim();
               }
 
               // Remove eventual número da coluna # que tenha ficado duplicado.
@@ -3807,6 +3831,12 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
           let processado = false;
 
+          function contarCodigosDosRegistros(lista) {
+            const set = new Set();
+            (Array.isArray(lista) ? lista : []).forEach(r => (r?.codigos || []).forEach(c => set.add(String(c || '').toUpperCase())));
+            return set.size;
+          }
+
           if (leituraEstritaOk) {
             try {
               processarRegistrosrota(registrosrota, file.name);
@@ -3821,8 +3851,14 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
           if (!processado && registrosVisuaisPdf.length) {
             try {
-              processarRegistrosrota(registrosVisuaisPdf, file.name);
-              processado = todosPacotes && todosPacotes.size > 0;
+              const totalVisual = contarCodigosDosRegistros(registrosVisuaisPdf);
+              // Não aceita uma leitura parcial se o próprio PDF já revelou mais códigos.
+              if (!codigosGlobais.size || totalVisual >= codigosGlobais.size) {
+                processarRegistrosrota(registrosVisuaisPdf, file.name);
+                processado = todosPacotes && todosPacotes.size > 0;
+              } else {
+                console.info(`Leitura visual encontrou ${totalVisual}/${codigosGlobais.size}. Tentando leitor universal antes de liberar a rota.`);
+              }
             } catch (erroVisual) {
               console.warn('Leitura visual V51 não concluiu este PDF. Tentando leitor por texto:', erroVisual);
             }
@@ -3834,8 +3870,13 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             try {
               const universais = extrairRegistrosPdfUniversal(linhasFallbackPdf);
               if (universais.length) {
-                processarRegistrosrota(universais, file.name);
-                processado = todosPacotes && todosPacotes.size > 0;
+                const totalUniversal = contarCodigosDosRegistros(universais);
+                if (!codigosGlobais.size || totalUniversal >= codigosGlobais.size) {
+                  processarRegistrosrota(universais, file.name);
+                  processado = todosPacotes && todosPacotes.size > 0;
+                } else {
+                  console.info(`Leitor universal encontrou ${totalUniversal}/${codigosGlobais.size}. Tentando compatibilidade legada.`);
+                }
               }
             } catch (erroUniversal) {
               console.warn('Leitor universal não concluiu este PDF. Tentando compatibilidade legada:', erroUniversal);
@@ -3851,14 +3892,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             throw new Error('NENHUM_PACOTE_VALIDO');
           }
 
-          // Apenas diagnóstico: não bloqueia a rota.
-          if (
-            codigosGlobais.size > 0 &&
-            todosPacotes.size !== codigosGlobais.size
-          ) {
-            console.warn(
-              `PDF lido em modo compatível: encontrados ${todosPacotes.size} de ${codigosGlobais.size} códigos BR detectados no texto.`
-            );
+          // V62: contagem de pacotes é a fonte de verdade. Não libera uma rota
+          // silenciosamente com 26/30, por exemplo. Se o PDF revelou 30 códigos,
+          // os 30 precisam chegar à Bipagem.
+          if (codigosGlobais.size > 0 && todosPacotes.size !== codigosGlobais.size) {
+            throw new Error(`CONTAGEM_PDF_INCOMPLETA|${todosPacotes.size}|${codigosGlobais.size}`);
           }
 
           const tempoVisualDecorrido = Date.now() - inicioVisualLeituraPdf;
@@ -3887,6 +3925,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           if (msg.startsWith('LEITURA_INCOMPLETA|')) {
             mensagemErro =
               'A leitura ficou incompleta. Para evitar uma contagem errada, a rota não foi liberada. Escolha o PDF novamente.';
+          } else if (msg.startsWith('CONTAGEM_PDF_INCOMPLETA|')) {
+            const partes = msg.split('|');
+            mensagemErro = `O PDF possui ${partes[2] || 'mais'} códigos de pacote, mas só ${partes[1] || 'alguns'} puderam ser associados com segurança. A rota não foi liberada com contagem errada.`;
           } else if (msg.startsWith('ENDERECO_NAO_IDENTIFICADO|')) {
             mensagemErro =
               'Encontramos uma informação de endereço que não pôde ser validada. A rota não foi liberada.';
@@ -4526,8 +4567,7 @@ try {
         }
 
         const codigos = [...new Set(
-          (bloco.match(/BR[A-Za-z0-9]{8,25}/gi) || [])
-            .map(c => c.toUpperCase())
+          extrairCodigosBrFlexiveis(bloco)
         )];
 
         if (codigos.length === 0) {
@@ -4565,8 +4605,7 @@ try {
           if (!linhaStr) return;
 
           let codigos = [...new Set(
-            (linhaStr.match(/BR[A-Za-z0-9]{8,25}/gi) || [])
-              .map(c => c.toUpperCase())
+            extrairCodigosBrFlexiveis(linhaStr)
           )];
 
           if (codigos.length === 0) return;

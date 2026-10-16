@@ -281,12 +281,30 @@
     const points = Array.isArray(pontosOverride) && pontosOverride.length ? pontosOverride.map(coord).filter(Boolean) : pontosDaRota(rota);
     if (points.length < 2) throw new Error('São necessários ao menos dois pontos válidos para calcular a rota.');
 
-    // Rotas grandes não são mais enviadas em uma única chamada. Além de reduzir
-    // o tamanho da URL do provedor, isso evita erros 5xx por excesso de waypoints.
-    const blocos = dividirPontos(points, Number(cfg().routingMaxPointsPerRequest || MAX_PONTOS_POR_TRECHO));
+    // V62: blocos menores e divisão adaptativa. Alguns provedores aceitam a
+    // otimização, mas falham ao traçar 20+ waypoints de uma vez. Quando isso
+    // acontecer, o mesmo trecho é dividido automaticamente, sem descartar paradas.
+    const limite = Math.min(12, Number(cfg().routingMaxPointsPerRequest || MAX_PONTOS_POR_TRECHO));
+    const blocos = dividirPontos(points, limite);
     const respostas = [];
+
+    async function calcularAdaptativo(bloco, indiceBase, totalBase, profundidade) {
+      try {
+        return [await calcularBlocoRota(rota, bloco, indiceBase, totalBase)];
+      } catch (erro) {
+        if (bloco.length <= 3 || profundidade >= 4) throw erro;
+        const meio = Math.max(2, Math.ceil(bloco.length / 2));
+        const a = bloco.slice(0, meio);
+        const b = bloco.slice(meio - 1); // mantém continuidade no ponto de junção
+        const ra = await calcularAdaptativo(a, indiceBase, totalBase, profundidade + 1);
+        const rb = await calcularAdaptativo(b, indiceBase, totalBase, profundidade + 1);
+        return [...ra, ...rb];
+      }
+    }
+
     for (let i = 0; i < blocos.length; i++) {
-      respostas.push(await calcularBlocoRota(rota, blocos[i], i, blocos.length));
+      const partes = await calcularAdaptativo(blocos[i], i, blocos.length, 0);
+      respostas.push(...partes);
     }
     return mesclarRespostasRota(respostas);
   }
