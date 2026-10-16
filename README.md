@@ -1,7 +1,20 @@
-## Atualização V70
+# Pacote É Mato V71 - Bipagem/PDF robusta
 
-Leitor de PDF por **posição livre**. O Pacote É Mato não depende mais de a coluna de código ficar à direita, o endereço no centro ou o número da parada à esquerda. O leitor identifica códigos BR válidos, reconstrói códigos quebrados em itens/linhas, detecta endereços semanticamente válidos e associa cada pacote ao endereço mais próximo pela estrutura visual/ordem de leitura.
+Esta versão troca a associação por proximidade por uma leitura estrutural e conservadora.
 
-Mantidos como fallback os leitores anteriores de Circuit, Spoke e layouts tabulares. A validação continua recusando falsos códigos como `BR-050`.
+- Em PDFs com coluna de número da entrega, cada número delimita a própria linha/faixa da tabela. Código BR e endereço só podem ser associados dentro daquela entrega.
+- Códigos BR seguem validação estrita: `BR` + 12 dígitos + 1 caractere final. Fragmentação visual do PDF é reconstruída, inclusive quando o último caractere fica na linha abaixo.
+- Endereço físico é agrupado por logradouro + número do imóvel. Apartamento, bloco, torre, sala, casa interna e observações não criam uma nova parada física.
+- A lista mostra a numeração física 1..N. Em parada múltipla, exibe juntas as entregas originais do PDF, por exemplo `ENTREGAS 18 · 19 · 20 JUNTAS`.
+- PDFs de rota sem códigos BR continuam sendo importados para lista/roteirização; a câmera de bipagem fica desativada e o app explica que o arquivo não contém identificadores de pacote.
+- Destino/retorno sem pacote não entra na contagem de entregas.
+- Se uma linha tiver código/endereço realmente ambíguo, a rota é bloqueada em vez de o app chutar uma associação.
+- Corrigidas quebras reais de número causadas por PDF, como `16` + `6` = `166` e `719` + `A` = `719A`, apenas em contextos seguros de endereço.
 
-Limite: PDFs que são somente imagem/scan, sem camada de texto, ainda precisam de OCR.
+## Corpus de regressão usado
+
+- Circuit com 93 entregas e códigos BR quebrados em duas linhas.
+- Circuit com 30 entregas e nenhum código BR.
+- Spoke com 93, 11, 46 e 69 entregas codificadas, incluindo linhas de Destino que não devem virar pacote.
+
+PDFs somente imagem/scan ainda dependem de OCR e não são tratados como texto confiável nesta versão.

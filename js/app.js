@@ -2379,6 +2379,14 @@ function tocarIntroPs2Audio() {
       }
     }
 
+    // V71 - metadados estruturais da rota importada por PDF.
+    // Se o PDF não trouxer códigos BR, ainda preservamos as entregas/paradas
+    // para visualização e roteirização, mas a câmera de bipagem fica desativada.
+    let entregasOriginaisPorEndereco = {};
+    let paradaFisicaPorEndereco = {};
+    let totalEntregasPdfAtual = 0;
+    let pdfSemCodigosBipagem = false;
+
     function montarDadosEnderecosHistorico() {
       return Object.keys(mapaRotas || {})
         .map(chave => ({
@@ -2757,7 +2765,7 @@ function tocarIntroPs2Audio() {
       if (dadosSalvos) {
         try {
           let parsed = JSON.parse(dadosSalvos);
-          if (Number(parsed.versaoLeitura || 0) < 64) {
+          if (Number(parsed.versaoLeitura || 0) < 71) {
             // V64 corrige a leitura/contagem do PDF. Um snapshot antigo pode conter
             // pacote fantasma; por isso a rota ativa antiga precisa ser reimportada.
             localStorage.removeItem('rota_ativa_completa');
@@ -2765,7 +2773,7 @@ function tocarIntroPs2Audio() {
             atualizarResumoRotaHome();
             return;
           }
-          if (parsed.todosPacotes && parsed.todosPacotes.length > 0) {
+          if (Object.keys(parsed.mapaRotas || {}).length > 0) {
             document.getElementById('txtNomeRotaSalva').innerText =
               limparNomeArquivoRota(parsed.nomeArquivo || 'Rota');
             cardRetomar.style.display = 'block';
@@ -2786,11 +2794,15 @@ function tocarIntroPs2Audio() {
         mapaRotas: mapaRotas,
         stopCorrespondente: stopCorrespondente,
         nomeExibicao: nomeExibicao,
+        entregasOriginaisPorEndereco: entregasOriginaisPorEndereco,
+        paradaFisicaPorEndereco: paradaFisicaPorEndereco,
+        totalEntregasPdfAtual: totalEntregasPdfAtual,
+        pdfSemCodigosBipagem: pdfSemCodigosBipagem === true,
         todosPacotes: Array.from(todosPacotes),
         pacotesBipados: Array.from(pacotesBipados),
         rotaInicioEm: rotaInicioEm || Date.now(),
         resumoFinalJaExibido: resumoFinalJaExibido === true,
-        versaoLeitura: 64,
+        versaoLeitura: 71,
         salvoEm: Date.now()
       };
       localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
@@ -2802,7 +2814,7 @@ function tocarIntroPs2Audio() {
 
       try {
         let parsed = JSON.parse(dadosSalvos);
-        if (Number(parsed.versaoLeitura || 0) < 64) {
+        if (Number(parsed.versaoLeitura || 0) < 71) {
           localStorage.removeItem('rota_ativa_completa');
           notificar('A leitura do PDF foi atualizada. Importe o arquivo novamente para usar a contagem corrigida.');
           return;
@@ -2810,6 +2822,10 @@ function tocarIntroPs2Audio() {
         mapaRotas = parsed.mapaRotas || {};
         stopCorrespondente = parsed.stopCorrespondente || {};
         nomeExibicao = parsed.nomeExibicao || {};
+        entregasOriginaisPorEndereco = parsed.entregasOriginaisPorEndereco || {};
+        paradaFisicaPorEndereco = parsed.paradaFisicaPorEndereco || {};
+        totalEntregasPdfAtual = Number(parsed.totalEntregasPdfAtual || 0);
+        pdfSemCodigosBipagem = parsed.pdfSemCodigosBipagem === true;
         todosPacotes = new Set(parsed.todosPacotes || []);
         pacotesBipados = new Set(parsed.pacotesBipados || []);
         chaveStorageAtual = parsed.chaveStorage;
@@ -2823,8 +2839,9 @@ function tocarIntroPs2Audio() {
         entrarModoRotaAtiva();
 document.getElementById('cardRetomarRota').style.display = 'none';
 
+        aplicarModoBipagemPdfAtual();
         atualizarStats();
-        iniciarScanner();
+        if (!pdfSemCodigosBipagem) iniciarScanner();
         notificar(" Rota anterior retomada!");
 
       } catch(e) {
@@ -2902,90 +2919,135 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     }
 
     function renderizarListaParadasModal() {
-      let container = document.getElementById('listaParadasModal');
-      container.innerHTML = "";
+      const container = document.getElementById('listaParadasModal');
+      container.innerHTML = '';
 
-      if (Object.keys(mapaRotas).length === 0) {
+      const chaves = Object.keys(mapaRotas || {});
+      if (!chaves.length) {
         container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center;'>Nenhuma rota carregada no momento.</div>";
         return;
       }
 
-      let enderecosUnificados = {};
-      let totalPacotesMultiplos = 0;
+      const grupos = chaves
+        .map((end, indice) => {
+          const pacotes = Array.isArray(mapaRotas[end]) ? mapaRotas[end].slice() : [];
+          const entregasPdf = [...new Set(
+            (entregasOriginaisPorEndereco[end] || [])
+              .map(Number)
+              .filter(Number.isFinite)
+          )].sort((a,b) => a-b);
+
+          let numeroFisico = Number(paradaFisicaPorEndereco[end]);
+          if (!Number.isFinite(numeroFisico) || numeroFisico <= 0) {
+            const stops = pacotes
+              .map(p => Number(stopCorrespondente[p]))
+              .filter(n => Number.isFinite(n) && n > 0);
+            numeroFisico = stops.length ? Math.min(...stops) : indice + 1;
+          }
+
+          return {
+            end,
+            endereco: nomeExibicao[end] || end,
+            pacotes,
+            entregasPdf,
+            numeroFisico,
+            quantidadeEntregas: entregasPdf.length || Math.max(1, pacotes.length)
+          };
+        })
+        .sort((a,b) => a.numeroFisico - b.numeroFisico);
+
       let totalParadasMultiplas = 0;
-      let totalTodosCount = 0;
+      let totalEntregasMultiplas = 0;
+      const cards = [];
 
-      for (let end in mapaRotas) {
-        let pacs = mapaRotas[end];
-        let nomeEnd = nomeExibicao[end] || end;
-        let stopsDesteEnd = [];
-        pacs.forEach(p => {
-          let st = stopCorrespondente[p] || 1;
-          if (!stopsDesteEnd.includes(st)) stopsDesteEnd.push(st);
-        });
-        stopsDesteEnd.sort((a,b) => a - b);
-
-        if (!enderecosUnificados[end]) {
-          enderecosUnificados[end] = { endereco: nomeEnd, stops: stopsDesteEnd, pacotes: pacs };
-        }
-      }
-
-      let chavesEnderecos = Object.keys(enderecosUnificados);
-      let listaCards = [];
-
-      chavesEnderecos.forEach(end => {
-        let dados = enderecosUnificados[end];
-        let qtd = dados.pacotes.length;
-        let ehDuplo = qtd > 1;
-
-        totalTodosCount++;
-
-        if (ehDuplo) {
+      grupos.forEach(dados => {
+        const ehMultipla = dados.quantidadeEntregas > 1;
+        if (ehMultipla) {
           totalParadasMultiplas++;
-          totalPacotesMultiplos += qtd;
+          totalEntregasMultiplas += dados.quantidadeEntregas;
         }
 
-        if (filtroAtualModal === 'duplos' && !ehDuplo) return;
+        if (filtroAtualModal === 'duplos' && !ehMultipla) return;
 
-        let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
-        let badgeDestaque = ehDuplo 
-          ? `<div class="tag-duplo-info"> PARADA MÚLTIPLA • ${qtd} pacotes</div>` 
-          : `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
+        const origemTexto = dados.entregasPdf.length
+          ? dados.entregasPdf.join(' · ')
+          : '';
 
-        listaCards.push(`
-          <div class="parada-box-pro ${ehDuplo ? 'duplo-pro' : ''}">
-            <div class="parada-header-row">
-              
-              ${badgeDestaque}
+        let badge;
+        if (ehMultipla) {
+          const detalhePacotes = !pdfSemCodigosBipagem && dados.pacotes.length
+            ? ` • ${dados.pacotes.length} pacote${dados.pacotes.length === 1 ? '' : 's'}`
+            : '';
+          const entregasJuntas = origemTexto
+            ? `<div style="margin-top:5px;font-size:.76rem;font-weight:900;letter-spacing:.01em;">ENTREGAS ${origemTexto} JUNTAS</div>`
+            : '';
+          badge = `<div class="tag-duplo-info">PARADA MÚLTIPLA • ${dados.quantidadeEntregas} entregas${detalhePacotes}${entregasJuntas}</div>`;
+        } else {
+          badge = `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">${pdfSemCodigosBipagem ? '1 entrega' : `${Math.max(1, dados.pacotes.length)} pacote${dados.pacotes.length === 1 ? '' : 's'}`}</div>`;
+        }
+
+        const enderecoUrl = encodeURIComponent(String(dados.endereco || '')).replace(/'/g, '%27');
+
+        cards.push(`
+          <div class="parada-box-pro ${ehMultipla ? 'duplo-pro' : ''}">
+            <div class="parada-header-row" style="align-items:flex-start; gap:10px;">
+              <div style="
+                min-width:34px;height:34px;border-radius:12px;
+                display:flex;align-items:center;justify-content:center;
+                background:rgba(46,160,101,.13);font-weight:900;font-size:.9rem;
+                color:var(--primary, #2ea065);">
+                ${dados.numeroFisico}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:.72rem;font-weight:900;color:var(--text-muted);margin-bottom:5px;">
+                  PARADA ${dados.numeroFisico}
+                </div>
+                ${badge}
+              </div>
             </div>
-            
-            <div class="endereco-texto-pro"> ${dados.endereco}</div>
+
+            <div class="endereco-texto-pro">${dados.endereco}</div>
+
+            ${origemTexto && !ehMultipla ? `
+              <div style="margin-top:7px;font-size:.72rem;color:var(--text-muted);font-weight:700;">
+                Entrega do PDF: ${origemTexto}
+              </div>
+            ` : ''}
 
             <div class="acoes-footer-pro">
-              <button class="btn-acao-card" onclick="perguntarGps('${dados.endereco}', '${paradaFormatada}')">
-                 Waze / Maps
+              <button class="btn-acao-card" onclick="perguntarGps(decodeURIComponent('${enderecoUrl}'), 'P${dados.numeroFisico}')">
+                Waze / Maps
               </button>
             </div>
           </div>
         `);
       });
 
-      document.getElementById('contadorTodos').innerText = totalTodosCount;
-      document.getElementById('contadorDuplos').innerText = totalPacotesMultiplos;
+      document.getElementById('contadorTodos').innerText = grupos.length;
+      document.getElementById('contadorDuplos').innerText = totalParadasMultiplas;
+
+      const totalPacotes = todosPacotes?.size || 0;
+      const totalEntregas = Number(totalEntregasPdfAtual || 0) ||
+        grupos.reduce((s,g) => s + g.quantidadeEntregas, 0);
+
       const contagemTopo = document.getElementById('rotaModalContagem');
-      if (contagemTopo) contagemTopo.textContent = `${totalTodosCount} paradas • ${Array.from(todosPacotes || []).length} pacotes`;
+      if (contagemTopo) {
+        contagemTopo.textContent = pdfSemCodigosBipagem
+          ? `${grupos.length} paradas • ${totalEntregas} entregas • sem códigos BR`
+          : `${grupos.length} paradas • ${totalPacotes} pacotes`;
+      }
 
       const resumo = document.getElementById('resumoMultiplosRota');
       if (resumo) {
-        const totalPacotesRota = Array.from(todosPacotes || []).length;
-        resumo.innerText =
-          `${totalTodosCount} paradas • ${totalPacotesRota} pacotes • ${totalParadasMultiplas} múltiplas (${totalPacotesMultiplos} pacotes)`;
+        resumo.innerText = pdfSemCodigosBipagem
+          ? `${grupos.length} paradas • ${totalEntregas} entregas • ${totalParadasMultiplas} múltiplas (${totalEntregasMultiplas} entregas)`
+          : `${grupos.length} paradas • ${totalPacotes} pacotes • ${totalParadasMultiplas} múltiplas (${totalEntregasMultiplas} entregas)`;
       }
 
-      if (listaCards.length === 0) {
-        container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;'>Nenhuma parada com múltiplos pacotes encontrada nesta rota.</div>";
+      if (!cards.length) {
+        container.innerHTML = "<div style='font-size:0.8rem; color:var(--text-muted); text-align:center; padding:20px;'>Nenhuma parada múltipla encontrada nesta rota.</div>";
       } else {
-        container.innerHTML = listaCards.join('');
+        container.innerHTML = cards.join('');
       }
     }
 
@@ -3372,6 +3434,558 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     }
 
 
+    // ============================================================
+    // V71 - LEITOR ESTRUTURAL DE PDF PARA BIPAGEM
+    // ============================================================
+    // Princípio: nunca associa pacote a endereço apenas por "estar perto".
+    // Quando o PDF possui numeração de linhas, a própria linha da tabela é a
+    // unidade de verdade. O leitor detecta automaticamente a coluna de # em
+    // qualquer posição X, cria uma faixa vertical para cada entrega e lê,
+    // dentro dessa mesma faixa, endereço + todos os códigos BR válidos.
+    //
+    // Se a coluna # não existir, os leitores universais antigos continuam como
+    // fallback. Dessa forma preservamos Spoke com # vazio sem reintroduzir
+    // associações arriscadas nos PDFs que já fornecem uma linha numerada.
+
+    function removerAcentosPdfV71(valor) {
+      return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function normalizarTipoViaPdfV71(tipo) {
+      const t = removerAcentosPdfV71(tipo).toLowerCase().replace(/[^a-z]/g, '');
+      const mapa = {
+        r: 'rua', rua: 'rua',
+        av: 'avenida', avenida: 'avenida',
+        al: 'alameda', alameda: 'alameda',
+        tv: 'travessa', travessa: 'travessa',
+        est: 'estrada', estrada: 'estrada',
+        rod: 'rodovia', rodovia: 'rodovia',
+        pc: 'praca', pca: 'praca', praca: 'praca',
+        lg: 'largo', largo: 'largo',
+        viela: 'viela', passagem: 'passagem',
+        comunidade: 'comunidade', beco: 'beco', servidao: 'servidao',
+        marginal: 'marginal', ladeira: 'ladeira', via: 'via', rodoanel: 'rodoanel'
+      };
+      return mapa[t] || t || 'via';
+    }
+
+    function expandirTokenRuaPdfV71(token) {
+      const t = removerAcentosPdfV71(token).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const aliases = {
+        dr: 'doutor', dra: 'doutora',
+        prof: 'professor', profa: 'professora',
+        cel: 'coronel', ten: 'tenente',
+        brig: 'brigadeiro', pres: 'presidente',
+        ver: 'vereador', mons: 'monsenhor',
+        con: 'conego', cnso: 'conselheiro', cnsl: 'conselheiro', cnsol: 'conselheiro',
+        fr: 'frei', sta: 'santa', sto: 'santo',
+        mq: 'marques'
+      };
+      return aliases[t] || t;
+    }
+
+    function limparTextoEnderecoPdfV71(valor) {
+      let t = String(valor || '')
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (!t) return '';
+
+      // Remove identificadores de lote/rota e códigos de pacote sem tocar no endereço.
+      t = t
+        .replace(/\bAT[A-Z0-9]{8,30}\s*;?/gi, ' ')
+        .replace(/B[\s._-]*R[\s._-]*(?:\d[\s._-]*){12}[A-Z0-9]\s*;?/gi, ' ')
+        .replace(/B[\s._-]*R[\s._-]*(?:\d[\s._-]*){12}(?![A-Z0-9])\s*;?/gi, ' ')
+        .replace(/^\s*(?:#|Address|Endere[cç]o|Notes?|Notas?|Estimated\s+Arrival(?:\s+Time)?|Arrival\s+Time)\s*[:\-]?\s*/i, '')
+        .replace(/^\s*(?:Stop|Parada)\s*#?\s*\d{1,4}\s*[:\-]?\s*/i, '')
+        .replace(/^\s*\d{1,4}\s+(?=[A-Za-zÀ-ÿ])/i, '')
+        // Repara números que o PDF quebra entre linhas sem inventar conteúdo.
+        // Exemplos reais: "Comunidade ..., 16" + "6, ..." => 166;
+        // "Rua Rodeio, 719" + "A, ..." => 719A. A regra só atua logo
+        // após vírgula e quando o fragmento seguinte também termina em vírgula,
+        // evitando juntar número de rua com apartamento/horário.
+        .replace(/,\s*(\d{1,4})\s+(\d{1,2}[A-Za-z]?)\s*(?=,)/g, (_, a, b) => `, ${a}${b}`)
+        .replace(/,\s*(\d{1,6})\s+([A-Za-z])\s*(?=,)/g, (_, a, b) => `, ${a}${b}`)
+        .replace(/\bS(?:ã|a)o\s+Paul\s+o\b/gi, 'São Paulo')
+        .replace(/\bSã\s+o\s+Paulo\b/gi, 'São Paulo')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      return t;
+    }
+
+    function decomporEnderecoFisicoPdfV71(valor) {
+      const original = limparTextoEnderecoPdfV71(valor);
+      if (!original || original.length < 4) return null;
+
+      const texto = original.replace(/\s+/g, ' ').trim();
+      // Evita \\b depois de caracteres como "ç" (Pç), pois o boundary do JS é
+      // baseado em ASCII e pode falhar em abreviações brasileiras.
+      const viaRegex = /(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel)(?=\s)/i;
+      const via = texto.match(viaRegex);
+
+      // Alguns exports omitem "Rua/Av." e deixam somente "Jorge Augusto, 831".
+      // Aceitamos esse formato APENAS quando há vírgula explícita antes do número,
+      // evitando transformar bairro/CEP/observação em endereço.
+      const genericoSemTipo = !via &&
+        /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9.'’\- ]{2,100},\s*\d{1,6}[A-Za-z]?(?:\b|,)/.test(texto);
+
+      if (!via && !genericoSemTipo) return null;
+
+      let inicio = via ? via.index : 0;
+      let corpo = texto.slice(inicio).trim();
+      if (!corpo) return null;
+
+      // A unidade física é identificada pelo primeiro número que parece número
+      // de imóvel. Isso evita escolher "25" em Rua 25 de Março e evita pegar
+      // "609A" em "Avenida Rudge 351 apto 609A".
+      const reNumero = /\b(\d{1,6}[A-Za-z]?)\b/g;
+      let escolhido = null;
+      let m;
+      while ((m = reNumero.exec(corpo))) {
+        const antes = corpo.slice(0, m.index);
+        const depois = corpo.slice(m.index + m[0].length);
+        const anterior = antes.match(/([A-Za-zÀ-ÿ.]+)\s*$/)?.[1] || '';
+        const prox = depois.replace(/^\s+/, '');
+
+        if (/^(?:ap|apt|apto|apartamento|bl|bloco|torre|sala|cj|conj|conjunto|andar|loja|casa|fundos?)\.?$/i.test(anterior)) {
+          continue;
+        }
+
+        const temNomeAntes = /[A-Za-zÀ-ÿ]{2}/.test(antes);
+        if (!temNomeAntes) continue;
+
+        const marcadorForte =
+          /^\s*[,\-]/.test(depois) ||
+          /^(?:ap|apt|apto|apartamento|bl|bloco|torre|sala|cj|conj|conjunto|andar|loja|casa|fundos?|portaria|recep[cç][aã]o|condom[ií]nio|pr[eé]dio|edif[ií]cio)\b/i.test(prox) ||
+          /^(?:S[aã]o\s+Paulo|Osasco|Guarulhos|Santo\s+Andr[eé]|S[aã]o\s+Bernardo|$)/i.test(prox);
+
+        // Números que fazem parte do nome da rua costumam ser seguidos de
+        // preposição/palavra (Rua 25 de Março). Nesse caso seguimos procurando.
+        if (!marcadorForte && /^[A-Za-zÀ-ÿ]/.test(prox)) continue;
+
+        escolhido = { valor: m[1], indice: m.index };
+        break;
+      }
+
+      if (!escolhido) return null;
+
+      const antesNumero = corpo.slice(0, escolhido.indice).trim().replace(/[,:;\-]+$/g, '').trim();
+      if (!/[A-Za-zÀ-ÿ]/.test(antesNumero)) return null;
+
+      const tipoMatch = antesNumero.match(/^\s*(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o)\s+/i);
+      const tipo = normalizarTipoViaPdfV71(tipoMatch?.[1] || 'via');
+      const ruaBruta = tipoMatch ? antesNumero.slice(tipoMatch[0].length).trim() : antesNumero;
+
+      const tokensRua = removerAcentosPdfV71(ruaBruta)
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]+/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter(t => !['da','de','do','das','dos','e'].includes(t))
+        .map(expandirTokenRuaPdfV71)
+        .filter(Boolean);
+
+      if (!tokensRua.length) return null;
+
+      const numero = String(escolhido.valor || '').toLowerCase().replace(/[^0-9a-z]/g, '');
+      if (!numero) return null;
+
+      return {
+        original: texto,
+        tipo,
+        numero,
+        tokensRua,
+        ruaCanonica: tokensRua.join(' '),
+        chave: `${tipo}|${tokensRua.join('')}|${numero}`
+      };
+    }
+
+    function chaveFisicaPdfV71(valor) {
+      return decomporEnderecoFisicoPdfV71(valor)?.chave || '';
+    }
+
+    function agruparItensEmLinhasPdfV71(itensOriginais, tolerancia = 3.5) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .filter(i => String(i?.str || '').trim())
+        .slice()
+        .sort((a, b) => {
+          if (Math.abs(Number(a.y || 0) - Number(b.y || 0)) <= tolerancia) return Number(a.x || 0) - Number(b.x || 0);
+          return Number(b.y || 0) - Number(a.y || 0);
+        });
+
+      const linhas = [];
+      for (const item of itens) {
+        let melhor = null;
+        let dist = Infinity;
+        for (const linha of linhas) {
+          const d = Math.abs(linha.y - Number(item.y || 0));
+          if (d <= tolerancia && d < dist) { melhor = linha; dist = d; }
+        }
+        if (!melhor) {
+          melhor = { y: Number(item.y || 0), itens: [] };
+          linhas.push(melhor);
+        }
+        melhor.itens.push(item);
+        melhor.y = melhor.itens.reduce((s, i) => s + Number(i.y || 0), 0) / melhor.itens.length;
+      }
+
+      return linhas
+        .map(l => ({
+          y: l.y,
+          itens: l.itens.slice().sort((a,b) => Number(a.x || 0) - Number(b.x || 0)),
+          texto: l.itens.slice().sort((a,b) => Number(a.x || 0) - Number(b.x || 0)).map(i => String(i.str || '').trim()).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim()
+        }))
+        .sort((a,b) => b.y - a.y);
+    }
+
+    function textoItensPdfV71(itens) {
+      return agruparItensEmLinhasPdfV71(itens)
+        .map(l => l.texto)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function detectarMarcadoresNumeradosPdfV71(itensOriginais, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : []);
+      const candidatos = itens
+        .map((item, indice) => ({
+          item,
+          indice,
+          numero: /^\d{1,3}$/.test(String(item?.str || '').trim()) ? Number(String(item.str).trim()) : NaN,
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0)
+        }))
+        .filter(c => Number.isFinite(c.numero) && c.numero > 0 && c.numero <= 999);
+
+      if (!candidatos.length) return [];
+
+      const toleranciaX = Math.max(5, Number(larguraPagina || 600) * 0.014);
+      const grupos = [];
+      candidatos.sort((a,b) => a.x - b.x).forEach(c => {
+        let alvo = null;
+        let menor = Infinity;
+        grupos.forEach(g => {
+          const d = Math.abs(g.x - c.x);
+          if (d <= toleranciaX && d < menor) { alvo = g; menor = d; }
+        });
+        if (!alvo) { alvo = { x: c.x, itens: [] }; grupos.push(alvo); }
+        alvo.itens.push(c);
+        alvo.x = alvo.itens.reduce((s,i) => s + i.x, 0) / alvo.itens.length;
+      });
+
+      const hashes = itens.filter(i => String(i?.str || '').trim() === '#').map(i => Number(i.x || 0));
+
+      let melhorGrupo = null;
+      grupos.forEach(g => {
+        const ordenados = g.itens.slice().sort((a,b) => b.y - a.y);
+        const unicos = [];
+        ordenados.forEach(c => {
+          if (!unicos.some(u => Math.abs(u.y - c.y) < 2.2 && u.numero === c.numero)) unicos.push(c);
+        });
+
+        let consecutivos = 0;
+        let crescentes = 0;
+        for (let i = 1; i < unicos.length; i++) {
+          if (unicos[i].numero > unicos[i-1].numero) crescentes++;
+          if (unicos[i].numero === unicos[i-1].numero + 1) consecutivos++;
+        }
+
+        const pertoHash = hashes.some(x => Math.abs(x - g.x) <= Math.max(18, Number(larguraPagina || 600) * 0.05));
+        const score = (unicos.length * 12) + (consecutivos * 28) + (crescentes * 4) + (pertoHash ? 120 : 0);
+        if (!melhorGrupo || score > melhorGrupo.score) melhorGrupo = { score, itens: unicos, pertoHash };
+      });
+
+      if (!melhorGrupo) return [];
+      if (melhorGrupo.itens.length < 2 && !melhorGrupo.pertoHash) return [];
+
+      // Mantém a sequência visual crescente. Itens isolados (número de apartamento,
+      // data etc.) não entram porque não formam a coluna repetitiva da tabela.
+      const saida = [];
+      melhorGrupo.itens.forEach(c => {
+        if (!saida.length || c.numero > saida[saida.length - 1].numero) saida.push(c);
+      });
+
+      return saida;
+    }
+
+    function extrairCodigosDoBlocoPdfV71(itensBloco, larguraPagina) {
+      const itens = (Array.isArray(itensBloco) ? itensBloco : []);
+      const codigos = new Set();
+
+      // 1) código completo, ainda que fragmentado por espaços dentro da mesma linha.
+      agruparItensEmLinhasPdfV71(itens).forEach(l => {
+        extrairCodigosBrFlexiveis(l.texto).forEach(c => codigos.add(c));
+      });
+      itens.forEach(i => extrairCodigosBrFlexiveis(i.str).forEach(c => codigos.add(c)));
+
+      // 2) Circuit: BR + 12 dígitos em uma linha e caractere final logo abaixo.
+      const prefixos = itens
+        .map((item, indice) => {
+          const m = String(item?.str || '').toUpperCase().match(/(?:^|[^A-Z0-9])(BR\d{12})(?=$|[^A-Z0-9])/);
+          return m ? { prefixo: m[1], item, indice } : null;
+        })
+        .filter(Boolean);
+
+      const finaisUsados = new Set();
+      prefixos.forEach(pfx => {
+        const candidatos = itens
+          .map((item, indice) => {
+            if (indice === pfx.indice || finaisUsados.has(indice)) return null;
+            const m = String(item?.str || '').toUpperCase().trim().match(/^([A-Z0-9])\s*[;:,.]?$/);
+            if (!m) return null;
+            const dx = Math.abs(Number(item.x || 0) - Number(pfx.item.x || 0));
+            const dy = Math.abs(Number(item.y || 0) - Number(pfx.item.y || 0));
+            // O último caractere pertence à mesma coluna visual do prefixo.
+            // Esta restrição impede que o "1" da coluna # seja anexado ao BR.
+            if (dx > Math.max(55, Number(larguraPagina || 600) * 0.11)) return null;
+            return { indice, char: m[1], dx, dy, score: (dx * 4) + dy };
+          })
+          .filter(Boolean)
+          .sort((a,b) => a.score - b.score);
+
+        for (const cand of candidatos.slice(0, 5)) {
+          const codigo = normalizarCodigoPacoteBr(pfx.prefixo + cand.char);
+          if (!codigo) continue;
+          codigos.add(codigo);
+          finaisUsados.add(cand.indice);
+          break;
+        }
+      });
+
+      return [...codigos];
+    }
+
+    function pontuarEnderecoPdfV71(textoBruto) {
+      const limpo = limparTextoEnderecoPdfV71(textoBruto);
+      const d = decomporEnderecoFisicoPdfV71(limpo);
+      if (!d) return null;
+
+      let score = 100;
+      if (/^(?:Rua|R\.?|Avenida|Av\.?|Alameda|Travessa|Estrada|Rodovia|Pra[cç]a|P[cç]\.?|Largo|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel)\b/i.test(limpo)) score += 25;
+      if (/\b(?:S[aã]o Paulo|Osasco|Guarulhos|Santo Andr[eé]|S[aã]o Bernardo)\b/i.test(limpo)) score += 10;
+      if (!/\bBR\d/i.test(textoBruto) && !/\bAT[A-Z0-9]/i.test(textoBruto)) score += 18;
+      if (!/[;]{2,}/.test(textoBruto)) score += 5;
+      if (limpo.length >= 12 && limpo.length <= 220) score += 5;
+      return { texto: limpo, dados: d, score };
+    }
+
+    function extrairEnderecoDoBlocoPdfV71(itensBloco, marcadorNumero) {
+      const itens = (Array.isArray(itensBloco) ? itensBloco : []).filter(i => String(i?.str || '').trim());
+      if (!itens.length) return '';
+
+      const xNumero = Number(marcadorNumero?.x || 0);
+      const tempos = itens
+        .filter(i => /^\d{1,2}:\d{2}(?:\s*(?:AM|PM))?$/i.test(String(i.str || '').trim()))
+        .sort((a,b) => Math.abs(Number(a.y || 0) - Number(marcadorNumero?.y || 0)) - Math.abs(Number(b.y || 0) - Number(marcadorNumero?.y || 0)));
+
+      const conjuntos = [];
+      if (tempos.length) {
+        const hora = tempos[0];
+        const xHora = Number(hora.x || 0);
+        const margem = 4;
+
+        if (xNumero < xHora) {
+          conjuntos.push(itens.filter(i => Number(i.x || 0) > xNumero + margem && Number(i.x || 0) < xHora - margem));
+        } else if (xNumero > xHora) {
+          conjuntos.push(itens.filter(i => Number(i.x || 0) < xNumero - margem && Number(i.x || 0) > xHora + margem));
+        }
+
+        conjuntos.push(itens.filter(i => Number(i.x || 0) < xHora - margem));
+        conjuntos.push(itens.filter(i => Number(i.x || 0) > xHora + margem));
+      }
+
+      // Fallback sem ETA: linha inteira; o saneamento remove BR/AT.
+      conjuntos.push(itens.filter(i => i !== marcadorNumero?.item));
+
+      const vistos = new Set();
+      const candidatos = [];
+      conjuntos.forEach(conjunto => {
+        if (!conjunto?.length) return;
+        const bruto = textoItensPdfV71(conjunto);
+        if (!bruto || vistos.has(bruto)) return;
+        vistos.add(bruto);
+        const p = pontuarEnderecoPdfV71(bruto);
+        if (p) candidatos.push({ ...p, bruto });
+      });
+
+      // Também tenta cada linha visual isolada; útil quando Address e Notes estão
+      // trocados ou quando o PDF não possui coluna de horário.
+      agruparItensEmLinhasPdfV71(itens).forEach(l => {
+        const p = pontuarEnderecoPdfV71(l.texto);
+        if (p) candidatos.push({ ...p, bruto: l.texto });
+      });
+
+      candidatos.sort((a,b) => b.score - a.score || a.texto.length - b.texto.length);
+      return candidatos[0]?.texto || '';
+    }
+
+    function extrairRegistrosPdfV71(itensOriginais, pagina, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').replace(/\s+/g, ' ').trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(i => i.str);
+
+      if (!itens.length) return [];
+
+      const marcadores = detectarMarcadoresNumeradosPdfV71(itens, larguraPagina);
+      if (!marcadores.length) return [];
+
+      const gaps = [];
+      for (let i = 1; i < marcadores.length; i++) {
+        const d = Math.abs(marcadores[i-1].y - marcadores[i].y);
+        if (d > 4 && d < 120) gaps.push(d);
+      }
+      gaps.sort((a,b) => a-b);
+      const gapMediano = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 26;
+
+      const registros = [];
+      for (let i = 0; i < marcadores.length; i++) {
+        const atual = marcadores[i];
+        const anterior = marcadores[i - 1];
+        const proximo = marcadores[i + 1];
+        const ySuperior = anterior ? (anterior.y + atual.y) / 2 : atual.y + (gapMediano * 0.55);
+        const yInferior = proximo ? (atual.y + proximo.y) / 2 : atual.y - (gapMediano * 0.55);
+
+        const bloco = itens.filter(item => item.y <= ySuperior && item.y > yInferior);
+        if (!bloco.length) continue;
+
+        const endereco = extrairEnderecoDoBlocoPdfV71(bloco, atual);
+        const codigos = extrairCodigosDoBlocoPdfV71(bloco, larguraPagina);
+        const textoBloco = textoItensPdfV71(bloco);
+        const auxiliarDestino = /\b(?:Destino|Destination|Retorno|Return)\b/i.test(textoBloco);
+        const prefixoIncompleto = /\bBR\d{8,14}\b/i.test(textoBloco) && codigos.length === 0;
+
+        registros.push({
+          numeroParada: atual.numero,
+          endereco,
+          codigos,
+          pagina,
+          auxiliarDestino,
+          prefixoIncompleto,
+          origemLeitura: 'linhas-v71'
+        });
+      }
+
+      return registros;
+    }
+
+
+
+
+
+    // V71B - fallback determinístico para relatórios em que a coluna "#" existe,
+    // mas vem vazia (alguns exports do Spoke). Cada código BR completo vira a
+    // âncora da própria faixa visual; o endereço precisa estar dentro dessa mesma
+    // faixa. Não procuramos "endereço vizinho" fora da entrega.
+    function extrairRegistrosPdfV71PorCodigo(itensOriginais, pagina, larguraPagina, sequenciaInicial = 0) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').replace(/\s+/g, ' ').trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(i => i.str);
+
+      if (!itens.length) return { registros: [], sequencia: sequenciaInicial };
+
+      const linhas = agruparItensEmLinhasPdfV71(itens);
+      const ancoras = [];
+
+      linhas.forEach(linha => {
+        const codigos = extrairCodigosBrFlexiveis(linha.texto);
+        if (!codigos.length) return;
+        ancoras.push({
+          y: linha.y,
+          codigos: [...new Set(codigos)],
+          linha
+        });
+      });
+
+      // Só usamos esta estratégia se houver códigos reais. Cabeçalho/rodovia
+      // jamais cria linha porque extrairCodigosBrFlexiveis exige BR+12+final.
+      if (!ancoras.length) return { registros: [], sequencia: sequenciaInicial };
+
+      ancoras.sort((a,b) => b.y - a.y);
+
+      const unicas = [];
+      ancoras.forEach(a => {
+        const existente = unicas.find(u => Math.abs(u.y - a.y) <= 2.5);
+        if (existente) {
+          a.codigos.forEach(c => {
+            if (!existente.codigos.includes(c)) existente.codigos.push(c);
+          });
+        } else {
+          unicas.push({ ...a, codigos: a.codigos.slice() });
+        }
+      });
+
+      const gaps = [];
+      for (let i = 1; i < unicas.length; i++) {
+        const d = Math.abs(unicas[i-1].y - unicas[i].y);
+        if (d > 4 && d < 160) gaps.push(d);
+      }
+      gaps.sort((a,b) => a-b);
+      const gapMediano = gaps.length ? gaps[Math.floor(gaps.length/2)] : 28;
+
+      let sequencia = Number(sequenciaInicial || 0);
+      const registros = [];
+
+      for (let i = 0; i < unicas.length; i++) {
+        const atual = unicas[i];
+        const anterior = unicas[i-1];
+        const proximo = unicas[i+1];
+
+        const ySuperior = anterior
+          ? (anterior.y + atual.y) / 2
+          : atual.y + gapMediano * 0.55;
+        const yInferior = proximo
+          ? (atual.y + proximo.y) / 2
+          : atual.y - gapMediano * 0.55;
+
+        const bloco = itens.filter(item => item.y <= ySuperior && item.y > yInferior);
+        const linhasBloco = agruparItensEmLinhasPdfV71(bloco);
+        const candidatos = [];
+
+        linhasBloco.forEach(l => {
+          const p = pontuarEnderecoPdfV71(l.texto);
+          if (p) candidatos.push(p);
+        });
+
+        // Também tenta a concatenação do bloco para endereços quebrados em duas
+        // linhas; a pontuação prefere a coluna Address sem BR/AT quando existir.
+        const pBloco = pontuarEnderecoPdfV71(textoItensPdfV71(bloco));
+        if (pBloco) candidatos.push(pBloco);
+
+        candidatos.sort((a,b) => b.score - a.score || a.texto.length - b.texto.length);
+        const endereco = candidatos[0]?.texto || '';
+
+        const codigosFaixa = [...new Set(extrairCodigosDoBlocoPdfV71(bloco, larguraPagina))];
+        const codigos = codigosFaixa.length ? codigosFaixa : atual.codigos.slice();
+
+        sequencia++;
+        registros.push({
+          numeroParada: sequencia,
+          endereco,
+          codigos,
+          pagina,
+          auxiliarDestino: false,
+          prefixoIncompleto: false,
+          origemLeitura: 'codigo-v71'
+        });
+      }
+
+      return { registros, sequencia };
+    }
 
 
     // V70 - leitor de PDF por ancoras, sem depender de coluna fixa.
@@ -3841,7 +4455,19 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           // Não depende da coluna # e tolera código BR em item separado da coluna Address.
           const registrosVisuaisPdf = [];
           let sequenciaVisualPdf = 0;
-          // V70: leitura por ancoras sem depender de posicao fixa das colunas.
+          // V71: leitor determinístico por linha numerada. A posição das colunas
+          // pode mudar, mas código e endereço nunca são associados fora da própria
+          // linha da entrega. Se uma tabela numerada for reconhecida e tiver
+          // inconsistência, a rota é bloqueada em vez de "chutada".
+          const registrosV71Pdf = [];
+          let v71EncontrouTabelaNumerada = false;
+
+          // V71B: relatórios sem numeração, mas com código BR por entrega.
+          const registrosCodigoV71Pdf = [];
+          let sequenciaCodigoV71Pdf = 0;
+
+          // V70 legado fica apenas como compatibilidade para PDFs que realmente
+          // não possuem numeração de entregas utilizável.
           const registrosPosicaoLivrePdf = [];
           let sequenciaPosicaoLivrePdf = 0;
 
@@ -3866,8 +4492,31 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               .filter(item => item.str);
 
 
-            // V70 - primeiro extrai por ancoras livres. Codigo e endereco podem
-            // estar em qualquer lado/coluna da pagina; a associacao nao usa X fixo.
+            // V71 - primeiro tenta a tabela numerada de forma determinística.
+            // O número da entrega define a faixa vertical da própria linha; nenhum
+            // código é puxado da linha de cima/baixo.
+            const v71Pagina = extrairRegistrosPdfV71(itens, pagina, width);
+            if (v71Pagina.length) {
+              v71EncontrouTabelaNumerada = true;
+              v71Pagina.forEach(registro => {
+                registrosV71Pdf.push(registro);
+                (registro.codigos || []).forEach(codigo => codigosGlobais.add(codigo));
+              });
+            } else {
+              const porCodigoV71 = extrairRegistrosPdfV71PorCodigo(
+                itens,
+                pagina,
+                width,
+                sequenciaCodigoV71Pdf
+              );
+              sequenciaCodigoV71Pdf = porCodigoV71.sequencia;
+              porCodigoV71.registros.forEach(registro => {
+                registrosCodigoV71Pdf.push(registro);
+                (registro.codigos || []).forEach(codigo => codigosGlobais.add(codigo));
+              });
+            }
+
+            // V70 legado: só será usado depois se não houver tabela numerada V71.
             const livresPagina = extrairRegistrosPdfPosicaoLivre(itens, pagina, width);
             livresPagina.forEach(registro => {
               if (!Number.isFinite(Number(registro.numeroParada)) || Number(registro.numeroParada) <= 0) {
@@ -4189,7 +4838,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             92,
             leituraEstritaOk
               ? 'Organizando as paradas...'
-              : 'Formato diferente detectado. Usando modo compatível...',
+              : 'Conferindo um formato diferente sem aproximar paradas...',
             'Quase pronto'
           );
 
@@ -4201,26 +4850,40 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             return set.size;
           }
 
-          // V70: prioriza o leitor por posicao livre. Ele nao exige que Notes,
-          // Address, numero ou horario estejam em uma coluna especifica.
-          if (registrosPosicaoLivrePdf.length) {
+          // V71 é fonte de verdade quando reconhece a numeração das entregas.
+          // Se houver qualquer inconsistência, NÃO caímos em um leitor aproximado:
+          // isso evita associar um pacote à parada errada.
+          if (v71EncontrouTabelaNumerada) {
             try {
-              const totalLivre = contarCodigosDosRegistros(registrosPosicaoLivrePdf);
-              if (!codigosGlobais.size || totalLivre >= codigosGlobais.size) {
-                processarRegistrosrota(registrosPosicaoLivrePdf, file.name);
-                processado = todosPacotes && todosPacotes.size > 0;
-              } else {
-                console.info(`Leitor por posicao livre encontrou ${totalLivre}/${codigosGlobais.size}. Tentando estrategias complementares.`);
-              }
-            } catch (erroLivre) {
-              console.warn('Leitor por posicao livre nao concluiu este PDF. Tentando estrategias complementares:', erroLivre);
+              processarRegistrosrota(registrosV71Pdf, file.name);
+              processado = rotaPdfPossuiDadosProcessados();
+            } catch (erroV71) {
+              console.error('Leitor V71 encontrou a tabela, mas recusou uma associação insegura:', erroV71);
+              throw erroV71;
             }
           }
+
+          // V71B: sem numeração, usa as próprias linhas dos códigos como âncora.
+          if (!processado && !v71EncontrouTabelaNumerada && registrosCodigoV71Pdf.length) {
+            try {
+              processarRegistrosrota(registrosCodigoV71Pdf, file.name);
+              processado = rotaPdfPossuiDadosProcessados();
+            } catch (erroCodigoV71) {
+              // Como cada código já delimitou sua própria faixa, uma falha aqui
+              // indica dado realmente ambíguo. Não liberamos associação aproximada.
+              console.error('Leitor V71B recusou associação insegura:', erroCodigoV71);
+              throw erroCodigoV71;
+            }
+          }
+
+          // V71 não usa mais o antigo "endereço mais próximo" como fallback.
+          // Leitores aproximados permanecem no código apenas por compatibilidade
+          // histórica, mas não liberam uma rota nova.
 
           if (!processado && leituraEstritaOk) {
             try {
               processarRegistrosrota(registrosrota, file.name);
-              processado = todosPacotes && todosPacotes.size > 0;
+              processado = rotaPdfPossuiDadosProcessados();
             } catch (erroEstrito) {
               console.warn(
                 'Leitura estrita não serviu para este PDF. Tentando modo compatível:',
@@ -4235,53 +4898,26 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               // Não aceita uma leitura parcial se o próprio PDF já revelou mais códigos.
               if (!codigosGlobais.size || totalVisual >= codigosGlobais.size) {
                 processarRegistrosrota(registrosVisuaisPdf, file.name);
-                processado = todosPacotes && todosPacotes.size > 0;
+                processado = rotaPdfPossuiDadosProcessados();
               } else {
-                console.info(`Leitura visual encontrou ${totalVisual}/${codigosGlobais.size}. Tentando leitor universal antes de liberar a rota.`);
+                console.info(`Leitura visual encontrou ${totalVisual}/${codigosGlobais.size}. A rota não será liberada parcialmente.`);
               }
             } catch (erroVisual) {
-              console.warn('Leitura visual V51 não concluiu este PDF. Tentando leitor por texto:', erroVisual);
+              console.warn('Leitura visual exata não concluiu este PDF:', erroVisual);
             }
           }
 
           if (!processado) {
-            // V51: antes do leitor legado, tenta também o leitor universal por texto, que não exige
-            // numeração na coluna # (Spoke/Circuit e outros exports tabulares).
-            try {
-              const universais = extrairRegistrosPdfUniversal(linhasFallbackPdf);
-              if (universais.length) {
-                const totalUniversal = contarCodigosDosRegistros(universais);
-                if (!codigosGlobais.size || totalUniversal >= codigosGlobais.size) {
-                  processarRegistrosrota(universais, file.name);
-                  processado = todosPacotes && todosPacotes.size > 0;
-                } else {
-                  console.info(`Leitor universal encontrou ${totalUniversal}/${codigosGlobais.size}. Tentando compatibilidade legada.`);
-                }
-              }
-            } catch (erroUniversal) {
-              console.warn('Leitor universal não concluiu este PDF. Tentando compatibilidade legada:', erroUniversal);
-            }
-          }
-
-          if (!processado) {
-            processarLinhasExatas(linhasFallbackPdf, file.name);
-            processado = todosPacotes && todosPacotes.size > 0;
-          }
-
-          if (!processado) {
-            throw new Error('NENHUM_PACOTE_VALIDO');
+            throw new Error('NENHUM_REGISTRO_PDF');
           }
 
           // V62: contagem de pacotes é a fonte de verdade. Não libera uma rota
           // silenciosamente com 26/30, por exemplo. Se o PDF revelou 30 códigos,
           // os 30 precisam chegar à Bipagem.
           if (codigosGlobais.size > 0 && todosPacotes.size !== codigosGlobais.size) {
-            // V64: um codigo so entra na contagem se estiver associado a uma entrega/endereco valido.
-            // Ocorrencias BR soltas em cabecalho, rodovia ou texto auxiliar nao criam pacote fantasma.
-            console.warn('Pacote É Mato: divergência entre códigos brutos e códigos estruturados do PDF.', {
-              estruturados: todosPacotes.size,
-              brutos: codigosGlobais.size
-            });
+            // V71: quantidade divergente nunca é liberada. É preferível pedir
+            // outro export a criar pacote/parada errada.
+            throw new Error(`CONTAGEM_CODIGOS_DIVERGENTE|${todosPacotes.size}|${codigosGlobais.size}`);
           }
 
           const tempoVisualDecorrido = Date.now() - inicioVisualLeituraPdf;
@@ -4314,11 +4950,34 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             const partes = msg.split('|');
             mensagemErro = `O PDF possui ${partes[2] || 'mais'} códigos de pacote, mas só ${partes[1] || 'alguns'} puderam ser associados com segurança. A rota não foi liberada com contagem errada.`;
           } else if (msg.startsWith('ENDERECO_NAO_IDENTIFICADO|')) {
+            const partes = msg.split('|');
             mensagemErro =
-              'Encontramos uma informação de endereço que não pôde ser validada. A rota não foi liberada.';
-          } else if (msg.includes('NENHUM_PACOTE_VALIDO')) {
+              `A entrega ${partes[1] || ''} possui um endereço que não pôde ser identificado com segurança. Para não criar uma parada errada, a rota não foi liberada.`;
+          } else if (msg.startsWith('CODIGO_INCOMPLETO_LINHA|')) {
+            const partes = msg.split('|');
             mensagemErro =
-              'Não foi possível associar os códigos aos endereços deste PDF. O arquivo não foi alterado; tente novamente ou use outro export do sistema de rotas.';
+              `O PDF contém código BR incompleto na(s) entrega(s) ${partes[1] || ''}. O app não usou caracteres de outra parada para completar o código.`;
+          } else if (msg.startsWith('ENTREGA_SEM_CODIGO|')) {
+            const partes = msg.split('|');
+            mensagemErro =
+              `Este manifesto contém códigos BR, mas a(s) entrega(s) ${partes[1] || ''} ficaram sem código. A rota foi bloqueada para não alterar a quantidade de pacotes.`;
+          } else if (msg.startsWith('PARADA_AMBIGUA|')) {
+            const partes = msg.split('|');
+            mensagemErro =
+              `A entrega ${partes[1] || ''} apareceu com dois endereços diferentes no PDF. A rota não foi liberada para evitar associação incorreta.`;
+          } else if (msg.startsWith('SEQUENCIA_PARADAS_INCOMPLETA|')) {
+            mensagemErro =
+              'A numeração das entregas ficou incompleta durante a leitura. O app não renumerou nem adivinhou as paradas; importe o PDF novamente.';
+          } else if (msg.startsWith('PACOTE_EM_DUAS_PARADAS|')) {
+            mensagemErro =
+              'O mesmo código de pacote apareceu associado a duas entregas diferentes. A rota foi bloqueada para evitar uma bipagem incorreta.';
+          } else if (msg.startsWith('CONTAGEM_CODIGOS_DIVERGENTE|')) {
+            const partes = msg.split('|');
+            mensagemErro =
+              `A conferência encontrou ${partes[2] || 'mais'} código(s) BR no PDF, mas somente ${partes[1] || 'alguns'} ficaram associados a entregas válidas. Para não errar a quantidade, a rota não foi liberada.`;
+          } else if (msg.includes('NENHUM_REGISTRO_PDF') || msg.includes('NENHUM_PACOTE_VALIDO')) {
+            mensagemErro =
+              'Não encontramos linhas de entrega que pudessem ser validadas com segurança neste PDF. Nenhuma parada foi criada por aproximação.';
           }
 
           document.getElementById('btnUploadTxt').innerHTML =
@@ -4425,450 +5084,251 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       return (h >>> 0).toString(16).padStart(8, '0').toUpperCase();
     }
 
+    function aplicarModoBipagemPdfAtual() {
+      const camera = document.getElementById('elCameraViewport');
+      const manual = document.getElementById('inputManual');
+      const resultado = document.getElementById('cardResult');
+      const aviso = document.getElementById('boxAviso');
+
+      if (pdfSemCodigosBipagem) {
+        if (camera) camera.style.display = 'none';
+        if (manual) manual.style.display = 'none';
+        if (resultado) resultado.style.display = 'none';
+        if (aviso) {
+          aviso.dataset.pdfSemCodigo = '1';
+          aviso.style.display = 'block';
+          aviso.innerText = `PDF lido com segurança: ${totalEntregasPdfAtual} entrega(s) em ${Object.keys(mapaRotas || {}).length} parada(s) física(s). Este arquivo não contém códigos BR de pacote; a lista de paradas foi carregada, mas a bipagem por câmera não pode ser validada sem os códigos.`;
+        }
+      } else {
+        if (camera) camera.style.display = '';
+        if (manual) manual.style.display = '';
+        if (aviso?.dataset?.pdfSemCodigo === '1') {
+          aviso.style.display = 'none';
+          aviso.innerText = '';
+          delete aviso.dataset.pdfSemCodigo;
+        }
+      }
+    }
+
+    function rotaPdfPossuiDadosProcessados() {
+      return Object.keys(mapaRotas || {}).length > 0 && totalEntregasPdfAtual > 0;
+    }
+
     function processarRegistrosrota(registros, nomeArquivo) {
       mapaRotas = {};
       stopCorrespondente = {};
       nomeExibicao = {};
       todosPacotes = new Set();
       pacotesBipados = new Set();
+      entregasOriginaisPorEndereco = {};
+      paradaFisicaPorEndereco = {};
+      totalEntregasPdfAtual = 0;
+      pdfSemCodigosBipagem = false;
 
-      const porNumeroParada = new Map();
-      const pacoteParaParada = new Map();
+      const entrada = (Array.isArray(registros) ? registros : [])
+        .map((registro, indice) => ({
+          ...registro,
+          numeroParada: Number(registro?.numeroParada),
+          endereco: limparTextoEnderecoPdfV71(registro?.endereco || ''),
+          codigos: [...new Set((registro?.codigos || []).map(normalizarCodigoPacoteBr).filter(Boolean))],
+          _indice: indice
+        }))
+        .filter(r => Number.isFinite(r.numeroParada) && r.numeroParada > 0);
 
-      registros.forEach(registro => {
-        const numero = Number(registro.numeroParada);
-        if (!Number.isFinite(numero)) return;
+      if (!entrada.length) throw new Error('NENHUM_REGISTRO_PDF');
 
-        if (!porNumeroParada.has(numero)) {
-          porNumeroParada.set(numero, {
+      // Em uma tabela V71 numerada, a própria sequência do PDF é fonte de verdade.
+      // Se faltar 18 entre 17 e 19, por exemplo, não renumeramos nem aproximamos:
+      // a importação é bloqueada para não criar uma parada errada.
+      if (entrada.some(r => r.origemLeitura === 'linhas-v71')) {
+        const numerosV71 = [...new Set(
+          entrada
+            .filter(r => r.origemLeitura === 'linhas-v71' && !r.auxiliarDestino)
+            .map(r => Number(r.numeroParada))
+            .filter(Number.isFinite)
+        )].sort((a,b) => a-b);
+
+        if (numerosV71.length) {
+          const maior = numerosV71[numerosV71.length - 1];
+          const completa = numerosV71[0] === 1 &&
+            numerosV71.length === maior &&
+            numerosV71.every((n, i) => n === i + 1);
+          if (!completa) {
+            throw new Error(`SEQUENCIA_PARADAS_INCOMPLETA|${numerosV71.join(',')}`);
+          }
+        }
+      }
+
+      // Se há um prefixo BR incompleto dentro de uma linha numerada, não tentamos
+      // compensar pegando caractere de outra entrega. Bloqueia em vez de chutar.
+      const prefixosIncompletos = entrada.filter(r => r.prefixoIncompleto === true);
+      if (prefixosIncompletos.length) {
+        throw new Error(`CODIGO_INCOMPLETO_LINHA|${prefixosIncompletos.map(r => r.numeroParada).join(',')}`);
+      }
+
+      const temAlgumCodigo = entrada.some(r => r.codigos.length > 0);
+      let entregasBase = entrada.slice();
+
+      if (temAlgumCodigo) {
+        // Linhas explicitamente marcadas como destino/retorno não são pacotes.
+        entregasBase = entregasBase.filter(r => !r.auxiliarDestino);
+
+        // Em um manifesto que contém códigos, uma entrega numerada sem código é
+        // uma inconsistência real. Não descartamos silenciosamente.
+        const semCodigo = entregasBase.filter(r => r.codigos.length === 0);
+        if (semCodigo.length) {
+          throw new Error(`ENTREGA_SEM_CODIGO|${semCodigo.map(r => r.numeroParada).join(',')}`);
+        }
+      }
+
+      const porNumero = new Map();
+      const donoCodigo = new Map();
+
+      entregasBase.forEach(registro => {
+        const numero = registro.numeroParada;
+        const dadosEndereco = decomporEnderecoFisicoPdfV71(registro.endereco);
+        if (!dadosEndereco) {
+          throw new Error(`ENDERECO_NAO_IDENTIFICADO|${numero}`);
+        }
+
+        const existente = porNumero.get(numero);
+        if (!existente) {
+          porNumero.set(numero, {
             numeroParada: numero,
             endereco: registro.endereco,
-            codigos: []
+            chaveFisica: dadosEndereco.chave,
+            codigos: registro.codigos.slice(),
+            pagina: registro.pagina || 0
           });
-        }
-
-        const destino = porNumeroParada.get(numero);
-
-        registro.codigos.forEach(codigo => {
-          const cod = normalizarCodigoPacoteBr(codigo);
-          if (!cod) return;
-
-          if (pacoteParaParada.has(cod) &&
-              pacoteParaParada.get(cod) !== numero) {
-            throw new Error(
-              `PACOTE_EM_DUAS_PARADAS|${cod}|${pacoteParaParada.get(cod)}|${numero}`
-            );
+        } else {
+          if (existente.chaveFisica !== dadosEndereco.chave) {
+            throw new Error(`PARADA_AMBIGUA|${numero}`);
           }
-
-          pacoteParaParada.set(cod, numero);
-
-          if (!destino.codigos.includes(cod)) {
-            destino.codigos.push(cod);
-          }
-        });
-
-        // Conserva a versão mais completa do endereço da mesma linha.
-        if (
-          String(registro.endereco || '').length >
-          String(destino.endereco || '').length
-        ) {
-          destino.endereco = registro.endereco;
+          registro.codigos.forEach(c => {
+            if (!existente.codigos.includes(c)) existente.codigos.push(c);
+          });
+          if (registro.endereco.length > existente.endereco.length) existente.endereco = registro.endereco;
         }
       });
 
-      const entregas = Array.from(porNumeroParada.values())
-        .sort((a, b) => a.numeroParada - b.numeroParada);
-
-      // Como todos os PDFs são do mesmo modelo do rota, nenhuma entrega
-      // é aceita sem LOGRADOURO + NÚMERO. É melhor bloquear do que inventar.
-      const semEndereco = entregas.filter(e => !decomporEnderecorota(e.endereco));
-
-      if (semEndereco.length) {
-        throw new Error(
-          `ENDERECO_NAO_IDENTIFICADO|${semEndereco.map(e => e.numeroParada).join(',')}`
-        );
-      }
-
-      /*
-       * AGRUPAMENTO DETERMINÍSTICO DE PARADAS FÍSICAS
-       *
-       * Em vez de unir endereços conforme eles aparecem (dependente da ordem
-       * retornada pelo PDF.js), comparamos todas as entregas de mesmo número
-       * de imóvel e formamos grupos por equivalência de logradouro.
-       *
-       * Isso estabiliza casos como:
-       * "R Dr Valentim Amaral, 100" x "Rua Doutor Valentim Amaral, 100"
-       * "R Alexandrino da S Bueno, 369" x
-       * "Rua Alexandrino da Silveira Bueno, 369"
-       */
-      const parent = entregas.map((_, i) => i);
-
-      function find(i) {
-        while (parent[i] !== i) {
-          parent[i] = parent[parent[i]];
-          i = parent[i];
-        }
-        return i;
-      }
-
-      function union(a, b) {
-        const ra = find(a);
-        const rb = find(b);
-        if (ra !== rb) {
-          // Sempre mantém a raiz de menor índice: resultado determinístico.
-          if (ra < rb) parent[rb] = ra;
-          else parent[ra] = rb;
-        }
-      }
-
-      
-      console.log("===== DIAGNOSTICO BR GRUPO =====");
-
-      const brGrupoAlvos = new Set([
-        "BRGRUPO1001","BRGRUPO1002","BRGRUPO1003","BRGRUPO1004","BRGRUPO1005",
-        "BRGRUPO1006","BRGRUPO1007","BRGRUPO1008","BRGRUPO1009","BRGRUPO1010",
-        "BRGRUPO0501","BRGRUPO0502","BRGRUPO0503","BRGRUPO0504","BRGRUPO0505",
-        "BRGRUPO0301","BRGRUPO0302","BRGRUPO0303"
-      ]);
+      const entregas = Array.from(porNumero.values()).sort((a,b) => a.numeroParada - b.numeroParada);
+      if (!entregas.length) throw new Error('NENHUM_REGISTRO_PDF');
 
       entregas.forEach(entrega => {
-        const codigos = Array.isArray(entrega.codigos) ? entrega.codigos : [];
-
-        codigos.forEach(codigo => {
-          if (brGrupoAlvos.has(codigo)) {
-            const dados = decomporEnderecorota(entrega.endereco);
-
-            console.log(
-              codigo +
-              " → bruto=" + entrega.endereco +
-              " → normalizado=" + JSON.stringify(dados.tokens) +
-              " → numero=" + dados.numero +
-              " → complemento=" + dados.complementoCanonico +
-              " → parada=" + entrega.numeroParada
-            );
+        entrega.codigos.forEach(codigo => {
+          if (donoCodigo.has(codigo) && donoCodigo.get(codigo) !== entrega.numeroParada) {
+            throw new Error(`PACOTE_EM_DUAS_PARADAS|${codigo}|${donoCodigo.get(codigo)}|${entrega.numeroParada}`);
           }
+          donoCodigo.set(codigo, entrega.numeroParada);
         });
       });
-
-      console.log("===== FIM DIAGNOSTICO BR GRUPO =====");
-
-
-      const dadosEndereco = entregas.map(e => decomporEnderecorota(e.endereco));
-
-      function complementosPodemSerUnidos(a, b) {
-        /*
-         * CORREÇÃO PACOTE É MATO:
-         *
-         * A parada é o endereço físico do imóvel.
-         * Apartamento, bloco, torre, sala e unidade NÃO criam nova parada.
-         *
-         * Exemplo:
-         * Rua Ipanema, 686 Apt 101
-         * Rua Ipanema, 686 Apt 202
-         *
-         * Resultado:
-         * 1 parada
-         * 2 pacotes
-         *
-         * A bipagem continua exigindo todos os códigos daquele endereço.
-         */
-        return true;
-      }
-
-      for (let i = 0; i < entregas.length; i++) {
-        for (let j = i + 1; j < entregas.length; j++) {
-          const a = dadosEndereco[i];
-          const b = dadosEndereco[j];
-
-          // Mesmo número do imóvel é obrigatório.
-          if (a.numero !== b.numero) continue;
-
-          // Complemento/unidade física também faz parte da identidade.
-          // Apt 12 != Apt 13, Sala 1 != Sala 2, Bloco A != Bloco B.
-          if (!complementosPodemSerUnidos(a, b)) continue;
-
-          // CORREÇÃO FINAL: a parada é baseada em logradouro + número.
-          // Não depende mais de similaridade do texto original do PDF.
-          // Assim:
-          // R DA MOOCA, 2100 = Rua da Mooca, 2100
-          // Av Paes de Barros, 177 = Avenida Paes de Barros, 177
-          // continuam sendo a mesma parada.
-
-          // V17 - comparação inteligente de logradouro
-          // Alguns PDFs rota abreviam a mesma rua:
-          // marquesvalenca x mqvalenca
-          // conselheirolafaiette x cnsolafaiette
-          // freigaspar x frgaspar
-          function ruasEquivalentesV17(r1, r2) {
-            if (!r1 || !r2) return false;
-            const tokens = valor => String(valor || '')
-              .toLowerCase()
-              .replace(/[^a-z0-9 ]/g, ' ')
-              .split(/\s+/)
-              .filter(Boolean)
-              .map(t => ({ mq: 'marques', cnsl: 'conselheiro', cnsol: 'conselheiro', fr: 'frei' }[t] || t));
-            const a = tokens(r1), b = tokens(r2);
-            if (!a.length || !b.length) return false;
-            if (a.join('|') === b.join('|')) return true;
-            if (a.length !== b.length) return false;
-            // Permite abreviacao segura por inicial na mesma posicao: "s" = "silveira".
-            return a.every((x, i) => x === b[i] || (x.length === 1 && b[i].startsWith(x)) || (b[i].length === 1 && x.startsWith(b[i])));
-          }
-
-          if (ruasEquivalentesV17(a.ruaCanonica, b.ruaCanonica)) {
-            union(i, j);
-          }
-        }
-      }
 
       const grupos = new Map();
-
-      entregas.forEach((entrega, i) => {
-        const raiz = find(i);
-
-        if (!grupos.has(raiz)) {
-          grupos.set(raiz, []);
-        }
-
-        grupos.get(raiz).push(entrega);
+      entregas.forEach(entrega => {
+        const chave = entrega.chaveFisica;
+        if (!grupos.has(chave)) grupos.set(chave, []);
+        grupos.get(chave).push(entrega);
       });
 
-      // Cria as chaves finais em ordem estável pelo menor número de parada.
-      const gruposOrdenados = Array.from(grupos.values())
-        .map(grupo => grupo.sort((a, b) => a.numeroParada - b.numeroParada))
-        .sort((a, b) => a[0].numeroParada - b[0].numeroParada);
+      const gruposOrdenados = Array.from(grupos.entries())
+        .map(([chave, lista]) => ({
+          chave,
+          entregas: lista.slice().sort((a,b) => a.numeroParada - b.numeroParada)
+        }))
+        .sort((a,b) => a.entregas[0].numeroParada - b.entregas[0].numeroParada);
 
-      const diagnostico = [];
+      gruposOrdenados.forEach((grupo, indiceFisico) => {
+        const numeroFisico = indiceFisico + 1;
+        const endKey = grupo.chave;
+        const enderecos = grupo.entregas.map(e => String(e.endereco || '')).filter(Boolean);
+        const exibicao = enderecos.sort((a,b) => b.length - a.length || a.localeCompare(b))[0] || 'Endereço do PDF';
+        const linhasOriginais = [...new Set(grupo.entregas.map(e => Number(e.numeroParada)).filter(Number.isFinite))].sort((a,b) => a-b);
+        const codigos = [...new Set(grupo.entregas.flatMap(e => e.codigos || []))];
 
-      gruposOrdenados.forEach(grupo => {
-        // Usa o endereço mais descritivo do grupo somente para exibição.
-        const exibicao = grupo
-          .map(g => String(g.endereco || ''))
-          .sort((a, b) => b.length - a.length || a.localeCompare(b))[0];
+        mapaRotas[endKey] = codigos;
+        nomeExibicao[endKey] = exibicao;
+        entregasOriginaisPorEndereco[endKey] = linhasOriginais;
+        paradaFisicaPorEndereco[endKey] = numeroFisico;
 
-        const d = decomporEnderecorota(exibicao);
-
-        // V22 - chave final reforçada no ponto real de criação da parada
-        // Aqui é onde o mapaRotas nasce.
-        // A identidade física da parada deve considerar SOMENTE logradouro + número.
-        // Complementos (apto, bloco, torre, sala, casa etc.) não criam uma nova parada.
-        // Usar tokensRua evita que textos de complemento gerem chaves diferentes para o mesmo imóvel.
-        let ruaFinal = d.tokensRua.join('');
-
-        const correcoesRuaV22 = {
-          "cnsolafaiette": "conselheirolafaiette",
-          "cnsolafayette": "conselheirolafaiette",
-          "mqvalenca": "marquesvalenca",
-          "frgaspar": "freigaspar"
-        };
-
-        Object.keys(correcoesRuaV22).forEach(origem => {
-          if (ruaFinal.startsWith(origem)) {
-            ruaFinal = correcoesRuaV22[origem] + ruaFinal.slice(origem.length);
-          }
+        codigos.forEach(codigo => {
+          todosPacotes.add(codigo);
+          stopCorrespondente[codigo] = numeroFisico;
         });
-
-        
-// V23 - chave somente rua + número do imóvel
-// Remove apto, bloco, torre e complementos que estavam
-// impedindo agrupamento da mesma parada.
-
-ruaFinal = ruaFinal
-  .replace(/apto\d+/gi,'')
-  .replace(/apartamento\d+/gi,'')
-  .replace(/ap\d+/gi,'')
-  .replace(/torre\d+/gi,'')
-  .replace(/bloco\d+/gi,'')
-  .replace(/sala\d+/gi,'')
-  .replace(/casa\d+/gi,'')
-  .replace(/urbanmooca/gi,'')
-  .replace(/t\d+/gi,'');
-
-ruaFinal = ruaFinal.replace(/[^a-z]/g,'');
-
-
-// V24 - remove códigos internos do PDF antes da chave final
-ruaFinal = ruaFinal
-  .replace(/_s\d+/gi,'')
-  .replace(/_x\d+/gi,'')
-  .replace(/s\d+$/gi,'')
-  .replace(/x\d+$/gi,'');
-
-ruaFinal = ruaFinal.replace(/[^a-z]/gi,'');
-
-
-// V25 - remove sufixos internos do rota antes da chave final
-ruaFinal = ruaFinal
-  .replace(/_s\d+$/gi,'')
-  .replace(/_x\d+$/gi,'')
-  .replace(/_s[a-z0-9]+$/gi,'')
-  .replace(/_x[a-z0-9]+$/gi,'');
-
-ruaFinal = ruaFinal.replace(/[^a-z]/gi,'');
-
-
-// V27 - limpeza definitiva antes de salvar no mapaRotas
-// A chave exibida precisa ser a mesma usada no agrupamento.
-
-ruaFinal = ruaFinal
-  .replace(/_s\d+$/gi, '')
-  .replace(/_s[a-z0-9]+$/gi, '')
-  .replace(/_x[a-z0-9]+$/gi, '')
-  .replace(/s\d+$/gi, '')
-  .trim();
-
-let endKey = `${ruaFinal}_${d.numero}`;
-
-// V57 - usa a mesma normalização física do restante do sistema sempre que possível.
-// Isso faz "Rua X, 100 apto 1" e "R. X, 100 apto 2" convergirem para a mesma parada.
-const chaveFisicaCanonica = normalizarEndereco(exibicao);
-if (chaveFisicaCanonica) endKey = chaveFisicaCanonica;
-
-// garante que a chave não carregue códigos internos
-endKey = endKey.replace(/_s\d+$/gi, '');
-
-
-
-
-
-        // V57 - múltiplas no mesmo endereço físico devem virar UMA parada.
-        // Versões anteriores acrescentavam _sN quando a mesma chave aparecia de novo.
-        // Isso protegia contra colisões, mas também quebrava o mesmo imóvel em 2+ paradas
-        // quando o PDF escrevia o logradouro de formas diferentes (abreviação/complemento).
-        // Agora, se a chave canônica rua+número já existe, apenas mesclamos os pacotes.
-        if (!mapaRotas[endKey]) {
-          mapaRotas[endKey] = [];
-          nomeExibicao[endKey] = exibicao;
-        } else {
-          // Mantém para exibição o endereço mais completo/descritivo.
-          const atual = String(nomeExibicao[endKey] || '');
-          if (String(exibicao || '').length > atual.length) nomeExibicao[endKey] = exibicao;
-        }
-
-        grupo.forEach(entrega => {
-          entrega.codigos.forEach(codigo => {
-            todosPacotes.add(codigo);
-
-            if (!mapaRotas[endKey].includes(codigo)) {
-              mapaRotas[endKey].push(codigo);
-            }
-
-            stopCorrespondente[codigo] = entrega.numeroParada;
-          });
-        });
-
-        diagnostico.push(
-          `${grupo.map(g => g.numeroParada).join('-')}|${endKey}|${mapaRotas[endKey].slice().sort().join(',')}`
-        );
       });
 
-      if (todosPacotes.size === 0) {
-        throw new Error("NENHUM_PACOTE_VALIDO");
+      totalEntregasPdfAtual = entregas.length;
+      pdfSemCodigosBipagem = todosPacotes.size === 0;
+
+      // Em PDFs com código, a fonte de verdade é o conjunto exato de BRs lidos
+      // dentro das linhas. Nenhum código pode desaparecer no agrupamento físico.
+      if (!pdfSemCodigosBipagem && todosPacotes.size !== donoCodigo.size) {
+        throw new Error(`CONTAGEM_INTERNA_DIVERGENTE|${todosPacotes.size}|${donoCodigo.size}`);
       }
 
-      if (todosPacotes.size !== pacoteParaParada.size) {
-        throw new Error(
-          `CONTAGEM_INTERNA_DIVERGENTE|${todosPacotes.size}|${pacoteParaParada.size}`
-        );
-      }
-
-      if (chaveStorageAtual) {
+      if (chaveStorageAtual && !pdfSemCodigosBipagem) {
         const salvos = localStorage.getItem(chaveStorageAtual);
-
         if (salvos) {
           try {
-            pacotesBipados = new Set((JSON.parse(salvos) || []).map(c => normalizarCodigoPacoteBr(c)).filter(c => c && todosPacotes.has(c)));
-          } catch (e) {}
+            pacotesBipados = new Set(
+              (JSON.parse(salvos) || [])
+                .map(c => normalizarCodigoPacoteBr(c))
+                .filter(c => c && todosPacotes.has(c))
+            );
+          } catch (_) {}
         }
       }
 
-      
-const totalParadasFisicas = Object.keys(mapaRotas).length;
-
-// ============================================================
-// DIAGNÓSTICO REAL - INSERIDO NO PONTO DA CRIAÇÃO DAS PARADAS
-// Aqui já existem mapaRotas e todosPacotes.
-// ============================================================
-try {
-  const diagnosticoReal = {
-    arquivo: nomeArquivo,
-    totalPacotes: todosPacotes.size,
-    totalParadas: totalParadasFisicas,
-    paradas: Object.entries(mapaRotas).map(([endereco, pacotes]) => ({
-      endereco,
-      quantidadePacotes: pacotes.length,
-      pacotes
-    }))
-  };
-
-  window.diagnosticoRotaReal = diagnosticoReal;
-
-  console.table(
-    diagnosticoReal.paradas.map((p, i) => ({
-      parada: i + 1,
-      endereco: p.endereco,
-      pacotes: p.quantidadePacotes
-    }))
-  );
-
-  console.log("DIAGNÓSTICO REAL DA ROTA", diagnosticoReal);
-
-} catch(e) {
-  console.log("Erro diagnóstico real:", e);
-}
-
-      const assinatura = hashLeiturarota(diagnostico.join('\n'));
-
-      // Guarda um diagnóstico mínimo. Se dois aparelhos lerem o mesmo PDF,
-      // a assinatura deve ser a mesma.
-      try {
-        localStorage.setItem(
-          'rota_ultima_leitura_diagnostico',
-          JSON.stringify({
-            arquivo: nomeArquivo,
-            pacotes: todosPacotes.size,
-            paradas: totalParadasFisicas,
-            assinatura,
-            data: Date.now()
-          })
-        );
-      } catch (_) {}
-
-      document.getElementById('btnUploadTxt').innerHTML =
-        " " + nomeArquivo.substring(0, 20) + "...";
-
+      document.getElementById('btnUploadTxt').innerHTML = ' ' + nomeArquivo.substring(0, 20) + '...';
       document.getElementById('btnVerParadasModal').style.display = 'flex';
       document.getElementById('areaExecucao').style.display = 'block';
       entrarModoRotaAtiva();
       document.getElementById('cardRetomarRota').style.display = 'none';
 
+      aplicarModoBipagemPdfAtual();
       salvarEstadoCompletoRota(nomeArquivo);
 
-      // O PDF entra no histórico assim que a leitura termina com sucesso.
-      salvarOuAtualizarHistoricoRota(
-        nomeArquivo,
-        todosPacotes.size,
-        totalParadasFisicas,
-        false,
-        null
-      );
+      // Só entra no histórico de bipagem quando o manifesto realmente possui
+      // códigos escaneáveis. PDF só de endereço continua disponível para lista/rota.
+      if (!pdfSemCodigosBipagem) {
+        salvarOuAtualizarHistoricoRota(
+          nomeArquivo,
+          todosPacotes.size,
+          Object.keys(mapaRotas).length,
+          false,
+          null
+        );
+      }
 
       atualizarStats();
-      iniciarScanner();
+      if (!pdfSemCodigosBipagem) iniciarScanner();
 
-      const gruposMultiplos = Object.values(mapaRotas)
-        .filter(pacotes => pacotes.length > 1);
+      const gruposMultiplos = Object.keys(mapaRotas).filter(chave => (entregasOriginaisPorEndereco[chave] || []).length > 1);
+      const entregasEmMultiplas = gruposMultiplos.reduce((s, chave) => s + (entregasOriginaisPorEndereco[chave] || []).length, 0);
 
-      const qtdParadasMultiplas = gruposMultiplos.length;
-      const qtdPacotesMultiplos = gruposMultiplos.reduce(
-        (total, pacotes) => total + pacotes.length,
-        0
-      );
+      try {
+        window.diagnosticoRotaReal = {
+          arquivo: nomeArquivo,
+          totalEntregas: totalEntregasPdfAtual,
+          totalPacotes: todosPacotes.size,
+          totalParadas: Object.keys(mapaRotas).length,
+          semCodigos: pdfSemCodigosBipagem,
+          paradas: Object.keys(mapaRotas).map(chave => ({
+            paradaFisica: paradaFisicaPorEndereco[chave],
+            endereco: nomeExibicao[chave],
+            entregasPdf: entregasOriginaisPorEndereco[chave] || [],
+            pacotes: mapaRotas[chave] || []
+          }))
+        };
+        console.table(window.diagnosticoRotaReal.paradas);
+      } catch (_) {}
 
-      notificar(
-        ` Rota pronta • ${todosPacotes.size} pacotes • ${totalParadasFisicas} paradas`
-      );
+      if (pdfSemCodigosBipagem) {
+        notificar(` PDF lido • ${totalEntregasPdfAtual} entregas • ${Object.keys(mapaRotas).length} paradas • sem códigos BR para bipagem`);
+      } else {
+        notificar(` Rota pronta • ${todosPacotes.size} pacotes • ${Object.keys(mapaRotas).length} paradas${gruposMultiplos.length ? ` • ${gruposMultiplos.length} múltiplas (${entregasEmMultiplas} entregas)` : ''}`);
+      }
     }
+
 
     function processarLinhasExatas(linhas, nomeArquivo) {
       mapaRotas = {};
@@ -5153,47 +5613,52 @@ try {
       if (window.PacoteEMatoOperacoesPacotes?.estaAtiva?.()) {
         return window.PacoteEMatoOperacoesPacotes.processarCodigoOperacao(codigoBruto);
       }
-      if (!codigoBruto || processandoLeituraAtual) return;
-      
-      let agora = Date.now();
-      let codLimpo = extrairCodigoChave(codigoBruto);
 
-      if (codLimpo === ultimoCodigoBipado && (agora - tempoUltimoBip < 2500)) return;
+      if (!codigoBruto || processandoLeituraAtual || pdfSemCodigosBipagem) return;
+
+      const agora = Date.now();
+
+      // V71: a bipagem é EXATA. Nunca usamos "includes", prefixo parcial ou
+      // aproximação. O QR/barcode pode trazer texto ao redor, mas precisa conter
+      // exatamente um código BR válido que exista no manifesto importado.
+      const candidatos = new Set(extrairCodigosBrFlexiveis(String(codigoBruto)));
+      const direto = normalizarCodigoPacoteBr(codigoBruto);
+      if (direto) candidatos.add(direto);
+
+      const presentes = [...candidatos].filter(c => todosPacotes.has(c));
+      const identificado = presentes.length === 1 ? presentes[0] : null;
+      const ambiguo = presentes.length > 1;
+
+      if (identificado === ultimoCodigoBipado && (agora - tempoUltimoBip < 2500)) return;
 
       processandoLeituraAtual = true;
 
-      let identificado = null;
-      let lang = localStorage.getItem('idioma_preferido') || 'pt';
-      let dict = traducoes[lang] || traducoes.pt;
+      const lang = localStorage.getItem('idioma_preferido') || 'pt';
 
-      for (let c of todosPacotes) {
-        if (c === codLimpo || codigoBruto.toUpperCase().includes(c) || c.includes(codLimpo)) {
-          identificado = c;
-          break;
-        }
-      }
-
-      let card = document.getElementById('cardResult');
-      let resStop = document.getElementById('resStop');
-      let resEndereco = document.getElementById('resEndereco');
-      let resPacote = document.getElementById('resPacote');
-      let aviso = document.getElementById('boxAviso');
+      const card = document.getElementById('cardResult');
+      const resStop = document.getElementById('resStop');
+      const resEndereco = document.getElementById('resEndereco');
+      const resPacote = document.getElementById('resPacote');
+      const aviso = document.getElementById('boxAviso');
 
       if (identificado) {
         ultimoCodigoBipado = identificado;
         tempoUltimoBip = agora;
 
         pacotesBipados.add(identificado);
-        if (chaveStorageAtual) localStorage.setItem(chaveStorageAtual, JSON.stringify(Array.from(pacotesBipados)));
+        if (chaveStorageAtual) {
+          localStorage.setItem(chaveStorageAtual, JSON.stringify(Array.from(pacotesBipados)));
+        }
         salvarEstadoCompletoRota();
 
-        let numP = stopCorrespondente[identificado] || "?";
-        let endMatch = "";
-        let listaDuplos = [];
-        for (let end in mapaRotas) {
-          if (mapaRotas[end].includes(identificado)) {
+        const numP = stopCorrespondente[identificado] || '?';
+        let endMatch = '';
+        let listaParada = [];
+
+        for (const end in mapaRotas) {
+          if ((mapaRotas[end] || []).includes(identificado)) {
             endMatch = end;
-            listaDuplos = mapaRotas[end];
+            listaParada = mapaRotas[end] || [];
             break;
           }
         }
@@ -5201,17 +5666,23 @@ try {
         playBeepSucesso();
         card.classList.remove('error-state');
         card.style.display = 'block';
-        resStop.innerText = "P" + numP;
-        
-        let textoEndereco = nomeExibicao[endMatch] || "Endereço identificado no PDF";
-        resEndereco.innerText = " " + textoEndereco;
-        resPacote.innerText = "Pacote: " + identificado;
+        resStop.innerText = 'P' + numP;
 
-        let outrosStops = listaDuplos.filter(p => p !== identificado).map(p => "P" + stopCorrespondente[p]);
+        const textoEndereco = nomeExibicao[endMatch] || 'Endereço identificado no PDF';
+        resEndereco.innerText = ' ' + textoEndereco;
+        resPacote.innerText = 'Pacote: ' + identificado;
 
-        if (outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_")) {
+        const qtdEntregasFisicas = Math.max(
+          (entregasOriginaisPorEndereco[endMatch] || []).length,
+          listaParada.length
+        );
+
+        if (qtdEntregasFisicas > 1 && !endMatch.startsWith('pacote_isolado_')) {
+          const linhas = entregasOriginaisPorEndereco[endMatch] || [];
+          const origem = linhas.length ? ` • entregas ${linhas.join(' · ')}` : '';
           aviso.style.display = 'block';
-          aviso.innerText = dict.same_address_alert + outrosStops.join(", ");
+          aviso.innerText =
+            `PARADA MÚLTIPLA • ${qtdEntregasFisicas} entrega${qtdEntregasFisicas === 1 ? '' : 's'} neste endereço${origem}`;
         } else {
           aviso.style.display = 'none';
         }
@@ -5219,18 +5690,12 @@ try {
         atualizarProgressoParada(endMatch);
 
         liberarVozPorInteracao();
-        falarParada(
-          numP,
-          outrosStops.length > 0 && !endMatch.startsWith("pacote_isolado_"),
-          outrosStops[0]
-        );
+        // Todas as entregas do mesmo imóvel usam o MESMO número físico.
+        falarParada(numP, false, null);
 
         atualizarStats();
-
-        // Mantém o histórico leve durante a bipagem.
-        // O histórico completo já é salvo ao carregar o PDF e novamente ao concluir.
         verificarConclusaoRota();
-        document.getElementById('inputManual').value = "";
+        document.getElementById('inputManual').value = '';
       } else {
         if (agora - tempoUltimoBip > 2000) {
           tempoUltimoBip = agora;
@@ -5238,16 +5703,24 @@ try {
 
           card.classList.add('error-state');
           card.style.display = 'block';
-          resStop.innerText = lang === 'en' ? "NOT FOUND" : (lang === 'es' ? "NO ENCONTRADO" : "NÃO LOCALIZADO");
-          resEndereco.innerText = "Verifique se o pacote consta no manifesto importado.";
-          resPacote.innerText = "Código: " + (codLimpo || codigoBruto);
+          resStop.innerText = lang === 'en'
+            ? 'NOT FOUND'
+            : (lang === 'es' ? 'NO ENCONTRADO' : 'NÃO LOCALIZADO');
+
+          if (ambiguo) {
+            resEndereco.innerText = 'A leitura contém mais de um código válido. Aponte a câmera somente para uma etiqueta.';
+            resPacote.innerText = 'Nenhum pacote foi confirmado.';
+          } else {
+            resEndereco.innerText = 'O código exato não consta no manifesto importado.';
+            resPacote.innerText = 'Código lido: ' + (direto || [...candidatos][0] || String(codigoBruto).trim());
+          }
+
           aviso.style.display = 'none';
 
-          // Não deixa o progresso da parada anterior aparecendo em um erro.
           const progressoAnterior = document.getElementById('progressoParadaAtual');
           if (progressoAnterior) progressoAnterior.style.display = 'none';
 
-          document.getElementById('inputManual').value = "";
+          document.getElementById('inputManual').value = '';
         }
       }
 
@@ -5348,9 +5821,16 @@ try {
     }
 
     function atualizarStats() {
-      let bip = pacotesBipados.size;
-      let tot = todosPacotes.size;
-      let paradas = Object.keys(mapaRotas).length;
+      const bip = pacotesBipados.size;
+      const tot = todosPacotes.size;
+      const paradas = Object.keys(mapaRotas).length;
+
+      if (pdfSemCodigosBipagem) {
+        document.getElementById('valPacotes').innerText = `${totalEntregasPdfAtual} entregas`;
+        document.getElementById('valParadas').innerText = paradas;
+        document.getElementById('valFaltam').innerText = '—';
+        return;
+      }
 
       document.getElementById('valPacotes').innerText = `${bip} / ${tot}`;
       document.getElementById('valParadas').innerText = paradas;

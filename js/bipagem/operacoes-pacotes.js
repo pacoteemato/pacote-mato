@@ -305,17 +305,39 @@
 
   function identificarCodigo(codigoBruto) {
     if (!estado) return '';
-    let limpo = '';
-    try { limpo = typeof global.extrairCodigoChave === 'function' ? String(global.extrairCodigoChave(codigoBruto) || '') : ''; } catch (_) {}
-    if (!limpo) {
-      const m = String(codigoBruto || '').toUpperCase().match(/BR[A-Z0-9]{8,25}/);
-      limpo = m?.[0] || String(codigoBruto || '').trim().toUpperCase();
-    }
+
+    // V71: confirmação exata. Nunca aceita prefixo, sufixo ou substring parcial.
+    const bruto = String(codigoBruto || '').trim();
+    const brutoUp = bruto.toUpperCase();
+    const candidatos = new Set();
+
+    try {
+      if (typeof global.extrairCodigosBrFlexiveis === 'function') {
+        global.extrairCodigosBrFlexiveis(bruto).forEach(c => candidatos.add(String(c).toUpperCase()));
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof global.normalizarCodigoPacoteBr === 'function') {
+        const direto = global.normalizarCodigoPacoteBr(bruto);
+        if (direto) candidatos.add(String(direto).toUpperCase());
+      }
+    } catch (_) {}
+
+    // Mantém compatibilidade com planilhas que usam outro identificador, mas
+    // somente por igualdade exata (com/sem separadores), nunca "includes".
+    candidatos.add(brutoUp);
+    candidatos.add(brutoUp.replace(/[\s._-]+/g, ''));
+
+    const encontrados = [];
     for (const c of estado.indicePlanilha.keys()) {
-      const up = String(c).toUpperCase();
-      if (up === limpo || String(codigoBruto || '').toUpperCase().includes(up) || (limpo && up.includes(limpo))) return c;
+      const original = String(c || '').trim();
+      const up = original.toUpperCase();
+      const compacto = up.replace(/[\s._-]+/g, '');
+      if (candidatos.has(up) || candidatos.has(compacto)) encontrados.push(c);
     }
-    return '';
+
+    return encontrados.length === 1 ? encontrados[0] : '';
   }
 
   function mostrarResultadoScanner(ok, codigo, parada, mensagem) {
