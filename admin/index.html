@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests">
   <title>Pacote É Mato · Painel do Dono</title>
   <link rel="icon" href="../icon-192.png">
-  <link rel="stylesheet" href="admin.css?v=68">
+  <link rel="stylesheet" href="admin.css?v=75">
 </head>
 <body>
   <div id="loginView" class="login-shell">
@@ -32,6 +32,8 @@
       <nav>
         <button data-view="dashboard" class="active">Dashboard</button>
         <button data-view="clientes">Clientes</button>
+        <button data-view="problemas">Central de problemas</button>
+        <button data-view="versoes">Versões do app</button>
         <button data-view="pagamentos">Pagamentos</button>
         <button data-view="comunicados">Comunicados</button>
         <button data-view="seguranca">Segurança</button>
@@ -49,6 +51,8 @@
           <article><span>Bloqueados</span><strong id="metricBloqueados">—</strong></article>
           <article><span>Vitalícios</span><strong id="metricVitalicios">—</strong></article>
           <article><span>Faturamento registrado</span><strong id="metricRevenue">—</strong></article>
+          <article><span>Clientes com problema · 24h</span><strong id="metricErrors24h">—</strong></article>
+          <article><span>Versões em uso</span><strong id="metricVersions">—</strong></article>
         </div>
         <section class="panel"><div class="panel-head"><div><span class="eyebrow">VISÃO GERAL</span><h3>Contas recentes</h3></div><button data-go="clientes" class="ghost">Ver clientes</button></div><div id="recentClients" class="client-list"></div></section>
       </section>
@@ -70,6 +74,11 @@
         </section>
       </section>
 
+
+      <section id="view-problemas" class="view"><section class="panel"><div class="panel-head"><div><span class="eyebrow">DIAGNÓSTICO</span><h3>Central de problemas</h3></div></div><p class="muted">Mostra somente diagnóstico operacional do app: tipo do erro, versão, plataforma e horário. Endereços e conteúdo das rotas não são enviados para esta tela.</p><div id="problemsList" class="admin-data-list"></div></section></section>
+
+      <section id="view-versoes" class="view"><section class="panel"><div class="panel-head"><div><span class="eyebrow">APLICATIVO</span><h3>Versões em uso</h3></div></div><p class="muted">Ajuda a identificar clientes que ainda estão usando uma versão antiga do Pacote É Mato.</p><div id="versionsList" class="version-grid"></div></section></section>
+
       <section id="view-pagamentos" class="view"><section class="panel"><div class="panel-head"><div><span class="eyebrow">FINANCEIRO</span><h3>Pagamentos</h3></div></div><div id="paymentsList" class="payment-list"></div></section></section>
 
       <section id="view-comunicados" class="view"><section class="panel narrow"><span class="eyebrow">COMUNICAÇÃO</span><h3>Novo comunicado</h3><label>Mensagem<textarea id="broadcastText" maxlength="500" placeholder="Mensagem para os motoristas"></textarea></label><label>Duração<select id="broadcastHours"><option value="1">1 hora</option><option value="3">3 horas</option><option value="6">6 horas</option><option value="12">12 horas</option><option value="24">24 horas</option></select></label><div class="actions"><button id="broadcastSend" class="primary">Publicar aviso</button><button id="broadcastClear" class="ghost">Apagar aviso</button></div></section></section>
@@ -80,7 +89,7 @@
 
   <div id="modal" class="modal-backdrop" hidden><section class="modal"><button id="modalClose" class="modal-close">×</button><span class="eyebrow">CLIENTE</span><h3 id="modalTitle">Gerenciar conta</h3><div id="modalBody"></div></section></div>
   <div id="toast" class="toast" hidden></div>
-  <script src="config.js?v=68"></script>
-  <script src="admin.js?v=68"></script>
+  <script src="config.js?v=75"></script>
+  <script src="admin.js?v=75"></script>
 </body>
 </html>

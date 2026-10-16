@@ -9,6 +9,55 @@
   const MUTED = [91, 105, 98];
   const LINE = [211, 225, 218];
 
+
+  function bytesParaBase64(bytes) {
+    let bin = '';
+    const passo = 0x8000;
+    for (let i = 0; i < bytes.length; i += passo) bin += String.fromCharCode(...bytes.subarray(i, i + passo));
+    return btoa(bin);
+  }
+
+  async function salvarDocumento(doc, nomeArquivo) {
+    const nome = String(nomeArquivo || `${APP_NAME} - Rota.pdf`);
+    const android = global.Android;
+    if (android && typeof android.salvarPdfBase64 === 'function') {
+      const buffer = doc.output('arraybuffer');
+      const base64 = bytesParaBase64(new Uint8Array(buffer));
+      android.salvarPdfBase64(nome, base64);
+      return { metodo: 'android' };
+    }
+
+    const blob = doc.output('blob');
+    try {
+      if (navigator.share && typeof File === 'function') {
+        const arquivo = new File([blob], nome, { type: 'application/pdf' });
+        if (!navigator.canShare || navigator.canShare({ files: [arquivo] })) {
+          await navigator.share({ files: [arquivo], title: nome });
+          return { metodo: 'share' };
+        }
+      }
+    } catch (erro) {
+      if (erro?.name === 'AbortError') return { metodo: 'cancelado' };
+    }
+
+    const url = URL.createObjectURL(blob);
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nome;
+      link.rel = 'noopener';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      return { metodo: 'download' };
+    } catch (erro) {
+      URL.revokeObjectURL(url);
+      throw new Error('Não foi possível abrir o salvamento do PDF neste aparelho. Atualize o aplicativo para a versão com exportação nativa.');
+    }
+  }
+
   function formatarDistancia(m) {
     const n = Number(m);
     return Number.isFinite(n) ? `${(n / 1000).toFixed(1).replace('.', ',')} km` : '—';
@@ -106,7 +155,7 @@
   }
 
   function enderecoCompleto(p) {
-    return String(p?.enderecoFonte || p?.enderecoOriginal || p?.endereco || '').trim() || 'Endereço não informado';
+    return String(p?.enderecoOriginal || p?.enderecoFonte || p?.endereco || '').trim() || 'Endereço não informado';
   }
 
   function observacao(p) {
@@ -269,7 +318,7 @@
     doc.text(`Gerado pelo ${APP_NAME}`, pageW-margin, y, {align:'right'});
 
     const nomeRota = limparNome(rota.nome || 'Rota');
-    doc.save(`${APP_NAME} - ${nomeRota}.pdf`);
+    return salvarDocumento(doc, `${APP_NAME} - ${nomeRota}.pdf`);
   }
 
   global.PacoteEMatoPDF = Object.freeze({ exportar });

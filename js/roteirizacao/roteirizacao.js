@@ -18,8 +18,14 @@
   let sheetDragLastY = null;
   let estadoPainelAntesDesenho = null;
   let sugestaoEnderecoSelecionada = null;
+  let sugestaoEditorSelecionada = null;
+  let sugestaoPontoFinalSelecionada = null;
   let buscaEnderecoTimer = null;
   let buscaEnderecoSeq = 0;
+  let buscaEditorTimer = null;
+  let buscaEditorSeq = 0;
+  let buscaPontoFinalTimer = null;
+  let buscaPontoFinalSeq = 0;
   let gruposDesenhoRefino = [];
 
   function $(id) { return document.getElementById(id); }
@@ -1630,6 +1636,7 @@
       }
 
       esconderProcessamento();
+      global.PacoteEMatoTelemetria?.registrarProblema?.('otimizacao_rota', erro?.message || 'Falha ao otimizar rota', { modulo: 'roteirizacao' });
       definirStatusImportacao(erro?.message || 'Não foi possível otimizar a rota.', 'error');
       notificar(erro?.message || 'Não foi possível otimizar a rota.');
     } finally {
@@ -1667,6 +1674,141 @@
 
   function textoSecundarioSugestao(item) {
     return [item?.city, item?.state, item?.postcode].map(v => String(v || '').trim()).filter(Boolean).join(' · ');
+  }
+
+
+  function escaparRegex(texto) {
+    return String(texto || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function limparLogradouroComNumeroDuplicado(logradouro, numero) {
+    let rua = String(logradouro || '').trim().replace(/[\s,;\-]+$/g, '');
+    const n = String(numero || '').trim();
+    if (!rua || !n) return rua;
+    const re = new RegExp(`[\\s,;\\-]+${escaparRegex(n)}(?=\\s|,|;|$)`, 'i');
+    const achou = re.exec(rua);
+    if (achou && achou.index > 1) rua = rua.slice(0, achou.index).trim().replace(/[\s,;\-]+$/g, '');
+    return rua;
+  }
+
+  function enderecoBaseEditor(p) {
+    const numero = String(p?.numero || '').trim();
+    const fonte = String(p?.logradouro || p?.enderecoFonte || p?.enderecoOriginal || '').trim();
+    const rua = limparLogradouroComNumeroDuplicado(fonte, numero);
+    if (rua && numero) return `${rua}, ${numero}`;
+    return rua || numero || '';
+  }
+
+  function separarEnderecoDigitado(texto) {
+    let bruto = String(texto || '').trim().replace(/\s+/g, ' ');
+    if (!bruto) return { logradouro: '', numero: '', detalhe: '' };
+    let detalhe = '';
+    const detalheMatch = bruto.match(/\s+(?=(?:ap\.?|apto\.?|apartamento|casa|bloco|sala|loja|fundos|frente|conj\.?|conjunto|torre|edif[ií]cio|portaria|recep[cç][aã]o)\b)/i);
+    if (detalheMatch && detalheMatch.index != null) {
+      detalhe = bruto.slice(detalheMatch.index).trim().replace(/^[,;\-\s]+/, '');
+      bruto = bruto.slice(0, detalheMatch.index).trim().replace(/[,;\-\s]+$/, '');
+    }
+    const encontrados = [...bruto.matchAll(/(?:^|[\s,])([0-9]+[A-Za-z]?)(?=$|[\s,;\-])/g)];
+    const ultimo = encontrados.at(-1);
+    if (!ultimo) return { logradouro: bruto, numero: '', detalhe };
+    const numero = String(ultimo[1] || '').trim();
+    const inicioNumero = Number(ultimo.index || 0) + String(ultimo[0] || '').indexOf(numero);
+    const logradouro = bruto.slice(0, inicioNumero).trim().replace(/[,;\-\s]+$/, '');
+    const sobra = bruto.slice(inicioNumero + numero.length).trim().replace(/^[,;\-\s]+/, '');
+    return { logradouro: logradouro || bruto, numero: logradouro ? numero : '', detalhe: [sobra, detalhe].filter(Boolean).join(' ').trim() };
+  }
+
+  function preencherCamposEnderecoSugestao(item) {
+    if (!item) return;
+    const mapa = {
+      logradouro: item.street,
+      numero: item.housenumber,
+      bairro: item.suburb,
+      cidade: item.city,
+      estado: item.state,
+      cep: item.postcode
+    };
+    Object.entries(mapa).forEach(([key, value]) => {
+      const el = $(`routeEdit_${key}`);
+      if (el) el.value = String(value || '').trim();
+    });
+    const input = $('routeEdit_fullAddress');
+    if (input) input.value = textoPrimarioSugestao(item);
+  }
+
+  function esconderSugestoesEm(id) {
+    const box = $(id);
+    if (!box) return;
+    box.style.display = 'none';
+    box.replaceChildren();
+  }
+
+  function renderizarSugestoesEm(box, itens, aoSelecionar, vazio) {
+    box.replaceChildren();
+    if (!itens.length) {
+      const el = document.createElement('div');
+      el.className = 'routing-address-suggestion-empty';
+      el.textContent = vazio || 'Nenhum endereço confirmado.';
+      box.appendChild(el);
+      return;
+    }
+    itens.forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'routing-address-suggestion';
+      const principal = document.createElement('strong');
+      principal.textContent = textoPrimarioSugestao(item);
+      const secundario = document.createElement('span');
+      secundario.textContent = textoSecundarioSugestao(item) || String(item.formatted || '');
+      btn.append(principal, secundario);
+      btn.addEventListener('click', () => aoSelecionar(item));
+      box.appendChild(btn);
+    });
+  }
+
+  async function atualizarSugestoesEditor(texto) {
+    const box = $('routeEditAddressSuggestions');
+    const termo = String(texto || '').trim();
+    if (!box || termo.length < 4 || !global.PacoteEMatoGeocodificacao?.consultarSugestoesEndereco) { esconderSugestoesEm('routeEditAddressSuggestions'); return; }
+    const seq = ++buscaEditorSeq;
+    box.style.display = 'block';
+    box.innerHTML = '<div class="routing-address-suggestion-loading">Buscando endereços…</div>';
+    try {
+      const itens = await global.PacoteEMatoGeocodificacao.consultarSugestoesEndereco(termo);
+      if (seq !== buscaEditorSeq) return;
+      renderizarSugestoesEm(box, itens, item => {
+        sugestaoEditorSelecionada = item;
+        preencherCamposEnderecoSugestao(item);
+        esconderSugestoesEm('routeEditAddressSuggestions');
+      }, 'Nenhum endereço confirmado. Continue digitando ou salve o endereço manualmente.');
+    } catch (_) {
+      if (seq !== buscaEditorSeq) return;
+      box.innerHTML = '<div class="routing-address-suggestion-empty">Busca indisponível agora. O endereço digitado será preservado.</div>';
+    }
+  }
+
+  async function atualizarSugestoesPontoFinal(texto) {
+    const box = $('routingEndPointSuggestions');
+    const termo = String(texto || '').trim();
+    if (!box || termo.length < 4 || !global.PacoteEMatoGeocodificacao?.consultarSugestoesEndereco) { esconderSugestoesEm('routingEndPointSuggestions'); return; }
+    const seq = ++buscaPontoFinalSeq;
+    box.style.display = 'block';
+    box.innerHTML = '<div class="routing-address-suggestion-loading">Buscando endereços…</div>';
+    try {
+      const itens = await global.PacoteEMatoGeocodificacao.consultarSugestoesEndereco(termo);
+      if (seq !== buscaPontoFinalSeq) return;
+      renderizarSugestoesEm(box, itens, item => {
+        sugestaoPontoFinalSelecionada = item;
+        const input = $('routingEndPointInput');
+        if (input) input.value = String(item.formatted || textoPrimarioSugestao(item));
+        const status = $('routingEndPointStatus');
+        if (status) { status.textContent = 'Endereço selecionado e confirmado.'; status.dataset.status = 'ok'; }
+        esconderSugestoesEm('routingEndPointSuggestions');
+      }, 'Nenhum endereço confirmado. Continue digitando para tentar novamente.');
+    } catch (_) {
+      if (seq !== buscaPontoFinalSeq) return;
+      box.innerHTML = '<div class="routing-address-suggestion-empty">Busca indisponível agora. Você ainda pode salvar o endereço digitado.</div>';
+    }
   }
 
   async function atualizarSugestoesEndereco(texto) {
@@ -1736,7 +1878,23 @@
     };
     const fields = ['logradouro','numero','complemento','apartamento','bloco','sala','loja','bairro','cidade','estado','cep','observacao'];
     fields.forEach(key => { const el = $(`routeEdit_${key}`); if (el) el.value = p[key] || ''; });
-    if ($('routeEdit_fullAddress')) $('routeEdit_fullAddress').value = (!id && prefill) ? String(prefill).trim() : [p.logradouro || p.enderecoFonte || '', p.numero || '', detalheComplemento(p)].filter(Boolean).join(' ').trim();
+    sugestaoEditorSelecionada = (!id && sugestaoEnderecoSelecionada) ? clone(sugestaoEnderecoSelecionada) : null;
+    let textoBase = id ? enderecoBaseEditor(p) : String(prefill || '').trim();
+    let detalheVisivel = detalheComplemento(p);
+    if (!id && sugestaoEditorSelecionada) {
+      preencherCamposEnderecoSugestao(sugestaoEditorSelecionada);
+      textoBase = textoPrimarioSugestao(sugestaoEditorSelecionada);
+    } else if (!id && textoBase) {
+      const partes = separarEnderecoDigitado(textoBase);
+      if (partes.numero) textoBase = [partes.logradouro, partes.numero].filter(Boolean).join(', ');
+      if (partes.detalhe) detalheVisivel = partes.detalhe;
+    }
+    if ($('routeEdit_fullAddress')) $('routeEdit_fullAddress').value = textoBase;
+    if ($('routeEdit_details')) {
+      $('routeEdit_details').value = detalheVisivel;
+      $('routeEdit_details').dataset.original = detalheVisivel;
+    }
+    esconderSugestoesEm('routeEditAddressSuggestions');
     if ($('routeEdit_pacotes')) $('routeEdit_pacotes').value = (p.pacotes || []).join('\n');
     if ($('routeEdit_status')) $('routeEdit_status').value = p.statusEntrega || 'pendente';
     if ($('routeEdit_motivo')) $('routeEdit_motivo').value = p.motivoNaoEntrega || '';
@@ -1748,10 +1906,12 @@
   function fecharEditor() {
     const modal = $('routeStopEditorModal');
     if (modal) modal.style.display = 'none';
+    esconderSugestoesEm('routeEditAddressSuggestions');
     stopEmEdicao = null;
     modoEdicaoNovo = false;
     contextoEditor = 'rota';
     sugestaoEnderecoSelecionada = null;
+    sugestaoEditorSelecionada = null;
   }
 
   function pacotesDoCampo(texto) {
@@ -1768,18 +1928,29 @@
     const dados = {};
     fields.forEach(key => { dados[key] = String($(`routeEdit_${key}`)?.value || '').trim(); });
     const textoUnico = String($('routeEdit_fullAddress')?.value || '').trim();
-    if (textoUnico) {
-      const m = textoUnico.match(/^(.*?)(?:[,\s]+)(\d+[A-Za-z]?)(?:[,\s]+(.*))?$/);
-      if (m) {
-        dados.logradouro = String(m[1] || '').trim();
-        dados.numero = String(m[2] || '').trim();
-        const restante = String(m[3] || '').trim();
-        if (restante) dados.complemento = restante;
-      } else {
-        dados.logradouro = textoUnico;
-      }
-      dados.observacao = dados.observacao || '';
+    if (sugestaoEditorSelecionada) {
+      dados.logradouro = String(sugestaoEditorSelecionada.street || textoPrimarioSugestao(sugestaoEditorSelecionada) || '').trim();
+      dados.numero = String(sugestaoEditorSelecionada.housenumber || '').trim();
+      dados.bairro = String(sugestaoEditorSelecionada.suburb || dados.bairro || '').trim();
+      dados.cidade = String(sugestaoEditorSelecionada.city || dados.cidade || '').trim();
+      dados.estado = String(sugestaoEditorSelecionada.state || dados.estado || '').trim();
+      dados.cep = String(sugestaoEditorSelecionada.postcode || dados.cep || '').trim();
+    } else if (textoUnico) {
+      const partes = separarEnderecoDigitado(textoUnico);
+      dados.logradouro = partes.logradouro || textoUnico;
+      dados.numero = partes.numero || '';
+      if (partes.detalhe && !String($('routeEdit_details')?.value || '').trim()) dados.complemento = partes.detalhe;
     }
+    const detalhesEl = $('routeEdit_details');
+    if (detalhesEl && String(detalhesEl.value || '').trim() !== String(detalhesEl.dataset.original || '').trim()) {
+      dados.complemento = String(detalhesEl.value || '').trim();
+      dados.apartamento = '';
+      dados.bloco = '';
+      dados.sala = '';
+      dados.loja = '';
+      dados.observacao = '';
+    }
+    dados.observacao = dados.observacao || '';
     dados.pacotes = pacotesDoCampo($('routeEdit_pacotes')?.value || '');
     dados.statusEntrega = String($('routeEdit_status')?.value || 'pendente');
     dados.motivoNaoEntrega = dados.statusEntrega === 'nao_entregue' ? String($('routeEdit_motivo')?.value || '') : '';
@@ -1789,7 +1960,7 @@
     const eraOtimizada = contextoSalvo === 'rota' && (alvo.rotaOtimizada === true || !!alvo.geometria);
     const eraNova = !stopEmEdicao;
     let p = stopEmEdicao;
-    const enderecoAnterior = p?.enderecoOriginal || '';
+    const assinaturaEnderecoAnterior = p ? [p.logradouro,p.numero,p.bairro,p.cidade,p.estado,p.cep].map(v=>String(v||'').trim().toLocaleLowerCase('pt-BR')).join('|') : '';
     if (!p) {
       p = global.PacoteEMatoRotaStore.normalizarParada({
         id: idNovo('manual'), ordemOriginal: alvo.paradas.length + 1, origem: 'manual', ...dados
@@ -1802,21 +1973,22 @@
     }
     p.quantidadePacotes = p.pacotes.length;
     p.enderecoOriginal = enderecoDaParada(p);
-    const sugestaoAplicavel = eraNova && sugestaoEnderecoSelecionada && coordenadaValida(sugestaoEnderecoSelecionada.lat, sugestaoEnderecoSelecionada.lon);
+    const sugestaoAplicavel = sugestaoEditorSelecionada && coordenadaValida(sugestaoEditorSelecionada.lat, sugestaoEditorSelecionada.lon);
     if (sugestaoAplicavel) {
-      p.latitude = Number(sugestaoEnderecoSelecionada.lat);
-      p.longitude = Number(sugestaoEnderecoSelecionada.lon);
+      p.latitude = Number(sugestaoEditorSelecionada.lat);
+      p.longitude = Number(sugestaoEditorSelecionada.lon);
       p.statusGeocodificacao = 'ok';
       p.precisaoGeocodificacao = 'sugestao_confirmada';
-      p.enderecoGeocodificado = String(sugestaoEnderecoSelecionada.formatted || p.enderecoOriginal);
+      p.enderecoGeocodificado = String(sugestaoEditorSelecionada.formatted || p.enderecoOriginal);
       p.geocodificadoEm = Date.now();
       p.fonteCoordenada = 'sugestao-geocodificacao';
-      p.geocodificacao = clone(sugestaoEnderecoSelecionada);
+      p.geocodificacao = clone(sugestaoEditorSelecionada);
     }
     if (p.statusEntrega === 'entregue') p.entregueEm = p.entregueEm || Date.now();
     if (p.statusEntrega !== 'entregue') p.entregueEm = null;
 
-    const enderecoMudou = p.enderecoOriginal !== enderecoAnterior || eraNova;
+    const assinaturaEnderecoNova = [p.logradouro,p.numero,p.bairro,p.cidade,p.estado,p.cep].map(v=>String(v||'').trim().toLocaleLowerCase('pt-BR')).join('|');
+    const enderecoMudou = eraNova || assinaturaEnderecoNova !== assinaturaEnderecoAnterior;
     if (enderecoMudou && !sugestaoAplicavel) {
       p.latitude = null;
       p.longitude = null;
@@ -1837,6 +2009,7 @@
 
     if (enderecoMudou && !sugestaoAplicavel) await geocodificarParada(p);
     sugestaoEnderecoSelecionada = null;
+    sugestaoEditorSelecionada = null;
 
     if (eraOtimizada && (!enderecoMudou || p.statusGeocodificacao === 'ok')) {
       const titulo = eraNova ? 'Parada adicionada' : 'Rota alterada';
@@ -1995,6 +2168,8 @@
   function abrirPontoFinal() {
     if (!rotaAtual) return;
     fecharMenuAcoes();
+    sugestaoPontoFinalSelecionada = null;
+    esconderSugestoesEm('routingEndPointSuggestions');
     const modal = $('routingEndPointModal');
     const input = $('routingEndPointInput');
     if (input) input.value = rotaAtual.pontoFinal?.descricao || '';
@@ -2002,7 +2177,7 @@
     if (status) {
       status.textContent = rotaAtual.pontoFinal?.descricao
         ? `Atual: ${rotaAtual.pontoFinal.descricao}`
-        : 'Nenhum ponto final adicional definido.';
+        : 'Digite e escolha o endereço correto na lista abaixo.';
       status.dataset.status = rotaAtual.pontoFinal ? 'ok' : 'warning';
     }
     if ($('routingEndPointRemoveBtn')) $('routingEndPointRemoveBtn').disabled = !rotaAtual.pontoFinal;
@@ -2014,6 +2189,8 @@
   function fecharPontoFinal() {
     const modal = $('routingEndPointModal');
     if (modal) modal.style.display = 'none';
+    esconderSugestoesEm('routingEndPointSuggestions');
+    sugestaoPontoFinalSelecionada = null;
   }
 
   async function salvarPontoFinal() {
@@ -2026,14 +2203,26 @@
     }
     const btn = $('routingEndPointSaveBtn');
     if (btn) btn.disabled = true;
-    if (status) { status.textContent = 'Localizando o ponto final...'; delete status.dataset.status; }
+    if (status) { status.textContent = 'Confirmando o ponto final...'; delete status.dataset.status; }
     try {
-      if (!global.PacoteEMatoGeocodificacao?.geocodificarEnderecoLivre) throw new Error('Serviço de localização de endereço indisponível.');
-      const p = await global.PacoteEMatoGeocodificacao.geocodificarEnderecoLivre(texto);
-      if (p?.statusGeocodificacao !== 'ok' || !coordenadaValida(p.latitude, p.longitude)) {
-        throw new Error('Não foi possível confirmar esse endereço. Revise o ponto final e tente novamente.');
+      let descricao = texto;
+      let lat = null;
+      let lon = null;
+      if (sugestaoPontoFinalSelecionada && coordenadaValida(sugestaoPontoFinalSelecionada.lat, sugestaoPontoFinalSelecionada.lon)) {
+        lat = Number(sugestaoPontoFinalSelecionada.lat);
+        lon = Number(sugestaoPontoFinalSelecionada.lon);
+        descricao = String(sugestaoPontoFinalSelecionada.formatted || textoPrimarioSugestao(sugestaoPontoFinalSelecionada) || texto).trim();
+      } else {
+        if (!global.PacoteEMatoGeocodificacao?.geocodificarEnderecoLivre) throw new Error('Serviço de localização de endereço indisponível.');
+        const p = await global.PacoteEMatoGeocodificacao.geocodificarEnderecoLivre(texto);
+        if (p?.statusGeocodificacao !== 'ok' || !coordenadaValida(p.latitude, p.longitude)) {
+          throw new Error('Não foi possível confirmar esse endereço. Escolha uma sugestão da lista ou revise o ponto final.');
+        }
+        lat = Number(p.latitude);
+        lon = Number(p.longitude);
+        descricao = String(p.enderecoGeocodificado || texto).trim();
       }
-      rotaAtual.pontoFinal = { tipo: 'endereco', descricao: texto, lat: Number(p.latitude), lon: Number(p.longitude), status: 'ok' };
+      rotaAtual.pontoFinal = { tipo: 'endereco', descricao, lat, lon, status: 'ok' };
       rotaAtual.pontoFinalConcluidoEm = null;
       rotaAtual.retornarAoInicio = false;
       invalidarRotaCalculada();
@@ -2083,7 +2272,7 @@
   async function exportarPdf() {
     if (!rotaAtual) return;
     try { await global.PacoteEMatoPDF?.exportar?.(rotaAtual); }
-    catch (erro) { notificar(erro?.message || 'Não foi possível gerar o PDF.'); }
+    catch (erro) { global.PacoteEMatoTelemetria?.registrarProblema?.('exportacao_pdf', erro?.message || 'Falha ao exportar PDF', { modulo: 'roteirizacao' }); notificar(erro?.message || 'Não foi possível gerar o PDF.'); }
   }
 
   function abrirMobilePane(tipo) {
@@ -2142,7 +2331,14 @@
     $('routingEndPointSaveBtn')?.addEventListener('click', salvarPontoFinal);
     $('routingEndPointRemoveBtn')?.addEventListener('click', removerPontoFinal);
     $('routingEndPointModal')?.addEventListener('click', event => { if (event.target === $('routingEndPointModal')) fecharPontoFinal(); });
-    $('routingEndPointInput')?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); salvarPontoFinal(); } });
+    $('routingEndPointInput')?.addEventListener('input', event => {
+      sugestaoPontoFinalSelecionada = null;
+      const texto = String(event.currentTarget.value || '').trim();
+      clearTimeout(buscaPontoFinalTimer);
+      buscaPontoFinalTimer = setTimeout(() => atualizarSugestoesPontoFinal(texto), 280);
+    });
+    $('routingEndPointInput')?.addEventListener('focus', event => { const texto = String(event.currentTarget.value || '').trim(); if (texto.length >= 4) atualizarSugestoesPontoFinal(texto); });
+    $('routingEndPointInput')?.addEventListener('keydown', event => { if (event.key === 'Escape') esconderSugestoesEm('routingEndPointSuggestions'); if (event.key === 'Enter') { event.preventDefault(); salvarPontoFinal(); } });
     $('routingDrawCancelBtn')?.addEventListener('click', () => cancelarRefinoDesenho({ reabrir: true }));
     $('routingDrawClearBtn')?.addEventListener('click', () => global.PacoteEMatoMapa?.limparSelecaoDesenho?.());
     $('routingDrawAddGroupBtn')?.addEventListener('click', adicionarGrupoDesenho);
@@ -2180,18 +2376,18 @@
       if (id) abrirEditor(id);
     });
     $('routeStopEditorSave')?.addEventListener('click', salvarEditor);
-    $('routeEdit_fullAddress')?.addEventListener('blur', async () => {
-      const texto = String($('routeEdit_fullAddress')?.value || '').trim();
-      const box = $('routeEditAddressSuggestion');
-      if (!texto || !box || !global.PacoteEMatoGeocodificacao?.endpointAtual?.()) return;
-      box.style.display = 'block'; box.textContent = 'Buscando endereço...';
-      try {
-        const r = await global.PacoteEMatoGeocodificacao.geocodificarEnderecoLivre(texto);
-        if (r.statusGeocodificacao === 'ok') {
-          const g = r.geocodificacao || {};
-          box.textContent = [r.enderecoGeocodificado || texto, g.city, g.state, g.postcode].filter(Boolean).join(' · ');
-        } else box.textContent = 'Não consegui confirmar esse endereço. Você ainda pode salvar e revisar depois.';
-      } catch (_) { box.textContent = 'Busca indisponível agora. O texto digitado será preservado.'; }
+    $('routeEdit_fullAddress')?.addEventListener('input', event => {
+      sugestaoEditorSelecionada = null;
+      const texto = String(event.currentTarget.value || '').trim();
+      clearTimeout(buscaEditorTimer);
+      buscaEditorTimer = setTimeout(() => atualizarSugestoesEditor(texto), 280);
+    });
+    $('routeEdit_fullAddress')?.addEventListener('focus', event => {
+      const texto = String(event.currentTarget.value || '').trim();
+      if (texto.length >= 4) atualizarSugestoesEditor(texto);
+    });
+    $('routeEdit_fullAddress')?.addEventListener('keydown', event => {
+      if (event.key === 'Escape') esconderSugestoesEm('routeEditAddressSuggestions');
     });
     $('routeStopEditorCancel')?.addEventListener('click', fecharEditor);
     $('routeStopEditorClose')?.addEventListener('click', fecharEditor);

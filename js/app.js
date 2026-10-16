@@ -5313,6 +5313,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
         } catch (err) {
           console.error("Erro leitura PDF rota:", err);
+          window.PacoteEMatoTelemetria?.registrarProblema?.('leitura_pdf', err?.message || 'Falha na leitura do PDF', { modulo: 'bipagem_pdf' });
 
           const msg = String(err?.message || err || '');
           let mensagemErro =

@@ -76,6 +76,14 @@
     return e ? `Vence em ${new Date(e).toLocaleDateString('pt-BR')}` : 'Sem vencimento cadastrado';
   }
   function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+  function timeValue(v){
+    if(v?.toMillis)return v.toMillis(); if(v?.seconds)return Number(v.seconds)*1000;
+    const n=Number(v); if(Number.isFinite(n)&&n>0)return n<1e12?n*1000:n;
+    const d=Date.parse(v||''); return Number.isFinite(d)?d:0;
+  }
+  function dateTime(v){const n=timeValue(v);return n?new Date(n).toLocaleString('pt-BR'):'Não informado';}
+  function versionOf(u){return String(u?.versaoApp||u?.versao||u?.buildWeb||'Não informada').trim()||'Não informada';}
+  function platformOf(u){return String(u?.plataformaApp||'Não informada').trim()||'Não informada';}
   function requireApi(){ if(!API){ $('loginError').hidden=false; $('loginError').textContent='Gateway administrativo ainda não configurado. Edite admin/config.js após publicar o Worker seguro.'; return false;} return true; }
   async function req(path,opt={}){
     if(!requireApi()) throw new Error('Gateway não configurado');
@@ -116,7 +124,11 @@
     $('metricTotal').textContent=usuarios.length; $('metricAtivos').textContent=ativos.length; $('metricExpirados').textContent=exp.length;
     $('metricBloqueados').textContent=bloq.length; $('metricVitalicios').textContent=vit.length;
     $('metricRevenue').textContent=money(pagamentos.reduce((s,p)=>s+Number(p.valor||p.amount||0),0));
-    renderCategoryCounts(); renderClients(); renderRecent(); renderPayments();
+    const limite24h=Date.now()-DAY; const erros24=usuarios.filter(u=>timeValue(u.ultimoErroEm)>=limite24h).length;
+    const versoes=new Set(usuarios.map(versionOf).filter(v=>v&&v!=='Não informada'));
+    if($('metricErrors24h'))$('metricErrors24h').textContent=erros24;
+    if($('metricVersions'))$('metricVersions').textContent=versoes.size;
+    renderCategoryCounts(); renderClients(); renderRecent(); renderPayments(); renderProblems(); renderVersions();
   }
   function renderCategoryCounts(){
     const counts={todos:usuarios.length,mensal:0,trimestral:0,semanal:0,teste:0,vitalicio:0,expirados:0,bloqueados:0,outros:0};
@@ -126,7 +138,7 @@
   }
   function clientHtml(u){
     const id=String(u.whatsapp||u.id||''), em=String(u.email||''), st=status(u), d=daysInfo(u), cat=clientCategory(u);
-    return `<article class="client" data-category="${esc(cat)}"><div class="client-main"><div class="client-title-row"><strong>${esc(id||em||'Conta')}</strong><span class="plan-badge plan-${esc(planCategory(u))}">${esc(planLabel(u))}</span></div><span>${esc(em||'E-mail não cadastrado')}</span><div class="client-time ${esc(d.cls)}"><strong>${esc(d.text)}</strong><small>${esc(expiryLabel(u))}</small></div><span class="badge ${u.bloqueado?'blocked':cat==='expirados'?'expired':''}">${esc(st)}</span></div><div class="client-actions"><button data-client="${esc(id)}">Gerenciar</button></div></article>`;
+    return `<article class="client" data-category="${esc(cat)}"><div class="client-main"><div class="client-title-row"><strong>${esc(id||em||'Conta')}</strong><span class="plan-badge plan-${esc(planCategory(u))}">${esc(planLabel(u))}</span></div><span>${esc(em||'E-mail não cadastrado')}</span><small class="client-app-meta">App ${esc(versionOf(u))} · ${esc(platformOf(u))} · último uso: ${esc(dateTime(u.ultimoAcessoAppEm))}</small><div class="client-time ${esc(d.cls)}"><strong>${esc(d.text)}</strong><small>${esc(expiryLabel(u))}</small></div><span class="badge ${u.bloqueado?'blocked':cat==='expirados'?'expired':''}">${esc(st)}</span></div><div class="client-actions"><button data-client="${esc(id)}">Gerenciar</button></div></article>`;
   }
   function queryMatches(u){
     const q=String($('clientSearch')?.value||'').toLowerCase().trim();
@@ -155,12 +167,23 @@
     $('recentClients').innerHTML=ordered.map(clientHtml).join('')||'<p class="muted">Nenhuma conta encontrada.</p>'; bindClientButtons($('recentClients'));
   }
   function renderPayments(){$('paymentsList').innerHTML=pagamentos.map(p=>`<article class="payment"><div><strong>${esc(p.whatsapp||p.email||'Pagamento')}</strong><small>${esc(p.plano||'')} · ${esc(p.data||p.createdAt||'')}</small></div><strong>${money(p.valor||p.amount)}</strong></article>`).join('')||'<p class="muted">Nenhum pagamento registrado.</p>';}
+  function renderProblems(){
+    const root=$('problemsList'); if(!root)return;
+    const itens=usuarios.filter(u=>timeValue(u.ultimoErroEm)>0).sort((a,b)=>timeValue(b.ultimoErroEm)-timeValue(a.ultimoErroEm));
+    root.innerHTML=itens.map(u=>`<article class="diag-card"><div><strong>${esc(u.whatsapp||u.id||u.email||'Conta')}</strong><span>${esc(u.ultimoErroTipo||'Erro operacional')} · ${esc(dateTime(u.ultimoErroEm))}</span></div><p>${esc(u.ultimoErroMensagem||'Sem detalhe')}</p><small>App ${esc(versionOf(u))} · ${esc(platformOf(u))}${u.ultimoErroModulo?` · ${esc(u.ultimoErroModulo)}`:''} · ${Number(u.totalErrosOperacionais||0)} ocorrência(s)</small></article>`).join('')||'<p class="muted">Nenhum problema operacional registrado pelos clientes.</p>';
+  }
+  function renderVersions(){
+    const root=$('versionsList'); if(!root)return;
+    const grupos=new Map(); usuarios.forEach(u=>{const v=versionOf(u);if(!grupos.has(v))grupos.set(v,[]);grupos.get(v).push(u);});
+    const itens=[...grupos.entries()].sort((a,b)=>b[1].length-a[1].length||a[0].localeCompare(b[0]));
+    root.innerHTML=itens.map(([v,list])=>{const ultimo=Math.max(0,...list.map(u=>timeValue(u.ultimoAcessoAppEm)));const plataformas=[...new Set(list.map(platformOf))].join(' · ');return `<article class="version-card"><span>VERSÃO</span><strong>${esc(v)}</strong><b>${list.length} cliente(s)</b><small>${esc(plataformas)} · último uso ${esc(dateTime(ultimo))}</small></article>`;}).join('')||'<p class="muted">Ainda não há dados de versão. Eles aparecem conforme os clientes abrirem a V75.</p>';
+  }
   function bindClientButtons(root){root.querySelectorAll('[data-client]').forEach(b=>b.onclick=()=>openClient(b.dataset.client));}
   function openClient(id){
     const u=usuarios.find(x=>String(x.whatsapp||x.id||'')===String(id)); if(!u)return;
     const d=daysInfo(u);
     $('modalTitle').textContent=u.whatsapp||u.email||'Gerenciar conta';
-    $('modalBody').innerHTML=`<div class="modal-grid"><div class="modal-account-summary"><strong>${esc(planLabel(u))}</strong><span class="client-time ${esc(d.cls)}">${esc(d.text)}</span><small>${esc(expiryLabel(u))}</small></div><p class="muted">${esc(u.email||'Sem e-mail')}<br>${esc(status(u))}</p><label>Adicionar/remover dias<input id="mDays" type="number" value="30" min="-3650" max="3650"></label><div class="modal-actions"><button id="mAdjust" class="primary">Aplicar dias</button><button id="mReset" class="ghost">Resetar aparelho</button><button id="mBlock" class="ghost">${u.bloqueado?'Desbloquear':'Bloquear'}</button><button id="mDelete" class="ghost danger">Excluir conta</button></div></div>`;
+    $('modalBody').innerHTML=`<div class="modal-grid"><div class="modal-account-summary"><strong>${esc(planLabel(u))}</strong><span class="client-time ${esc(d.cls)}">${esc(d.text)}</span><small>${esc(expiryLabel(u))}</small></div><p class="muted">${esc(u.email||'Sem e-mail')}<br>${esc(status(u))}<br>App ${esc(versionOf(u))} · ${esc(platformOf(u))}<br>Último uso: ${esc(dateTime(u.ultimoAcessoAppEm))}${timeValue(u.ultimoErroEm)?`<br>Último problema: ${esc(u.ultimoErroTipo||'Erro')} · ${esc(dateTime(u.ultimoErroEm))}`:''}</p><label>Adicionar/remover dias<input id="mDays" type="number" value="30" min="-3650" max="3650"></label><div class="modal-actions"><button id="mAdjust" class="primary">Aplicar dias</button><button id="mReset" class="ghost">Resetar aparelho</button><button id="mBlock" class="ghost">${u.bloqueado?'Desbloquear':'Bloquear'}</button><button id="mDelete" class="ghost danger">Excluir conta</button></div></div>`;
     $('modal').hidden=false;
     $('mAdjust').onclick=()=>clientAction('/api/admin/ajustar-dias',{whatsapp:id,dias:Number($('mDays').value||0)});
     $('mReset').onclick=()=>clientAction('/api/admin/resetar-aparelho',{whatsapp:id});
@@ -168,7 +191,7 @@
     $('mDelete').onclick=async()=>{const b=$('mDelete');if(b.dataset.confirmDelete!=='1'){b.dataset.confirmDelete='1';b.textContent='Clique novamente para excluir';setTimeout(()=>{if(b&&b.dataset.confirmDelete==='1'){delete b.dataset.confirmDelete;b.textContent='Excluir conta';}},5000);return;}delete b.dataset.confirmDelete;await clientAction('/api/admin/excluir-usuario',{whatsapp:id});};
   }
   async function clientAction(path,body){try{await req(path,{method:'POST',body:JSON.stringify(body)});$('modal').hidden=true;await refresh();}catch(e){toast(e.message);}}
-  function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${name}`));document.querySelectorAll('.sidebar nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$('pageTitle').textContent={dashboard:'Dashboard',clientes:'Clientes',pagamentos:'Pagamentos',comunicados:'Comunicados',seguranca:'Segurança'}[name]||name;document.querySelector('.sidebar').classList.remove('open');}
+  function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${name}`));document.querySelectorAll('.sidebar nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$('pageTitle').textContent={dashboard:'Dashboard',clientes:'Clientes',problemas:'Central de problemas',versoes:'Versões do app',pagamentos:'Pagamentos',comunicados:'Comunicados',seguranca:'Segurança'}[name]||name;document.querySelector('.sidebar').classList.remove('open');}
   function setClientFilter(value){clientFilter=value||'todos';document.querySelectorAll('[data-client-filter]').forEach(b=>b.classList.toggle('active',b.dataset.clientFilter===clientFilter));renderClients();}
 
   $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').hidden=true;const btn=$('loginBtn');btn.disabled=true;try{await login($('ownerEmail').value.trim(),$('ownerPin').value.trim());$('ownerPin').value='';}catch(err){$('loginError').hidden=false;$('loginError').textContent=err.message;}finally{btn.disabled=false;}});

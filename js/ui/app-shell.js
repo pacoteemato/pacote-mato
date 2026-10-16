@@ -105,12 +105,15 @@
   }
 
   async function abrirModulo(nome, opcoes) {
+    if (nome === 'inicio') nome = 'roteirizacao';
+    if (!modulos.includes(nome)) nome = 'roteirizacao';
     if (document.body.dataset.pematoModule === 'navegacao' && nome !== 'navegacao') {
       await global.PacoteEMatoNavegacao?.persistirSelecao?.({ motivo: 'troca_modulo' });
     }
-    await global.PacoteEMatoConfiguracoes?.aguardarAplicacao?.();
-    if (nome === 'inicio') nome = 'roteirizacao';
-    if (!modulos.includes(nome)) nome = 'roteirizacao';
+    // V75: somente o retorno Configurações -> Rota deixa de esperar uma
+    // aplicação assíncrona. As demais trocas preservam o comportamento anterior.
+    const retornoConfiguracoesParaRota = (document.body.dataset.pematoModule === 'configuracoes' && nome === 'roteirizacao');
+    if (!retornoConfiguracoesParaRota) await global.PacoteEMatoConfiguracoes?.aguardarAplicacao?.();
     if (nome === 'navegacao') {
       const rotaParaNavegar = await global.PacoteEMatoRotaStore?.obterRotaAtiva?.();
       if (rotaParaNavegar?.precisaRecalculo) {
@@ -161,7 +164,7 @@
 
     // Quando o próprio app volta de uma tela interna para o mapa, consome o
     // estado interno correspondente. Assim não ficam vários "voltar" presos.
-    if (!iniciando && nome === 'roteirizacao' && anterior !== 'roteirizacao' && opcoes?.veioDoPop !== true) {
+    if (!iniciando && nome === 'roteirizacao' && anterior !== 'roteirizacao' && opcoes?.veioDoPop !== true && opcoes?.retornoDireto !== true) {
       setTimeout(() => consumirRetornoInterno(), 0);
     }
   }
@@ -225,7 +228,14 @@
 
   async function bind() {
     prepararHistoricoBase();
-    document.querySelectorAll('[data-pemato-nav]').forEach(btn => btn.addEventListener('click', () => abrirModulo(btn.dataset.pematoNav)));
+    document.querySelectorAll('[data-pemato-nav]').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.classList.contains('pemato-back-route') && (document.body.dataset.pematoModule || '') === 'configuracoes') {
+        try { global.history.replaceState({ pematoBase: true, pematoUi: false }, '', global.location.href); } catch (_) {}
+        abrirModulo('roteirizacao', { registrarHistorico: false, retornoDireto: true });
+        return;
+      }
+      abrirModulo(btn.dataset.pematoNav);
+    }));
     bindFechamentosHistorico();
     global.addEventListener('pemato:rota:salva', atualizarInicio);
     global.addEventListener('pemato:rota:ativa-limpa', atualizarInicio);
