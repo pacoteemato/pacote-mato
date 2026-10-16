@@ -2625,6 +2625,22 @@ function tocarIntroPs2Audio() {
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
+    // V72 - marca a versão realmente carregada e remove resíduos de cache antigos.
+    // Isso ajuda a evitar que o WebView continue executando V69/V70 depois de
+    // uma atualização do GitHub Pages. Não apaga dados operacionais do usuário.
+    try {
+      window.PEMATO_BUILD = '72';
+      localStorage.setItem('pemato_build_carregado', '72');
+      if ('caches' in window) {
+        caches.keys().then(chaves => Promise.all(chaves.map(chave => caches.delete(chave)))).catch(() => {});
+      }
+      if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(regs =>
+          Promise.all(regs.map(reg => reg.unregister()))
+        ).catch(() => {});
+      }
+    } catch (_) {}
+
     let html5QrCode = null;
     let sensorAtual = "environment";
     let flashLigado = false;
@@ -2765,7 +2781,7 @@ function tocarIntroPs2Audio() {
       if (dadosSalvos) {
         try {
           let parsed = JSON.parse(dadosSalvos);
-          if (Number(parsed.versaoLeitura || 0) < 71) {
+          if (Number(parsed.versaoLeitura || 0) < 72) {
             // V64 corrige a leitura/contagem do PDF. Um snapshot antigo pode conter
             // pacote fantasma; por isso a rota ativa antiga precisa ser reimportada.
             localStorage.removeItem('rota_ativa_completa');
@@ -2802,7 +2818,7 @@ function tocarIntroPs2Audio() {
         pacotesBipados: Array.from(pacotesBipados),
         rotaInicioEm: rotaInicioEm || Date.now(),
         resumoFinalJaExibido: resumoFinalJaExibido === true,
-        versaoLeitura: 71,
+        versaoLeitura: 72,
         salvoEm: Date.now()
       };
       localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
@@ -2814,7 +2830,7 @@ function tocarIntroPs2Audio() {
 
       try {
         let parsed = JSON.parse(dadosSalvos);
-        if (Number(parsed.versaoLeitura || 0) < 71) {
+        if (Number(parsed.versaoLeitura || 0) < 72) {
           localStorage.removeItem('rota_ativa_completa');
           notificar('A leitura do PDF foi atualizada. Importe o arquivo novamente para usar a contagem corrigida.');
           return;
@@ -3466,7 +3482,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         lg: 'largo', largo: 'largo',
         viela: 'viela', passagem: 'passagem',
         comunidade: 'comunidade', beco: 'beco', servidao: 'servidao',
-        marginal: 'marginal', ladeira: 'ladeira', via: 'via', rodoanel: 'rodoanel'
+        marginal: 'marginal', ladeira: 'ladeira', via: 'via', rodoanel: 'rodoanel', acesso: 'acesso', condominio: 'condominio', residencial: 'residencial', sitio: 'sitio', fazenda: 'fazenda', chacara: 'chacara'
       };
       return mapa[t] || t || 'via';
     }
@@ -3510,6 +3526,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .replace(/,\s*(\d{1,4})\s+(\d{1,2}[A-Za-z]?)\s*(?=,)/g, (_, a, b) => `, ${a}${b}`)
         .replace(/,\s*(\d{1,6})\s+([A-Za-z])\s*(?=,)/g, (_, a, b) => `, ${a}${b}`)
         .replace(/\bS(?:ã|a)o\s+Paul\s+o\b/gi, 'São Paulo')
+        .replace(/\bS(?:ã|a)o\s+Pa\s+ulo\b/gi, 'São Paulo')
         .replace(/\bSã\s+o\s+Paulo\b/gi, 'São Paulo')
         .replace(/\s+/g, ' ')
         .trim();
@@ -3524,7 +3541,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       const texto = original.replace(/\s+/g, ' ').trim();
       // Evita \\b depois de caracteres como "ç" (Pç), pois o boundary do JS é
       // baseado em ASCII e pode falhar em abreviações brasileiras.
-      const viaRegex = /(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel)(?=\s)/i;
+      const viaRegex = /(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel|Acesso|Condom[ií]nio|Residencial|S[ií]tio|Fazenda|Ch[aá]cara)(?=\s)/i;
       const via = texto.match(viaRegex);
 
       // Alguns exports omitem "Rua/Av." e deixam somente "Jorge Augusto, 831".
@@ -3576,7 +3593,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       const antesNumero = corpo.slice(0, escolhido.indice).trim().replace(/[,:;\-]+$/g, '').trim();
       if (!/[A-Za-zÀ-ÿ]/.test(antesNumero)) return null;
 
-      const tipoMatch = antesNumero.match(/^\s*(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o)\s+/i);
+      const tipoMatch = antesNumero.match(/^\s*(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel|Acesso|Condom[ií]nio|Residencial|S[ií]tio|Fazenda|Ch[aá]cara)\s+/i);
       const tipo = normalizarTipoViaPdfV71(tipoMatch?.[1] || 'via');
       const ruaBruta = tipoMatch ? antesNumero.slice(tipoMatch[0].length).trim() : antesNumero;
 
@@ -4462,7 +4479,16 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           const registrosV71Pdf = [];
           let v71EncontrouTabelaNumerada = false;
 
-          // V71B: relatórios sem numeração, mas com código BR por entrega.
+          // V72: uma única sequência determinística, página a página. Se a página
+          // possui # numerado, usamos a linha numerada. Se aquela página não tiver
+          // # utilizável, usamos o código BR da própria linha como âncora. Assim um
+          // PDF de várias páginas não perde uma página só porque as outras têm #.
+          const registrosDeterministicosV72 = [];
+          const codigosFonteV72 = new Set();
+          const diagnosticoPaginasV72 = [];
+          let sequenciaDeterministicaV72 = 0;
+
+          // V71B legado, mantido apenas para compatibilidade interna.
           const registrosCodigoV71Pdf = [];
           let sequenciaCodigoV71Pdf = 0;
 
@@ -4496,25 +4522,51 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             // O número da entrega define a faixa vertical da própria linha; nenhum
             // código é puxado da linha de cima/baixo.
             const v71Pagina = extrairRegistrosPdfV71(itens, pagina, width);
+            let escolhidosPaginaV72 = [];
+            let modoPaginaV72 = 'nenhum';
+
             if (v71Pagina.length) {
               v71EncontrouTabelaNumerada = true;
-              v71Pagina.forEach(registro => {
-                registrosV71Pdf.push(registro);
-                (registro.codigos || []).forEach(codigo => codigosGlobais.add(codigo));
-              });
+              modoPaginaV72 = 'linha-numerada';
+              escolhidosPaginaV72 = v71Pagina;
+              v71Pagina.forEach(registro => registrosV71Pdf.push(registro));
+              const maiorNumeroPagina = Math.max(...v71Pagina.map(r => Number(r.numeroParada) || 0));
+              sequenciaDeterministicaV72 = Math.max(sequenciaDeterministicaV72, maiorNumeroPagina);
             } else {
               const porCodigoV71 = extrairRegistrosPdfV71PorCodigo(
                 itens,
                 pagina,
                 width,
-                sequenciaCodigoV71Pdf
+                sequenciaDeterministicaV72
               );
+              sequenciaDeterministicaV72 = porCodigoV71.sequencia;
               sequenciaCodigoV71Pdf = porCodigoV71.sequencia;
-              porCodigoV71.registros.forEach(registro => {
-                registrosCodigoV71Pdf.push(registro);
-                (registro.codigos || []).forEach(codigo => codigosGlobais.add(codigo));
-              });
+              modoPaginaV72 = porCodigoV71.registros.length ? 'codigo-na-linha' : 'nenhum';
+              escolhidosPaginaV72 = porCodigoV71.registros;
+              porCodigoV71.registros.forEach(registro => registrosCodigoV71Pdf.push(registro));
             }
+
+            escolhidosPaginaV72.forEach(registro => {
+              registrosDeterministicosV72.push({
+                ...registro,
+                origemLeituraOriginal: registro.origemLeitura,
+                origemLeitura: 'deterministico-v72'
+              });
+              (registro.codigos || []).forEach(codigo => codigosFonteV72.add(codigo));
+            });
+
+            // Códigos completos que aparecem literalmente no PDF também entram
+            // na conferência. Não usamos códigos inventados por leitores legados.
+            itens.forEach(item => {
+              extrairCodigosBrFlexiveis(item.str).forEach(codigo => codigosFonteV72.add(codigo));
+            });
+
+            diagnosticoPaginasV72.push({
+              pagina,
+              modo: modoPaginaV72,
+              entregas: escolhidosPaginaV72.length,
+              codigos: new Set(escolhidosPaginaV72.flatMap(r => r.codigos || [])).size
+            });
 
             // V70 legado: só será usado depois se não houver tabela numerada V71.
             const livresPagina = extrairRegistrosPdfPosicaoLivre(itens, pagina, width);
@@ -4850,29 +4902,15 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             return set.size;
           }
 
-          // V71 é fonte de verdade quando reconhece a numeração das entregas.
-          // Se houver qualquer inconsistência, NÃO caímos em um leitor aproximado:
-          // isso evita associar um pacote à parada errada.
-          if (v71EncontrouTabelaNumerada) {
+          // V72 é a fonte de verdade: combina, por página, linha numerada ou
+          // código ancorado na própria linha. Não associa pacote ao endereço vizinho.
+          if (registrosDeterministicosV72.length) {
             try {
-              processarRegistrosrota(registrosV71Pdf, file.name);
+              processarRegistrosrota(registrosDeterministicosV72, file.name);
               processado = rotaPdfPossuiDadosProcessados();
-            } catch (erroV71) {
-              console.error('Leitor V71 encontrou a tabela, mas recusou uma associação insegura:', erroV71);
-              throw erroV71;
-            }
-          }
-
-          // V71B: sem numeração, usa as próprias linhas dos códigos como âncora.
-          if (!processado && !v71EncontrouTabelaNumerada && registrosCodigoV71Pdf.length) {
-            try {
-              processarRegistrosrota(registrosCodigoV71Pdf, file.name);
-              processado = rotaPdfPossuiDadosProcessados();
-            } catch (erroCodigoV71) {
-              // Como cada código já delimitou sua própria faixa, uma falha aqui
-              // indica dado realmente ambíguo. Não liberamos associação aproximada.
-              console.error('Leitor V71B recusou associação insegura:', erroCodigoV71);
-              throw erroCodigoV71;
+            } catch (erroV72) {
+              console.error('Leitor V72 recusou uma associação insegura:', erroV72);
+              throw erroV72;
             }
           }
 
@@ -4914,11 +4952,25 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           // V62: contagem de pacotes é a fonte de verdade. Não libera uma rota
           // silenciosamente com 26/30, por exemplo. Se o PDF revelou 30 códigos,
           // os 30 precisam chegar à Bipagem.
-          if (codigosGlobais.size > 0 && todosPacotes.size !== codigosGlobais.size) {
-            // V71: quantidade divergente nunca é liberada. É preferível pedir
-            // outro export a criar pacote/parada errada.
-            throw new Error(`CONTAGEM_CODIGOS_DIVERGENTE|${todosPacotes.size}|${codigosGlobais.size}`);
+          const codigosEsperadosV72 = registrosDeterministicosV72.length
+            ? codigosFonteV72
+            : codigosGlobais;
+
+          if (codigosEsperadosV72.size > 0 && todosPacotes.size !== codigosEsperadosV72.size) {
+            throw new Error(`CONTAGEM_CODIGOS_DIVERGENTE|${todosPacotes.size}|${codigosEsperadosV72.size}`);
           }
+
+          try {
+            window.diagnosticoPdfV72 = {
+              build: 72,
+              arquivo: file.name,
+              paginas: diagnosticoPaginasV72,
+              entregas: totalEntregasPdfAtual,
+              pacotes: todosPacotes.size,
+              paradasFisicas: Object.keys(mapaRotas || {}).length,
+              codigosEsperados: codigosEsperadosV72.size
+            };
+          } catch (_) {}
 
           const tempoVisualDecorrido = Date.now() - inicioVisualLeituraPdf;
           const esperaVisualRestante = Math.max(0, 1500 - tempoVisualDecorrido);
@@ -5140,10 +5192,10 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       // Em uma tabela V71 numerada, a própria sequência do PDF é fonte de verdade.
       // Se faltar 18 entre 17 e 19, por exemplo, não renumeramos nem aproximamos:
       // a importação é bloqueada para não criar uma parada errada.
-      if (entrada.some(r => r.origemLeitura === 'linhas-v71')) {
+      if (entrada.some(r => r.origemLeitura === 'linhas-v71' || r.origemLeitura === 'deterministico-v72')) {
         const numerosV71 = [...new Set(
           entrada
-            .filter(r => r.origemLeitura === 'linhas-v71' && !r.auxiliarDestino)
+            .filter(r => (r.origemLeitura === 'linhas-v71' || r.origemLeitura === 'deterministico-v72') && !r.auxiliarDestino)
             .map(r => Number(r.numeroParada))
             .filter(Number.isFinite)
         )].sort((a,b) => a-b);

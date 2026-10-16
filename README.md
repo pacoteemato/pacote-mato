@@ -18,3 +18,12 @@ Esta versão troca a associação por proximidade por uma leitura estrutural e c
 - Spoke com 93, 11, 46 e 69 entregas codificadas, incluindo linhas de Destino que não devem virar pacote.
 
 PDFs somente imagem/scan ainda dependem de OCR e não são tratados como texto confiável nesta versão.
+
+
+## V72 - leitor PDF validado
+
+- Corrige importação híbrida página a página: linha numerada quando existe, código BR ancorado quando a página não tem numeração utilizável.
+- A contagem de pacotes usa apenas códigos BR completos/reconstruídos pelo leitor determinístico, sem poluição de leitores legados.
+- Mantém agrupamento de parada física por logradouro + número e exibe numeração física sequencial no modal.
+- Adiciona diagnóstico `window.diagnosticoPdfV72` e identificação visual V72.
+- Limpa caches/service workers antigos sem apagar rota/histórico/localStorage operacional.
