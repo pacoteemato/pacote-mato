@@ -3328,27 +3328,47 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     // Ex.: "BR2609" + "67904580Q" deve continuar virando BR260967904580Q.
     // Para SPX/Shopee, o código normal tem 15 caracteres (BR + 13 alfanuméricos).
     function extrairCodigosBrFlexiveis(texto) {
-      const bruto = String(texto || '');
+      const bruto = String(texto || '').toUpperCase();
       const encontrados = new Set();
 
-      // Mantém compatibilidade com códigos já contínuos.
-      (bruto.match(/BR[A-Za-z0-9]{8,25}/gi) || []).forEach(c => {
-        const up = String(c).toUpperCase();
-        // Quando a captura ficou longa por texto colado depois do código, prioriza
-        // o formato SPX de 15 caracteres.
-        if (/^BR[0-9][A-Z0-9]{12}/.test(up)) encontrados.add(up.slice(0, 15));
-        else encontrados.add(up);
-      });
+      // V63: código SPX usado pela Bipagem = BR + 13 caracteres alfanuméricos.
+      // Aceitamos somente o tamanho completo. Isso evita transformar texto de
+      // endereço (ex.: rodovia BR-050) em um pacote fantasma.
+      const codigoValido = valor => /^BR[0-9][A-Z0-9]{12}$/.test(String(valor || '').toUpperCase());
 
-      // Reconstrói o código mesmo quando há espaços, quebras ou pontuação no meio.
-      const compacto = bruto.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      const rx = /BR[0-9][A-Z0-9]{12}/g;
-      let m;
-      while ((m = rx.exec(compacto))) encontrados.add(m[0]);
+      // 1) Código contínuo, caso normal.
+      const diretos = bruto.match(/\bBR[0-9][A-Z0-9]{12}\b/g) || [];
+      diretos.forEach(c => { if (codigoValido(c)) encontrados.add(c); });
+
+      // 2) PDF.js pode quebrar um código em itens, por exemplo:
+      //    BR2609 67904580Q
+      // Só tentamos reconstruir quando o primeiro fragmento já começa com
+      // BR + pelo menos quatro caracteres. Assim "BR-050" não vira pacote.
+      const tokens = bruto.match(/[A-Z0-9]+/g) || [];
+      for (let i = 0; i < tokens.length; i++) {
+        const inicio = tokens[i];
+        if (!/^BR[0-9][A-Z0-9]{3,12}$/.test(inicio)) continue;
+        if (inicio.length >= 15) {
+          const candidato = inicio.slice(0, 15);
+          if (codigoValido(candidato)) encontrados.add(candidato);
+          continue;
+        }
+
+        let combinado = inicio;
+        for (let j = i + 1; j < tokens.length && combinado.length < 15 && j <= i + 3; j++) {
+          const frag = tokens[j];
+          // Continuação real de código costuma conter dígitos; uma única letra
+          // final também é válida. Palavras inteiras do endereço interrompem.
+          if (!/[0-9]/.test(frag) && frag.length > 1) break;
+          const faltam = 15 - combinado.length;
+          if (frag.length > faltam) break;
+          combinado += frag;
+        }
+        if (codigoValido(combinado)) encontrados.add(combinado);
+      }
 
       return [...encontrados];
     }
-
 
     // V50 - leitor universal de PDFs de rota (Spoke, Circuit e layouts semelhantes).
     // Não depende da coluna #. A fonte de verdade passa a ser a associação visual/textual
@@ -3810,14 +3830,52 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           );
 
           /*
-           * MODO HÍBRIDO:
-           * 1) Tenta primeiro a leitura estrita, que preserva melhor agrupamentos.
-           * 2) Se qualquer detalhe do layout divergir, NÃO rejeita mais o PDF.
-           *    O app cai automaticamente no leitor de compatibilidade antigo.
+           * V63 — MODO HÍBRIDO COM CONSENSO DE CONTAGEM:
+           * O total bruto de ocorrências BR do PDF não é mais usado sozinho como
+           * fonte de verdade, porque cabeçalhos/rodovias/fragmentos podem criar
+           * um falso pacote. A contagem esperada vem dos leitores que conseguiram
+           * associar CÓDIGO + ENDEREÇO VÁLIDO.
            */
+          let processado = false;
+
+          function contarCodigosDosRegistros(lista) {
+            const set = new Set();
+            (Array.isArray(lista) ? lista : []).forEach(r =>
+              (r?.codigos || []).forEach(c => set.add(String(c || '').toUpperCase()))
+            );
+            return set.size;
+          }
+
+          let registrosUniversaisPdf = [];
+          try { registrosUniversaisPdf = extrairRegistrosPdfUniversal(linhasFallbackPdf); }
+          catch (_) { registrosUniversaisPdf = []; }
+
+          const totalEstrito = paradasSemEnderecoValido.length === 0 ? contarCodigosDosRegistros(registrosrota) : 0;
+          const totalVisual = contarCodigosDosRegistros(registrosVisuaisPdf);
+          const totalUniversal = contarCodigosDosRegistros(registrosUniversaisPdf);
+
+          function escolherContagemEsperada() {
+            const validas = [totalEstrito, totalVisual, totalUniversal].filter(n => Number(n) > 0);
+            const freq = new Map();
+            validas.forEach(n => freq.set(n, Number(freq.get(n) || 0) + 1));
+            let consenso = null;
+            let melhorFreq = 0;
+            freq.forEach((qtd, valor) => {
+              if (qtd > melhorFreq || (qtd === melhorFreq && Number(valor) > Number(consenso || 0))) {
+                consenso = Number(valor);
+                melhorFreq = qtd;
+              }
+            });
+            // Dois leitores independentes concordando têm prioridade sobre a varredura bruta.
+            if (melhorFreq >= 2 && Number(consenso) > 0) return Number(consenso);
+            // Sem consenso, é mais seguro bloquear leitura parcial do que liberar contagem menor.
+            return Math.max(0, Number(codigosGlobais.size || 0), ...validas);
+          }
+
+          const contagemEsperadaPdf = escolherContagemEsperada();
           const leituraEstritaOk =
-            codigosGlobais.size > 0 &&
-            codigosLidos.size === codigosGlobais.size &&
+            totalEstrito > 0 &&
+            totalEstrito === contagemEsperadaPdf &&
             sequenciaCompleta &&
             paradasSemEnderecoValido.length === 0;
 
@@ -3825,78 +3883,55 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             92,
             leituraEstritaOk
               ? 'Organizando as paradas...'
-              : 'Formato diferente detectado. Usando modo compatível...',
+              : 'Conferindo códigos e endereços...',
             'Quase pronto'
           );
-
-          let processado = false;
-
-          function contarCodigosDosRegistros(lista) {
-            const set = new Set();
-            (Array.isArray(lista) ? lista : []).forEach(r => (r?.codigos || []).forEach(c => set.add(String(c || '').toUpperCase())));
-            return set.size;
-          }
 
           if (leituraEstritaOk) {
             try {
               processarRegistrosrota(registrosrota, file.name);
-              processado = todosPacotes && todosPacotes.size > 0;
+              processado = todosPacotes && todosPacotes.size === contagemEsperadaPdf;
             } catch (erroEstrito) {
-              console.warn(
-                'Leitura estrita não serviu para este PDF. Tentando modo compatível:',
-                erroEstrito
-              );
+              console.warn('Leitura estrita não serviu para este PDF:', erroEstrito);
             }
           }
 
-          if (!processado && registrosVisuaisPdf.length) {
+          if (!processado && registrosVisuaisPdf.length && totalVisual === contagemEsperadaPdf) {
             try {
-              const totalVisual = contarCodigosDosRegistros(registrosVisuaisPdf);
-              // Não aceita uma leitura parcial se o próprio PDF já revelou mais códigos.
-              if (!codigosGlobais.size || totalVisual >= codigosGlobais.size) {
-                processarRegistrosrota(registrosVisuaisPdf, file.name);
-                processado = todosPacotes && todosPacotes.size > 0;
-              } else {
-                console.info(`Leitura visual encontrou ${totalVisual}/${codigosGlobais.size}. Tentando leitor universal antes de liberar a rota.`);
-              }
+              processarRegistrosrota(registrosVisuaisPdf, file.name);
+              processado = todosPacotes && todosPacotes.size === contagemEsperadaPdf;
             } catch (erroVisual) {
-              console.warn('Leitura visual V51 não concluiu este PDF. Tentando leitor por texto:', erroVisual);
+              console.warn('Leitura visual não concluiu este PDF:', erroVisual);
             }
           }
 
-          if (!processado) {
-            // V51: antes do leitor legado, tenta também o leitor universal por texto, que não exige
-            // numeração na coluna # (Spoke/Circuit e outros exports tabulares).
+          if (!processado && registrosUniversaisPdf.length && totalUniversal === contagemEsperadaPdf) {
             try {
-              const universais = extrairRegistrosPdfUniversal(linhasFallbackPdf);
-              if (universais.length) {
-                const totalUniversal = contarCodigosDosRegistros(universais);
-                if (!codigosGlobais.size || totalUniversal >= codigosGlobais.size) {
-                  processarRegistrosrota(universais, file.name);
-                  processado = todosPacotes && todosPacotes.size > 0;
-                } else {
-                  console.info(`Leitor universal encontrou ${totalUniversal}/${codigosGlobais.size}. Tentando compatibilidade legada.`);
-                }
-              }
+              processarRegistrosrota(registrosUniversaisPdf, file.name);
+              processado = todosPacotes && todosPacotes.size === contagemEsperadaPdf;
             } catch (erroUniversal) {
-              console.warn('Leitor universal não concluiu este PDF. Tentando compatibilidade legada:', erroUniversal);
+              console.warn('Leitor universal não concluiu este PDF:', erroUniversal);
             }
           }
 
           if (!processado) {
-            processarLinhasExatas(linhasFallbackPdf, file.name);
-            processado = todosPacotes && todosPacotes.size > 0;
+            try {
+              processarLinhasExatas(linhasFallbackPdf, file.name);
+              processado = todosPacotes && todosPacotes.size === contagemEsperadaPdf;
+            } catch (erroLegado) {
+              console.warn('Leitor de compatibilidade não concluiu este PDF:', erroLegado);
+            }
           }
 
-          if (!processado) {
+          if (!processado || !todosPacotes?.size) {
+            if (contagemEsperadaPdf > 0 && todosPacotes?.size && todosPacotes.size !== contagemEsperadaPdf) {
+              throw new Error(`CONTAGEM_PDF_INCOMPLETA|${todosPacotes.size}|${contagemEsperadaPdf}`);
+            }
             throw new Error('NENHUM_PACOTE_VALIDO');
           }
 
-          // V62: contagem de pacotes é a fonte de verdade. Não libera uma rota
-          // silenciosamente com 26/30, por exemplo. Se o PDF revelou 30 códigos,
-          // os 30 precisam chegar à Bipagem.
-          if (codigosGlobais.size > 0 && todosPacotes.size !== codigosGlobais.size) {
-            throw new Error(`CONTAGEM_PDF_INCOMPLETA|${todosPacotes.size}|${codigosGlobais.size}`);
+          if (contagemEsperadaPdf > 0 && todosPacotes.size !== contagemEsperadaPdf) {
+            throw new Error(`CONTAGEM_PDF_INCOMPLETA|${todosPacotes.size}|${contagemEsperadaPdf}`);
           }
 
           const tempoVisualDecorrido = Date.now() - inicioVisualLeituraPdf;
@@ -4576,13 +4611,16 @@ try {
 
         // A linha inicial contém o endereço. O bloco completo contém também
         // horário e Notes, mas extrairEnderecoExibicao remove o código BR.
-        const linhaEndereco = linha;
-        const enderecoExibicao = extrairEnderecoExibicao(linhaEndereco);
-        let endKey = normalizarEndereco(linhaEndereco);
-
-        if (!endKey) {
-          endKey = "pacote_isolado_" + codigos[0];
+        let linhaEndereco = linha;
+        if (!decomporEnderecorota(linhaEndereco)) {
+          const vizinha = encontrarLinhaEnderecorota(linhas, i);
+          if (decomporEnderecorota(vizinha)) linhaEndereco = vizinha;
         }
+        if (!decomporEnderecorota(linhaEndereco)) continue;
+
+        const enderecoExibicao = extrairEnderecoExibicao(linhaEndereco);
+        const endKey = normalizarEndereco(linhaEndereco);
+        if (!endKey) continue;
 
         registros.push({
           numeroParada,
@@ -4618,10 +4656,9 @@ try {
             seqStopAuto
           );
 
-          let endKey = normalizarEndereco(linhaEndereco);
-          if (!endKey) {
-            endKey = "pacote_isolado_" + codigos[0];
-          }
+          if (!decomporEnderecorota(linhaEndereco)) return;
+          const endKey = normalizarEndereco(linhaEndereco);
+          if (!endKey) return;
 
           registros.push({
             numeroParada,

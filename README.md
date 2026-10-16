@@ -1,5 +1,11 @@
-# Pacote É Mato V62
+# Pacote É Mato V63
 
-Versão com correção de contagem da Bipagem, roteirização mais robusta e configurações operacionais como recomendação (sem bloqueio).
+Correções principais desta versão:
 
-Para publicar no GitHub Pages, substitua os arquivos da versão anterior pelos arquivos deste pacote.
+- Bipagem: contagem de códigos BR endurecida para não criar pacote fantasma.
+- PDFs: a contagem esperada agora usa consenso entre leitores que associam código + endereço válido; a varredura bruta não manda sozinha.
+- PDFs: leitor legado não aceita mais endereço malformado como somente "Rua".
+- Otimização: múltiplas entregas no mesmo endereço viram uma única visita física para o roteador.
+- Geometria: waypoints repetidos no mesmo imóvel são removidos antes de traçar o percurso.
+- As entregas continuam preservadas individualmente depois da otimização (ex.: 30 entregas em 26 paradas físicas = 30 entregas mantidas).
+- Configurações continuam como recomendação, sem bloquear otimização ou início da rota.
