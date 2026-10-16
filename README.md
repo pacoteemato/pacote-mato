@@ -1,3 +1,7 @@
+## Atualização V68
+
+Painel administrativo separado por planos, dias restantes/expirados e ícones 192/512 sem borda verde externa. A sessão de 12 horas e o Holy-Frog da V67 foram mantidos.
+
 # Pacote É Mato V64
 
 Versão revisada a partir do projeto V62 enviado pelo usuário.
@@ -22,3 +26,6 @@ A roteirização também depende do Worker `pacote-emato-rotas`. O Worker comple
 `cloudflare/WORKER-ROTAS-V64-COMPLETO.txt`
 
 O `cloudflare/wrangler.toml` já autoriza o domínio atual `https://pacoteemato.github.io` e mantém o domínio antigo por compatibilidade.
+
+## V67 — Painel do Dono
+A sessão administrativa agora dura até 12 horas e permanece válida ao fechar/reabrir o painel. O PIN não é salvo. Para ativar a mudança, publique o Worker completo V67 presente em `cloudflare/WORKER-HOLY-FROG-V67-ADMIN-12H-COMPLETO.txt`.

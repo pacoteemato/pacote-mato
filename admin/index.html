@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests">
   <title>Pacote É Mato · Painel do Dono</title>
   <link rel="icon" href="../icon-192.png">
-  <link rel="stylesheet" href="admin.css?v=56">
+  <link rel="stylesheet" href="admin.css?v=68">
 </head>
 <body>
   <div id="loginView" class="login-shell">
@@ -22,7 +22,7 @@
         <button id="loginBtn" class="primary" type="submit">Entrar com segurança</button>
       </form>
       <div id="loginError" class="error" hidden></div>
-      <small class="security-note">A sessão expira automaticamente. O PIN nunca é salvo neste dispositivo.</small>
+      <small class="security-note">A sessão permanece ativa por até 12 horas neste dispositivo. O PIN nunca é salvo.</small>
     </section>
   </div>
 
@@ -54,9 +54,19 @@
       </section>
 
       <section id="view-clientes" class="view">
-        <section class="panel"><div class="panel-head"><div><span class="eyebrow">CONTAS</span><h3>Clientes</h3></div></div>
-          <div class="filters"><input id="clientSearch" type="search" placeholder="Buscar por WhatsApp ou e-mail"><select id="clientFilter"><option value="todos">Todos</option><option value="ativos">Ativos</option><option value="expirados">Expirados</option><option value="bloqueados">Bloqueados</option><option value="vitalicios">Vitalícios</option></select></div>
-          <div id="clientsList" class="client-list"></div>
+        <section class="panel"><div class="panel-head"><div><span class="eyebrow">CONTAS</span><h3>Clientes por tipo de acesso</h3></div></div>
+          <div id="clientCategoryBar" class="category-bar" aria-label="Categorias de clientes">
+            <button type="button" class="category-card active" data-client-filter="todos"><span>Todos</span><strong id="countTodos">0</strong></button>
+            <button type="button" class="category-card" data-client-filter="mensal"><span>Mensal</span><strong id="countMensal">0</strong></button>
+            <button type="button" class="category-card" data-client-filter="trimestral"><span>Trimestral</span><strong id="countTrimestral">0</strong></button>
+            <button type="button" class="category-card" data-client-filter="semanal"><span>Semanal</span><strong id="countSemanal">0</strong></button>
+            <button type="button" class="category-card" data-client-filter="teste"><span>Teste grátis</span><strong id="countTeste">0</strong></button>
+            <button type="button" class="category-card" data-client-filter="vitalicio"><span>Vitalícios</span><strong id="countVitalicio">0</strong></button>
+            <button type="button" class="category-card" data-client-filter="expirados"><span>Expirados</span><strong id="countExpirados">0</strong></button>
+            <button type="button" class="category-card" data-client-filter="bloqueados"><span>Bloqueados</span><strong id="countBloqueados">0</strong></button>
+          </div>
+          <div class="filters filters-single"><input id="clientSearch" type="search" placeholder="Buscar por WhatsApp, e-mail ou plano"></div>
+          <div id="clientsList" class="client-groups"></div>
         </section>
       </section>
 
@@ -64,13 +74,13 @@
 
       <section id="view-comunicados" class="view"><section class="panel narrow"><span class="eyebrow">COMUNICAÇÃO</span><h3>Novo comunicado</h3><label>Mensagem<textarea id="broadcastText" maxlength="500" placeholder="Mensagem para os motoristas"></textarea></label><label>Duração<select id="broadcastHours"><option value="1">1 hora</option><option value="3">3 horas</option><option value="6">6 horas</option><option value="12">12 horas</option><option value="24">24 horas</option></select></label><div class="actions"><button id="broadcastSend" class="primary">Publicar aviso</button><button id="broadcastClear" class="ghost">Apagar aviso</button></div></section></section>
 
-      <section id="view-seguranca" class="view"><section class="panel narrow"><span class="eyebrow">SEGURANÇA</span><h3>Proteções administrativas</h3><div class="security-grid"><div><strong>Sessão temporária</strong><span>Token assinado e com expiração curta.</span></div><div><strong>Rate limit</strong><span>Bloqueia tentativas repetidas de login.</span></div><div><strong>Origem restrita</strong><span>O gateway aceita apenas a URL do painel configurada.</span></div><div><strong>Segredos no Worker</strong><span>E-mail, PIN, senha upstream e chave da sessão não ficam no front-end.</span></div></div><p class="muted">Para a proteção máxima, o Worker administrativo antigo também deve ser alterado para aceitar operações administrativas apenas pelo gateway.</p></section></section>
+      <section id="view-seguranca" class="view"><section class="panel narrow"><span class="eyebrow">SEGURANÇA</span><h3>Proteções administrativas</h3><div class="security-grid"><div><strong>Sessão temporária</strong><span>Token assinado, persistente no dispositivo e válido por até 12 horas.</span></div><div><strong>Rate limit</strong><span>Bloqueia tentativas repetidas de login.</span></div><div><strong>Origem restrita</strong><span>O Worker aceita o painel somente a partir da origem administrativa autorizada.</span></div><div><strong>Segredos no Worker</strong><span>E-mail autorizado, PIN e chave da sessão ficam protegidos como secrets no Worker.</span></div></div><p class="muted">Ao clicar em Sair, a sessão local é apagada imediatamente e o próximo acesso exige e-mail e PIN novamente.</p></section></section>
     </main>
   </div>
 
   <div id="modal" class="modal-backdrop" hidden><section class="modal"><button id="modalClose" class="modal-close">×</button><span class="eyebrow">CLIENTE</span><h3 id="modalTitle">Gerenciar conta</h3><div id="modalBody"></div></section></div>
   <div id="toast" class="toast" hidden></div>
-  <script src="config.js?v=56"></script>
-  <script src="admin.js?v=56"></script>
+  <script src="config.js?v=68"></script>
+  <script src="admin.js?v=68"></script>
 </body>
 </html>
