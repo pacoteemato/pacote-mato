@@ -11,9 +11,7 @@
     tempoParadaSegundos: 0,
     tempoParadaPersonalizado: false,
     pontoInicial: null,
-    retornarAoInicio: false,
-    obrigatoriasConfirmadas: false,
-    camposObrigatorios: { navegacao: false, veiculo: false, tempoParada: false }
+    retornarAoInicio: false
   };
 
   function $(id) { return document.getElementById(id); }
@@ -27,7 +25,6 @@
       const salvo = JSON.parse(localStorage.getItem(KEY) || '{}');
       const dados = salvo && typeof salvo === 'object' ? salvo : {};
       const cfg = Object.assign({}, DEFAULTS, dados);
-      cfg.camposObrigatorios = Object.assign({}, DEFAULTS.camposObrigatorios, dados.camposObrigatorios || {});
       if (dados.tempoParadaPersonalizado !== true) {
         cfg.tempoParadaSegundos = 0;
         cfg.tempoParadaPersonalizado = false;
@@ -42,7 +39,6 @@
   function salvar(parcial) {
     const anterior = obter();
     const cfg = Object.assign({}, anterior, parcial || {});
-    cfg.camposObrigatorios = Object.assign({}, anterior.camposObrigatorios || DEFAULTS.camposObrigatorios, parcial?.camposObrigatorios || {});
     const campos = Object.keys(parcial || {}).filter(k => JSON.stringify(anterior[k]) !== JSON.stringify(cfg[k]));
     try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (_) {}
     renderizar();
@@ -60,62 +56,7 @@
     else delete el.dataset.status;
   }
 
-  function obrigatoriasConcluidas() {
-    return obter().obrigatoriasConfirmadas === true;
-  }
-
-  function camposObrigatoriosTocados() {
-    const cfg = obter();
-    return Object.assign({}, DEFAULTS.camposObrigatorios, cfg.camposObrigatorios || {});
-  }
-
-  function marcouTudoObrigatorio() {
-    const flags = camposObrigatoriosTocados();
-    return flags.navegacao === true && flags.veiculo === true && flags.tempoParada === true;
-  }
-
-  function marcarCampoObrigatorio(campo) {
-    if (!campo) return obter();
-    const cfg = obter();
-    const flags = Object.assign({}, DEFAULTS.camposObrigatorios, cfg.camposObrigatorios || {});
-    if (flags[campo] === true) return cfg;
-    flags[campo] = true;
-    return salvar({ camposObrigatorios: flags });
-  }
-
-  function renderizarObrigatorias() {
-    const cfg = obter();
-    const flags = Object.assign({}, DEFAULTS.camposObrigatorios, cfg.camposObrigatorios || {});
-    const mapa = {
-      settingsRequiredNav: flags.navegacao === true,
-      settingsRequiredVehicle: flags.veiculo === true,
-      settingsRequiredStopTime: flags.tempoParada === true
-    };
-    Object.entries(mapa).forEach(([id, done]) => {
-      const el = $(id);
-      if (el) el.classList.toggle('is-done', done === true);
-    });
-    const btn = $('settingsConfirmRequiredBtn');
-    const txt = $('settingsRequiredText');
-    const info = $('settingsRequiredStatus');
-    const pronto = marcouTudoObrigatorio();
-    if (cfg.obrigatoriasConfirmadas === true) {
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Configurações obrigatórias confirmadas';
-      }
-      if (txt) txt.textContent = 'Configurações obrigatórias já confirmadas. Alterações futuras continuam sendo salvas automaticamente.';
-      status(info, 'Preferências obrigatórias liberadas.', 'ok');
-      return;
-    }
-    if (btn) {
-      btn.disabled = !pronto;
-      btn.textContent = 'Confirmar configurações obrigatórias';
-    }
-    if (txt) txt.textContent = 'Revise a navegação, o tipo de veículo e o tempo na parada. Você pode deixar o tempo em 0 se não quiser somar atendimento.';
-    if (pronto) status(info, 'Agora confirme para liberar a otimização e a navegação.', 'warning');
-    else status(info, 'Toque nos 3 campos acima e depois confirme.', 'warning');
-  }
+  async function garantirObrigatorias() { return true; }
 
   function renderizar() {
     const cfg = obter();
@@ -123,7 +64,6 @@
     if ($('settingsVehicle')) $('settingsVehicle').value = cfg.veiculo;
     if ($('settingsStopMinutes')) $('settingsStopMinutes').value = String(Math.round(Number(cfg.tempoParadaSegundos || 0) / 60));
     if ($('settingsReturnStart')) $('settingsReturnStart').checked = cfg.retornarAoInicio === true;
-    renderizarObrigatorias();
   }
 
   async function validarEnderecoPartida() {
@@ -228,25 +168,6 @@
     return cfg;
   }
 
-  async function confirmarObrigatorias() {
-    salvarFormulario({ notificar: false, tempoParadaAlterado: true });
-    if (!marcouTudoObrigatorio()) {
-      renderizarObrigatorias();
-      global.notificar?.('Toque em navegação, veículo e tempo na parada antes de confirmar.');
-      return false;
-    }
-    salvar({ obrigatoriasConfirmadas: true });
-    status($('settingsRequiredStatus'), 'Preferências obrigatórias confirmadas com sucesso.', 'ok');
-    global.notificar?.('Configurações obrigatórias liberadas. Agora você pode otimizar e iniciar a rota.');
-    return true;
-  }
-
-  async function garantirObrigatorias() {
-    // V62: estas opções são recomendações operacionais.
-    // O motorista pode otimizar/iniciar sem alterar valores já válidos.
-    return true;
-  }
-
   function agendarAutoSave(delay) {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false }), Number(delay || 250));
@@ -254,41 +175,14 @@
 
   function bind() {
     $('settingsSaveBtn')?.addEventListener('click', () => salvarFormulario({ notificar: true }));
-    $('settingsConfirmRequiredBtn')?.addEventListener('click', confirmarObrigatorias);
-
-    const nav = $('settingsNavigation');
-    const veic = $('settingsVehicle');
-    const tempo = $('settingsStopMinutes');
-
-    const revisarSelect = (el, campo) => {
-      if (!el) return;
-      const marcar = () => marcarCampoObrigatorio(campo);
-      el.addEventListener('pointerdown', marcar, { passive: true });
-      el.addEventListener('focus', marcar);
-      el.addEventListener('change', () => {
-        marcar();
-        salvarFormulario({ notificar: false });
-      });
-    };
-
-    revisarSelect(nav, 'navegacao');
-    revisarSelect(veic, 'veiculo');
-
-    if (tempo) {
-      const marcarTempo = () => marcarCampoObrigatorio('tempoParada');
-      tempo.addEventListener('pointerdown', marcarTempo, { passive: true });
-      tempo.addEventListener('focus', marcarTempo);
-      tempo.addEventListener('input', () => {
-        marcarTempo();
-        clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false, tempoParadaAlterado: true }), 350);
-      });
-      tempo.addEventListener('blur', () => {
-        marcarTempo();
-        salvarFormulario({ notificar: false, tempoParadaAlterado: true });
-      });
-    }
+    $('settingsNavigation')?.addEventListener('change', () => salvarFormulario({ notificar: false }));
+    $('settingsVehicle')?.addEventListener('change', () => salvarFormulario({ notificar: false }));
     $('settingsReturnStart')?.addEventListener('change', () => salvarFormulario({ notificar: false }));
+    $('settingsStopMinutes')?.addEventListener('input', () => {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => salvarFormulario({ notificar: false, tempoParadaAlterado: true }), 350);
+    });
+    $('settingsStopMinutes')?.addEventListener('blur', () => salvarFormulario({ notificar: false, tempoParadaAlterado: true }));
 
     renderizar();
     const hint = $('settingsAutosaveStatus');
@@ -307,9 +201,6 @@
     testarWorker,
     usarGpsPartida,
     limparPonto,
-    obrigatoriasConcluidas,
-    garantirObrigatorias,
-    marcarCampoObrigatorio,
-    confirmarObrigatorias
+    garantirObrigatorias
   });
 })(window);

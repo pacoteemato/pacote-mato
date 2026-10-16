@@ -38,10 +38,18 @@
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs || Number(cfg().routingRequestTimeoutMs || 45000));
     try {
-      const response = await fetch(url, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Pacote-Em-Mato-Client': 'routing-v1' },
-        credentials: 'omit', body: JSON.stringify(body), signal: controller.signal
-      });
+      let response;
+      try {
+        response = await fetch(url, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Pacote-Em-Mato-Client': 'routing-v1' },
+          credentials: 'omit', body: JSON.stringify(body), signal: controller.signal
+        });
+      } catch (redeErro) {
+        const erro = new Error('O app não conseguiu acessar o Worker de rotas. Confira se https://pacoteemato.github.io está autorizado em ALLOWED_ORIGINS no Cloudflare.');
+        erro.code = redeErro?.name === 'AbortError' ? 'ROUTING_TIMEOUT' : 'ROUTING_NETWORK';
+        erro.cause = redeErro;
+        throw erro;
+      }
       let data = null;
       try { data = await response.json(); } catch (_) {}
       if (!response.ok || !data?.ok) {
@@ -89,52 +97,6 @@
     return ['short', 'balanced', 'less_maneuvers'].includes(preferencia) ? preferencia : 'short';
   }
 
-
-  // V63 — a rota operacional trabalha com entregas, mas o roteador deve receber
-  // apenas uma visita por endereço físico. Enviar 2, 3 ou mais waypoints com a
-  // mesma coordenada pode fazer o provedor recusar a geometria completa.
-  function chaveFisicaParada(parada) {
-    try {
-      const canonica = global.PacoteEMatoMarcadores?.chaveFisicaMarcador?.(parada);
-      if (canonica) return `endereco:${String(canonica)}`;
-    } catch (_) {}
-    const c = coord(parada);
-    if (!c) return `id:${String(parada?.id || '')}`;
-    return `coord:${Number(c.lat).toFixed(5)},${Number(c.lon).toFixed(5)}`;
-  }
-
-  function agruparParadasFisicas(paradas) {
-    const grupos = [];
-    const mapa = new Map();
-    (Array.isArray(paradas) ? paradas : []).forEach((parada, indice) => {
-      const chave = chaveFisicaParada(parada);
-      if (!mapa.has(chave)) {
-        const grupo = {
-          id: `fisica-${grupos.length + 1}`,
-          chave,
-          location: coord(parada),
-          membros: [],
-          primeiroIndice: indice
-        };
-        mapa.set(chave, grupo);
-        grupos.push(grupo);
-      }
-      mapa.get(chave).membros.push(parada);
-    });
-    return grupos;
-  }
-
-  function expandirOrdemFisica(orderIds, grupos) {
-    const porId = new Map((grupos || []).map(g => [String(g.id), g]));
-    const saida = [];
-    (orderIds || []).forEach(id => {
-      const grupo = porId.get(String(id));
-      if (!grupo) return;
-      grupo.membros.forEach(parada => saida.push(String(parada.id)));
-    });
-    return saida;
-  }
-
   function esperar(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
   function erroTransitórioRota(erro) {
@@ -157,60 +119,150 @@
     throw ultimoErro || new Error('Falha no serviço de rota.');
   }
 
+  function chaveFisicaParada(parada) {
+    try {
+      const chave = global.PacoteEMatoMarcadores?.chaveFisicaMarcador?.(parada);
+      if (chave) return String(chave);
+    } catch (_) {}
+    const c = coord(parada);
+    if (c) return `coord:${c.lat.toFixed(5)}|${c.lon.toFixed(5)}`;
+    return `id:${String(parada?.id || '')}`;
+  }
+
+  function gruposFisicosPendentes(rota) {
+    const paradas = Array.isArray(rota?.paradas) ? rota.paradas : [];
+    const finalizada = p => ['entregue', 'concluida', 'nao_entregue'].includes(String(p?.statusEntrega || ''));
+    const rank = new Map();
+    (Array.isArray(rota?.ordem) ? rota.ordem : []).forEach((id, i) => rank.set(String(id), i));
+    const ordenadas = paradas
+      .map((p, i) => ({ p, i, r: rank.has(String(p.id)) ? rank.get(String(p.id)) : 100000 + i }))
+      .filter(x => !finalizada(x.p))
+      .sort((a, b) => a.r - b.r || a.i - b.i)
+      .map(x => x.p);
+
+    const mapa = new Map();
+    ordenadas.forEach(p => {
+      const chave = chaveFisicaParada(p);
+      if (!mapa.has(chave)) mapa.set(chave, { chave, representante: p, paradas: [] });
+      mapa.get(chave).paradas.push(p);
+    });
+    return [...mapa.values()];
+  }
+
+  function expandirOrdemFisica(grupos, idsRepresentantes) {
+    const porRepresentante = new Map((grupos || []).map(g => [String(g.representante?.id || ''), g]));
+    const saida = [];
+    const usados = new Set();
+    (idsRepresentantes || []).forEach(id => {
+      const g = porRepresentante.get(String(id));
+      if (!g || usados.has(g.chave)) return;
+      usados.add(g.chave);
+      g.paradas.forEach(p => saida.push(String(p.id)));
+    });
+    (grupos || []).forEach(g => {
+      if (usados.has(g.chave)) return;
+      usados.add(g.chave);
+      g.paradas.forEach(p => saida.push(String(p.id)));
+    });
+    return saida;
+  }
+
+  function normalizarOrdemPorParadaFisica(rota, ordemIds) {
+    const paradas = Array.isArray(rota?.paradas) ? rota.paradas : [];
+    const byId = new Map(paradas.map(p => [String(p.id), p]));
+    const finalizada = p => ['entregue', 'concluida', 'nao_entregue'].includes(String(p?.statusEntrega || ''));
+    const ordemBase = Array.isArray(ordemIds) && ordemIds.length ? ordemIds.map(String) : paradas.map(p => String(p.id));
+    const rank = new Map(ordemBase.map((id, i) => [String(id), i]));
+
+    const finalizadas = ordemBase.map(id => byId.get(String(id))).filter(p => p && finalizada(p));
+    paradas.filter(finalizada).forEach(p => { if (!finalizadas.includes(p)) finalizadas.push(p); });
+
+    const grupos = new Map();
+    paradas.filter(p => !finalizada(p)).forEach((p, i) => {
+      const chave = chaveFisicaParada(p);
+      if (!grupos.has(chave)) grupos.set(chave, { chave, paradas: [], primeiraPosicao: Infinity, fallback: i });
+      const g = grupos.get(chave);
+      g.paradas.push(p);
+      if (rank.has(String(p.id))) g.primeiraPosicao = Math.min(g.primeiraPosicao, rank.get(String(p.id)));
+    });
+
+    const ordenados = [...grupos.values()].sort((a, b) => a.primeiraPosicao - b.primeiraPosicao || a.fallback - b.fallback);
+    const pendentes = [];
+    ordenados.forEach(g => {
+      g.paradas.sort((a, b) => (rank.get(String(a.id)) ?? 1e9) - (rank.get(String(b.id)) ?? 1e9));
+      g.paradas.forEach(p => pendentes.push(p));
+    });
+    return [...finalizadas, ...pendentes].map(p => String(p.id));
+  }
+
+  function removerPontosConsecutivosRepetidos(points) {
+    const saida = [];
+    let ultima = null;
+    (points || []).forEach(p => {
+      const c = coord(p);
+      if (!c) return;
+      const chave = `${c.lat.toFixed(7)}|${c.lon.toFixed(7)}`;
+      if (chave === ultima) return;
+      saida.push(c);
+      ultima = chave;
+    });
+    return saida;
+  }
+
   async function otimizar(rota) {
     const start = coord(rota?.pontoInicial);
     if (!start) throw new Error('Defina um ponto de partida válido antes de otimizar.');
-    const concluidas = new Set((rota.paradas || []).filter(p => ['entregue', 'concluida', 'nao_entregue'].includes(p.statusEntrega)).map(p => String(p.id)));
-    const pendentes = (rota.paradas || []).filter(p => !concluidas.has(String(p.id)));
-    const semCoordenada = pendentes.filter(p => !coord(p));
-    if (semCoordenada.length) {
-      const erro = new Error(`${semCoordenada.length} parada(s) ainda não possuem coordenadas válidas.`);
-      erro.code = 'PARADAS_SEM_COORDENADA'; erro.paradas = semCoordenada.map(p => p.id); throw erro;
-    }
-    if (!pendentes.length) throw new Error('Não existem paradas pendentes para otimizar.');
 
-    const gruposFisicos = agruparParadasFisicas(pendentes);
+    const grupos = gruposFisicosPendentes(rota);
+    if (!grupos.length) throw new Error('Não existem paradas pendentes para otimizar.');
+    const semCoordenada = grupos.filter(g => !coord(g.representante));
+    if (semCoordenada.length) {
+      const erro = new Error(`${semCoordenada.length} parada(s) física(s) ainda não possuem coordenadas válidas.`);
+      erro.code = 'PARADAS_SEM_COORDENADA';
+      erro.paradas = semCoordenada.flatMap(g => g.paradas.map(p => p.id));
+      throw erro;
+    }
+
+    // V64: o Route Planner recebe uma visita por endereço físico, e não uma visita
+    // por pacote/entrega. Ex.: 30 entregas em 26 imóveis => 26 jobs. Depois a ordem
+    // física é expandida novamente para os 30 IDs, mantendo múltiplos juntos.
     const mode = perfilVeiculo(rota.veiculo);
+    const jobs = grupos.map(g => ({
+      id: String(g.representante.id),
+      location: coord(g.representante),
+      duration: Math.max(0, Number(rota.tempoParadaSegundos || 0))
+    }));
+
     const resultado = await postComRetry(endpoint('optimize'), {
-      mode, start, end: rota.pontoFinal ? coord(rota.pontoFinal) : null,
+      mode,
+      start,
+      end: rota.pontoFinal ? coord(rota.pontoFinal) : null,
       returnToStart: rota.retornarAoInicio === true,
       stopDurationSeconds: Math.max(0, Number(rota.tempoParadaSegundos || 0)),
-      traffic: 'free_flow', type: tipoRota(rota),
-      // Uma tarefa por endereço físico. Se houver 30 entregas em 26 endereços,
-      // o provedor recebe 26 visitas e a ordem é expandida para as 30 entregas depois.
-      stops: gruposFisicos.map(g => ({
-        id: String(g.id),
-        location: g.location,
-        duration: Math.max(0, Number(rota.tempoParadaSegundos || 0))
-      }))
+      traffic: 'free_flow',
+      type: tipoRota(rota),
+      stops: jobs
     }, Number(cfg().routingRequestTimeoutMs || 45000), 2);
 
     const naoAtribuidas = Array.isArray(resultado?.issues?.unassignedJobs) ? resultado.issues.unassignedJobs : [];
-    const esperadoFisico = new Set(gruposFisicos.map(g => String(g.id)));
+    const esperado = new Set(jobs.map(j => String(j.id)));
     const ordemFisica = Array.isArray(resultado?.orderIds) ? [...new Set(resultado.orderIds.map(String))] : [];
-    const desconhecidas = ordemFisica.filter(id => !esperadoFisico.has(id));
-    const faltantes = [...esperadoFisico].filter(id => !ordemFisica.includes(id));
-    if (naoAtribuidas.length || desconhecidas.length || faltantes.length || ordemFisica.length !== gruposFisicos.length) {
+    const desconhecidas = ordemFisica.filter(id => !esperado.has(id));
+    const faltantes = [...esperado].filter(id => !ordemFisica.includes(id));
+    if (naoAtribuidas.length || desconhecidas.length || faltantes.length || ordemFisica.length !== grupos.length) {
       const erro = new Error('O serviço não conseguiu atribuir todas as paradas físicas. Nenhuma entrega foi descartada.');
       erro.code = 'OTIMIZACAO_INCOMPLETA';
-      erro.detail = { ...resultado, faltantes, desconhecidas, naoAtribuidas };
+      erro.detail = { ...resultado, faltantes, desconhecidas, naoAtribuidas, paradasFisicas: grupos.length };
       throw erro;
     }
 
-    const ordemExpandida = expandirOrdemFisica(ordemFisica, gruposFisicos);
-    const esperadoEntregas = new Set(pendentes.map(p => String(p.id)));
-    if (ordemExpandida.length !== pendentes.length || ordemExpandida.some(id => !esperadoEntregas.has(id))) {
-      const erro = new Error('A expansão das paradas múltiplas não preservou todas as entregas.');
-      erro.code = 'EXPANSAO_MULTIPLAS_INVALIDA';
-      throw erro;
-    }
-
+    const orderIds = expandirOrdemFisica(grupos, ordemFisica);
     return {
       ...resultado,
-      orderIds: ordemExpandida,
-      orderPhysicalIds: ordemFisica,
-      physicalStops: gruposFisicos.length,
-      deliveries: pendentes.length
+      orderIds,
+      physicalOrderIds: ordemFisica,
+      physicalStopCount: grupos.length,
+      deliveryCount: orderIds.length
     };
   }
 
@@ -231,7 +283,7 @@
     const byId = new Map((rota.paradas || []).map(p => [String(p.id), p]));
     const ordemIds = Array.isArray(rota.ordem) && rota.ordem.length ? rota.ordem : (rota.paradas || []).map(p => p.id);
     const points = [start];
-    const vistosFisicos = new Set();
+    const fisicasVisitadas = new Set();
 
     ordemIds.forEach(id => {
       const p = byId.get(String(id));
@@ -239,9 +291,10 @@
       const c = coord(p);
       if (!c) return;
       const chave = chaveFisicaParada(p);
-      // Múltiplas no mesmo imóvel aparecem apenas uma vez na geometria.
-      if (vistosFisicos.has(chave)) return;
-      vistosFisicos.add(chave);
+      // Uma parada múltipla é uma visita física só. Os demais pacotes continuam
+      // na ordem operacional, mas não viram waypoints repetidos no provedor.
+      if (fisicasVisitadas.has(chave)) return;
+      fisicasVisitadas.add(chave);
       points.push(c);
     });
 
@@ -250,7 +303,7 @@
       const end = coord(rota.pontoFinal);
       if (end) points.push(end);
     }
-    return points;
+    return removerPontosConsecutivosRepetidos(points);
   }
 
   function geometriaValida(geometry) {
@@ -326,13 +379,28 @@
   async function calcularBlocoRota(rota, bloco, blocoIndex, totalBlocos) {
     const mode = perfilVeiculo(rota.veiculo);
     try {
-      const resposta = await postComRetry(endpoint('route'), {
-        mode,
-        points: bloco,
-        traffic: 'free_flow',
-        type: tipoRota(rota),
-        intermediateWaypointMode: 'stopover'
-      }, Number(cfg().routingRequestTimeoutMs || 45000), 2);
+      const tipoPrincipal = tipoRota(rota);
+      let resposta;
+      try {
+        resposta = await postComRetry(endpoint('route'), {
+          mode,
+          points: removerPontosConsecutivosRepetidos(bloco),
+          traffic: 'free_flow',
+          type: tipoPrincipal,
+          intermediateWaypointMode: 'stopover'
+        }, Number(cfg().routingRequestTimeoutMs || 45000), 2);
+      } catch (erroPrincipal) {
+        // Alguns percursos recusam a preferência "short" mas aceitam o mesmo
+        // conjunto de vias em modo balanced. Mantemos o MESMO perfil de veículo.
+        if (tipoPrincipal === 'balanced') throw erroPrincipal;
+        resposta = await postComRetry(endpoint('route'), {
+          mode,
+          points: removerPontosConsecutivosRepetidos(bloco),
+          traffic: 'free_flow',
+          type: 'balanced',
+          intermediateWaypointMode: 'stopover'
+        }, Number(cfg().routingRequestTimeoutMs || 45000), 2);
+      }
       if (!geometriaValida(resposta?.feature?.geometry)) {
         const erro = new Error(`O trecho ${blocoIndex + 1}/${totalBlocos} voltou sem geometria rodoviária válida.`);
         erro.code = 'GEOMETRIA_INVALIDA'; erro.detail = resposta; throw erro;
@@ -355,7 +423,7 @@
   }
 
   async function calcularRotaPelasRuas(rota, pontosOverride) {
-    const points = Array.isArray(pontosOverride) && pontosOverride.length ? pontosOverride.map(coord).filter(Boolean) : pontosDaRota(rota);
+    const points = removerPontosConsecutivosRepetidos(Array.isArray(pontosOverride) && pontosOverride.length ? pontosOverride.map(coord).filter(Boolean) : pontosDaRota(rota));
     if (points.length < 2) throw new Error('São necessários ao menos dois pontos válidos para calcular a rota.');
 
     // V62: blocos menores e divisão adaptativa. Alguns provedores aceitam a
@@ -397,8 +465,11 @@
     const candidatos = [], vistos = new Set(), falhas = [];
     const objetivo = tipoRota(rota);
     async function avaliar(ordem, tipo, origem) {
-      const teste = copia(); teste.ordem = ordem; teste.preferenciaRota = tipo;
-      const chave = JSON.stringify([ordem.map(String), tipo]);
+      const teste = copia();
+      const ordemNormalizada = normalizarOrdemPorParadaFisica(teste, ordem);
+      teste.ordem = ordemNormalizada;
+      teste.preferenciaRota = tipo;
+      const chave = JSON.stringify([ordemNormalizada.map(String), tipo]);
       if (vistos.has(chave)) return null;
       vistos.add(chave);
       progresso('Comparando percursos reais', `${origem}: distância e tempo calculados pelas ruas.`);
@@ -406,7 +477,7 @@
         const route = await calcularRotaPelasRuas(teste);
         const d = Number(route.feature.properties.distance), t = Number(route.feature.properties.time);
         if (!Number.isFinite(d) || d < 0 || !Number.isFinite(t) || t < 0) throw new Error('Métricas de rota inválidas.');
-        const c = {ordem, tipo, origem, route, distance:d, drivingTime:t};
+        const c = {ordem: ordemNormalizada, tipo, origem, route, distance:d, drivingTime:t};
         candidatos.push(c); return c;
       } catch (e) { falhas.push({origem, mensagem:e.message}); return null; }
     }
@@ -424,13 +495,20 @@
     const comparar = (a,b) => objetivo === 'short'
       ? a.distance - b.distance || a.drivingTime - b.drivingTime
       : a.drivingTime - b.drivingTime || a.distance - b.distance;
-    if (!candidatos.length) throw new Error('Não foi possível confirmar um percurso completo pelas ruas. A rota anterior foi preservada.');
+    if (!candidatos.length) {
+      const mensagens = [...new Set(falhas.map(f => String(f?.mensagem || '')).filter(Boolean))];
+      const rede = mensagens.find(m => /Worker de rotas|ALLOWED_ORIGINS|acessar o Worker/i.test(m));
+      const erro = new Error(rede || 'Não foi possível confirmar um percurso completo pelas ruas. A rota anterior foi preservada.');
+      erro.code = rede ? 'WORKER_ORIGEM_OU_REDE' : 'PERCURSO_COMPLETO_INDISPONIVEL';
+      erro.detail = { falhas };
+      throw erro;
+    }
     candidatos.sort(comparar);
     // Refinamento limitado: deslocar uma parada perto de um trecho caro.
     // Recalcula o percurso inteiro, pois A→B pode ser diferente de B→A.
     const base = candidatos[0];
     const pendentes = base.ordem.filter(id => !(rota.paradas || []).some(p => String(p.id) === String(id) && ['entregue','concluida','nao_entregue'].includes(p.statusEntrega)));
-    if (pendentes.length >= 3 && pendentes.length <= 60) {
+    if (pendentes.length >= 3 && pendentes.length <= 60 && gruposFisicosPendentes(rota).length === pendentes.length) {
       const legs = base.route.feature.properties.legs || [];
       let pior = 0;
       for(let i=1;i<Math.min(legs.length,pendentes.length);i++) if(Number(legs[i].distance)>Number(legs[pior]?.distance||0)) pior=i;
@@ -444,8 +522,11 @@
     }
     candidatos.sort(comparar);
     const melhor = candidatos[0];
+    const totalFisicas = gruposFisicosPendentes(rota).length;
     return {...melhor, orderIds:melhor.ordem, provider:'geoapify-comparacao-viaria',
-      totalTime:melhor.drivingTime + pendentes.length * Math.max(0,Number(rota.tempoParadaSegundos||0)),
+      physicalStopCount: totalFisicas,
+      deliveryCount: melhor.ordem.length,
+      totalTime:melhor.drivingTime + totalFisicas * Math.max(0,Number(rota.tempoParadaSegundos||0)),
       comparacao:{objetivo, avaliadas:candidatos.map(c => ({origem:c.origem,tipo:c.tipo,distancia:c.distance,tempo:c.drivingTime})), falhas}};
   }
 
@@ -478,5 +559,5 @@
     return instrucoes;
   }
 
-  global.PacoteEMatoServicoRota = Object.freeze({ endpoint, healthEndpoint, verificarServico, perfilVeiculo, tipoRota, otimizar, otimizarComparando, ordenarParadas, calcularRotaPelasRuas, pontosDaRota, extrairInstrucoes, coord, geometriaValida });
+  global.PacoteEMatoServicoRota = Object.freeze({ endpoint, healthEndpoint, verificarServico, perfilVeiculo, tipoRota, otimizar, otimizarComparando, ordenarParadas, calcularRotaPelasRuas, pontosDaRota, extrairInstrucoes, coord, geometriaValida, gruposFisicosPendentes, chaveFisicaParada, normalizarOrdemPorParadaFisica });
 })(window);

@@ -3041,3 +3041,126 @@ Exemplos:
 - O Worker completo seguro foi incluído também em `cloudflare/WORKER-HOLY-FROG-SEGURO-COMPLETO.txt` para cópia manual no Cloudflare.
 - Cache do painel administrativo atualizado para V54.
 
+
+
+---
+
+
+# V56 — Admin login corrigido
+
+- PIN administrativo agora aceita letras e números no celular (sem teclado numérico forçado).
+- Painel chama diretamente `/admin/login`.
+- Compatível com retorno `token` ou `adminToken`.
+- Mensagem explícita se o Worker não devolver sessão.
+- Corrigido payload de Comunicados para `ativo`, `mensagem` e `horas`, conforme Worker atual.
+- Cache-bust dos arquivos do painel atualizado para V56.
+
+
+---
+
+
+# V57 — Bipagem: múltiplas corrigidas
+
+- Corrigida a criação de paradas físicas na importação PDF.
+- Complementos como apartamento, bloco, torre, sala e casa não criam nova parada.
+- Quando o mesmo imóvel aparece mais de uma vez com variações de texto, os pacotes são mesclados na mesma chave física (logradouro + número).
+- Removida a regra que criava sufixos `_sN` e podia inflar a contagem de paradas.
+- Cache-bust atualizado para V57.
+
+
+---
+
+
+# Pacote É Mato — V58
+
+## Ajustes feitos
+
+1. **Localização**
+   - mensagem melhorada quando a localização do navegador estiver bloqueada;
+   - ao tocar em **Minha localização**, o app orienta o usuário a liberar a permissão no navegador/aparelho.
+
+2. **Configurações obrigatórias**
+   - antes de otimizar ou iniciar a rota, o usuário precisa confirmar:
+     - navegação preferida;
+     - tipo de veículo;
+     - tempo na parada;
+   - foi removida a seção de **Tema/Aparência** das configurações.
+
+3. **Tutoriais novos**
+   - tutorial da opção **Pacotes da rota** (Adicionar/Remover com QR);
+   - tutorial da opção **Refinar rota**.
+
+4. **Botão voltar do celular**
+   - em menus, popups e configurações o botão voltar agora fecha a camada atual e mantém o app aberto;
+   - no mapa/rota principal, o comportamento continua permitindo sair normalmente.
+
+## Arquivos alterados
+- `index.html`
+- `css/app-shell.css`
+- `js/configuracoes/configuracoes.js`
+- `js/roteirizacao/roteirizacao.js`
+- `js/navegacao/navegacao.js`
+- `js/mapa/mapa.js`
+- `js/mapa/localizacao-atual.js`
+- `js/ui/app-shell.js`
+
+
+---
+
+
+# Pacote É Mato — V59
+
+## Correções desta versão
+
+- Configurações obrigatórias: o campo passa a contar como revisado ao ser tocado/focado, sem exigir trocar para outra opção e voltar.
+- Pacote já existente na rota: agora abre uma confirmação própria do Pacote É Mato perguntando se o usuário quer mantê-lo na rota; o pacote não é duplicado.
+- Operação de adicionar/remover pacotes: removido o `confirm()` nativo do navegador ao cancelar.
+- Removidos também os outros `prompt()/confirm()` nativos remanescentes do app principal; no painel admin, a exclusão passou a usar confirmação em dois cliques.
+- Botão Voltar: histórico interno reorganizado para não acumular passos; em módulos/camadas internas volta para o mapa/fecha a camada, e no mapa principal o navegador/PWA pode sair normalmente.
+- Cache-busting atualizado para V59.
+
+
+---
+
+
+# Pacote É Mato — V60
+
+## Localização dentro do app
+
+- Adicionado onboarding de localização após o usuário entrar no sistema.
+- Botão **Ativar localização** chama a API de geolocalização diretamente a partir de uma ação do usuário.
+- Adicionado bloco **Localização** em Configurações com status e botão para solicitar novamente.
+- Quando a permissão estiver concedida, o sistema reconhece e não exibe o onboarding novamente.
+- Quando estiver bloqueada pelo Android/WebView, o sistema informa claramente que o contêiner Android ainda precisa repassar a permissão nativa.
+- Corrigido o estado interno para reconhecer uma permissão que foi liberada depois de estar bloqueada.
+
+## Limite técnico
+O front-end WebView pode solicitar localização, mas a janela nativa do Android só aparecerá se o WebView Android tiver as permissões de localização e o tratamento de geolocalização habilitados no projeto Android.
+
+
+---
+
+
+# V61 — Localização sem loop
+
+- Corrigido ciclo de "toque em Ativar localização" quando o WebView já devolveu permissão negada.
+- Após bloqueio, a UI explica que a permissão nativa do Android/WebView ainda precisa ser habilitada no contêiner Android.
+- O usuário pode escolher **Continuar sem localização** e seguir usando o app.
+- O botão continua disponível em Configurações para tentar novamente depois.
+- Quando a permissão for concedida, o onboarding fecha automaticamente.
+
+
+---
+
+
+# Pacote É Mato — V62
+
+## Correções principais
+
+- Bipagem/PDF: leitura de códigos BR fragmentados pelo PDF.js, evitando perda de pacotes na contagem.
+- A rota só é liberada quando a quantidade de pacotes associada bate com a quantidade de códigos BR detectada no PDF.
+- Leitor visual parcial não encerra mais o processamento antes de o leitor universal tentar recuperar os demais códigos.
+- Otimização: geometria dividida em blocos menores e subdivisão automática quando um trecho grande falhar.
+- Se o percurso continuar incompleto, o sistema confere todas as coordenadas e tenta novamente uma vez, sem apagar paradas.
+- Configurações de navegação, veículo e tempo por parada deixaram de ser obrigatórias. Agora são apenas recomendadas e não bloqueiam otimização/navegação.
+- Mantidas as correções de localização, botão voltar e diálogos próprios das versões anteriores.

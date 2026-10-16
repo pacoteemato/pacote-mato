@@ -1471,9 +1471,10 @@
       const distanciaGeometria = Number(feature.properties.distance);
       const direcaoGeometria = Number(feature.properties.time);
       const pendentes = candidata.paradas.filter(p => !['entregue','concluida','nao_entregue'].includes(p.statusEntrega)).length;
+      const pendentesFisicas = Number(otimizada.physicalStopCount || global.PacoteEMatoServicoRota?.gruposFisicosPendentes?.(candidata)?.length || pendentes);
       candidata.distanciaGeometriaMetros = candidata.distanciaTotalMetros = distanciaGeometria;
       candidata.duracaoGeometriaSegundos = candidata.duracaoDirecaoSegundos = direcaoGeometria;
-      candidata.duracaoParadasSegundos = pendentes * Math.max(0, Number(candidata.tempoParadaSegundos || 0));
+      candidata.duracaoParadasSegundos = pendentesFisicas * Math.max(0, Number(candidata.tempoParadaSegundos || 0));
       candidata.duracaoTotalSegundos = direcaoGeometria + candidata.duracaoParadasSegundos;
       candidata.duracaoPlanejadorSegundos = null;
       candidata.horarioTerminoEstimado = Date.now() + candidata.duracaoTotalSegundos * 1000;
@@ -1513,7 +1514,9 @@
         tempoGeometriaSegundos: Number(feature.properties?.time || 0),
         trafegoPlanejamento: 'free_flow',
         geometriaSegmentada: route.segmentado === true,
-        segmentosGeometria: Number(route.segmentos || 1)
+        segmentosGeometria: Number(route.segmentos || 1),
+        paradasFisicasOtimizadas: Number(otimizada.physicalStopCount || pendentesFisicas),
+        entregasOtimizadas: Number(otimizada.deliveryCount || pendentes)
       };
 
       rotaAtual = candidata;

@@ -86,6 +86,20 @@ function uniqueCoordinateCount(points) {
   return keys.size;
 }
 
+function dedupeConsecutiveCoordinates(points) {
+  const out = [];
+  let last = '';
+  (points || []).forEach(point => {
+    if (!isCoordinate(point)) return;
+    const normalized = { lat: Number(point.lat), lon: Number(point.lon) };
+    const key = `${normalized.lat.toFixed(7)},${normalized.lon.toFixed(7)}`;
+    if (key === last) return;
+    out.push(normalized);
+    last = key;
+  });
+  return out;
+}
+
 function sanitizeResult(item) {
   const rank = item?.rank || {};
   const lat = item?.lat === null || item?.lat === undefined || String(item?.lat).trim() === '' ? NaN : Number(item.lat);
@@ -325,32 +339,46 @@ async function handleRoute(request, env, origin) {
   const body = await parseJson(request);
   if (!body) return json({ ok: false, error: 'invalid_json' }, 400, origin, env);
 
-  const points = Array.isArray(body.points) ? body.points : [];
-  if (points.length < 2 || points.length > 301 || points.some(p => !isCoordinate(p))) {
+  const rawPoints = Array.isArray(body.points) ? body.points : [];
+  if (rawPoints.length < 2 || rawPoints.length > 301 || rawPoints.some(p => !isCoordinate(p))) {
     return json({ ok: false, error: 'invalid_points' }, 400, origin, env);
+  }
+  const points = dedupeConsecutiveCoordinates(rawPoints);
+  if (points.length < 2) {
+    return json({ ok: false, error: 'invalid_points_repeated' }, 400, origin, env);
   }
 
   const mode = sanitizeMode(body.mode);
-  const providerUrl = new URL('https://api.geoapify.com/v1/routing');
-  providerUrl.searchParams.set('waypoints', points.map(p => `${Number(p.lat)},${Number(p.lon)}`).join('|'));
-  providerUrl.searchParams.set('mode', mode);
-  providerUrl.searchParams.set('type', ['balanced', 'short', 'less_maneuvers'].includes(body.type) ? body.type : 'balanced');
-  providerUrl.searchParams.set('traffic', body.traffic === 'free_flow' ? 'free_flow' : 'approximated');
-  providerUrl.searchParams.set('lang', 'pt-BR');
-  providerUrl.searchParams.set('details', 'instruction_details');
-  providerUrl.searchParams.set('apiKey', env.GEOAPIFY_API_KEY);
+  const requestedType = ['balanced', 'short', 'less_maneuvers'].includes(body.type) ? body.type : 'balanced';
+
+  async function requestRoute(routeType) {
+    const providerUrl = new URL('https://api.geoapify.com/v1/routing');
+    providerUrl.searchParams.set('waypoints', points.map(p => `${Number(p.lat)},${Number(p.lon)}`).join('|'));
+    providerUrl.searchParams.set('mode', mode);
+    providerUrl.searchParams.set('type', routeType);
+    providerUrl.searchParams.set('traffic', body.traffic === 'free_flow' ? 'free_flow' : 'approximated');
+    providerUrl.searchParams.set('lang', 'pt-BR');
+    providerUrl.searchParams.set('details', 'instruction_details');
+    providerUrl.searchParams.set('apiKey', env.GEOAPIFY_API_KEY);
+    return providerFetch(providerUrl.toString(), {
+      headers: { 'Accept': 'application/geo+json,application/json' }
+    }, 45000);
+  }
 
   let providerResponse;
   try {
-    providerResponse = await providerFetch(providerUrl.toString(), {
-      headers: { 'Accept': 'application/geo+json,application/json' }
-    }, 45000);
+    providerResponse = await requestRoute(requestedType);
+    if (!providerResponse.ok && requestedType !== 'balanced') {
+      providerResponse = await requestRoute('balanced');
+    }
   } catch (erro) {
     return json({ ok: false, error: erro?.name === 'AbortError' ? 'route_timeout' : 'route_unavailable' }, 502, origin, env);
   }
 
   if (!providerResponse.ok) {
-    return json({ ok: false, error: 'route_error', status: providerResponse.status }, 502, origin, env);
+    let detail = null;
+    try { detail = await providerResponse.json(); } catch (_) {}
+    return json({ ok: false, error: 'route_error', status: providerResponse.status, detail }, 502, origin, env);
   }
 
   const data = await providerResponse.json();

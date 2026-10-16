@@ -4,7 +4,7 @@ compatibility_date = "2026-10-08"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGINS = "https://joaovitor250p-cloud.github.io"
+ALLOWED_ORIGINS = "https://pacoteemato.github.io,https://joaovitor250p-cloud.github.io"
 
 # Nunca coloque GEOAPIFY_API_KEY aqui.
 # Configure como secret:

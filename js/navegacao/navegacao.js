@@ -103,9 +103,6 @@
     const anel = Math.ceil(indice / 8), angulo = ((indice - 1) % 8) * Math.PI / 4;
     return [Math.round(Math.cos(angulo)*44*anel), Math.round(Math.sin(angulo)*44*anel)];
   }
-  function chaveFisicaMarcador(p) {
-    return global.PacoteEMatoMarcadores?.chaveFisicaMarcador?.(p) || `id:${String(p?.id || '')}`;
-  }
 
   function haversine(a, b) {
     if (!a || !b) return Infinity;
