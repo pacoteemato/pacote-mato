@@ -1,3 +1,15 @@
+# Pacote É Mato V74 - Ponto final, refinamento por desenho e PDF
+
+Alterações desta versão (somente as solicitadas):
+
+- Ponto final opcional da rota (casa/base/outro destino) após a última entrega.
+- Refinar rota sem a opção “Otimizar automaticamente”.
+- Desenho livre real no mapa, sem preenchimento em formato de “bola” durante o gesto.
+- Vários grupos desenhados em sequência: Grupo 1, Grupo 2, Grupo 3...
+- Cartão automático de localização removido; ativação permanece em Configurações e a importação apenas orienta o usuário.
+- Exportação PDF com identidade Pacote É Mato, tabela verde/branca, sequência da rota e coluna SPX TN.
+- Leitor/Bipagem V73 preservados sem mudanças.
+
 # Pacote É Mato V71 - Bipagem/PDF robusta
 
 Esta versão troca a associação por proximidade por uma leitura estrutural e conservadora.
@@ -37,3 +49,5 @@ PDFs somente imagem/scan ainda dependem de OCR e não são tratados como texto c
 - As entregas sao renumeradas pela ordem visual do PDF somente depois de codigo/endereco estarem associados com seguranca.
 - PDFs sem BR podem montar rota/lista, mas a bipagem por codigo permanece desabilitada.
 - Identificacao visual: `LEITOR PDF V73` e `PACOTE E MATO · V73`.
+
+- Na navegação, depois da última entrega, o ponto final vira o destino ativo e o botão **Cheguei** encerra esse deslocamento antes do resumo final.

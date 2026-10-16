@@ -2625,12 +2625,12 @@ function tocarIntroPs2Audio() {
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    // V73 - marca a versão realmente carregada e remove resíduos de cache antigos.
+    // V74 - marca a versão realmente carregada; o leitor PDF permanece V73, sem alterações.
     // Isso ajuda a evitar que o WebView continue executando V69/V70 depois de
     // uma atualização do GitHub Pages. Não apaga dados operacionais do usuário.
     try {
-      window.PEMATO_BUILD = '73';
-      localStorage.setItem('pemato_build_carregado', '73');
+      window.PEMATO_BUILD = '74';
+      localStorage.setItem('pemato_build_carregado', '74');
       if ('caches' in window) {
         caches.keys().then(chaves => Promise.all(chaves.map(chave => caches.delete(chave)))).catch(() => {});
       }

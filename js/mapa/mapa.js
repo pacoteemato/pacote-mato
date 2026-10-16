@@ -23,6 +23,9 @@
   const SOURCE_START = 'pemato-start';
   const LAYER_START = 'pemato-start-circle';
   const LAYER_START_TEXT = 'pemato-start-label';
+  const SOURCE_END = 'pemato-end';
+  const LAYER_END = 'pemato-end-circle';
+  const LAYER_END_TEXT = 'pemato-end-label';
   const SOURCE_DRIVER = 'pemato-driver';
   const LAYER_DRIVER_RING = 'pemato-driver-ring';
   const LAYER_DRIVER = 'pemato-driver';
@@ -34,6 +37,11 @@
   let ponteiroDesenho = null;
   let overlayDesenho = null;
   let pathDesenho = null;
+  let grupoPathsDesenho = null;
+  let ultimoPoligonoDesenho = null;
+  let gruposDesenhoSalvos = [];
+  let idsGruposDesenho = new Set();
+  let renderGruposRaf = null;
 
   function $(id) { return document.getElementById(id); }
   function cfg() { return global.PEMATO_MAP_CONFIG || {}; }
@@ -140,7 +148,7 @@
           numbered: numerada ? 1 : 0,
           status: statusEntrega(p),
           selected: ids.includes(String(selectedId)) ? 1 : 0,
-          groupSelected: grupoVisual.some(item => idsSelecaoDesenho.has(String(item.id))) ? 1 : 0,
+          groupSelected: grupoVisual.some(item => idsSelecaoDesenho.has(String(item.id)) || idsGruposDesenho.has(String(item.id))) ? 1 : 0,
           multi: totalPacotes,
           stackIndex, markerOffset: [0,0]
         }
@@ -245,6 +253,7 @@
     adicionarSource(SOURCE_ROUTE_STATUS, featureCollection([]));
     adicionarSourceParadas();
     adicionarSource(SOURCE_START, featureCollection([]));
+    adicionarSource(SOURCE_END, featureCollection([]));
     adicionarSource(SOURCE_DRIVER, featureCollection([]));
     const before = antesDosRotulos();
 
@@ -312,6 +321,8 @@
     // Em estilo raster puro não há servidor de glyphs. O círculo de partida continua visível
     // e evita que uma camada de texto impeça a montagem das demais camadas do mapa.
     if (mapa.getStyle()?.glyphs && !mapa.getLayer(LAYER_START_TEXT)) mapa.addLayer({ id: LAYER_START_TEXT, type: 'symbol', source: SOURCE_START, layout: { 'text-field': 'P', 'text-size': 10, 'text-allow-overlap': true }, paint: { 'text-color': '#ffffff' } });
+    if (!mapa.getLayer(LAYER_END)) mapa.addLayer({ id: LAYER_END, type: 'circle', source: SOURCE_END, paint: { 'circle-radius': 11, 'circle-color': '#111827', 'circle-stroke-color': '#34a66f', 'circle-stroke-width': 4 } });
+    if (mapa.getStyle()?.glyphs && !mapa.getLayer(LAYER_END_TEXT)) mapa.addLayer({ id: LAYER_END_TEXT, type: 'symbol', source: SOURCE_END, layout: { 'text-field': 'F', 'text-size': 10, 'text-allow-overlap': true }, paint: { 'text-color': '#ffffff' } });
     if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id: LAYER_DRIVER_RING, type: 'circle', source: SOURCE_DRIVER, paint: { 'circle-radius': 12, 'circle-color': 'rgba(5,150,105,.16)', 'circle-stroke-color':'rgba(5,150,105,.35)', 'circle-stroke-width':1 } });
     if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id: LAYER_DRIVER, type: 'circle', source: SOURCE_DRIVER, paint: { 'circle-radius': 6, 'circle-color': '#059669', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2 } });
   }
@@ -333,6 +344,8 @@
       mapa.on('mouseenter', layerId, () => { try { mapa.getCanvas().style.cursor = 'pointer'; } catch (_) {} });
       mapa.on('mouseleave', layerId, () => { try { mapa.getCanvas().style.cursor = ''; } catch (_) {} });
     });
+    mapa.on('move', agendarRenderGruposDesenho);
+    mapa.on('resize', agendarRenderGruposDesenho);
   }
 
   function garantirMapa() {
@@ -446,6 +459,7 @@
     atualizarSource(SOURCE_STOPS, data);
   }
   function renderizarPartida() { atualizarSource(SOURCE_START, pointGeoJSON(state()?.pontoInicial, { type: 'start' })); }
+  function renderizarDestinoFinal() { atualizarSource(SOURCE_END, pointGeoJSON(state()?.pontoFinal, { type: 'end' })); }
   function renderizarMotorista() { atualizarSource(SOURCE_DRIVER, driverGeoJSON()); }
 
   function coordenadasGeometria(geometry) {
@@ -460,6 +474,8 @@
     paradas().filter(coordenadaValida).forEach(p => { bounds.extend([Number(p.longitude), Number(p.latitude)]); total++; });
     const start = state()?.pontoInicial;
     if (pontoValido(start)) { bounds.extend([Number(start.lon), Number(start.lat)]); total++; }
+    const end = state()?.pontoFinal;
+    if (pontoValido(end)) { bounds.extend([Number(end.lon), Number(end.lat)]); total++; }
     coordenadasGeometria(state()?.geometria).forEach(c => { bounds.extend(c); total++; });
     if (!total) return;
     try { mapa.fitBounds(bounds, { padding: { top: 84, right: 64, bottom: 150, left: 64 }, maxZoom: 16, duration: 500 }); fitFeito = true; }
@@ -527,7 +543,7 @@
     garantirMapa();
     if (!mapa || !pronto) return;
     try { mapa.resize(); } catch (_) {}
-    garantirCamadas(); renderizarMarcadores(); renderizarPartida(); renderizarMotorista(); atualizarRota();
+    garantirCamadas(); renderizarMarcadores(); renderizarPartida(); renderizarDestinoFinal(); renderizarMotorista(); atualizarRota();
     if (opcoes?.fit) ajustarTodos();
   }
 
@@ -564,6 +580,7 @@
   function limparSelecaoDesenho() {
     idsSelecaoDesenho.clear();
     pontosDesenho = [];
+    ultimoPoligonoDesenho = null;
     if (pathDesenho) pathDesenho.setAttribute('d', '');
     emitirSelecaoDesenho();
   }
@@ -608,6 +625,90 @@
     return melhor;
   }
 
+  function poligonoTelaParaGeo(pontos) {
+    if (!mapa || !Array.isArray(pontos)) return [];
+    return pontos.map(p => {
+      try {
+        const ll = mapa.unproject([Number(p.x), Number(p.y)]);
+        return { lon: Number(ll.lng), lat: Number(ll.lat) };
+      } catch (_) { return null; }
+    }).filter(p => Number.isFinite(p?.lon) && Number.isFinite(p?.lat));
+  }
+
+  function poligonoGeoParaTela(pontos) {
+    if (!mapa || !Array.isArray(pontos)) return [];
+    return pontos.map(p => {
+      try {
+        const t = mapa.project([Number(p.lon), Number(p.lat)]);
+        return { x: Number(t.x), y: Number(t.y) };
+      } catch (_) { return null; }
+    }).filter(p => Number.isFinite(p?.x) && Number.isFinite(p?.y));
+  }
+
+  function renderizarGruposDesenhoSalvos() {
+    if (!grupoPathsDesenho) return;
+    grupoPathsDesenho.replaceChildren();
+    const ns = 'http://www.w3.org/2000/svg';
+    gruposDesenhoSalvos.forEach((grupo, idx) => {
+      const tela = poligonoGeoParaTela(grupo.poligono || []);
+      if (tela.length < 3) return;
+      const path = document.createElementNS(ns, 'path');
+      path.setAttribute('class', 'routing-draw-saved-path');
+      path.setAttribute('d', caminhoSvg(tela, true));
+      path.setAttribute('data-group', String(grupo.numero || idx + 1));
+      grupoPathsDesenho.appendChild(path);
+      const centro = tela.reduce((acc, p) => ({ x: acc.x + p.x / tela.length, y: acc.y + p.y / tela.length }), { x: 0, y: 0 });
+      const label = document.createElementNS(ns, 'text');
+      label.setAttribute('class', 'routing-draw-group-label');
+      label.setAttribute('x', centro.x.toFixed(1));
+      label.setAttribute('y', centro.y.toFixed(1));
+      label.textContent = `G${grupo.numero || idx + 1}`;
+      grupoPathsDesenho.appendChild(label);
+    });
+  }
+
+  function agendarRenderGruposDesenho() {
+    if (renderGruposRaf != null) return;
+    renderGruposRaf = global.requestAnimationFrame(() => {
+      renderGruposRaf = null;
+      renderizarGruposDesenhoSalvos();
+    });
+  }
+
+  function salvarGrupoDesenho(opcoes) {
+    const ids = [...new Set((opcoes?.ids || [...idsSelecaoDesenho]).map(String))];
+    if (!ids.length || !Array.isArray(ultimoPoligonoDesenho) || ultimoPoligonoDesenho.length < 3) return null;
+    const grupo = {
+      numero: Number(opcoes?.numero || gruposDesenhoSalvos.length + 1),
+      ids,
+      poligono: ultimoPoligonoDesenho.map(p => ({ lon: Number(p.lon), lat: Number(p.lat) }))
+    };
+    gruposDesenhoSalvos.push(grupo);
+    ids.forEach(id => idsGruposDesenho.add(String(id)));
+    idsSelecaoDesenho.clear();
+    ultimoPoligonoDesenho = null;
+    pontosDesenho = [];
+    if (pathDesenho) pathDesenho.setAttribute('d', '');
+    renderizarGruposDesenhoSalvos();
+    emitirSelecaoDesenho();
+    return { numero: grupo.numero, ids: [...grupo.ids] };
+  }
+
+  function desfazerUltimoGrupoDesenho() {
+    const removido = gruposDesenhoSalvos.pop() || null;
+    idsGruposDesenho = new Set(gruposDesenhoSalvos.flatMap(g => g.ids || []).map(String));
+    renderizarGruposDesenhoSalvos();
+    emitirSelecaoDesenho();
+    return removido ? { numero: removido.numero, ids: [...removido.ids] } : null;
+  }
+
+  function limparGruposDesenho() {
+    gruposDesenhoSalvos = [];
+    idsGruposDesenho.clear();
+    renderizarGruposDesenhoSalvos();
+    limparSelecaoDesenho();
+  }
+
   function concluirDesenho() {
     if (!mapa || !pronto || !pontosDesenho.length) return;
     const deslocamento = pontosDesenho.reduce((total, p, i) => i ? total + distanciaPontos(pontosDesenho[i - 1], p) : 0, 0);
@@ -619,6 +720,7 @@
       return;
     }
     if (pathDesenho) pathDesenho.setAttribute('d', caminhoSvg(pontosDesenho, true));
+    ultimoPoligonoDesenho = poligonoTelaParaGeo(pontosDesenho);
     const selecionadas = [];
     paradas().filter(p => paradaPendente(p) && coordenadaValida(p)).forEach(p => {
       try {
@@ -632,6 +734,7 @@
   function bindOverlayDesenho() {
     overlayDesenho = $('routingDrawOverlay');
     pathDesenho = $('routingDrawPath');
+    grupoPathsDesenho = $('routingDrawSavedPaths');
     if (!overlayDesenho || overlayDesenho.dataset.bound === '1') return;
     overlayDesenho.dataset.bound = '1';
     overlayDesenho.addEventListener('pointerdown', event => {
@@ -639,6 +742,7 @@
       event.preventDefault();
       ponteiroDesenho = event.pointerId;
       pontosDesenho = [];
+      ultimoPoligonoDesenho = null;
       const p = pontoOverlay(event);
       if (p) pontosDesenho.push(p);
       if (pathDesenho) pathDesenho.setAttribute('d', caminhoSvg(pontosDesenho, false));
@@ -692,11 +796,17 @@
   function iniciarSelecaoDesenho(opcoes) {
     garantirMapa();
     selecaoDesenhoAtiva = true;
-    if (opcoes?.preservar !== true) idsSelecaoDesenho = new Set((opcoes?.ids || []).map(String));
+    if (opcoes?.preservar !== true) {
+      idsSelecaoDesenho = new Set((opcoes?.ids || []).map(String));
+      gruposDesenhoSalvos = [];
+      idsGruposDesenho.clear();
+      ultimoPoligonoDesenho = null;
+    }
     bindOverlayDesenho();
     document.querySelector('.routing-map-pane')?.classList.add('is-drawing');
     definirModoInteracaoSelecao(opcoes?.mode || 'draw');
     renderizarMarcadores();
+    renderizarGruposDesenhoSalvos();
     return [...idsSelecaoDesenho];
   }
 
@@ -709,7 +819,9 @@
     document.querySelector('.routing-map-pane')?.classList.remove('is-drawing');
     document.querySelector('.routing-workspace')?.classList.remove('is-draw-mode');
     try { mapa?.dragPan?.enable?.(); } catch (_) {}
-    if (opcoes?.limpar !== false) idsSelecaoDesenho.clear();
+    if (opcoes?.limpar !== false) { idsSelecaoDesenho.clear(); gruposDesenhoSalvos = []; idsGruposDesenho.clear(); }
+    ultimoPoligonoDesenho = null;
+    renderizarGruposDesenhoSalvos();
     emitirSelecaoDesenho();
   }
 
@@ -725,7 +837,7 @@
     clearTimeout(loadTimer); loadTimer = null;
     if (resizeObserver) { try { resizeObserver.disconnect(); } catch (_) {} resizeObserver = null; }
     if (mapa) { try { mapa.remove(); } catch (_) {} }
-    selecaoDesenhoAtiva = false; idsSelecaoDesenho.clear(); pontosDesenho = []; ponteiroDesenho = null;
+    selecaoDesenhoAtiva = false; idsSelecaoDesenho.clear(); idsGruposDesenho.clear(); gruposDesenhoSalvos = []; pontosDesenho = []; ultimoPoligonoDesenho = null; ponteiroDesenho = null;
     mapa = null; pronto = false; fitFeito = false; fallbackBaseAtivo = false;
   }
 
@@ -735,7 +847,8 @@
   global.PacoteEMatoMapa = Object.freeze({
     garantirMapa, renderizar, renderizarMarcadores, atualizarRota, ajustarTodos, ajustarParadasImportadas, centralizarParada, centralizarMinhaLocalizacao,
     iniciarSelecaoDesenho, encerrarSelecaoDesenho, definirModoInteracaoSelecao, limparSelecaoDesenho,
-    obterSelecaoDesenho: () => [...idsSelecaoDesenho], selecaoDesenhoAtiva: () => selecaoDesenhoAtiva,
+    salvarGrupoDesenho, desfazerUltimoGrupoDesenho, limparGruposDesenho,
+    obterSelecaoDesenho: () => [...idsSelecaoDesenho], obterGruposDesenho: () => gruposDesenhoSalvos.map(g => ({ numero:g.numero, ids:[...g.ids] })), selecaoDesenhoAtiva: () => selecaoDesenhoAtiva,
     destruir, coordenadaValida, geometriaValida, getMapa: () => mapa
   });
 })(window);

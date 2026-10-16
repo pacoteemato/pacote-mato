@@ -106,12 +106,14 @@
 
   async function iniciarAutomaticamente() {
     const p = await permissao();
-    if (p === 'granted') bloqueada = false;
-    if (p === 'denied') {
-      bloqueada = true;
-      salvar(null, 'negada');
+    if (p !== 'granted') {
+      if (p === 'denied') {
+        bloqueada = true;
+        salvar(null, 'negada');
+      }
       return null;
     }
+    bloqueada = false;
     try { return await obter({ forcar: false }); }
     catch (erro) {
       console.info('Pacote É Mato: localização automática não disponível.', erro?.message || erro);

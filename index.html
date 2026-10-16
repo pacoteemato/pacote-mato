@@ -13,7 +13,7 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b0b0d' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%3C/svg%3E">
   
   <!-- PWA Setup -->
-  <link rel="manifest" href="manifest.json?v=20261016-v73-1014">
+  <link rel="manifest" href="manifest.json?v=20261016-v74-1314">
   <meta name="theme-color" content="#000000" id="metaThemeColor">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,15 +37,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-    <link rel="stylesheet" href="css/style.css?v=20261016-v73-1014">
+    <link rel="stylesheet" href="css/style.css?v=20261016-v74-1314">
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
-    <link rel="stylesheet" href="css/mapa.css?v=20261016-v73-1014">
-    <link rel="stylesheet" href="css/app-shell.css?v=20261016-v73-1014">
-    <link rel="stylesheet" href="css/roteirizacao.css?v=20261016-v73-1014">
-  <link rel="stylesheet" href="css/importacao-fluxo.css?v=20261016-v73-1014">
-    <link rel="stylesheet" href="css/navegacao.css?v=20261016-v73-1014">
-    <link rel="stylesheet" href="css/theme-v15.css?v=20261016-v73-1014">
-    <link rel="stylesheet" href="css/operacoes-pacotes.css?v=20261016-v73-1014">
+    <link rel="stylesheet" href="css/mapa.css?v=20261016-v74-1314">
+    <link rel="stylesheet" href="css/app-shell.css?v=20261016-v74-1314">
+    <link rel="stylesheet" href="css/roteirizacao.css?v=20261016-v74-1314">
+  <link rel="stylesheet" href="css/importacao-fluxo.css?v=20261016-v74-1314">
+    <link rel="stylesheet" href="css/navegacao.css?v=20261016-v74-1314">
+    <link rel="stylesheet" href="css/theme-v15.css?v=20261016-v74-1314">
+    <link rel="stylesheet" href="css/operacoes-pacotes.css?v=20261016-v74-1314">
 
 
 
@@ -713,7 +713,7 @@
       <button type="button" data-pemato-nav="configuracoes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></svg><span><strong>Configurações</strong><small>Veículo e navegação</small></span><span class="sidebar-arrow">›</span></button>
       <button type="button" data-pemato-nav="historico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 5v5h5M12 7v5l3 2"/></svg><span><strong>Histórico de rotas</strong><small>Consulte suas entregas</small></span><span class="sidebar-arrow">›</span></button>
     </nav>
-    <footer class="sidebar-footer"><a class="sidebar-support" href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato">Precisa de ajuda? <strong>Fale com o suporte ↗</strong></a><button onclick="sairDoApp()" class="sidebar-signout" type="button">Desconectar conta</button><div class="sidebar-version">PACOTE É MATO · V73</div></footer>
+    <footer class="sidebar-footer"><a class="sidebar-support" href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato">Precisa de ajuda? <strong>Fale com o suporte ↗</strong></a><button onclick="sairDoApp()" class="sidebar-signout" type="button">Desconectar conta</button><div class="sidebar-version">PACOTE É MATO · V74</div></footer>
   </aside>
 
   <main id="moduloInicio" class="pemato-module" style="display:none" aria-hidden="true"></main>
@@ -806,22 +806,23 @@
         </div>
 
         <div id="mapaRoteirizacao"></div>
-        <svg id="routingDrawOverlay" class="routing-draw-overlay" aria-hidden="true"><path id="routingDrawPath"></path></svg>
+        <svg id="routingDrawOverlay" class="routing-draw-overlay" aria-hidden="true"><g id="routingDrawSavedPaths"></g><path id="routingDrawPath" class="routing-draw-current-path"></path></svg>
         <section id="routingDrawToolbar" class="routing-draw-toolbar" style="display:none" aria-live="polite">
           <div class="routing-draw-head">
             <div><strong>Organizar pelo mapa</strong><span id="routingDrawCount">0 paradas selecionadas</span></div>
             <button id="routingDrawCancelBtn" type="button" aria-label="Cancelar seleção">×</button>
           </div>
-          <p id="routingDrawHint">Desenhe ao redor das paradas. Um toque em um marcador adiciona ou remove somente aquela parada.</p>
+          <p id="routingDrawHint">Desenhe livremente com o dedo: círculo, quadrado ou qualquer contorno. Feche o desenho em volta das paradas, salve o Grupo 1 e desenhe o Grupo 2. A sequência dos grupos vira a sequência da rota.</p>
+          <div id="routingDrawGroups" class="routing-draw-groups" aria-live="polite"></div>
           <div class="routing-draw-tools">
             <button id="routingDrawInteractionBtn" class="pemato-secondary" type="button">Mover mapa</button>
-            <button id="routingDrawClearBtn" class="pemato-secondary" type="button">Limpar seleção</button>
-            <button id="routingDrawUndoBtn" class="pemato-secondary" type="button">Desfazer alteração</button>
+            <button id="routingDrawClearBtn" class="pemato-secondary" type="button">Limpar desenho atual</button>
+            <button id="routingDrawUndoGroupBtn" class="pemato-secondary" type="button">Desfazer último grupo</button>
           </div>
-          <div class="routing-draw-actions">
-            <button id="routingDrawNextGroupBtn" class="pemato-primary" type="button">Tornar grupo próximo</button>
-            <button id="routingDrawEndGroupBtn" class="pemato-secondary" type="button">Enviar grupo para o fim</button>
-            <button id="routingDrawSingleNextBtn" class="pemato-secondary" type="button">Definir próxima parada</button>
+          <div class="routing-draw-actions routing-draw-actions-groups">
+            <button id="routingDrawAddGroupBtn" class="pemato-secondary" type="button">Adicionar como Grupo 1</button>
+            <button id="routingDrawApplyGroupsBtn" class="pemato-primary" type="button">Aplicar sequência dos grupos</button>
+            <button id="routingDrawClearGroupsBtn" class="pemato-secondary" type="button">Limpar grupos</button>
           </div>
         </section>
         <div id="mapaRoteirizacaoFallback" class="route-map-fallback"></div>
@@ -886,6 +887,10 @@
           <button id="routingAddStopBtn" class="routing-action-row" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
             <span><strong>Adicionar parada</strong><small>Criar uma parada manualmente</small></span>
+          </button>
+          <button id="routingEndPointBtn" class="routing-action-row" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"></path><path d="M9.5 10.5h5M12 8v5"></path></svg>
+            <span><strong>Ponto final</strong><small>Ir para casa, base ou outro destino depois da última entrega</small></span>
           </button>
           <button id="routingOptimizeBtn" class="routing-action-row routing-service-action" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h5v5H5zM14 14h5v5h-5zM8 14c2-5 5-3 8-7"></path></svg>
@@ -958,6 +963,10 @@
           <span>Ponto de partida</span>
           <strong id="routingReviewStart">—</strong>
         </div>
+        <div class="routing-review-start routing-review-endpoint">
+          <span>Depois da última entrega</span>
+          <strong id="routingReviewEndPoint">Sem ponto final adicional</strong>
+        </div>
         <div class="routing-review-list" id="routingReviewStopsList"></div>
         <div class="routing-review-actions">
           <button id="routingReviewConfirmBtn" class="pemato-primary" type="button">Confirmar rota</button>
@@ -972,9 +981,8 @@
           <button id="routingRefineCloseBtn" class="routing-refine-close" type="button" aria-label="Fechar refinamento">×</button>
         </div>
         <span class="routing-refine-copy">Escolha apenas como deseja reorganizar as paradas pendentes.</span>
-        <button id="routingRefineAutoBtn" class="routing-refine-action" type="button"><strong>Otimizar automaticamente</strong><small>Recalcular a melhor sequência pelo serviço real de roteirização.</small></button>
         <button id="routingRefineInvertBtn" class="routing-refine-action" type="button"><strong>Inverter ordem</strong><small>Fazer a última parada pendente virar a primeira e inverter a sequência restante.</small></button>
-        <button id="routingRefineDrawBtn" class="routing-refine-action" type="button"><strong>Desenhar no mapa</strong><small>Selecionar no mapa quais paradas devem vir primeiro ou por último.</small></button>
+        <button id="routingRefineDrawBtn" class="routing-refine-action" type="button"><strong>Desenhar no mapa</strong><small>Desenhar livremente vários grupos. O primeiro desenho vira o primeiro grupo, o segundo desenho vira o segundo e assim por diante.</small></button>
         <button id="routingRefineUndoBtn" class="routing-refine-action routing-refine-undo" type="button"><strong>Desfazer última alteração</strong><small>Voltar à ordem anterior ao último refinamento manual.</small></button>
       </section>
     </div>
@@ -1413,51 +1421,54 @@
     </div>
   </div>
 
-  <div id="locationOnboardingBackdrop" class="location-onboarding-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="locationOnboardingTitle">
-    <section class="location-onboarding-card">
-      <img src="icon-192.png" alt="Pacote É Mato">
-      <span class="module-kicker">LOCALIZAÇÃO</span>
-      <h2 id="locationOnboardingTitle">Ative sua localização</h2>
-      <p>O Pacote É Mato usa sua posição para iniciar a rota no lugar certo, recentralizar o mapa e acompanhar a navegação.</p>
-      <div class="location-onboarding-note">Ao tocar em <strong>Ativar localização</strong>, o Android/WebView poderá mostrar a janela oficial de permissão.</div>
-      <button id="locationOnboardingEnable" class="pemato-primary" type="button">Ativar localização</button>
-      <button id="locationOnboardingLater" class="pemato-secondary" type="button">Continuar sem localização</button>
-      <small id="locationOnboardingStatus" class="location-onboarding-status"></small>
-    </section>
+  <div id="routingEndPointModal" class="modal-backdrop" style="display:none;z-index:12120">
+    <div class="route-decision-card routing-endpoint-card" role="dialog" aria-modal="true" aria-labelledby="routingEndPointTitle">
+      <div class="module-kicker">DESTINO FINAL</div>
+      <h3 id="routingEndPointTitle">Ponto final da rota</h3>
+      <p>Use para ir para casa, base, galpão ou qualquer outro destino depois da última entrega. Esse ponto não vira entrega e não entra na Bipagem.</p>
+      <label class="form-label-pro" for="routingEndPointInput">Endereço do ponto final</label>
+      <input id="routingEndPointInput" class="pemato-field" type="text" placeholder="Ex.: Rua Exemplo, 123, São Paulo" autocomplete="street-address">
+      <small id="routingEndPointStatus" class="settings-inline-status"></small>
+      <div class="route-decision-actions routing-endpoint-actions">
+        <button id="routingEndPointCancelBtn" class="pemato-secondary" type="button">Cancelar</button>
+        <button id="routingEndPointRemoveBtn" class="pemato-secondary" type="button">Remover ponto final</button>
+        <button id="routingEndPointSaveBtn" class="pemato-primary" type="button">Salvar ponto final</button>
+      </div>
+    </div>
   </div>
 
 
-  <script src="js/state.js?v=20261016-v73-1014"></script>
-  <script src="js/ui/dialog.js?v=20261016-v73-1014"></script>
-  <script src="js/app.js?v=20261016-v73-1014"></script>
-  <script src="js/suporte.js?v=20261016-v73-1014"></script>
-  <script src="js/diagnosticos/diagnostico-rota.js?v=20261016-v73-1014"></script>
-  <script src="js/diagnosticos/diagnostico-ui.js?v=20261016-v73-1014"></script>
-  <script src="js/paradas/compatibilidade-enderecos.js?v=20261016-v73-1014"></script>
+  <script src="js/state.js?v=20261016-v74-1314"></script>
+  <script src="js/ui/dialog.js?v=20261016-v74-1314"></script>
+  <script src="js/app.js?v=20261016-v74-1314"></script>
+  <script src="js/suporte.js?v=20261016-v74-1314"></script>
+  <script src="js/diagnosticos/diagnostico-rota.js?v=20261016-v74-1314"></script>
+  <script src="js/diagnosticos/diagnostico-ui.js?v=20261016-v74-1314"></script>
+  <script src="js/paradas/compatibilidade-enderecos.js?v=20261016-v74-1314"></script>
 
   <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-  <script src="js/mapa/config.js?v=20261016-v73-1014"></script>
-  <script src="js/mapa/cache-geocodificacao.js?v=20261016-v73-1014"></script>
-  <script src="js/mapa/geocodificacao.js?v=20261016-v73-1014"></script>
-  <script src="js/mapa/localizacao-atual.js?v=20261016-v73-1014"></script>
-  <script src="js/mapa/marcadores.js?v=20261016-v73-1014"></script>
-  <script src="js/mapa/mapa.js?v=20261016-v73-1014"></script>
+  <script src="js/mapa/config.js?v=20261016-v74-1314"></script>
+  <script src="js/mapa/cache-geocodificacao.js?v=20261016-v74-1314"></script>
+  <script src="js/mapa/geocodificacao.js?v=20261016-v74-1314"></script>
+  <script src="js/mapa/localizacao-atual.js?v=20261016-v74-1314"></script>
+  <script src="js/mapa/marcadores.js?v=20261016-v74-1314"></script>
+  <script src="js/mapa/mapa.js?v=20261016-v74-1314"></script>
 
-  <script src="js/core/rota-store.js?v=20261016-v73-1014"></script>
-  <script src="js/core/sessao-operacional.js?v=20261016-v73-1014"></script>
-  <script src="js/configuracoes/configuracoes.js?v=20261016-v73-1014"></script>
-  <script src="js/importacao/xlsx.js?v=20261016-v73-1014"></script>
-  <script src="js/importacao/fluxo-importacao.js?v=20261016-v73-1014"></script>
-  <script src="js/roteirizacao/servico-rota.js?v=20261016-v73-1014"></script>
-  <script src="js/exportacao/pdf-rota.js?v=20261016-v73-1014"></script>
-  <script src="js/roteirizacao/roteirizacao.js?v=20261016-v73-1014"></script>
-  <script src="js/historico/historico-rotas.js?v=20261016-v73-1014"></script>
-  <script src="js/bipagem/bipagem-area.js?v=20261016-v73-1014"></script>
-  <script src="js/bipagem/rota-ativa-bridge.js?v=20261016-v73-1014"></script>
-  <script src="js/bipagem/operacoes-pacotes.js?v=20261016-v73-1014"></script>
-  <script src="js/navegacao/navegacao.js?v=20261016-v73-1014"></script>
-  <script src="js/ui/location-onboarding.js?v=20261016-v73-1014"></script>
-  <script src="js/ui/app-shell.js?v=20261016-v73-1014"></script>
+  <script src="js/core/rota-store.js?v=20261016-v74-1314"></script>
+  <script src="js/core/sessao-operacional.js?v=20261016-v74-1314"></script>
+  <script src="js/configuracoes/configuracoes.js?v=20261016-v74-1314"></script>
+  <script src="js/importacao/xlsx.js?v=20261016-v74-1314"></script>
+  <script src="js/importacao/fluxo-importacao.js?v=20261016-v74-1314"></script>
+  <script src="js/roteirizacao/servico-rota.js?v=20261016-v74-1314"></script>
+  <script src="js/exportacao/pdf-rota.js?v=20261016-v74-1314"></script>
+  <script src="js/roteirizacao/roteirizacao.js?v=20261016-v74-1314"></script>
+  <script src="js/historico/historico-rotas.js?v=20261016-v74-1314"></script>
+  <script src="js/bipagem/bipagem-area.js?v=20261016-v74-1314"></script>
+  <script src="js/bipagem/rota-ativa-bridge.js?v=20261016-v74-1314"></script>
+  <script src="js/bipagem/operacoes-pacotes.js?v=20261016-v74-1314"></script>
+  <script src="js/navegacao/navegacao.js?v=20261016-v74-1314"></script>
+  <script src="js/ui/location-onboarding.js?v=20261016-v74-1314"></script>
+  <script src="js/ui/app-shell.js?v=20261016-v74-1314"></script>
 
 </body>
 </html>

@@ -175,6 +175,21 @@
     return ordemPendente[0] || null;
   }
 
+  function destinoFinalDaRota() {
+    if (!rota || rota.pontoFinalConcluidoEm) return null;
+    if (rota.retornarAoInicio === true && rota.pontoInicial && coordenadaValida(rota.pontoInicial.lat, rota.pontoInicial.lon)) {
+      return { tipo:'retorno', descricao: rota.pontoInicial.descricao || 'Ponto de partida', lat:Number(rota.pontoInicial.lat), lon:Number(rota.pontoInicial.lon) };
+    }
+    if (rota.pontoFinal && coordenadaValida(rota.pontoFinal.lat, rota.pontoFinal.lon)) {
+      return { tipo:'final', descricao: rota.pontoFinal.descricao || 'Ponto final', lat:Number(rota.pontoFinal.lat), lon:Number(rota.pontoFinal.lon) };
+    }
+    return null;
+  }
+
+  function emDestinoFinal() {
+    return ordemPendente.length === 0 && !!destinoFinalDaRota();
+  }
+
   function adicionarSource(id, data) {
     if (mapa.getSource(id)) return;
     const opcoes = { type:'geojson', data };
@@ -704,7 +719,28 @@
 
   function atualizarPainel() {
     atualizarTermino();
-    atualizarPendentes(); const p=paradasPorOrdem().find(s=>String(s.id)===String(cartaoSelecionadoId)) || proxima();
+    atualizarPendentes();
+    const destinoFinal = destinoFinalDaRota();
+    if (!ordemPendente.length && destinoFinal) {
+      if ($('navStopNumber')) $('navStopNumber').textContent = destinoFinal.tipo === 'retorno' ? 'RETORNO À BASE' : 'DESTINO FINAL';
+      if ($('navNextAddress')) $('navNextAddress').textContent = destinoFinal.descricao;
+      if ($('navNextComplement')) $('navNextComplement').textContent = 'Depois da última entrega · não faz parte da bipagem';
+      if ($('navCustomerObservationText')) $('navCustomerObservationText').textContent = 'Ponto final da rota. Toque em Cheguei quando encerrar o deslocamento.';
+      if ($('navCustomerObservation')) $('navCustomerObservation').classList.remove('is-empty');
+      if ($('navNextPackages')) $('navNextPackages').textContent = '0 pacotes';
+      if ($('navStopCard')) $('navStopCard').dataset.status = 'ponto_final';
+      const badge = $('navStopStatusBadge');
+      if (badge) { badge.className='nav-stop-status-badge is-pending'; badge.textContent='Destino final'; }
+      const entregar = $('navDeliveredBtn'); if (entregar) { entregar.style.display=''; entregar.textContent='Cheguei'; }
+      const falha = $('navNotDeliveredBtn'); if (falha) falha.style.display='none';
+      const desfazer = $('navUndoStatusBtn'); if (desfazer) desfazer.style.display='none';
+      const nota = $('navDeliveryNote'); if (nota) nota.value='';
+      if ($('navExtrasPanel')) $('navExtrasPanel').style.display='none';
+      if (global.appState?.navegacao) { global.appState.navegacao.paradaExibidaId=null; global.appState.navegacao.proximaParadaId=null; }
+      atualizarFontesPontos();
+      return;
+    }
+    const p=paradasPorOrdem().find(s=>String(s.id)===String(cartaoSelecionadoId)) || proxima();
     const pos=paradasPorOrdem().findIndex(s=>String(s.id)===String(p?.id));
     if($('navStopNumber')) $('navStopNumber').textContent=pos>=0?`PARADA ${String(pos+1).padStart(2,'0')}`:'SEM PARADA';
     if($('navNextAddress')) $('navNextAddress').textContent=p?.enderecoOriginal||'Nenhuma parada pendente';
@@ -744,11 +780,12 @@
 
   async function recalcular(motivo) {
     if(!rota||!ultimaPosicao||!global.PacoteEMatoServicoRota) return false;
-    atualizarPendentes(); if(!ordemPendente.length) return false;
+    atualizarPendentes();
+    const destinoFinal = destinoFinalDaRota();
+    if(!ordemPendente.length && !destinoFinal) return false;
     const points=[{lat:ultimaPosicao.lat,lon:ultimaPosicao.lon}];
     ordemPendente.forEach(p=>{if(coordenadaValida(p.latitude,p.longitude))points.push({lat:Number(p.latitude),lon:Number(p.longitude)});});
-    if(rota.retornarAoInicio&&rota.pontoInicial&&coordenadaValida(rota.pontoInicial.lat,rota.pontoInicial.lon))points.push({lat:Number(rota.pontoInicial.lat),lon:Number(rota.pontoInicial.lon)});
-    else if(rota.pontoFinal&&coordenadaValida(rota.pontoFinal.lat,rota.pontoFinal.lon))points.push({lat:Number(rota.pontoFinal.lat),lon:Number(rota.pontoFinal.lon)});
+    if(destinoFinal) points.push({lat:Number(destinoFinal.lat),lon:Number(destinoFinal.lon)});
     if(points.length<2) return false;
     const btn=$('navRecalculateBtn');
     const textoBtn=btn?.textContent||'Recalcular rota';
@@ -860,10 +897,11 @@
     }
   }
   async function abrirExterno(provider){
-    const p=paradasPorOrdem().find(s=>String(s.id)===String(cartaoSelecionadoId))||proxima();if(!p)return;
-    cartaoSelecionadoId=p.id;
+    const destino = emDestinoFinal() ? destinoFinalDaRota() : null;
+    const p=destino ? {id:'__PONTO_FINAL__',latitude:destino.lat,longitude:destino.lon,enderecoOriginal:destino.descricao} : (paradasPorOrdem().find(s=>String(s.id)===String(cartaoSelecionadoId))||proxima());if(!p)return;
+    if(!destino) cartaoSelecionadoId=p.id;
     await persistirSelecao({motivo:`abrir_${provider}`,navegacaoProvider:provider});
-    try{sessionStorage.setItem('pemato_parada_externa',String(p.id));sessionStorage.setItem('pemato_provider_externo',String(provider));}catch(_){}
+    try{if(!destino)sessionStorage.setItem('pemato_parada_externa',String(p.id));sessionStorage.setItem('pemato_provider_externo',String(provider));}catch(_){}
     const lat=Number(p.latitude),lon=Number(p.longitude), endereco=String(p.enderecoOriginal||'').trim();
     const coord=coordenadaValida(p.latitude,p.longitude)?`${lat},${lon}`:endereco;
     const ua=navigator.userAgent||''; const android=/Android/i.test(ua), ios=/iPhone|iPad|iPod/i.test(ua);
@@ -906,8 +944,26 @@
       animarCardParada('left');
       atualizarPainel(); desenharRota(); global.PacoteEMatoHistorico?.renderizar?.(); global.PacoteEMatoAppShell?.atualizarInicio?.();
       if(ordemPendente.length){if(global.PacoteEMatoServicoRota?.endpoint?.('route'))await recalcular('proxima');else {atualizarFontesPontos();desenharRota();}}
+      else if(destinoFinalDaRota()){
+        rota.status='ativa'; rota.conclusaoPendente=false;
+        await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});
+        atualizarPainel();
+        if(global.PacoteEMatoServicoRota?.endpoint?.('route')&&ultimaPosicao) await recalcular('ponto_final');
+        else {atualizarFontesPontos();desenharRota();}
+        global.notificar?.('Entregas concluídas. Agora siga até o ponto final da rota.');
+        falar('Entregas concluídas. Siga até o ponto final da rota.','route:final-destination');
+      }
       else{rota.status='aguardando_finalizacao';rota.conclusaoPendente=true;await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});mostrarConclusao();}
     }finally{processandoStatus=false;}
+  }
+
+  async function concluirPontoFinal(){
+    if(!rota||!emDestinoFinal())return;
+    rota.pontoFinalConcluidoEm=Date.now();
+    rota.status='aguardando_finalizacao';
+    rota.conclusaoPendente=true;
+    await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});
+    mostrarConclusao();
   }
 
   async function finalizarRota(){if(!rota)return;rota.status='concluida';rota.concluidoEm=Date.now();rota.conclusaoPendente=false;await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';await global.PacoteEMatoRotaStore.limparRotaAtiva();global.PacoteEMatoAppShell?.abrirModulo?.('historico');}
@@ -920,7 +976,7 @@
     await persistirSelecao({motivo:'navegacao_interna',navegacaoProvider:'pacote_emato'});
     definirAcompanhamento(true);
     if(watchId==null)iniciarGPS();
-    if($('navGpsStatus'))$('navGpsStatus').textContent='Navegação Pacote É Mato ativa';
+    if($('navGpsStatus'))$('navGpsStatus').textContent=emDestinoFinal()?'Navegando até o ponto final':'Navegação Pacote É Mato ativa';
     acompanharCamera(350);
   }
 
@@ -935,7 +991,7 @@
     iniciarGPS();
     if(pref!=='pacote_emato'&&$('navGpsStatus'))$('navGpsStatus').textContent=`GPS ativo · navegação preferida: ${pref==='waze'?'Waze':'Google Maps'}`;
     await persistirSelecao({motivo:'abrir_navegacao',navegacaoProvider:pref});
-    if(!ordemPendente.length)mostrarConclusao();
+    if(!ordemPendente.length && !destinoFinalDaRota())mostrarConclusao();
   }
 
   async function encerrar(){const ok=await global.PacoteEMatoDialog?.confirmar?.({titulo:'Sair da navegação?',mensagem:'A rota e todo o progresso serão preservados para você continuar depois.',confirmar:'Sair da navegação',cancelar:'Continuar na rota'});if(ok===false)return;pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};if(global.appState?.navegacao)global.appState.navegacao.ativa=false;global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');}
@@ -991,8 +1047,8 @@
     const badge=$('navStopStatusBadge'),delivery=$('navDeliveredBtn'),fail=$('navNotDeliveredBtn'),undo=$('navUndoStatusBtn');
     const status=String(p?.statusEntrega||'pendente'); const finalizado=['entregue','concluida','nao_entregue'].includes(status);
     if(badge){badge.className='nav-stop-status-badge'; if(status==='nao_entregue'){badge.classList.add('is-failed');badge.textContent='Não entregue';}else if(['entregue','concluida'].includes(status)){badge.classList.add('is-delivered');badge.textContent='Entregue';}else{badge.classList.add('is-pending');badge.textContent='Pendente';}}
-    if(delivery)delivery.style.display=finalizado?'none':'';
-    if(fail)fail.style.display=finalizado?'none':'';
+    if(delivery){delivery.style.display=finalizado?'none':'';delivery.textContent='Entregue';}
+    if(fail){fail.style.display=finalizado?'none':'';fail.textContent='Não entregue';}
     // O Desfazer pertence somente ao card de uma parada já tratada. Como a navegação
     // avança automaticamente após Entregue/Não entregue, ele não aparece na próxima parada.
     if(undo){undo.style.display=finalizado?'inline-flex':'none';undo.textContent=status==='nao_entregue'?'Desfazer não entrega':'Desfazer entrega';}
@@ -1033,7 +1089,7 @@
     $('navBackBtn')?.addEventListener('click',()=>global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao'));
     $('navUndoStatusBtn')?.addEventListener('click',desfazerStatusAtual);
     $('navNavigateBtn')?.addEventListener('click',navegarPreferido);
-    $('navDeliveredBtn')?.addEventListener('click',()=>salvarStatusParadaAtual('entregue'));
+    $('navDeliveredBtn')?.addEventListener('click',()=>emDestinoFinal()?concluirPontoFinal():salvarStatusParadaAtual('entregue'));
     $('navNotDeliveredBtn')?.addEventListener('click',()=>salvarStatusParadaAtual('nao_entregue'));
     $('navMoreBtn')?.addEventListener('click',abrirAcoesRota);
     $('navRouteActionsClose')?.addEventListener('click',fecharAcoesRota);

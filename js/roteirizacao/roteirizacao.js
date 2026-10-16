@@ -20,6 +20,7 @@
   let sugestaoEnderecoSelecionada = null;
   let buscaEnderecoTimer = null;
   let buscaEnderecoSeq = 0;
+  let gruposDesenhoRefino = [];
 
   function $(id) { return document.getElementById(id); }
 
@@ -85,7 +86,7 @@
     return mostrarTutorialUnico(
       'pemato_tutorial_refino_v58',
       'Como funciona o refinamento da rota',
-      'Refinar rota serve para ajustar somente as paradas pendentes. Você pode reorganizar pelo mapa, mover um grupo para ser o próximo, mandar um grupo para o fim ou inverter a ordem pendente. Depois do ajuste, o sistema recalcula a rota preservando o progresso já feito.'
+      'Refinar rota ajusta somente as paradas pendentes. Você pode inverter a ordem ou desenhar livremente vários grupos no mapa. O Grupo 1 vem primeiro, depois o Grupo 2 e assim por diante. Depois do ajuste, o sistema recalcula a rota preservando o progresso já feito.'
     );
   }
 
@@ -231,6 +232,9 @@
     if ($('routingReviewTotal')) $('routingReviewTotal').textContent = formatarTempo(rotaAtual.duracaoTotalSegundos);
     if ($('routingReviewEnd')) $('routingReviewEnd').textContent = horaLocal(rotaAtual.horarioTerminoEstimado);
     if ($('routingReviewStart')) $('routingReviewStart').textContent = rotaAtual.pontoInicial?.descricao || 'Ponto de partida';
+    if ($('routingReviewEndPoint')) $('routingReviewEndPoint').textContent = rotaAtual.retornarAoInicio === true
+      ? 'Retornar ao ponto de partida'
+      : (rotaAtual.pontoFinal?.descricao || 'Sem ponto final adicional');
 
     const list = $('routingReviewStopsList');
     if (list) {
@@ -321,11 +325,9 @@
   function atualizarBotoesRefino() {
     const temRota = !!rotaAtual?.geometria;
     const historico = Array.isArray(rotaAtual?.historicoRefino) ? rotaAtual.historicoRefino : [];
-    if ($('routingRefineAutoBtn')) $('routingRefineAutoBtn').disabled = !rotaAtual?.paradas?.length;
     if ($('routingRefineInvertBtn')) $('routingRefineInvertBtn').disabled = !temRota;
     if ($('routingRefineDrawBtn')) $('routingRefineDrawBtn').disabled = !temRota;
     if ($('routingRefineUndoBtn')) $('routingRefineUndoBtn').disabled = !historico.length;
-    if ($('routingDrawUndoBtn')) $('routingDrawUndoBtn').disabled = !historico.length;
   }
 
   function atualizarIndicesOrdem() {
@@ -456,13 +458,45 @@
     await otimizarRota({ refinamento: true });
   }
 
+  function idsPendentesOrdenados() {
+    if (!rotaAtual) return [];
+    const byId = new Map((rotaAtual.paradas || []).map(p => [String(p.id), p]));
+    return (rotaAtual.ordem || []).map(String).filter(id => !paradaFinalizada(byId.get(id)));
+  }
+
+  function atualizarResumoGruposDesenho() {
+    const host = $('routingDrawGroups');
+    if (host) {
+      host.replaceChildren();
+      gruposDesenhoRefino.forEach((grupo, index) => {
+        const chip = document.createElement('span');
+        chip.className = 'routing-draw-group-chip';
+        chip.innerHTML = `<strong>Grupo ${index + 1}</strong> · ${grupo.length} ${grupo.length === 1 ? 'parada' : 'paradas'}`;
+        host.appendChild(chip);
+      });
+    }
+    const proximoNumero = gruposDesenhoRefino.length + 1;
+    const btnAdicionar = $('routingDrawAddGroupBtn');
+    if (btnAdicionar) btnAdicionar.textContent = `Adicionar como Grupo ${proximoNumero}`;
+    const btnAplicar = $('routingDrawApplyGroupsBtn');
+    if (btnAplicar) btnAplicar.disabled = gruposDesenhoRefino.length < 1 && !(global.PacoteEMatoMapa?.obterSelecaoDesenho?.().length);
+    const btnUndo = $('routingDrawUndoGroupBtn');
+    if (btnUndo) btnUndo.disabled = gruposDesenhoRefino.length < 1;
+    const btnClear = $('routingDrawClearGroupsBtn');
+    if (btnClear) btnClear.disabled = gruposDesenhoRefino.length < 1;
+  }
+
   function atualizarToolbarDesenho(detail) {
     const count = Number(detail?.count ?? global.PacoteEMatoMapa?.obterSelecaoDesenho?.().length ?? 0);
-    if ($('routingDrawCount')) $('routingDrawCount').textContent = `${count} ${count === 1 ? 'parada selecionada' : 'paradas selecionadas'}`;
-    ['routingDrawNextGroupBtn','routingDrawEndGroupBtn'].forEach(id => { if ($(id)) $(id).disabled = count < 1; });
-    if ($('routingDrawSingleNextBtn')) $('routingDrawSingleNextBtn').disabled = count !== 1;
+    if ($('routingDrawCount')) {
+      const grupos = gruposDesenhoRefino.length;
+      const atual = `${count} ${count === 1 ? 'parada no desenho atual' : 'paradas no desenho atual'}`;
+      $('routingDrawCount').textContent = grupos ? `${atual} · ${grupos} ${grupos === 1 ? 'grupo salvo' : 'grupos salvos'}` : atual;
+    }
+    if ($('routingDrawAddGroupBtn')) $('routingDrawAddGroupBtn').disabled = count < 1;
     const mode = detail?.mode || 'draw';
     if ($('routingDrawInteractionBtn')) $('routingDrawInteractionBtn').textContent = mode === 'draw' ? 'Mover mapa' : 'Voltar a desenhar';
+    atualizarResumoGruposDesenho();
     atualizarBotoesRefino();
   }
 
@@ -473,6 +507,7 @@
     fecharRefinoStandalone();
     fecharRevisaoOtimizacao();
     fecharMenuAcoes();
+    gruposDesenhoRefino = [];
     estadoPainelAntesDesenho = estadoPainel;
     definirEstadoPainel('collapsed');
     $('routingWorkspace')?.classList.add('is-draw-mode');
@@ -484,6 +519,7 @@
 
   function cancelarRefinoDesenho(opcoes) {
     global.PacoteEMatoMapa?.encerrarSelecaoDesenho?.({ limpar: true });
+    gruposDesenhoRefino = [];
     $('routingWorkspace')?.classList.remove('is-draw-mode');
     if ($('routingDrawToolbar')) $('routingDrawToolbar').style.display = 'none';
     if (estadoPainelAntesDesenho && opcoes?.restaurarPainel !== false) definirEstadoPainel(estadoPainelAntesDesenho);
@@ -491,23 +527,58 @@
     if (opcoes?.reabrir !== false && rotaAtual?.geometria) abrirRefinoStandalone();
   }
 
-  async function aplicarSelecaoDesenho(destino) {
-    if (!rotaAtual) return;
+  function adicionarGrupoDesenho() {
+    if (!rotaAtual) return false;
     const selecionados = new Set((global.PacoteEMatoMapa?.obterSelecaoDesenho?.() || []).map(String));
-    const byId = new Map((rotaAtual.paradas || []).map(p => [String(p.id), p]));
-    const pendentes = (rotaAtual.ordem || []).map(String).filter(id => !paradaFinalizada(byId.get(id)));
-    const grupo = pendentes.filter(id => selecionados.has(id));
-    if (!grupo.length) return notificar('Selecione pelo menos uma parada no mapa.');
-    if (destino === 'proxima' && grupo.length !== 1) return notificar('Para definir uma única próxima parada, selecione somente um marcador.');
-    const demais = pendentes.filter(id => !selecionados.has(id));
-    const novaPendentes = destino === 'fim' ? [...demais, ...grupo] : [...grupo, ...demais];
-    const novaOrdem = reconstruirComPendentes(novaPendentes);
-    const texto = destino === 'fim'
-      ? `${grupo.length} parada(s) foram movidas para o fim das pendentes.`
-      : destino === 'proxima'
-        ? 'A parada selecionada agora é a próxima pendente.'
-        : `${grupo.length} parada(s) foram colocadas antes das demais pendentes.`;
-    const ok = await aplicarOrdemRefinada(novaOrdem, `desenho_${destino}`, texto, { abrirRevisao: false });
+    if (!selecionados.size) { notificar('Desenhe ao redor das paradas que formarão o próximo grupo.'); return false; }
+    const jaUsados = new Set(gruposDesenhoRefino.flat().map(String));
+    const grupo = idsPendentesOrdenados().filter(id => selecionados.has(id) && !jaUsados.has(id));
+    if (!grupo.length) { notificar('Todas as paradas desse desenho já estão em grupos anteriores.'); return false; }
+    const numero = gruposDesenhoRefino.length + 1;
+    const salvo = global.PacoteEMatoMapa?.salvarGrupoDesenho?.({ numero, ids: grupo });
+    if (!salvo) { notificar('Feche um desenho ao redor das paradas antes de salvar o grupo.'); return false; }
+    gruposDesenhoRefino.push(grupo);
+    atualizarToolbarDesenho({ count: 0, mode: 'draw' });
+    notificar(`Grupo ${numero} salvo com ${grupo.length} ${grupo.length === 1 ? 'parada' : 'paradas'}. Desenhe o próximo grupo.`);
+    return true;
+  }
+
+  function desfazerUltimoGrupoDesenho() {
+    if (!gruposDesenhoRefino.length) return notificar('Ainda não há grupo desenhado para desfazer.');
+    const numero = gruposDesenhoRefino.length;
+    gruposDesenhoRefino.pop();
+    global.PacoteEMatoMapa?.desfazerUltimoGrupoDesenho?.();
+    atualizarToolbarDesenho({ count: global.PacoteEMatoMapa?.obterSelecaoDesenho?.().length || 0, mode: 'draw' });
+    notificar(`Grupo ${numero} removido.`);
+  }
+
+  function limparGruposDesenho() {
+    gruposDesenhoRefino = [];
+    global.PacoteEMatoMapa?.limparGruposDesenho?.();
+    atualizarToolbarDesenho({ count: 0, mode: 'draw' });
+  }
+
+  async function aplicarGruposDesenho() {
+    if (!rotaAtual) return;
+    if ((global.PacoteEMatoMapa?.obterSelecaoDesenho?.() || []).length) adicionarGrupoDesenho();
+    if (!gruposDesenhoRefino.length) return notificar('Desenhe e salve pelo menos um grupo antes de aplicar a sequência.');
+    const pendentes = idsPendentesOrdenados();
+    const pendentesSet = new Set(pendentes);
+    const usados = new Set();
+    const sequencia = [];
+    gruposDesenhoRefino.forEach(grupo => grupo.forEach(id => {
+      const key = String(id);
+      if (pendentesSet.has(key) && !usados.has(key)) { usados.add(key); sequencia.push(key); }
+    }));
+    pendentes.forEach(id => { if (!usados.has(id)) sequencia.push(id); });
+    const novaOrdem = reconstruirComPendentes(sequencia);
+    const quantidadeGrupos = gruposDesenhoRefino.length;
+    const ok = await aplicarOrdemRefinada(
+      novaOrdem,
+      'desenho_grupos',
+      `${quantidadeGrupos} ${quantidadeGrupos === 1 ? 'grupo desenhado foi aplicado' : 'grupos desenhados foram aplicados'} na sequência escolhida.`,
+      { abrirRevisao: false }
+    );
     if (ok) {
       cancelarRefinoDesenho({ reabrir: false });
       abrirRefinoStandalone();
@@ -1921,6 +1992,94 @@
     await global.PacoteEMatoAppShell?.abrirModulo?.('navegacao');
   }
 
+  function abrirPontoFinal() {
+    if (!rotaAtual) return;
+    fecharMenuAcoes();
+    const modal = $('routingEndPointModal');
+    const input = $('routingEndPointInput');
+    if (input) input.value = rotaAtual.pontoFinal?.descricao || '';
+    const status = $('routingEndPointStatus');
+    if (status) {
+      status.textContent = rotaAtual.pontoFinal?.descricao
+        ? `Atual: ${rotaAtual.pontoFinal.descricao}`
+        : 'Nenhum ponto final adicional definido.';
+      status.dataset.status = rotaAtual.pontoFinal ? 'ok' : 'warning';
+    }
+    if ($('routingEndPointRemoveBtn')) $('routingEndPointRemoveBtn').disabled = !rotaAtual.pontoFinal;
+    if (modal) modal.style.display = 'flex';
+    registrarRetornoInterno('ponto_final');
+    setTimeout(() => input?.focus?.(), 0);
+  }
+
+  function fecharPontoFinal() {
+    const modal = $('routingEndPointModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function salvarPontoFinal() {
+    if (!rotaAtual) return;
+    const texto = String($('routingEndPointInput')?.value || '').trim();
+    const status = $('routingEndPointStatus');
+    if (!texto) {
+      if (status) { status.textContent = 'Informe o endereço do ponto final.'; status.dataset.status = 'warning'; }
+      return;
+    }
+    const btn = $('routingEndPointSaveBtn');
+    if (btn) btn.disabled = true;
+    if (status) { status.textContent = 'Localizando o ponto final...'; delete status.dataset.status; }
+    try {
+      if (!global.PacoteEMatoGeocodificacao?.geocodificarEnderecoLivre) throw new Error('Serviço de localização de endereço indisponível.');
+      const p = await global.PacoteEMatoGeocodificacao.geocodificarEnderecoLivre(texto);
+      if (p?.statusGeocodificacao !== 'ok' || !coordenadaValida(p.latitude, p.longitude)) {
+        throw new Error('Não foi possível confirmar esse endereço. Revise o ponto final e tente novamente.');
+      }
+      rotaAtual.pontoFinal = { tipo: 'endereco', descricao: texto, lat: Number(p.latitude), lon: Number(p.longitude), status: 'ok' };
+      rotaAtual.pontoFinalConcluidoEm = null;
+      rotaAtual.retornarAoInicio = false;
+      invalidarRotaCalculada();
+      rotaAtual.precisaRecalculo = true;
+      rotaAtual.alteradoEm = Date.now();
+      await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
+      renderizarTudo({ fit: true });
+      fecharPontoFinal();
+      notificar('Ponto final salvo. Recalcule ou otimize a rota para incluir esse destino depois da última entrega.');
+    } catch (erro) {
+      if (status) { status.textContent = erro?.message || 'Não foi possível salvar o ponto final.'; status.dataset.status = 'error'; }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function removerPontoFinal() {
+    if (!rotaAtual?.pontoFinal) return fecharPontoFinal();
+    rotaAtual.pontoFinal = null;
+    rotaAtual.pontoFinalConcluidoEm = null;
+    invalidarRotaCalculada();
+    rotaAtual.precisaRecalculo = true;
+    rotaAtual.alteradoEm = Date.now();
+    await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
+    renderizarTudo({ fit: true });
+    fecharPontoFinal();
+    notificar('Ponto final removido da rota.');
+  }
+
+  async function avisarLocalizacaoAntesImportar() {
+    let permissao = 'desconhecida';
+    try { permissao = await global.PacoteEMatoLocalizacaoAtual?.permissao?.() || 'desconhecida'; } catch (_) {}
+    if (permissao === 'granted') return true;
+    const abrirConfig = await global.PacoteEMatoDialog?.confirmar?.({
+      titulo: 'Ative a localização nas Configurações',
+      mensagem: 'A localização ainda não está ativa. Para o Pacote É Mato iniciar a rota na sua posição, abra Configurações > Localização e toque em Ativar localização. A importação pode continuar sem GPS se você preferir.',
+      confirmar: 'Abrir configurações',
+      cancelar: 'Continuar sem localização'
+    });
+    if (abrirConfig === true) {
+      await global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes');
+      return false;
+    }
+    return true;
+  }
+
   async function exportarPdf() {
     if (!rotaAtual) return;
     try { await global.PacoteEMatoPDF?.exportar?.(rotaAtual); }
@@ -1932,8 +2091,9 @@
   }
 
   function bind() {
-    const abrirImportacao = () => {
+    const abrirImportacao = async () => {
       fecharMenuAcoes();
+      if (await avisarLocalizacaoAntesImportar() === false) return;
       const input = $('routingXlsxInput');
       if (!input) return definirStatusImportacao('Seletor de planilha não encontrado. Recarregue a página.', 'error');
       input.click();
@@ -1943,6 +2103,7 @@
     $('routingEmptyImportBtn')?.addEventListener('click', abrirImportacao);
     $('routingXlsxInput')?.addEventListener('change', event => importarArquivo(event.target.files?.[0]));
     $('routingAddStopBtn')?.addEventListener('click', () => { fecharMenuAcoes(); abrirEditor(null); });
+    $('routingEndPointBtn')?.addEventListener('click', abrirPontoFinal);
     $('routingNewRouteBtn')?.addEventListener('click', criarNovaRotaVazia);
     $('routingClearRoutesBtn')?.addEventListener('click', removerTodasRotas);
     $('routeImportAppendBtn')?.addEventListener('click', () => concluirModoImportacao('adicionar'));
@@ -1973,17 +2134,21 @@
     $('routingRefineCloseBtn')?.addEventListener('click', fecharRefinoStandalone);
     const refinePanel = $('routingRefinePanel');
     ['touchmove','wheel'].forEach(tipo => refinePanel?.addEventListener(tipo, event => event.stopPropagation(), { passive: true }));
-    $('routingRefineAutoBtn')?.addEventListener('click', otimizarAutomaticamenteRefino);
     $('routingRefineInvertBtn')?.addEventListener('click', inverterRota);
     $('routingRefineDrawBtn')?.addEventListener('click', iniciarRefinoDesenho);
     $('routingRefineUndoBtn')?.addEventListener('click', desfazerUltimoRefino);
     $('routingOptimizationReviewBackdrop')?.addEventListener('click', event => { if (event.target === $('routingOptimizationReviewBackdrop')) fecharRevisaoOtimizacao(); });
+    $('routingEndPointCancelBtn')?.addEventListener('click', fecharPontoFinal);
+    $('routingEndPointSaveBtn')?.addEventListener('click', salvarPontoFinal);
+    $('routingEndPointRemoveBtn')?.addEventListener('click', removerPontoFinal);
+    $('routingEndPointModal')?.addEventListener('click', event => { if (event.target === $('routingEndPointModal')) fecharPontoFinal(); });
+    $('routingEndPointInput')?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); salvarPontoFinal(); } });
     $('routingDrawCancelBtn')?.addEventListener('click', () => cancelarRefinoDesenho({ reabrir: true }));
     $('routingDrawClearBtn')?.addEventListener('click', () => global.PacoteEMatoMapa?.limparSelecaoDesenho?.());
-    $('routingDrawUndoBtn')?.addEventListener('click', desfazerUltimoRefino);
-    $('routingDrawNextGroupBtn')?.addEventListener('click', () => aplicarSelecaoDesenho('inicio'));
-    $('routingDrawEndGroupBtn')?.addEventListener('click', () => aplicarSelecaoDesenho('fim'));
-    $('routingDrawSingleNextBtn')?.addEventListener('click', () => aplicarSelecaoDesenho('proxima'));
+    $('routingDrawAddGroupBtn')?.addEventListener('click', adicionarGrupoDesenho);
+    $('routingDrawApplyGroupsBtn')?.addEventListener('click', aplicarGruposDesenho);
+    $('routingDrawUndoGroupBtn')?.addEventListener('click', desfazerUltimoGrupoDesenho);
+    $('routingDrawClearGroupsBtn')?.addEventListener('click', limparGruposDesenho);
     $('routingDrawInteractionBtn')?.addEventListener('click', () => {
       const atual = $('routingDrawInteractionBtn')?.textContent === 'Mover mapa' ? 'draw' : 'pan';
       const proximo = atual === 'draw' ? 'pan' : 'draw';
@@ -2113,7 +2278,7 @@
     abrirEscolhaPacotes,
     abrirRevisaoOtimizacao,
     iniciarRefinoDesenho,
-    aplicarSelecaoDesenho,
+    aplicarGruposDesenho,
     cancelarRefinoDesenho,
     desfazerUltimoRefino,
     criarNovaRotaVazia,
