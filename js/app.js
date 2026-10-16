@@ -3373,6 +3373,243 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
 
 
+
+    // V70 - leitor de PDF por ancoras, sem depender de coluna fixa.
+    // Endereco, codigo, numero da parada e horario podem aparecer em qualquer X da pagina.
+    // A associacao usa a proximidade vertical/ordem de leitura e validacao semantica.
+    function extrairRegistrosPdfPosicaoLivre(itensOriginais, pagina, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').replace(/\s+/g, ' ').trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(item => item.str);
+
+      if (!itens.length) return [];
+
+      function agruparPorY(tolerancia = 4.5) {
+        const ordenados = itens.slice().sort((a, b) => {
+          if (Math.abs(a.y - b.y) <= tolerancia) return a.x - b.x;
+          return b.y - a.y;
+        });
+        const grupos = [];
+        for (const item of ordenados) {
+          let melhor = null;
+          let melhorDist = Infinity;
+          for (const grupo of grupos) {
+            const dist = Math.abs(grupo.y - item.y);
+            if (dist <= tolerancia && dist < melhorDist) {
+              melhor = grupo;
+              melhorDist = dist;
+            }
+          }
+          if (!melhor) {
+            melhor = { y: item.y, itens: [] };
+            grupos.push(melhor);
+          }
+          melhor.itens.push(item);
+          melhor.y = melhor.itens.reduce((soma, atual) => soma + atual.y, 0) / melhor.itens.length;
+        }
+        return grupos
+          .map(g => ({
+            y: g.y,
+            itens: g.itens.slice().sort((a, b) => a.x - b.x),
+            texto: g.itens.slice().sort((a, b) => a.x - b.x).map(i => i.str).join(' ').replace(/\s+/g, ' ').trim(),
+            indice: Math.round(g.itens.reduce((soma, atual) => soma + atual.indice, 0) / Math.max(1, g.itens.length))
+          }))
+          .sort((a, b) => b.y - a.y);
+      }
+
+      const grupos = agruparPorY(4.5);
+      const gaps = [];
+      for (let i = 0; i < grupos.length - 1; i++) {
+        const d = Math.abs(grupos[i].y - grupos[i + 1].y);
+        if (d > 2 && d < 80) gaps.push(d);
+      }
+      gaps.sort((a,b)=>a-b);
+      const gapMediano = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 18;
+      const distanciaJanela = Math.max(14, Math.min(34, gapMediano * 1.25));
+
+      function textoJanela(indices) {
+        return indices
+          .filter(i => i >= 0 && i < grupos.length)
+          .flatMap(i => grupos[i].itens)
+          .slice()
+          .sort((a, b) => {
+            if (Math.abs(a.y - b.y) <= 4.5) return a.x - b.x;
+            return b.y - a.y;
+          })
+          .map(i => i.str)
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function limparEnderecoLivre(texto) {
+        let t = String(texto || '').replace(/\s+/g, ' ').trim();
+        if (!t) return '';
+
+        // Remove codigos completos e prefixos quebrados em qualquer posicao da linha.
+        t = t
+          .replace(/B[\s._-]*R[\s._-]*(?:\d[\s._-]*){12}[A-Z0-9]/gi, ' ')
+          .replace(/B[\s._-]*R[\s._-]*(?:\d[\s._-]*){12}(?![A-Z0-9])/gi, ' ')
+          .replace(/\b(?:Estimated\s+Arrival\s+Time|Arrival\s+Time|Address|Endere[cç]o|Notes?|Notas?|Tempo)\b/gi, ' ')
+          .replace(/\b\d{1,2}:\d{2}(?:\s*(?:AM|PM))?\b/gi, ' ')
+          .replace(/[|]+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        // Comeca no primeiro logradouro reconhecivel, esteja ele onde estiver no texto.
+        const inicioVia = t.search(/\b(?:Rua|R\.?|Avenida|Av\.?|Alameda|Travessa|Estrada|Rodovia|Pra[cç]a|Largo|Viela|Passagem)\b/i);
+        if (inicioVia >= 0) t = t.slice(inicioVia).trim();
+
+        // Numero de parada pode ter ficado no inicio.
+        t = t.replace(/^\s*\d{1,4}\s+(?=(?:Rua|R\.?|Avenida|Av\.?|Alameda|Travessa|Estrada|Rodovia|Pra[cç]a|Largo|Viela|Passagem)\b)/i, '');
+        t = t.replace(/^\s*(?:Stop|Parada)\s*#?\s*\d{1,4}\s*[:\-]?\s*/i, '');
+        t = t.replace(/\bS(?:ã|a)o\s+Paul\s+o\b/gi, 'São Paulo');
+        t = t.replace(/\s+/g, ' ').trim();
+
+        // Se sobrou um fragmento isolado de Notes no final, corta apenas quando
+        // o endereco ja e valido sem esse ultimo caractere.
+        const semFinal = t.replace(/\s+[A-Z0-9]\s*[;:]?$/i, '').trim();
+        if (semFinal !== t && decomporEnderecorota(semFinal)) t = semFinal;
+
+        return decomporEnderecorota(t) ? t : '';
+      }
+
+      function numeroExplicito(texto) {
+        const t = String(texto || '').trim();
+        let m = t.match(/^\s*(\d{1,4})\s+(?=(?:Rua|R\.?|Avenida|Av\.?|Alameda|Travessa|Estrada|Rodovia|Pra[cç]a|Largo|Viela|Passagem)\b)/i);
+        if (!m) m = t.match(/\b(?:Stop|Parada)\s*#?\s*(\d{1,4})\b/i);
+        const n = m ? Number(m[1]) : null;
+        return Number.isFinite(n) && n > 0 ? n : null;
+      }
+
+      // 1) Candidatos de endereco: linha isolada e janelas de linhas adjacentes.
+      const enderecos = [];
+      const chavesEndereco = new Set();
+      for (let i = 0; i < grupos.length; i++) {
+        const janelas = [[i]];
+        if (i + 1 < grupos.length && Math.abs(grupos[i].y - grupos[i + 1].y) <= distanciaJanela) janelas.push([i, i + 1]);
+        if (i > 0 && Math.abs(grupos[i - 1].y - grupos[i].y) <= distanciaJanela) janelas.push([i - 1, i]);
+        if (
+          i + 2 < grupos.length &&
+          Math.abs(grupos[i].y - grupos[i + 1].y) <= distanciaJanela &&
+          Math.abs(grupos[i + 1].y - grupos[i + 2].y) <= distanciaJanela
+        ) janelas.push([i, i + 1, i + 2]);
+
+        for (const js of janelas) {
+          const bruto = textoJanela(js);
+          const endereco = limparEnderecoLivre(bruto);
+          if (!endereco) continue;
+
+          const ys = js.map(k => grupos[k].y);
+          const y = ys.reduce((a,b)=>a+b,0) / ys.length;
+          const indice = Math.round(js.map(k => grupos[k].indice).reduce((a,b)=>a+b,0) / js.length);
+          const numero = numeroExplicito(bruto);
+          const chave = `${normalizarEndereco(endereco)}|${Math.round(y / 3)}`;
+          if (chavesEndereco.has(chave)) continue;
+          chavesEndereco.add(chave);
+          enderecos.push({ endereco, y, indice, numero });
+        }
+      }
+
+      if (!enderecos.length) return [];
+
+      // 2) Ancora de codigo. Primeiro aceita codigos completos em qualquer lugar.
+      // Depois reconstrói BR+12 digitos com o caractere final em outro item/linha.
+      const codigos = new Map();
+      function registrarCodigo(codigo, y, indice, prioridade = 1) {
+        const normal = normalizarCodigoPacoteBr(codigo);
+        if (!normal) return;
+        const atual = codigos.get(normal);
+        if (!atual || prioridade > atual.prioridade) codigos.set(normal, { codigo: normal, y, indice, prioridade });
+      }
+
+      for (const grupo of grupos) {
+        extrairCodigosBrFlexiveis(grupo.texto).forEach(c => registrarCodigo(c, grupo.y, grupo.indice, 3));
+      }
+
+      // Codigos partidos em linhas sao reconstruidos abaixo por proximidade
+      // espacial entre o prefixo BR+12 digitos e o caractere final. Evitamos
+      // concatenar linhas inteiras aqui porque um numero da coluna de parada
+      // poderia ser confundido com o ultimo caractere do codigo.
+
+      const prefixos = [];
+      const rePrefixo = /(?:^|[^A-Z0-9])(BR\d{12})(?=$|[^A-Z0-9])/i;
+      itens.forEach(item => {
+        const m = item.str.toUpperCase().match(rePrefixo);
+        if (m) prefixos.push({ prefixo: m[1], item });
+      });
+
+      for (const pfx of prefixos) {
+        const candidatosFinal = itens
+          .map(item => {
+            const m = item.str.toUpperCase().trim().match(/^([A-Z0-9])\s*[;:,.]?$/);
+            if (!m || item.indice === pfx.item.indice) return null;
+            const dy = Math.abs(item.y - pfx.item.y);
+            const dx = Math.abs(item.x - pfx.item.x);
+            const di = Math.abs(item.indice - pfx.item.indice);
+            // O caractere final costuma ficar fisicamente perto do prefixo, mesmo
+            // quando o exportador o joga para outra linha. X e usado apenas como
+            // distancia relativa, nunca como coluna fixa.
+            const pareceNumeroParadaDistante = /^\d$/.test(m[1]) && dx > Math.max(90, larguraPagina * 0.16);
+            const penalidadeNumeroParada = pareceNumeroParadaDistante ? 70 : 0;
+            const score = dy + (dx * 0.22) + (di * 1.2) + penalidadeNumeroParada;
+            return { char: m[1], item, score, dy, dx, di };
+          })
+          .filter(Boolean)
+          .filter(c => c.dy <= Math.max(36, distanciaJanela * 2.2) || c.di <= 10)
+          .sort((a,b)=>a.score-b.score);
+
+        for (const cand of candidatosFinal.slice(0, 6)) {
+          const codigo = normalizarCodigoPacoteBr(pfx.prefixo + cand.char);
+          if (!codigo) continue;
+          registrarCodigo(
+            codigo,
+            (pfx.item.y + cand.item.y) / 2,
+            Math.round((pfx.item.indice + cand.item.indice) / 2),
+            4
+          );
+          break;
+        }
+      }
+
+      if (!codigos.size) return [];
+
+      // 3) Associa cada codigo ao endereco semanticamente valido mais proximo.
+      // X nao entra como regra de coluna; ele serve apenas como desempate minimo.
+      const limiteY = Math.max(48, Math.min(110, gapMediano * 2.6));
+      const registros = [];
+      const usados = new Set();
+
+      for (const ancora of codigos.values()) {
+        let melhor = null;
+        for (const end of enderecos) {
+          const dy = Math.abs(ancora.y - end.y);
+          const di = Math.abs(ancora.indice - end.indice);
+          const score = dy + (di * 0.12);
+          if (!melhor || score < melhor.score) melhor = { end, score, dy };
+        }
+        if (!melhor || melhor.dy > limiteY) continue;
+        if (usados.has(ancora.codigo)) continue;
+        usados.add(ancora.codigo);
+        registros.push({
+          numeroParada: melhor.end.numero,
+          endereco: melhor.end.endereco,
+          codigos: [ancora.codigo],
+          pagina,
+          ordemY: melhor.end.y,
+          origemLeitura: 'posicao-livre-v70'
+        });
+      }
+
+      // Ordem visual da pagina; numeracao faltante sera completada pelo chamador.
+      return registros.sort((a,b)=>b.ordemY-a.ordemY);
+    }
+
     // V50 - leitor universal de PDFs de rota (Spoke, Circuit e layouts semelhantes).
     // Não depende da coluna #. A fonte de verdade passa a ser a associação visual/textual
     // entre um código de pacote e um endereço próximo na tabela.
@@ -3386,8 +3623,37 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       const registros = [];
       let sequencia = 0;
 
-      function codigosDaLinha(texto) {
-        return extrairCodigosBrFlexiveis(texto);
+      function codigosDaLinha(texto, pos = -1) {
+        const diretos = extrairCodigosBrFlexiveis(texto);
+        if (diretos.length || pos < 0) return diretos;
+
+        /*
+         * V69 - fallback textual para códigos quebrados em linhas diferentes.
+         * Circuit pode extrair:
+         *   BR265691124855
+         *   1 Rua Machado Bitencourt, 220 ... 06:11
+         *   W;
+         *
+         * O prefixo BR + 12 dígitos sozinho NÃO é pacote válido; só é aceito
+         * quando encontramos, bem perto, uma linha contendo exclusivamente o
+         * caractere final. Isso evita voltar a confundir BR-050 com pacote.
+         */
+        const atual = String(texto || '').toUpperCase().trim();
+        const prefixo = atual.match(/(?:^|[^A-Z0-9])(BR\d{12})(?=$|[^A-Z0-9])/);
+        if (!prefixo) return [];
+
+        const offsets = [1, 2, -1, -2, 3, -3];
+        for (const off of offsets) {
+          const vizinho = lista[pos + off];
+          if (!vizinho) continue;
+          const pedaco = String(vizinho.texto || '').toUpperCase().trim();
+          const final = pedaco.match(/^([A-Z0-9])\s*[;:,.]?$/);
+          if (!final) continue;
+          const codigo = normalizarCodigoPacoteBr(prefixo[1] + final[1]);
+          if (codigo) return [codigo];
+        }
+
+        return [];
       }
 
       function limparCandidatoEndereco(texto) {
@@ -3412,7 +3678,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       }
 
       lista.forEach((item, pos) => {
-        const codigos = codigosDaLinha(item.texto).slice(0, 1);
+        const codigos = codigosDaLinha(item.texto, pos).slice(0, 1);
         if (!codigos.length) return;
 
         // 1) Preferência: endereço está na própria linha (Spoke clássico).
@@ -3575,6 +3841,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           // Não depende da coluna # e tolera código BR em item separado da coluna Address.
           const registrosVisuaisPdf = [];
           let sequenciaVisualPdf = 0;
+          // V70: leitura por ancoras sem depender de posicao fixa das colunas.
+          const registrosPosicaoLivrePdf = [];
+          let sequenciaPosicaoLivrePdf = 0;
 
           for (let pagina = 1; pagina <= pdf.numPages; pagina++) {
             const progressoPagina = 20 + Math.round((pagina / Math.max(1, pdf.numPages)) * 52);
@@ -3595,6 +3864,20 @@ document.getElementById('cardRetomarRota').style.display = 'none';
                 y: Number(item.transform?.[5] || 0)
               }))
               .filter(item => item.str);
+
+
+            // V70 - primeiro extrai por ancoras livres. Codigo e endereco podem
+            // estar em qualquer lado/coluna da pagina; a associacao nao usa X fixo.
+            const livresPagina = extrairRegistrosPdfPosicaoLivre(itens, pagina, width);
+            livresPagina.forEach(registro => {
+              if (!Number.isFinite(Number(registro.numeroParada)) || Number(registro.numeroParada) <= 0) {
+                registro.numeroParada = ++sequenciaPosicaoLivrePdf;
+              } else {
+                sequenciaPosicaoLivrePdf = Math.max(sequenciaPosicaoLivrePdf, Number(registro.numeroParada));
+              }
+              registrosPosicaoLivrePdf.push(registro);
+              (registro.codigos || []).forEach(codigo => codigosGlobais.add(codigo));
+            });
 
             /*
              * LEITOR UNIVERSAL / COMPATIBILIDADE
@@ -3765,31 +4048,89 @@ document.getElementById('cardRetomarRota').style.display = 'none';
                 .replace(/\s+/g, ' ')
                 .trim();
 
-              const codigos = [...new Set(
-                extrairCodigosBrFlexiveis(textoCompleto)
+              /*
+               * V69 - Circuit com código quebrado dentro da coluna Notes.
+               *
+               * Alguns exports do Circuit desenham o código em DUAS linhas no
+               * mesmo campo, por exemplo:
+               *
+               *   BR265691124855
+               *   W;
+               *
+               * A ordenação global por Y pode colocar o endereço inteiro entre
+               * essas duas partes e o leitor antigo deixa de enxergar o código.
+               * Aqui reconstruímos a coluna Notes separadamente, usando a posição
+               * X. Assim BR + 12 dígitos + caractere final volta a ser uma unidade.
+               */
+              const itensNotasDaLinha = itensDaLinha
+                .filter(item => item.x >= width * 0.78)
+                .slice()
+                .sort((a, b) => {
+                  if (Math.abs(a.y - b.y) <= 3) return a.x - b.x;
+                  return b.y - a.y;
+                });
+
+              const textoNotas = itensNotasDaLinha
+                .map(item => item.str)
+                .join(' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+              let codigos = [...new Set(
+                extrairCodigosBrFlexiveis(textoNotas)
               )].slice(0, 1);
+
+              // Compatibilidade com layouts em que Notes não fica na última coluna.
+              if (codigos.length === 0) {
+                codigos = [...new Set(
+                  extrairCodigosBrFlexiveis(textoCompleto)
+                )].slice(0, 1);
+              }
 
               if (codigos.length === 0) continue;
 
+              // A reconstrução por faixa é também fonte válida para a contagem global.
+              codigos.forEach(codigo => codigosGlobais.add(codigo));
+
               /*
-               * O endereço está antes do horário estimado.
-               * Não dependemos da largura exata das colunas para capturá-lo.
+               * Reconstrói SOMENTE a coluna Address. Isso evita que o prefixo do
+               * código (que pode ficar alguns pixels acima) seja inserido antes do
+               * endereço e evita depender da posição exata do horário.
                */
-              let endereco = textoCompleto
-                .replace(new RegExp(`^${atual.numero}\\s+`), '')
+              const itensEnderecoDaLinha = itensDaLinha
+                .filter(item => item.x >= width * 0.065 && item.x < width * 0.68)
+                .slice()
+                .sort((a, b) => {
+                  if (Math.abs(a.y - b.y) <= 3) return a.x - b.x;
+                  return b.y - a.y;
+                });
+
+              let endereco = itensEnderecoDaLinha
+                .map(item => item.str)
+                .join(' ')
+                .replace(/\s+/g, ' ')
                 .trim();
 
-              const posHorario = endereco.search(/\b\d{1,2}:\d{2}\b/);
-              if (posHorario >= 0) {
-                endereco = endereco.slice(0, posHorario).trim();
-              } else {
-                const posCodigoEndereco = endereco.search(/\bBR(?:[\s._-]*[0-9])/i);
-                if (posCodigoEndereco >= 0) endereco = endereco.slice(0, posCodigoEndereco).trim();
+              // Compatibilidade com PDFs que não respeitam as colunas esperadas.
+              if (!endereco || !decomporEnderecorota(endereco)) {
+                endereco = textoCompleto
+                  .replace(new RegExp(`^${atual.numero}\\s+`), '')
+                  .trim();
+
+                const posHorario = endereco.search(/\b\d{1,2}:\d{2}\b/);
+                if (posHorario >= 0) {
+                  endereco = endereco.slice(0, posHorario).trim();
+                } else {
+                  const posCodigoEndereco = endereco.search(/\bBR(?:[\s._-]*[0-9])/i);
+                  if (posCodigoEndereco >= 0) endereco = endereco.slice(0, posCodigoEndereco).trim();
+                }
               }
 
-              // Remove eventual número da coluna # que tenha ficado duplicado.
+              // Remove eventual número da coluna # e pequenas quebras de palavra
+              // vistas em exports do Circuit ("São Paul o" -> "São Paulo").
               endereco = endereco
                 .replace(/^\d{1,3}\s+/, '')
+                .replace(/\bS(?:ã|a)o\s+Paul\s+o\b/gi, 'São Paulo')
                 .replace(/\s+/g, ' ')
                 .trim();
 
@@ -3860,7 +4201,23 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             return set.size;
           }
 
-          if (leituraEstritaOk) {
+          // V70: prioriza o leitor por posicao livre. Ele nao exige que Notes,
+          // Address, numero ou horario estejam em uma coluna especifica.
+          if (registrosPosicaoLivrePdf.length) {
+            try {
+              const totalLivre = contarCodigosDosRegistros(registrosPosicaoLivrePdf);
+              if (!codigosGlobais.size || totalLivre >= codigosGlobais.size) {
+                processarRegistrosrota(registrosPosicaoLivrePdf, file.name);
+                processado = todosPacotes && todosPacotes.size > 0;
+              } else {
+                console.info(`Leitor por posicao livre encontrou ${totalLivre}/${codigosGlobais.size}. Tentando estrategias complementares.`);
+              }
+            } catch (erroLivre) {
+              console.warn('Leitor por posicao livre nao concluiu este PDF. Tentando estrategias complementares:', erroLivre);
+            }
+          }
+
+          if (!processado && leituraEstritaOk) {
             try {
               processarRegistrosrota(registrosrota, file.name);
               processado = todosPacotes && todosPacotes.size > 0;

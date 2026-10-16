@@ -1,31 +1,7 @@
-## Atualização V68
+## Atualização V70
 
-Painel administrativo separado por planos, dias restantes/expirados e ícones 192/512 sem borda verde externa. A sessão de 12 horas e o Holy-Frog da V67 foram mantidos.
+Leitor de PDF por **posição livre**. O Pacote É Mato não depende mais de a coluna de código ficar à direita, o endereço no centro ou o número da parada à esquerda. O leitor identifica códigos BR válidos, reconstrói códigos quebrados em itens/linhas, detecta endereços semanticamente válidos e associa cada pacote ao endereço mais próximo pela estrutura visual/ordem de leitura.
 
-# Pacote É Mato V64
+Mantidos como fallback os leitores anteriores de Circuit, Spoke e layouts tabulares. A validação continua recusando falsos códigos como `BR-050`.
 
-Versão revisada a partir do projeto V62 enviado pelo usuário.
-
-## Correções principais
-
-- roteirização calcula 1 visita por parada física e mantém todas as entregas/pacotes do mesmo endereço agrupados;
-- pontos consecutivos repetidos deixam de ser enviados ao serviço de rotas;
-- Worker de rotas preparado para o domínio atual `https://pacoteemato.github.io`;
-- leitura de PDF usa código BR estrito (`BR` + 12 dígitos + 1 caractere final), evitando falso pacote como `BR-050`;
-- registros sem endereço estrutural não viram paradas falsas;
-- múltiplos continuam sendo agrupados por logradouro + número do imóvel;
-- configurações de navegação/veículo/tempo são recomendação e não bloqueiam otimização;
-- snapshots antigos da Bipagem são invalidados para que uma leitura com contagem antiga não seja reaproveitada.
-
-## Publicação
-
-Substitua os arquivos do site no GitHub Pages pelos arquivos deste pacote.
-
-A roteirização também depende do Worker `pacote-emato-rotas`. O Worker completo revisado está em:
-
-`cloudflare/WORKER-ROTAS-V64-COMPLETO.txt`
-
-O `cloudflare/wrangler.toml` já autoriza o domínio atual `https://pacoteemato.github.io` e mantém o domínio antigo por compatibilidade.
-
-## V67 — Painel do Dono
-A sessão administrativa agora dura até 12 horas e permanece válida ao fechar/reabrir o painel. O PIN não é salvo. Para ativar a mudança, publique o Worker completo V67 presente em `cloudflare/WORKER-HOLY-FROG-V67-ADMIN-12H-COMPLETO.txt`.
+Limite: PDFs que são somente imagem/scan, sem camada de texto, ainda precisam de OCR.
