@@ -2625,12 +2625,12 @@ function tocarIntroPs2Audio() {
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    // V72 - marca a versão realmente carregada e remove resíduos de cache antigos.
+    // V73 - marca a versão realmente carregada e remove resíduos de cache antigos.
     // Isso ajuda a evitar que o WebView continue executando V69/V70 depois de
     // uma atualização do GitHub Pages. Não apaga dados operacionais do usuário.
     try {
-      window.PEMATO_BUILD = '72';
-      localStorage.setItem('pemato_build_carregado', '72');
+      window.PEMATO_BUILD = '73';
+      localStorage.setItem('pemato_build_carregado', '73');
       if ('caches' in window) {
         caches.keys().then(chaves => Promise.all(chaves.map(chave => caches.delete(chave)))).catch(() => {});
       }
@@ -3886,6 +3886,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           endereco,
           codigos,
           pagina,
+          ordemY: atual.y,
           auxiliarDestino,
           prefixoIncompleto,
           origemLeitura: 'linhas-v71'
@@ -4002,6 +4003,346 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       }
 
       return { registros, sequencia };
+    }
+
+
+    // ============================================================
+    // V73 - LEITOR DETERMINISTICO POR CONTEUDO DA PROPRIA ENTREGA
+    // ============================================================
+    // Regra principal: codigo + endereco precisam nascer da MESMA faixa visual.
+    // A numeracao original do PDF e apenas metadado; ela nunca mais e usada como
+    // condicao para aceitar/rejeitar a rota. Isso evita bloquear PDFs corretos
+    // quando o PDF.js fragmenta ou deixa de expor um numero da coluna '#'.
+
+    function extrairAncorasCodigoPdfV73(itensOriginais, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').replace(/\s+/g, ' ').trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(i => i.str);
+
+      if (!itens.length) return [];
+
+      const porCodigo = new Map();
+      const registrar = (codigo, y, x, origem) => {
+        const normal = normalizarCodigoPacoteBr(codigo);
+        if (!normal) return;
+        const atual = porCodigo.get(normal);
+        const ancora = {
+          codigo: normal,
+          y: Number(y || 0),
+          x: Number(x || 0),
+          origem: origem || 'completo'
+        };
+        if (!atual || ancora.origem === 'completo') porCodigo.set(normal, ancora);
+      };
+
+      // 1) Codigo completo na propria linha visual (Spoke e muitos exports Circuit).
+      agruparItensEmLinhasPdfV71(itens).forEach(linha => {
+        extrairCodigosBrFlexiveis(linha.texto).forEach(codigo => {
+          const itemCodigo = linha.itens.find(i => extrairCodigosBrFlexiveis(i.str).includes(codigo));
+          registrar(codigo, linha.y, itemCodigo?.x || linha.itens[0]?.x || 0, 'completo');
+        });
+      });
+
+      // 2) Circuit pode desenhar BR+12 digitos e o ultimo caractere em outra linha.
+      // O caractere final so e aceito quando esta praticamente na MESMA coluna X
+      // e muito perto verticalmente. Assim o numero da parada nunca completa um BR.
+      const prefixos = itens
+        .map(item => {
+          const m = String(item.str || '').toUpperCase().match(/(?:^|[^A-Z0-9])(BR\d{12})(?=$|[^A-Z0-9])/);
+          return m ? { prefixo: m[1], item } : null;
+        })
+        .filter(Boolean);
+
+      const limiteX = Math.max(14, Math.min(30, Number(larguraPagina || 600) * 0.045));
+      const limiteY = 28;
+
+      prefixos.forEach(pfx => {
+        const candidatos = itens
+          .map(item => {
+            if (item.indice === pfx.item.indice) return null;
+            const m = String(item.str || '').toUpperCase().trim().match(/^([A-Z0-9])\s*[;:,.]?$/);
+            if (!m) return null;
+            const dx = Math.abs(item.x - pfx.item.x);
+            const dy = Math.abs(item.y - pfx.item.y);
+            if (dx > limiteX || dy < 1 || dy > limiteY) return null;
+            // Em Circuit o final costuma estar logo abaixo do prefixo. Se vier
+            // acima ainda pode ser valido, mas recebe penalidade para desempate.
+            const penalidadeDirecao = item.y > pfx.item.y ? 12 : 0;
+            return { char: m[1], item, score: (dx * 5) + dy + penalidadeDirecao };
+          })
+          .filter(Boolean)
+          .sort((a,b) => a.score - b.score);
+
+        for (const cand of candidatos.slice(0, 4)) {
+          const codigo = normalizarCodigoPacoteBr(pfx.prefixo + cand.char);
+          if (!codigo) continue;
+          registrar(codigo, (pfx.item.y + cand.item.y) / 2, pfx.item.x, 'quebrado');
+          break;
+        }
+      });
+
+      // Agrupa codigos que pertencem visualmente a mesma linha/entrega.
+      const ancoras = [...porCodigo.values()].sort((a,b) => b.y - a.y);
+      const grupos = [];
+      ancoras.forEach(a => {
+        let g = grupos.find(x => Math.abs(x.y - a.y) <= 3.2);
+        if (!g) {
+          g = { y: a.y, x: a.x, codigos: [], origens: [] };
+          grupos.push(g);
+        }
+        if (!g.codigos.includes(a.codigo)) g.codigos.push(a.codigo);
+        g.origens.push(a.origem);
+        g.y = (g.y * (g.codigos.length - 1) + a.y) / g.codigos.length;
+      });
+
+      return grupos.sort((a,b) => b.y - a.y);
+    }
+
+    function extrairRegistrosPdfV73PorCodigo(itensOriginais, pagina, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').replace(/\s+/g, ' ').trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(i => i.str);
+
+      const ancoras = extrairAncorasCodigoPdfV73(itens, larguraPagina);
+      if (!ancoras.length) return [];
+
+      const marcadores = detectarMarcadoresNumeradosPdfV71(itens, larguraPagina);
+      const gaps = [];
+      for (let i = 1; i < ancoras.length; i++) {
+        const d = Math.abs(ancoras[i - 1].y - ancoras[i].y);
+        if (d > 4 && d < 160) gaps.push(d);
+      }
+      gaps.sort((a,b) => a-b);
+      const gapMediano = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 30;
+
+      const registros = [];
+      for (let i = 0; i < ancoras.length; i++) {
+        const atual = ancoras[i];
+        const anterior = ancoras[i - 1];
+        const proximo = ancoras[i + 1];
+        const ySuperior = anterior ? (anterior.y + atual.y) / 2 : atual.y + gapMediano * 0.60;
+        const yInferior = proximo ? (atual.y + proximo.y) / 2 : atual.y - gapMediano * 0.60;
+        const bloco = itens.filter(item => item.y <= ySuperior && item.y > yInferior);
+        if (!bloco.length) continue;
+
+        const marcador = marcadores
+          .filter(m => m.y <= ySuperior && m.y > yInferior)
+          .sort((a,b) => Math.abs(a.y - atual.y) - Math.abs(b.y - atual.y))[0] || null;
+
+        // Fake marker a esquerda permite que a funcao use o ETA para isolar a
+        // coluna Address mesmo quando a coluna # foi fragmentada pelo PDF.js.
+        const marcadorEndereco = marcador || { x: -10, y: atual.y, item: null };
+        let endereco = extrairEnderecoDoBlocoPdfV71(bloco, marcadorEndereco);
+
+        if (!decomporEnderecoFisicoPdfV71(endereco)) {
+          const candidatos = agruparItensEmLinhasPdfV71(bloco)
+            .map(l => pontuarEnderecoPdfV71(l.texto))
+            .filter(Boolean)
+            .sort((a,b) => b.score - a.score || a.texto.length - b.texto.length);
+          endereco = candidatos[0]?.texto || endereco;
+        }
+
+        registros.push({
+          numeroParada: Number(marcador?.numero || 0),
+          numeroOriginalPdf: Number(marcador?.numero || 0) || null,
+          endereco,
+          codigos: [...new Set(atual.codigos || [])],
+          pagina,
+          ordemY: atual.y,
+          auxiliarDestino: false,
+          prefixoIncompleto: false,
+          origemLeitura: 'codigo-v73'
+        });
+      }
+
+      return registros;
+    }
+
+    function extrairRegistrosPdfV73PorHorario(itensOriginais, pagina, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').replace(/\s+/g, ' ').trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(i => i.str);
+
+      const tempos = itens
+        .filter(i => /^\d{1,2}:\d{2}(?:\s*(?:AM|PM))?$/i.test(i.str))
+        .sort((a,b) => b.y - a.y);
+      if (!tempos.length) return [];
+
+      const unicos = [];
+      tempos.forEach(t => {
+        if (!unicos.some(u => Math.abs(u.y - t.y) <= 2.5)) unicos.push(t);
+      });
+
+      const marcadores = detectarMarcadoresNumeradosPdfV71(itens, larguraPagina);
+      const gaps = [];
+      for (let i = 1; i < unicos.length; i++) {
+        const d = Math.abs(unicos[i - 1].y - unicos[i].y);
+        if (d > 4 && d < 160) gaps.push(d);
+      }
+      gaps.sort((a,b) => a-b);
+      const gapMediano = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 30;
+
+      const registros = [];
+      for (let i = 0; i < unicos.length; i++) {
+        const atual = unicos[i];
+        const anterior = unicos[i - 1];
+        const proximo = unicos[i + 1];
+        const ySuperior = anterior ? (anterior.y + atual.y) / 2 : atual.y + gapMediano * 0.60;
+        const yInferior = proximo ? (atual.y + proximo.y) / 2 : atual.y - gapMediano * 0.60;
+        const bloco = itens.filter(item => item.y <= ySuperior && item.y > yInferior);
+        if (!bloco.length) continue;
+
+        const textoBloco = textoItensPdfV71(bloco);
+        const auxiliarDestino = /\b(?:Destino|Destination|Retorno|Return)\b/i.test(textoBloco);
+        const marcador = marcadores
+          .filter(m => m.y <= ySuperior && m.y > yInferior)
+          .sort((a,b) => Math.abs(a.y - atual.y) - Math.abs(b.y - atual.y))[0] || null;
+        const fakeMarker = marcador || { x: -10, y: atual.y, item: null };
+        const endereco = extrairEnderecoDoBlocoPdfV71(bloco, fakeMarker);
+        if (!auxiliarDestino && !decomporEnderecoFisicoPdfV71(endereco)) continue;
+
+        registros.push({
+          numeroParada: Number(marcador?.numero || 0),
+          numeroOriginalPdf: Number(marcador?.numero || 0) || null,
+          endereco,
+          codigos: [],
+          pagina,
+          ordemY: atual.y,
+          auxiliarDestino,
+          prefixoIncompleto: false,
+          origemLeitura: 'horario-v73'
+        });
+      }
+      return registros;
+    }
+
+    function mesclarRegistrosPaginaPdfV73(porCodigo, numerados, porHorario) {
+      const codigos = Array.isArray(porCodigo) ? porCodigo.slice() : [];
+      const nums = Array.isArray(numerados) ? numerados.slice() : [];
+      const tempos = Array.isArray(porHorario) ? porHorario.slice() : [];
+
+      if (codigos.length) {
+        const porCodigoExato = new Map();
+        codigos.forEach(r => (r.codigos || []).forEach(c => porCodigoExato.set(c, r)));
+
+        // Usa a linha numerada apenas para enriquecer numero/endereco ou recuperar
+        // um codigo que o leitor de ancora ainda nao encontrou. Nunca descarta uma
+        // entrega so porque um numero da coluna # sumiu no PDF.js.
+        nums.forEach(n => {
+          const codigosN = (n.codigos || []).filter(Boolean);
+          let anexado = false;
+          codigosN.forEach(c => {
+            const existente = porCodigoExato.get(c);
+            if (existente) {
+              if (!existente.numeroOriginalPdf && Number(n.numeroParada) > 0) {
+                existente.numeroOriginalPdf = Number(n.numeroParada);
+                existente.numeroParada = Number(n.numeroParada);
+              }
+              if ((!decomporEnderecoFisicoPdfV71(existente.endereco) || String(n.endereco || '').length > String(existente.endereco || '').length) && decomporEnderecoFisicoPdfV71(n.endereco)) {
+                existente.endereco = n.endereco;
+              }
+              anexado = true;
+            }
+          });
+
+          if (!anexado && codigosN.length) {
+            const clone = {
+              ...n,
+              ordemY: Number(n.ordemY || 0),
+              numeroOriginalPdf: Number(n.numeroParada) || null,
+              origemLeitura: 'linha-recuperada-v73'
+            };
+            codigos.push(clone);
+            codigosN.forEach(c => porCodigoExato.set(c, clone));
+          }
+        });
+
+        return codigos.sort((a,b) => Number(b.ordemY || 0) - Number(a.ordemY || 0));
+      }
+
+      if (nums.length) {
+        return nums.map(r => ({
+          ...r,
+          numeroOriginalPdf: Number(r.numeroParada) || null,
+          origemLeitura: 'linha-sem-codigo-v73'
+        })).sort((a,b) => Number(b.ordemY || 0) - Number(a.ordemY || 0));
+      }
+
+      return tempos.sort((a,b) => Number(b.ordemY || 0) - Number(a.ordemY || 0));
+    }
+
+    function normalizarRegistrosPdfV73(registrosBrutos) {
+      const lista = (Array.isArray(registrosBrutos) ? registrosBrutos : [])
+        .filter(r => r && r.auxiliarDestino !== true)
+        .slice()
+        .sort((a,b) => {
+          const pa = Number(a.pagina || 0);
+          const pb = Number(b.pagina || 0);
+          if (pa !== pb) return pa - pb;
+          return Number(b.ordemY || 0) - Number(a.ordemY || 0);
+        });
+
+      const saida = [];
+      const donoCodigo = new Map();
+
+      lista.forEach(registro => {
+        const codigos = [...new Set((registro.codigos || []).map(normalizarCodigoPacoteBr).filter(Boolean))];
+        const endereco = limparTextoEnderecoPdfV71(registro.endereco || '');
+        const dados = decomporEnderecoFisicoPdfV71(endereco);
+        if (!dados) {
+          if (codigos.length) throw new Error(`ENDERECO_NAO_IDENTIFICADO|${saida.length + 1}`);
+          return;
+        }
+
+        let existente = null;
+        codigos.forEach(c => {
+          if (donoCodigo.has(c)) existente = donoCodigo.get(c);
+        });
+
+        if (existente) {
+          const dadosExistente = decomporEnderecoFisicoPdfV71(existente.endereco);
+          if (!dadosExistente || dadosExistente.chave !== dados.chave) {
+            throw new Error(`PACOTE_EM_DUAS_PARADAS|${codigos[0] || ''}`);
+          }
+          codigos.forEach(c => {
+            if (!existente.codigos.includes(c)) existente.codigos.push(c);
+            donoCodigo.set(c, existente);
+          });
+          if (endereco.length > existente.endereco.length) existente.endereco = endereco;
+          return;
+        }
+
+        const novo = {
+          ...registro,
+          endereco,
+          codigos,
+          numeroOriginalPdf: Number(registro.numeroOriginalPdf || registro.numeroParada) || null,
+          origemLeituraOriginal: registro.origemLeitura,
+          origemLeitura: 'deterministico-v73'
+        };
+        saida.push(novo);
+        codigos.forEach(c => donoCodigo.set(c, novo));
+      });
+
+      // A ordem de leitura do PDF e a numeracao interna. Nao e chute de endereco:
+      // codigo e endereco ja foram validados na mesma faixa antes desta etapa.
+      saida.forEach((r, i) => { r.numeroParada = i + 1; });
+      return saida;
     }
 
 
@@ -4479,14 +4820,10 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           const registrosV71Pdf = [];
           let v71EncontrouTabelaNumerada = false;
 
-          // V72: uma única sequência determinística, página a página. Se a página
-          // possui # numerado, usamos a linha numerada. Se aquela página não tiver
-          // # utilizável, usamos o código BR da própria linha como âncora. Assim um
-          // PDF de várias páginas não perde uma página só porque as outras têm #.
-          const registrosDeterministicosV72 = [];
-          const codigosFonteV72 = new Set();
-          const diagnosticoPaginasV72 = [];
-          let sequenciaDeterministicaV72 = 0;
+          // V73: codigo/endereco sao resolvidos dentro da propria faixa visual.
+          // A numeracao da coluna # deixa de ser requisito para aceitar a rota.
+          const registrosBrutosV73 = [];
+          const diagnosticoPaginasV73 = [];
 
           // V71B legado, mantido apenas para compatibilidade interna.
           const registrosCodigoV71Pdf = [];
@@ -4518,54 +4855,35 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               .filter(item => item.str);
 
 
-            // V71 - primeiro tenta a tabela numerada de forma determinística.
-            // O número da entrega define a faixa vertical da própria linha; nenhum
-            // código é puxado da linha de cima/baixo.
+            // V73 executa as estrategias em paralelo. Uma coluna # parcialmente
+            // fragmentada nunca mais faz o app descartar as entregas ancoradas por BR.
             const v71Pagina = extrairRegistrosPdfV71(itens, pagina, width);
-            let escolhidosPaginaV72 = [];
-            let modoPaginaV72 = 'nenhum';
+            const porCodigoV73 = extrairRegistrosPdfV73PorCodigo(itens, pagina, width);
+            const porHorarioV73 = porCodigoV73.length
+              ? []
+              : extrairRegistrosPdfV73PorHorario(itens, pagina, width);
 
             if (v71Pagina.length) {
               v71EncontrouTabelaNumerada = true;
-              modoPaginaV72 = 'linha-numerada';
-              escolhidosPaginaV72 = v71Pagina;
               v71Pagina.forEach(registro => registrosV71Pdf.push(registro));
-              const maiorNumeroPagina = Math.max(...v71Pagina.map(r => Number(r.numeroParada) || 0));
-              sequenciaDeterministicaV72 = Math.max(sequenciaDeterministicaV72, maiorNumeroPagina);
-            } else {
-              const porCodigoV71 = extrairRegistrosPdfV71PorCodigo(
-                itens,
-                pagina,
-                width,
-                sequenciaDeterministicaV72
-              );
-              sequenciaDeterministicaV72 = porCodigoV71.sequencia;
-              sequenciaCodigoV71Pdf = porCodigoV71.sequencia;
-              modoPaginaV72 = porCodigoV71.registros.length ? 'codigo-na-linha' : 'nenhum';
-              escolhidosPaginaV72 = porCodigoV71.registros;
-              porCodigoV71.registros.forEach(registro => registrosCodigoV71Pdf.push(registro));
             }
 
-            escolhidosPaginaV72.forEach(registro => {
-              registrosDeterministicosV72.push({
-                ...registro,
-                origemLeituraOriginal: registro.origemLeitura,
-                origemLeitura: 'deterministico-v72'
-              });
-              (registro.codigos || []).forEach(codigo => codigosFonteV72.add(codigo));
-            });
+            const escolhidosPaginaV73 = mesclarRegistrosPaginaPdfV73(
+              porCodigoV73,
+              v71Pagina,
+              porHorarioV73
+            );
 
-            // Códigos completos que aparecem literalmente no PDF também entram
-            // na conferência. Não usamos códigos inventados por leitores legados.
-            itens.forEach(item => {
-              extrairCodigosBrFlexiveis(item.str).forEach(codigo => codigosFonteV72.add(codigo));
-            });
+            escolhidosPaginaV73.forEach(registro => registrosBrutosV73.push(registro));
 
-            diagnosticoPaginasV72.push({
+            diagnosticoPaginasV73.push({
               pagina,
-              modo: modoPaginaV72,
-              entregas: escolhidosPaginaV72.length,
-              codigos: new Set(escolhidosPaginaV72.flatMap(r => r.codigos || [])).size
+              modo: porCodigoV73.length
+                ? 'codigo-na-propria-faixa'
+                : (v71Pagina.length ? 'linha-numerada' : (porHorarioV73.length ? 'horario-na-propria-faixa' : 'nenhum')),
+              entregas: escolhidosPaginaV73.filter(r => r.auxiliarDestino !== true).length,
+              codigos: new Set(escolhidosPaginaV73.flatMap(r => r.codigos || [])).size,
+              linhasNumeradasDetectadas: v71Pagina.length
             });
 
             // V70 legado: só será usado depois se não houver tabela numerada V71.
@@ -4894,6 +5212,10 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             'Quase pronto'
           );
 
+          const registrosDeterministicosV73 = normalizarRegistrosPdfV73(registrosBrutosV73);
+          const codigosFonteV73 = new Set();
+          registrosDeterministicosV73.forEach(r => (r.codigos || []).forEach(c => codigosFonteV73.add(c)));
+
           let processado = false;
 
           function contarCodigosDosRegistros(lista) {
@@ -4902,15 +5224,16 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             return set.size;
           }
 
-          // V72 é a fonte de verdade: combina, por página, linha numerada ou
-          // código ancorado na própria linha. Não associa pacote ao endereço vizinho.
-          if (registrosDeterministicosV72.length) {
+          // V73 é a fonte de verdade. A associação pacote/endereço acontece
+          // dentro da própria faixa visual; depois a lista é renumerada pela ordem
+          // real do PDF, sem depender da coluna # ter sido extraída perfeitamente.
+          if (registrosDeterministicosV73.length) {
             try {
-              processarRegistrosrota(registrosDeterministicosV72, file.name);
+              processarRegistrosrota(registrosDeterministicosV73, file.name);
               processado = rotaPdfPossuiDadosProcessados();
-            } catch (erroV72) {
-              console.error('Leitor V72 recusou uma associação insegura:', erroV72);
-              throw erroV72;
+            } catch (erroV73) {
+              console.error('Leitor V73 recusou uma associação insegura:', erroV73);
+              throw erroV73;
             }
           }
 
@@ -4952,23 +5275,23 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           // V62: contagem de pacotes é a fonte de verdade. Não libera uma rota
           // silenciosamente com 26/30, por exemplo. Se o PDF revelou 30 códigos,
           // os 30 precisam chegar à Bipagem.
-          const codigosEsperadosV72 = registrosDeterministicosV72.length
-            ? codigosFonteV72
+          const codigosEsperadosV73 = registrosDeterministicosV73.length
+            ? codigosFonteV73
             : codigosGlobais;
 
-          if (codigosEsperadosV72.size > 0 && todosPacotes.size !== codigosEsperadosV72.size) {
-            throw new Error(`CONTAGEM_CODIGOS_DIVERGENTE|${todosPacotes.size}|${codigosEsperadosV72.size}`);
+          if (codigosEsperadosV73.size > 0 && todosPacotes.size !== codigosEsperadosV73.size) {
+            throw new Error(`CONTAGEM_CODIGOS_DIVERGENTE|${todosPacotes.size}|${codigosEsperadosV73.size}`);
           }
 
           try {
-            window.diagnosticoPdfV72 = {
-              build: 72,
+            window.diagnosticoPdfV73 = {
+              build: 73,
               arquivo: file.name,
-              paginas: diagnosticoPaginasV72,
+              paginas: diagnosticoPaginasV73,
               entregas: totalEntregasPdfAtual,
               pacotes: todosPacotes.size,
               paradasFisicas: Object.keys(mapaRotas || {}).length,
-              codigosEsperados: codigosEsperadosV72.size
+              codigosEsperados: codigosEsperadosV73.size
             };
           } catch (_) {}
 
@@ -5019,7 +5342,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               `A entrega ${partes[1] || ''} apareceu com dois endereços diferentes no PDF. A rota não foi liberada para evitar associação incorreta.`;
           } else if (msg.startsWith('SEQUENCIA_PARADAS_INCOMPLETA|')) {
             mensagemErro =
-              'A numeração das entregas ficou incompleta durante a leitura. O app não renumerou nem adivinhou as paradas; importe o PDF novamente.';
+              'Este formato não pôde ser reconstruído pelo leitor legado. O leitor V73 usa a ordem visual e a própria faixa de cada entrega; nenhuma rota parcial foi liberada.';
           } else if (msg.startsWith('PACOTE_EM_DUAS_PARADAS|')) {
             mensagemErro =
               'O mesmo código de pacote apareceu associado a duas entregas diferentes. A rota foi bloqueada para evitar uma bipagem incorreta.';
@@ -5219,13 +5542,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       }
 
       const temAlgumCodigo = entrada.some(r => r.codigos.length > 0);
-      let entregasBase = entrada.slice();
+      // Destino/retorno nunca conta como entrega, com ou sem codigos no manifesto.
+      let entregasBase = entrada.filter(r => !r.auxiliarDestino);
 
       if (temAlgumCodigo) {
-        // Linhas explicitamente marcadas como destino/retorno não são pacotes.
-        entregasBase = entregasBase.filter(r => !r.auxiliarDestino);
-
-        // Em um manifesto que contém códigos, uma entrega numerada sem código é
+        // Em um manifesto que contém códigos, uma entrega validada sem código é
         // uma inconsistência real. Não descartamos silenciosamente.
         const semCodigo = entregasBase.filter(r => r.codigos.length === 0);
         if (semCodigo.length) {

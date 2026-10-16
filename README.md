@@ -27,3 +27,13 @@ PDFs somente imagem/scan ainda dependem de OCR e não são tratados como texto c
 - Mantém agrupamento de parada física por logradouro + número e exibe numeração física sequencial no modal.
 - Adiciona diagnóstico `window.diagnosticoPdfV72` e identificação visual V72.
 - Limpa caches/service workers antigos sem apagar rota/histórico/localStorage operacional.
+
+## V73 - bipagem/PDF deterministico
+
+- Corrige o bloqueio indevido `SEQUENCIA_PARADAS_INCOMPLETA` da V72.
+- A coluna `#` nao e mais requisito de integridade da rota.
+- Para PDFs com pacotes, o BR e usado como ancora da propria faixa visual e o endereco precisa ser validado dentro dessa mesma faixa.
+- Reconstrucao de BR quebrado exige alinhamento de coluna e proximidade vertical, evitando anexar numero de parada ao codigo.
+- As entregas sao renumeradas pela ordem visual do PDF somente depois de codigo/endereco estarem associados com seguranca.
+- PDFs sem BR podem montar rota/lista, mas a bipagem por codigo permanece desabilitada.
+- Identificacao visual: `LEITOR PDF V73` e `PACOTE E MATO · V73`.
