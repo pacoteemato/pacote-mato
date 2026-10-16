@@ -79,7 +79,7 @@ function tocarIntroPs2Audio() {
         load_pdf_subtitle: "Importe a folha da sua rota para sincronizar as paradas",
         choose_pdf: "Escolher Arquivo PDF",
         metric_scanned: "Bipados",
-        metric_stops: "Paradas",
+        metric_stops: "Paradas físicas",
         metric_remaining: "Faltam",
         cam_flip: "Virar",
         flash_txt: "Flash",
@@ -124,7 +124,7 @@ function tocarIntroPs2Audio() {
         load_pdf_subtitle: "Importa la hoja de tu rota para sincronizar las paradas",
         choose_pdf: "Elegir Archivo PDF",
         metric_scanned: "Escaneados",
-        metric_stops: "Paradas",
+        metric_stops: "Paradas físicas",
         metric_remaining: "Faltam",
         cam_flip: "Girar",
         flash_txt: "Flash",
@@ -169,7 +169,7 @@ function tocarIntroPs2Audio() {
         load_pdf_subtitle: "Import your route sheet to sync stops",
         choose_pdf: "Choose PDF File",
         metric_scanned: "Scanned",
-        metric_stops: "Stops",
+        metric_stops: "Physical stops",
         metric_remaining: "Remaining",
         cam_flip: "Flip",
         flash_txt: "Flash",
@@ -2384,6 +2384,9 @@ function tocarIntroPs2Audio() {
     // para visualização e roteirização, mas a câmera de bipagem fica desativada.
     let entregasOriginaisPorEndereco = {};
     let paradaFisicaPorEndereco = {};
+    // V77: mantém separado o número ORIGINAL da entrega no PDF e o número
+    // físico do endereço agrupado. A Bipagem deve mostrar a entrega original.
+    let entregaOriginalPorPacote = {};
     let totalEntregasPdfAtual = 0;
     let pdfSemCodigosBipagem = false;
 
@@ -2781,7 +2784,7 @@ function tocarIntroPs2Audio() {
       if (dadosSalvos) {
         try {
           let parsed = JSON.parse(dadosSalvos);
-          if (Number(parsed.versaoLeitura || 0) < 72) {
+          if (Number(parsed.versaoLeitura || 0) < 77) {
             // V64 corrige a leitura/contagem do PDF. Um snapshot antigo pode conter
             // pacote fantasma; por isso a rota ativa antiga precisa ser reimportada.
             localStorage.removeItem('rota_ativa_completa');
@@ -2812,13 +2815,14 @@ function tocarIntroPs2Audio() {
         nomeExibicao: nomeExibicao,
         entregasOriginaisPorEndereco: entregasOriginaisPorEndereco,
         paradaFisicaPorEndereco: paradaFisicaPorEndereco,
+        entregaOriginalPorPacote: entregaOriginalPorPacote,
         totalEntregasPdfAtual: totalEntregasPdfAtual,
         pdfSemCodigosBipagem: pdfSemCodigosBipagem === true,
         todosPacotes: Array.from(todosPacotes),
         pacotesBipados: Array.from(pacotesBipados),
         rotaInicioEm: rotaInicioEm || Date.now(),
         resumoFinalJaExibido: resumoFinalJaExibido === true,
-        versaoLeitura: 72,
+        versaoLeitura: 77,
         salvoEm: Date.now()
       };
       localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
@@ -2830,9 +2834,9 @@ function tocarIntroPs2Audio() {
 
       try {
         let parsed = JSON.parse(dadosSalvos);
-        if (Number(parsed.versaoLeitura || 0) < 72) {
+        if (Number(parsed.versaoLeitura || 0) < 77) {
           localStorage.removeItem('rota_ativa_completa');
-          notificar('A leitura do PDF foi atualizada. Importe o arquivo novamente para usar a contagem corrigida.');
+          notificar('A numeração da Bipagem foi corrigida. Importe o mesmo PDF novamente; os pacotes já bipados serão recuperados.');
           return;
         }
         mapaRotas = parsed.mapaRotas || {};
@@ -2840,6 +2844,7 @@ function tocarIntroPs2Audio() {
         nomeExibicao = parsed.nomeExibicao || {};
         entregasOriginaisPorEndereco = parsed.entregasOriginaisPorEndereco || {};
         paradaFisicaPorEndereco = parsed.paradaFisicaPorEndereco || {};
+        entregaOriginalPorPacote = parsed.entregaOriginalPorPacote || {};
         totalEntregasPdfAtual = Number(parsed.totalEntregasPdfAtual || 0);
         pdfSemCodigosBipagem = parsed.pdfSemCodigosBipagem === true;
         todosPacotes = new Set(parsed.todosPacotes || []);
@@ -5498,6 +5503,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       pacotesBipados = new Set();
       entregasOriginaisPorEndereco = {};
       paradaFisicaPorEndereco = {};
+      entregaOriginalPorPacote = {};
       totalEntregasPdfAtual = 0;
       pdfSemCodigosBipagem = false;
 
@@ -5505,6 +5511,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .map((registro, indice) => ({
           ...registro,
           numeroParada: Number(registro?.numeroParada),
+          numeroOriginalPdf: Number(registro?.numeroOriginalPdf || registro?.numeroParada),
           endereco: limparTextoEnderecoPdfV71(registro?.endereco || ''),
           codigos: [...new Set((registro?.codigos || []).map(normalizarCodigoPacoteBr).filter(Boolean))],
           _indice: indice
@@ -5569,6 +5576,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         if (!existente) {
           porNumero.set(numero, {
             numeroParada: numero,
+            numeroOriginalPdf: Number(registro.numeroOriginalPdf || numero) || numero,
             endereco: registro.endereco,
             chaveFisica: dadosEndereco.chave,
             codigos: registro.codigos.slice(),
@@ -5577,6 +5585,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         } else {
           if (existente.chaveFisica !== dadosEndereco.chave) {
             throw new Error(`PARADA_AMBIGUA|${numero}`);
+          }
+          if (!Number.isFinite(Number(existente.numeroOriginalPdf)) && Number(registro.numeroOriginalPdf) > 0) {
+            existente.numeroOriginalPdf = Number(registro.numeroOriginalPdf);
           }
           registro.codigos.forEach(c => {
             if (!existente.codigos.includes(c)) existente.codigos.push(c);
@@ -5616,7 +5627,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         const endKey = grupo.chave;
         const enderecos = grupo.entregas.map(e => String(e.endereco || '')).filter(Boolean);
         const exibicao = enderecos.sort((a,b) => b.length - a.length || a.localeCompare(b))[0] || 'Endereço do PDF';
-        const linhasOriginais = [...new Set(grupo.entregas.map(e => Number(e.numeroParada)).filter(Number.isFinite))].sort((a,b) => a-b);
+        const linhasOriginais = [...new Set(
+          grupo.entregas
+            .map(e => Number(e.numeroOriginalPdf || e.numeroParada))
+            .filter(n => Number.isFinite(n) && n > 0)
+        )].sort((a,b) => a-b);
         const codigos = [...new Set(grupo.entregas.flatMap(e => e.codigos || []))];
 
         mapaRotas[endKey] = codigos;
@@ -5624,9 +5639,15 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         entregasOriginaisPorEndereco[endKey] = linhasOriginais;
         paradaFisicaPorEndereco[endKey] = numeroFisico;
 
-        codigos.forEach(codigo => {
-          todosPacotes.add(codigo);
-          stopCorrespondente[codigo] = numeroFisico;
+        grupo.entregas.forEach(entrega => {
+          const numeroEntregaOriginal = Number(entrega.numeroOriginalPdf || entrega.numeroParada) || numeroFisico;
+          (entrega.codigos || []).forEach(codigo => {
+            todosPacotes.add(codigo);
+            // Roteirização continua usando a parada física agrupada.
+            stopCorrespondente[codigo] = numeroFisico;
+            // Bipagem mostra a numeração exata da entrega/pacote no PDF.
+            entregaOriginalPorPacote[codigo] = numeroEntregaOriginal;
+          });
         });
       });
 
@@ -5710,6 +5731,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       nomeExibicao = {};
       todosPacotes = new Set();
       pacotesBipados = new Set();
+      entregaOriginalPorPacote = {};
 
       /*
        * Leitura específica e robusta para PDF exportado pelo rota.
@@ -5886,6 +5908,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           }
 
           stopCorrespondente[codigo] = numeroParada;
+          entregaOriginalPorPacote[codigo] = numeroParada;
         });
       });
 
@@ -6025,7 +6048,11 @@ try {
         }
         salvarEstadoCompletoRota();
 
-        const numP = stopCorrespondente[identificado] || '?';
+        const numFisico = stopCorrespondente[identificado] || '?';
+        const numeroEntregaOriginal = Number(entregaOriginalPorPacote[identificado]);
+        const numP = Number.isFinite(numeroEntregaOriginal) && numeroEntregaOriginal > 0
+          ? numeroEntregaOriginal
+          : numFisico;
         let endMatch = '';
         let listaParada = [];
 
@@ -6064,7 +6091,8 @@ try {
         atualizarProgressoParada(endMatch);
 
         liberarVozPorInteracao();
-        // Todas as entregas do mesmo imóvel usam o MESMO número físico.
+        // Na Bipagem, a voz informa a entrega original do PDF. O agrupamento físico
+        // continua sendo usado apenas para rota/progresso do mesmo endereço.
         falarParada(numP, false, null);
 
         atualizarStats();

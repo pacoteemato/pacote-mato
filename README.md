@@ -1,11 +1,9 @@
-# Pacote É Mato V76 — correções pontuais
+# Pacote É Mato V77 — Bipagem com número original da entrega
 
-Esta versão parte da V75 e altera somente os pontos solicitados:
+Correção pontual sobre a V76.
 
-- corrige o aviso de localização na importação: no Android/WebView, a posição real retornada pelo GPS passa a ser a fonte de verdade, mesmo quando `navigator.permissions` estiver desatualizado;
-- adicionar parada e editar parada passam a usar o mesmo campo de pesquisa da lista de paradas, com sugestões logo abaixo, igual à busca principal de endereços;
-- corrige exibição/salvamento de logradouro, número e complemento para não repetir número do imóvel nem apartamento;
-- corrige a operação “Adicionar pacotes à rota”: pacote que já estava na rota e foi confirmado em “Sim, manter na rota” agora permanece contado também na conferência e permite confirmar a operação sem duplicar o pacote;
-- a remoção por bipagem foi preservada e testada para não regredir.
-
-Não foram alterados o leitor PDF V73, desenho/refino, exportação PDF, Worker, Firebase, navegação, câmera, áudio ou demais regras da rota.
+- A Bipagem mostra o número original da entrega do PDF para cada pacote.
+- O número físico agrupado continua existindo apenas para rota, progresso e contagem de paradas físicas.
+- Em endereço múltiplo, o aviso continua mostrando todas as entregas juntas.
+- O progresso já bipado do mesmo PDF é reaproveitado após a reimportação.
+- Nenhuma outra área foi alterada.
