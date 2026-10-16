@@ -8,7 +8,7 @@
   let token = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem('pemato_admin_session_v1') || '';
   let ownerEmail = localStorage.getItem(EMAIL_KEY) || sessionStorage.getItem('pemato_admin_email_v1') || '';
   let tokenExpiraEm = Number(localStorage.getItem(EXPIRY_KEY) || 0);
-  let usuarios = [], pagamentos = [];
+  let usuarios = [], pagamentos = [], systemConfig = {};
   let clientFilter = 'todos';
   const DAY = 86400000;
 
@@ -111,12 +111,47 @@
   function showApp(){ $('loginView').hidden=true;$('appView').hidden=false;$('ownerIdentity').textContent=ownerEmail; }
   function showLogin(){ $('loginView').hidden=false;$('appView').hidden=true; }
 
+  function renderSystemControls(){
+    const now=Date.now();
+    const b=$('broadcastStatus');
+    const exp=Number(systemConfig.expiraEm||0);
+    const avisoAtivo=systemConfig.ativo===true && Boolean(String(systemConfig.mensagem||'').trim()) && (!exp||exp>=now);
+    if(b){
+      b.className='system-control-status'+(avisoAtivo?' active':'');
+      b.textContent=avisoAtivo
+        ? `Aviso ativo${exp?` até ${new Date(exp).toLocaleString('pt-BR')}`:''}: ${String(systemConfig.mensagem||'')}`
+        : 'Nenhum aviso ativo.';
+    }
+    const m=$('maintenanceStatus');
+    if(m){
+      const ativa=systemConfig.manutencaoAtiva===true;
+      m.className='system-control-status'+(ativa?' maintenance-on':'');
+      m.textContent=ativa
+        ? `MANUTENÇÃO ATIVA: ${String(systemConfig.manutencaoMensagem||'Acesso temporariamente indisponível.')}`
+        : 'Manutenção desativada. Os clientes podem usar o aplicativo normalmente.';
+    }
+  }
+
+  async function refreshSystemConfig(){
+    try{
+      const d=await req('/api/admin/system-config');
+      systemConfig=d.config||d.sistema||d.broadcast||{};
+      renderSystemControls();
+    }catch(e){
+      const m=$('maintenanceStatus'); if(m)m.textContent='Não foi possível consultar o estado do sistema.';
+      const b=$('broadcastStatus'); if(b)b.textContent='Não foi possível consultar o aviso atual.';
+      throw e;
+    }
+  }
+
   async function refresh(){
     try{
       const [u,p]=await Promise.all([req('/api/admin/usuarios'),req('/api/admin/pagamentos')]);
       usuarios=Array.isArray(u.usuarios)?u.usuarios:(Array.isArray(u)?u:[]);
       pagamentos=Array.isArray(p.pagamentos)?p.pagamentos:[];
-      renderAll(); toast('Dados atualizados');
+      renderAll();
+      try{await refreshSystemConfig();}catch(e){console.warn(e);}
+      toast('Dados atualizados');
     }catch(e){toast(e.message);}
   }
   function renderAll(){
@@ -176,7 +211,7 @@
     const root=$('versionsList'); if(!root)return;
     const grupos=new Map(); usuarios.forEach(u=>{const v=versionOf(u);if(!grupos.has(v))grupos.set(v,[]);grupos.get(v).push(u);});
     const itens=[...grupos.entries()].sort((a,b)=>b[1].length-a[1].length||a[0].localeCompare(b[0]));
-    root.innerHTML=itens.map(([v,list])=>{const ultimo=Math.max(0,...list.map(u=>timeValue(u.ultimoAcessoAppEm)));const plataformas=[...new Set(list.map(platformOf))].join(' · ');return `<article class="version-card"><span>VERSÃO</span><strong>${esc(v)}</strong><b>${list.length} cliente(s)</b><small>${esc(plataformas)} · último uso ${esc(dateTime(ultimo))}</small></article>`;}).join('')||'<p class="muted">Ainda não há dados de versão. Eles aparecem conforme os clientes abrirem a V75.</p>';
+    root.innerHTML=itens.map(([v,list])=>{const ultimo=Math.max(0,...list.map(u=>timeValue(u.ultimoAcessoAppEm)));const plataformas=[...new Set(list.map(platformOf))].join(' · ');return `<article class="version-card"><span>VERSÃO</span><strong>${esc(v)}</strong><b>${list.length} cliente(s)</b><small>${esc(plataformas)} · último uso ${esc(dateTime(ultimo))}</small></article>`;}).join('')||'<p class="muted">Ainda não há dados de versão. Eles aparecem conforme os clientes abrirem o aplicativo.</p>';
   }
   function bindClientButtons(root){root.querySelectorAll('[data-client]').forEach(b=>b.onclick=()=>openClient(b.dataset.client));}
   function openClient(id){
@@ -198,8 +233,10 @@
   $('logoutBtn').onclick=()=>logout(); $('refreshBtn').onclick=refresh; $('menuBtn').onclick=()=>document.querySelector('.sidebar').classList.toggle('open'); $('modalClose').onclick=()=>$('modal').hidden=true; $('modal').onclick=e=>{if(e.target===$('modal'))$('modal').hidden=true;};
   document.querySelectorAll('.sidebar nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.view)); document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>switchView(b.dataset.go));
   $('clientSearch').oninput=renderClients; document.querySelectorAll('[data-client-filter]').forEach(b=>b.onclick=()=>setClientFilter(b.dataset.clientFilter));
-  $('broadcastSend').onclick=async()=>{try{const mensagem=$('broadcastText').value.trim();if(!mensagem)throw new Error('Digite a mensagem do comunicado.');await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({ativo:true,mensagem,horas:Number($('broadcastHours').value)})});toast('Comunicado publicado');}catch(e){toast(e.message);}};
-  $('broadcastClear').onclick=async()=>{try{await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({ativo:false,mensagem:'',horas:0})});$('broadcastText').value='';toast('Comunicado removido');}catch(e){toast(e.message);}};
+  $('broadcastSend').onclick=async()=>{try{const mensagem=$('broadcastText').value.trim();if(!mensagem)throw new Error('Digite a mensagem do comunicado.');await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({ativo:true,mensagem,horas:Number($('broadcastHours').value)})});toast('Aviso publicado no mapa');await refreshSystemConfig();}catch(e){toast(e.message);}};
+  $('broadcastClear').onclick=async()=>{try{await req('/api/admin/broadcast',{method:'POST',body:JSON.stringify({ativo:false,mensagem:'',horas:0})});$('broadcastText').value='';toast('Aviso removido');await refreshSystemConfig();}catch(e){toast(e.message);}};
+  $('maintenanceEnable').onclick=async()=>{try{const mensagem=$('maintenanceText').value.trim()||'Estamos realizando uma manutenção. O acesso será liberado automaticamente assim que o serviço for normalizado.';await req('/api/admin/maintenance',{method:'POST',body:JSON.stringify({ativo:true,mensagem})});toast('Modo manutenção ativado');await refreshSystemConfig();}catch(e){toast(e.message);}};
+  $('maintenanceDisable').onclick=async()=>{try{await req('/api/admin/maintenance',{method:'POST',body:JSON.stringify({ativo:false})});toast('Manutenção encerrada');await refreshSystemConfig();}catch(e){toast(e.message);}};
 
   (async()=>{
     if(tokenExpiraEm&&tokenExpiraEm<=Date.now()){logout(false);showLogin();return;}

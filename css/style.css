@@ -639,7 +639,7 @@
       display: none;
     }
     .stop-number { font-size: 2.65rem; font-weight: 900; color: #34d399; line-height: 1; margin-bottom: 3px; }
-    .stop-address { font-size: 0.82rem; font-weight: 700; color: #ffffff; margin-bottom: 3px; line-height: 1.22; }
+    .stop-address { font-size: 0.82rem; font-weight: 700; color: #111827; margin-bottom: 3px; line-height: 1.22; }
     .stop-package-id { font-size: 0.66rem; font-weight: 800; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
     
     .result-panel.error-state {
@@ -2295,3 +2295,121 @@ h1,h2,h3 {
 .input-icon-left:empty { display: none; }
 .input-group:has(.input-icon-left:empty) .input-auth { padding-left: 14px; }
 .input-icon-right { font-size: .56rem; font-weight: 900; letter-spacing: .04em; color: var(--text-muted); }
+
+
+/* V78 — endereço da bipagem sempre legível no cartão claro */
+#resEndereco.stop-address{color:#111827!important;}
+
+
+/* ===== V79 — comunicado no mapa + bloqueio de manutenção ===== */
+.routing-global-notice{
+  margin:0 18px 12px!important;
+  display:none;
+  align-items:flex-start;
+  gap:11px;
+  padding:12px 14px!important;
+  border:1px solid #b8dfce!important;
+  border-radius:16px!important;
+  background:#f4fbf7!important;
+  color:#17211d!important;
+  box-shadow:0 8px 24px rgba(18,62,46,.08)!important;
+  animation:none!important;
+  text-align:left!important;
+}
+.routing-global-notice-icon{
+  flex:0 0 32px;
+  width:32px;height:32px;
+  display:grid;place-items:center;
+  border-radius:10px;
+  background:#159a68;
+  color:#fff;
+  font-weight:950;
+  font-size:1rem;
+}
+.routing-global-notice-copy{min-width:0}
+.routing-global-notice-copy span{
+  display:block;
+  color:#087653;
+  font-size:.62rem;
+  font-weight:950;
+  letter-spacing:.09em;
+  margin-bottom:3px;
+}
+.routing-global-notice-copy strong{
+  display:block;
+  color:#17211d!important;
+  font-size:.78rem;
+  line-height:1.38;
+  font-weight:850;
+  overflow-wrap:anywhere;
+}
+.pemato-maintenance-overlay{
+  position:fixed;
+  inset:0;
+  z-index:999990;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(245,249,247,.97);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.pemato-maintenance-card{
+  width:min(430px,100%);
+  padding:30px 25px;
+  border:1px solid #d7e8df;
+  border-radius:26px;
+  background:#fff;
+  color:#17211d;
+  text-align:center;
+  box-shadow:0 28px 80px rgba(18,62,46,.18);
+}
+.pemato-maintenance-logo{
+  width:66px;height:66px;
+  object-fit:contain;
+  margin:0 auto 15px;
+}
+.pemato-maintenance-kicker{
+  display:block;
+  color:#087653;
+  font-size:.68rem;
+  font-weight:950;
+  letter-spacing:.13em;
+}
+.pemato-maintenance-card h2{
+  margin:7px 0 10px;
+  color:#17211d!important;
+  font-size:1.55rem;
+  line-height:1.15;
+}
+.pemato-maintenance-card p{
+  margin:0;
+  color:#63716b!important;
+  font-size:.9rem;
+  line-height:1.55;
+}
+.pemato-maintenance-status{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  margin-top:20px;
+  padding:9px 12px;
+  border-radius:999px;
+  background:#edf9f4;
+  color:#087653;
+  font-size:.72rem;
+  font-weight:900;
+}
+.pemato-maintenance-status span{
+  width:8px;height:8px;border-radius:50%;
+  background:#159a68;
+  box-shadow:0 0 0 4px rgba(21,154,104,.12);
+}
+body.pemato-maintenance-active{
+  overflow:hidden!important;
+  touch-action:none;
+}
+@media(max-width:760px){
+  .routing-global-notice{margin:0 12px 10px!important}
+}

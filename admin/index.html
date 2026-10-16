@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests">
   <title>Pacote É Mato · Painel do Dono</title>
   <link rel="icon" href="../icon-192.png">
-  <link rel="stylesheet" href="admin.css?v=75">
+  <link rel="stylesheet" href="admin.css?v=79">
 </head>
 <body>
   <div id="loginView" class="login-shell">
@@ -81,7 +81,27 @@
 
       <section id="view-pagamentos" class="view"><section class="panel"><div class="panel-head"><div><span class="eyebrow">FINANCEIRO</span><h3>Pagamentos</h3></div></div><div id="paymentsList" class="payment-list"></div></section></section>
 
-      <section id="view-comunicados" class="view"><section class="panel narrow"><span class="eyebrow">COMUNICAÇÃO</span><h3>Novo comunicado</h3><label>Mensagem<textarea id="broadcastText" maxlength="500" placeholder="Mensagem para os motoristas"></textarea></label><label>Duração<select id="broadcastHours"><option value="1">1 hora</option><option value="3">3 horas</option><option value="6">6 horas</option><option value="12">12 horas</option><option value="24">24 horas</option></select></label><div class="actions"><button id="broadcastSend" class="primary">Publicar aviso</button><button id="broadcastClear" class="ghost">Apagar aviso</button></div></section></section>
+      <section id="view-comunicados" class="view">
+        <div class="admin-comms-grid">
+          <section class="panel">
+            <span class="eyebrow">COMUNICAÇÃO</span>
+            <h3>Aviso para os motoristas</h3>
+            <p class="muted">O aviso aparece somente na tela principal da rota, junto ao mapa. Ele não aparece no login nem na Bipagem.</p>
+            <div id="broadcastStatus" class="system-control-status">Nenhum aviso ativo.</div>
+            <label>Mensagem<textarea id="broadcastText" maxlength="500" placeholder="Ex.: Atualização disponível. Feche e abra o app quando terminar sua rota."></textarea></label>
+            <label>Duração<select id="broadcastHours"><option value="1">1 hora</option><option value="3">3 horas</option><option value="6">6 horas</option><option value="12">12 horas</option><option value="24">24 horas</option></select></label>
+            <div class="actions"><button id="broadcastSend" class="primary">Publicar aviso</button><button id="broadcastClear" class="ghost">Apagar aviso</button></div>
+          </section>
+          <section class="panel maintenance-admin-panel">
+            <span class="eyebrow">CONTROLE DO SISTEMA</span>
+            <h3>Modo manutenção</h3>
+            <p class="muted">Quando ativado, clientes que já entraram ficam sem acesso ao aplicativo. O login continua normal e, após autenticar, o cliente vê somente a tela de manutenção. Ao encerrar, o app é liberado automaticamente.</p>
+            <div id="maintenanceStatus" class="system-control-status">Manutenção desativada.</div>
+            <label>Mensagem da manutenção<textarea id="maintenanceText" maxlength="500" placeholder="Ex.: Estamos fazendo uma manutenção rápida. O acesso será liberado assim que terminarmos."></textarea></label>
+            <div class="actions"><button id="maintenanceEnable" class="primary">Ativar manutenção</button><button id="maintenanceDisable" class="ghost">Encerrar manutenção</button></div>
+          </section>
+        </div>
+      </section>
 
       <section id="view-seguranca" class="view"><section class="panel narrow"><span class="eyebrow">SEGURANÇA</span><h3>Proteções administrativas</h3><div class="security-grid"><div><strong>Sessão temporária</strong><span>Token assinado, persistente no dispositivo e válido por até 12 horas.</span></div><div><strong>Rate limit</strong><span>Bloqueia tentativas repetidas de login.</span></div><div><strong>Origem restrita</strong><span>O Worker aceita o painel somente a partir da origem administrativa autorizada.</span></div><div><strong>Segredos no Worker</strong><span>E-mail autorizado, PIN e chave da sessão ficam protegidos como secrets no Worker.</span></div></div><p class="muted">Ao clicar em Sair, a sessão local é apagada imediatamente e o próximo acesso exige e-mail e PIN novamente.</p></section></section>
     </main>
@@ -89,7 +109,7 @@
 
   <div id="modal" class="modal-backdrop" hidden><section class="modal"><button id="modalClose" class="modal-close">×</button><span class="eyebrow">CLIENTE</span><h3 id="modalTitle">Gerenciar conta</h3><div id="modalBody"></div></section></div>
   <div id="toast" class="toast" hidden></div>
-  <script src="config.js?v=75"></script>
-  <script src="admin.js?v=75"></script>
+  <script src="config.js?v=79"></script>
+  <script src="admin.js?v=79"></script>
 </body>
 </html>

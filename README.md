@@ -1,9 +1,13 @@
-# Pacote É Mato V77 — Bipagem com número original da entrega
+# Pacote É Mato V79 — avisos no mapa e modo manutenção
 
-Correção pontual sobre a V76.
+Alterações desta versão:
+- comunicado do dono aparece somente em Minha rota / mapa;
+- comunicado não aparece no login nem na Bipagem;
+- painel do dono ganhou Modo manutenção;
+- manutenção bloqueia a área interna do app após autenticação e libera automaticamente em tempo real quando encerrada;
+- login continua disponível durante manutenção;
+- aviso e manutenção usam o documento já existente `sistema_config/broadcast`;
+- não exige nova coleção nem nova regra do Firestore;
+- requer publicar o Worker `cloudflare/WORKER-HOLY-FROG-V79-AVISOS-MANUTENCAO-COMPLETO.txt`.
 
-- A Bipagem mostra o número original da entrega do PDF para cada pacote.
-- O número físico agrupado continua existindo apenas para rota, progresso e contagem de paradas físicas.
-- Em endereço múltiplo, o aviso continua mostrando todas as entregas juntas.
-- O progresso já bipado do mesmo PDF é reaproveitado após a reimportação.
-- Nenhuma outra área foi alterada.
+Fora desses pontos, a V78 foi preservada.

@@ -1412,6 +1412,7 @@ function tocarIntroPs2Audio() {
       document.getElementById('avisoRenovacao').style.display = 'block';
       document.getElementById('btnTesteGratis').style.display = 'none';
       document.getElementById('telaBloqueio').style.display = 'flex';
+      setTimeout(atualizarCamadasSistemaConfig, 0);
       document.getElementById('areaPlanosRenovacao').querySelector('h3').textContent = 'Renove seu acesso';
     }
     function limparAvisoRenovacao() {
@@ -1473,6 +1474,7 @@ function tocarIntroPs2Audio() {
           document.getElementById('diasRestantes').innerText = "Acesso Ativo";
         }
         document.getElementById('telaBloqueio').style.display = 'none';
+        setTimeout(atualizarCamadasSistemaConfig, 0);
 
       });
     }
@@ -1502,6 +1504,7 @@ function tocarIntroPs2Audio() {
       msgErro.innerText = motivo;
       msgErro.style.display = 'block';
       document.getElementById('telaBloqueio').style.display = 'flex';
+      setTimeout(atualizarCamadasSistemaConfig, 0);
     }
 
     function sairDoApp() {
@@ -1527,6 +1530,7 @@ function tocarIntroPs2Audio() {
       document.getElementById('areaExecucao').style.display = 'none';
       
       document.getElementById('telaBloqueio').style.display = 'flex';
+      setTimeout(atualizarCamadasSistemaConfig, 0);
       notificar(" Você foi desconectado.");
     }
 
@@ -1545,6 +1549,7 @@ function tocarIntroPs2Audio() {
         } catch(e) {}
       }
       document.getElementById('telaBloqueio').style.display = 'flex';
+      setTimeout(atualizarCamadasSistemaConfig, 0);
     });
 
     // ==========================================
@@ -2291,22 +2296,74 @@ function tocarIntroPs2Audio() {
       }
     }
 
-    function iniciarMonitoramentoBroadcast() {
-      db.collection("sistema_config").doc("broadcast").onSnapshot(doc => {
-        let banner = document.getElementById('bannerBroadcast');
-        if (doc.exists) {
-          let data = doc.data();
-          let agora = Date.now();
+    let sistemaConfigGlobalAtual = {};
 
-          if (data.ativo && data.mensagem && (agora <= data.expiraEm || !data.expiraEm)) {
-            banner.innerHTML = `<span style="font-size:1.1rem; vertical-align:middle;"></span> <b>AVISO GERAL:</b> ${data.mensagem}`;
-            banner.style.display = 'block';
-          } else {
-            banner.style.display = 'none';
-          }
-        } else {
-          banner.style.display = 'none';
+    function usuarioAutenticadoNoApp() {
+      const telaLogin = document.getElementById('telaBloqueio');
+      const loginVisivel = telaLogin && getComputedStyle(telaLogin).display !== 'none';
+      const zap = usuarioAtualZap || localStorage.getItem('usuario_zap_salvo') || '';
+      return Boolean(zap && auth.currentUser && !loginVisivel);
+    }
+
+    function atualizarBannerBroadcast() {
+      const banner = document.getElementById('bannerBroadcast');
+      const mensagemEl = document.getElementById('bannerBroadcastMessage');
+      if (!banner || !mensagemEl) return;
+
+      const data = sistemaConfigGlobalAtual || {};
+      const agora = Date.now();
+      const expiraEm = Number(data.expiraEm || 0);
+      const ativo = data.ativo === true && Boolean(String(data.mensagem || '').trim()) && (!expiraEm || agora <= expiraEm);
+
+      if (ativo && usuarioAutenticadoNoApp()) {
+        mensagemEl.textContent = String(data.mensagem || '').trim();
+        banner.style.display = 'flex';
+      } else {
+        mensagemEl.textContent = '';
+        banner.style.display = 'none';
+      }
+    }
+
+    function aplicarManutencaoGlobal() {
+      const overlay = document.getElementById('maintenanceOverlay');
+      const mensagemEl = document.getElementById('maintenanceMessage');
+      if (!overlay || !mensagemEl) return;
+
+      const data = sistemaConfigGlobalAtual || {};
+      const ativa = data.manutencaoAtiva === true;
+      const autenticado = usuarioAutenticadoNoApp();
+
+      if (ativa && autenticado) {
+        mensagemEl.textContent = String(data.manutencaoMensagem || '').trim() ||
+          'Estamos realizando uma manutenção. O acesso será liberado automaticamente assim que o serviço for normalizado.';
+        overlay.style.display = 'flex';
+        document.body.classList.add('pemato-maintenance-active');
+        try { finalizarCameraHardware(); } catch (_) {}
+      } else {
+        overlay.style.display = 'none';
+        document.body.classList.remove('pemato-maintenance-active');
+      }
+    }
+
+    function atualizarCamadasSistemaConfig() {
+      atualizarBannerBroadcast();
+      aplicarManutencaoGlobal();
+    }
+
+    function iniciarMonitoramentoBroadcast() {
+      try {
+        if (window.__pematoSistemaConfigUnsub) {
+          window.__pematoSistemaConfigUnsub();
+          window.__pematoSistemaConfigUnsub = null;
         }
+      } catch (_) {}
+
+      window.__pematoSistemaConfigUnsub = db.collection("sistema_config").doc("broadcast").onSnapshot(doc => {
+        sistemaConfigGlobalAtual = doc.exists ? (doc.data() || {}) : {};
+        atualizarCamadasSistemaConfig();
+      }, erro => {
+        console.warn('Pacote É Mato: não foi possível atualizar avisos/manutenção.', erro);
+        atualizarCamadasSistemaConfig();
       });
     }
 
@@ -2628,19 +2685,23 @@ function tocarIntroPs2Audio() {
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    // V74 - marca a versão realmente carregada; o leitor PDF permanece V73, sem alterações.
-    // Isso ajuda a evitar que o WebView continue executando V69/V70 depois de
-    // uma atualização do GitHub Pages. Não apaga dados operacionais do usuário.
+    // Controle de build: usa a versão declarada pelo index.html.
+    // Assim uma versão futura não fica presa a um número antigo neste arquivo.
+    // Ao detectar troca de build, limpa apenas caches/Service Workers de interface;
+    // os dados operacionais do usuário permanecem intactos.
     try {
-      window.PEMATO_BUILD = '74';
-      localStorage.setItem('pemato_build_carregado', '74');
-      if ('caches' in window) {
-        caches.keys().then(chaves => Promise.all(chaves.map(chave => caches.delete(chave)))).catch(() => {});
-      }
-      if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
-        navigator.serviceWorker.getRegistrations().then(regs =>
-          Promise.all(regs.map(reg => reg.unregister()))
-        ).catch(() => {});
+      const buildAtual = String(window.PEMATO_BUILD || '').trim() || '79';
+      const buildAnterior = String(localStorage.getItem('pemato_build_carregado') || '').trim();
+      localStorage.setItem('pemato_build_carregado', buildAtual);
+      if (buildAnterior !== buildAtual) {
+        if ('caches' in window) {
+          caches.keys().then(chaves => Promise.all(chaves.map(chave => caches.delete(chave)))).catch(() => {});
+        }
+        if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+          navigator.serviceWorker.getRegistrations().then(regs =>
+            Promise.all(regs.map(reg => reg.unregister()))
+          ).catch(() => {});
+        }
       }
     } catch (_) {}
 
@@ -5348,7 +5409,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               `A entrega ${partes[1] || ''} apareceu com dois endereços diferentes no PDF. A rota não foi liberada para evitar associação incorreta.`;
           } else if (msg.startsWith('SEQUENCIA_PARADAS_INCOMPLETA|')) {
             mensagemErro =
-              'Este formato não pôde ser reconstruído pelo leitor legado. O leitor V73 usa a ordem visual e a própria faixa de cada entrega; nenhuma rota parcial foi liberada.';
+              'Este formato não pôde ser reconstruído com segurança. A leitura usa a ordem visual e a própria faixa de cada entrega; nenhuma rota parcial foi liberada.';
           } else if (msg.startsWith('PACOTE_EM_DUAS_PARADAS|')) {
             mensagemErro =
               'O mesmo código de pacote apareceu associado a duas entregas diferentes. A rota foi bloqueada para evitar uma bipagem incorreta.';
