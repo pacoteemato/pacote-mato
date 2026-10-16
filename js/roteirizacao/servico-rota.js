@@ -4,11 +4,7 @@
   function cfg() { return global.PEMATO_MAP_CONFIG || {}; }
 
   function endpoint(nome) {
-    const mapa = { optimize: 'pemato_optimize_endpoint', route: 'pemato_route_endpoint' };
-    try {
-      const salvo = localStorage.getItem(mapa[nome]);
-      if (salvo) return salvo;
-    } catch (_) {}
+    // V66: não usa mais endpoints antigos salvos no aparelho.
     return nome === 'optimize' ? String(cfg().optimizeEndpoint || '') : String(cfg().routeEndpoint || '');
   }
 
@@ -45,7 +41,7 @@
           credentials: 'omit', body: JSON.stringify(body), signal: controller.signal
         });
       } catch (redeErro) {
-        const erro = new Error('O app não conseguiu acessar o Worker de rotas. Confira se https://pacoteemato.github.io está autorizado em ALLOWED_ORIGINS no Cloudflare.');
+        const erro = new Error('Não foi possível conectar ao Holy-Frog de rotas. O app já está apontando para o backend oficial; verifique a publicação do Worker e tente novamente.');
         erro.code = redeErro?.name === 'AbortError' ? 'ROUTING_TIMEOUT' : 'ROUTING_NETWORK';
         erro.cause = redeErro;
         throw erro;
