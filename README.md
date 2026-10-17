@@ -1,43 +1,43 @@
-# Pacote É Mato — V81 HOTFIX FINAL
+# Pacote É Mato — V81 HOTFIX FINAL 3
 
-Versão final congelada da V81, construída sobre `Pacote-Em-Mato-V81-NAVEGACAO-FLUIDA` com alterações cirúrgicas no agrupamento físico de endereços e na experiência de navegação interna.
+Versão V81 com a **regra definitiva de paradas físicas** aplicada sobre o `Pacote-Em-Mato-V81-HOTFIX-FINAL-2`.
 
+## Regra definitiva de parada física
 
-## Hotfix crítico — pacotes x entregas x paradas
+A identidade da parada física considera **somente**:
 
-- A formação física agora segue obrigatoriamente **PACOTE → ENTREGA ORIGINAL DO PDF → PARADA FÍSICA**.
-- Vários BRs com o mesmo `numeroOriginalPdf` são recompostos na mesma entrega antes de qualquer comparação de endereço.
-- Uma entrega com vários BRs não pode mais virar várias paradas por fragmentação visual do PDF.
-- Somente depois da reconstrução da entrega é aplicada a chave física conservadora de rua/número/unidade.
-- `Paradas Múltiplas` passa a considerar tanto mais de uma entrega quanto mais de um pacote associado à mesma parada física.
-- `BIPADOS` e `FALTAM` continuam contando pacotes; `PARADAS FÍSICAS` continua contando apenas os destinos físicos.
-- `js/bipagem/`: **0 arquivos modificados**.
+```text
+LOGRADOURO NORMALIZADO + NÚMERO PRINCIPAL DO IMÓVEL
+```
 
-## Implementado nesta revisão final
+Apartamento, bloco, torre, sala, loja, casa interna, unidade, andar e demais complementos **não participam da chave de agrupamento**. Eles continuam preservados como informações de entrega para exibição ao motorista.
 
-- Identidade física conservadora: via + logradouro + número + unidade/complemento contextual quando existir.
-- Normalização segura de AP/APTO/APARTAMENTO, BL/BLOCO, TORRE, CASA, SALA, LOJA, UNIDADE, CONJUNTO, ANDAR, FUNDOS e edifício/prédio explícito.
-- Complemento ausente em apenas uma entrega ou complemento incompleto não é usado para fundir destinos.
-- Diagnóstico `[PACOTE É MATO][AGRUPAMENTO]` explica decisões JUNTAS/SEPARADAS e a chave física final.
-- `OVERVIEW` e `NAVIGATION-ACTIVE` são estados separados.
-- Navigation-active usa câmera próxima, heading/pitch, offset do motorista, GPS visual suavizado, map matching apenas visual e recentralização completa.
-- Estilo vetorial de navegação aumenta contraste de vias e labels sem trocar o provedor OpenFreeMap.
-- Geometria da rota não recebe simplificação adicional na renderização da navegação.
-- Painel de manobras usa instruções reais do provedor, com SVGs próprios, segunda manobra e tratamento de rotatória quando os dados existem.
-- Bottom sheet permanece compacto no modo ativo e expansível pelo grabber.
-- Histórico concluído e restauração de sessão da V81 anterior foram preservados.
-- Cache-buster/build desta revisão foi alterado para evitar que uma instalação V81 anterior reutilize JS/CSS antigo.
+Exemplo:
 
-## Proteções de regressão
+```text
+Rua Ancara, 105, Bloco 3, Apto 903
+Rua Ancara, 105, Bloco 1, Apto 501
+=> UMA PARADA FÍSICA
+```
 
-- Arquivos em `js/bipagem/`: **0 modificados**.
-- Módulos de importação separados (`js/importacao/`) permanecem byte a byte iguais à base recebida.
-- `entregaOriginalPorPacote` e validação dos códigos BR continuam preservados.
-- A lógica de otimização não foi alterada; o teste de equivalência V80/V81 continua escolhendo o mesmo vencedor com as mesmas respostas de teste.
+Se o número principal não puder ser determinado com segurança, a entrega fica isolada; o sistema não agrupa somente pelo nome da rua e nunca usa número de apartamento/bloco como substituto do número principal.
 
-Consulte `docs/RELATORIO-V81-ENDERECOS-NAVEGACAO.md` para a comparação antes/depois, testes executados, limitações e riscos restantes.
+## Pacotes, entregas e Bipagem
 
+- A formação continua seguindo **PACOTE → ENTREGA ORIGINAL DO PDF → PARADA FÍSICA**.
+- Vários BRs de uma mesma entrega permanecem dentro da entrega original.
+- `entregaOriginalPorPacote[BR]` continua preservando a numeração original do PDF.
+- Uma parada com `pacotes.length > 1` é uma **PARADA MÚLTIPLA**.
+- Agrupar pacotes na mesma parada **não** os bipa juntos. Cada BR continua independente.
+- `BIPADOS` e `FALTAM` contam pacotes; `PARADAS FÍSICAS` conta destinos físicos.
+- `js/bipagem/`: **0 arquivos modificados** nesta revisão.
 
-## V81 HOTFIX FINAL 2 — Mapa, sessão e manobras
+## Validação desta revisão
 
-Esta versão mantém congelado o HOTFIX aprovado de pacotes múltiplos/paradas físicas e altera somente mapa base clean, persistência de sessão, navigation-active e interpretação de manobras/multi-leg. Veja `docs/RELATORIO-V81-ENDERECOS-NAVEGACAO.md`.
+- Regra sintética completa do manifesto Spoke de 123 pacotes: **107 paradas / 8 múltiplas / 24 pacotes em múltiplas**.
+- `91.pdf` real processado pelo parser do app: **102 pacotes / 78 paradas / 18 múltiplas / 42 pacotes em múltiplas**.
+- Apartamentos/blocos diferentes no mesmo logradouro+número permaneceram na mesma parada.
+- Todos os BRs permaneceram independentes.
+- A otimização, mapa, login, navigation-active e manobras do HOTFIX FINAL 2 não foram alterados por esta revisão, salvo o novo cache-buster de `app.js`.
+
+Consulte `docs/RELATORIO-V81-ENDERECOS-NAVEGACAO.md` para os testes, comparação e limitações.

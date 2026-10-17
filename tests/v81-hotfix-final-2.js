@@ -8,44 +8,19 @@ const ok=(c,m)=>{if(!c) throw new Error(m); console.log('OK  '+m)};
 const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const hashText=t=>crypto.createHash('sha256').update(t).digest('hex');
 
-// 1) Bloco congelado: não basta comparar js/bipagem; compara também funções centrais do HOTFIX aprovado.
+// 1) REGRA DEFINITIVA FINAL 3: agrupamento físico mudou por decisão explícita.
+// Bipagem e otimização continuam protegidas por hash; complementos deixam de decidir parada.
 const app=fs.readFileSync(path.join(ROOT,'js/app.js'),'utf8');
-function span(nome,proximo){
-  const a=app.indexOf('function '+nome+'('); const b=app.indexOf('function '+proximo+'(',a+1);
-  if(a<0||b<0) throw new Error('span não encontrado: '+nome+' -> '+proximo);
-  return app.slice(a,b);
-}
-const frozenSpans={
-  decomporEnderecoFisicoPdfV71:['chaveFisicaPdfV71','7067952a6d3b6368583da7e8a37e2405ae1ef05264410272a784e2eb70c3b17e'],
-  chaveFisicaPdfV71:['agruparItensEmLinhasPdfV71','6b609d46bd0921953dc8b62a3ee978201429be592ff1468bbec5ce7e3bf68917'],
-  normalizarRegistrosPdfV73:['reconstruirEntregasOriginaisV81','2f4f4081155e3bb3e0e6d3cc46d7ebea4bc7c639f8caf8fcc1b2f127bf9a280f'],
-  processarRegistrosrota:['processarLinhasExatas','79e2a27d9e435e36716e8e295e42a6a095b88e221523c68ddc056a9d973f0b43']
-};
-// typo-resistant expected for processarRegistrosrota is checked separately below against a direct base hash injected from approved artifact.
-for(const [nome,[prox,h]] of Object.entries(frozenSpans)){
-  ok(hashText(span(nome,prox))===h,'bloco congelado intacto: '+nome);
-}
-function functionBlock(nome){
-  const start=app.indexOf('function '+nome+'('); if(start<0) throw new Error('função ausente '+nome);
-  let i=app.indexOf('{',start),d=0,q=null,esc=false,line=false,bc=false;
-  for(;i<app.length;i++){
-    const c=app[i],n=app[i+1];
-    if(line){if(c==='\n')line=false;continue} if(bc){if(c==='*'&&n==='/'){bc=false;i++}continue}
-    if(q){if(esc){esc=false;continue} if(c==='\\'){esc=true;continue} if(c===q)q=null;continue}
-    if(c==='/'&&n==='/'){line=true;i++;continue} if(c==='/'&&n==='*'){bc=true;i++;continue}
-    if(c==='"'||c==="'"||c==='`'){q=c;continue} if(c==='{')d++; else if(c==='}'&&--d===0)return app.slice(start,i+1);
-  }
-  throw new Error('fim ausente '+nome);
-}
-ok(hashText(functionBlock('reconstruirEntregasOriginaisV81'))==='46fdf92493bab1a9f4df3fb6c24c60c3bd4af52f3b594671d83216466002031b','reconstruirEntregasOriginaisV81 congelada');
-ok(hashText(functionBlock('extrairUnidadeEnderecoPdfV81'))==='1de60e43b91252b15f46142bcda550124171b8b678ec680c47de03b1724ca295','extrairUnidadeEnderecoPdfV81 congelada');
 const protectedHashes={
  'js/bipagem/bipagem-area.js':'8254623dc75a4620a81f95baba39f07bbf9392c950e4810ea9bf043f6894ff7a',
  'js/bipagem/operacoes-pacotes.js':'c6b1bbb874055323efa833ac8bfcac26e13dff91812fe89d28491af26de688a1',
  'js/bipagem/rota-ativa-bridge.js':'6eda7298a85a1b4a89a7f5ef3de34874bd8fa304dcb35030a8086b330fd82610',
  'js/roteirizacao/roteirizacao.js':'b5f80a0fc471d8297c0cd326b944f3eff2f3156d36237e52e0919fc3ed8f91f4'
 };
-for(const [rel,h] of Object.entries(protectedHashes)) ok(sha(path.join(ROOT,rel))===h,'hash congelado: '+rel);
+for(const [rel,h] of Object.entries(protectedHashes)) ok(sha(path.join(ROOT,rel))===h,'hash protegido: '+rel);
+ok(/const chave = chaveBase;/.test(app),'chave física ignora apartamento/bloco/torre e usa somente a base');
+ok(/detalhesEntregasPorEndereco/.test(app),'complementos continuam preservados para exibição');
+ok(!/const chave = `\$\{chaveBase\}\|u:/.test(app),'não existe mais unidade anexada à chave física');
 
 // 2) Mapa clean real contra um mock de layers Liberty-like.
 const config=fs.readFileSync(path.join(ROOT,'js/mapa/config.js'),'utf8');

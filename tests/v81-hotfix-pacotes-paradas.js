@@ -60,10 +60,10 @@ for (const e of entregas) {
   if (!gruposFisicos.has(e.chaveFisica)) gruposFisicos.set(e.chaveFisica, []);
   gruposFisicos.get(e.chaveFisica).push(e);
 }
-ok(gruposFisicos.size === 2, '3 entregas e 6 pacotes resultam em 2 paradas físicas');
-const grupos = [...gruposFisicos.values()];
-ok(grupos.some(g => g.some(e => e.numeroOriginalPdf === 119) && g.some(e => e.numeroOriginalPdf === 120)), 'entregas 119 e 120 equivalentes compartilham a mesma parada');
-ok(grupos.some(g => g.length === 1 && g[0].numeroOriginalPdf === 121), 'entrega 121 / apto 20 fica em parada separada');
+ok(gruposFisicos.size === 1, 'mesma Rua X, 100 gera UMA parada mesmo com aptos 10 e 20');
+const grupoRua100 = [...gruposFisicos.values()][0];
+ok(grupoRua100.length === 3, 'entregas PDF 119, 120 e 121 compartilham a mesma parada física');
+ok(grupoRua100.reduce((n,e)=>n+e.codigos.length,0) === 6, 'a parada física mantém os 6 pacotes independentes');
 
 // entregaOriginalPorPacote deve permanecer independente da posição física.
 const entregaOriginalPorPacote = {};
@@ -79,14 +79,14 @@ const fragmentada = H.reconstruirEntregasOriginaisV81([
 ok(fragmentada.length === 1 && fragmentada[0].codigos.length === 2, 'complemento fragmentado da mesma entrega mantém os pacotes juntos');
 ok(fragmentada[0].unidadeNormalizada === 'apt:501', 'versão completa do complemento vence fragmento incompleto da mesma entrega');
 
-// Entregas diferentes: unidade diferente separa, unidade equivalente junta.
+// Entregas diferentes com mesmo logradouro+número ficam juntas, independente do complemento.
 const ancara = H.reconstruirEntregasOriginaisV81([
   { numeroParada: 20, numeroOriginalPdf: 119, origemLeitura: 'deterministico-v73', endereco: 'R Ancara, 105, Bloco 1, Apto 501', codigos: [BR(20)], _indice: 0 },
   { numeroParada: 21, numeroOriginalPdf: 120, origemLeitura: 'deterministico-v73', endereco: 'Rua Ancara, 105, BL 1, APTO 501', codigos: [BR(21)], _indice: 1 },
   { numeroParada: 22, numeroOriginalPdf: 121, origemLeitura: 'deterministico-v73', endereco: 'R Ancara, 105, Bloco 2, Apto 1208', codigos: [BR(22)], _indice: 2 }
 ]);
-ok(ancara[0].chaveFisica === ancara[1].chaveFisica, 'Ancara bloco 1 apto 501 normalizado junta entregas equivalentes');
-ok(ancara[0].chaveFisica !== ancara[2].chaveFisica, 'Ancara bloco 2 apto 1208 permanece separado');
+ok(ancara[0].chaveFisica === ancara[1].chaveFisica && ancara[1].chaveFisica === ancara[2].chaveFisica, 'Ancara 105: blocos/apartamentos diferentes continuam na MESMA parada');
+ok(ancara.every(e => e.chaveFisica === e.chaveBase), 'chave física final é somente logradouro normalizado + número principal');
 
 // Se a mesma entrega original trouxer ruas/números contraditórios, bloqueia em vez de criar uma parada por BR.
 let conflito = '';

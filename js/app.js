@@ -2748,6 +2748,9 @@ function tocarIntroPs2Audio() {
     // para visualização e roteirização, mas a câmera de bipagem fica desativada.
     let entregasOriginaisPorEndereco = {};
     let paradaFisicaPorEndereco = {};
+    // HOTFIX FINAL 3: complementos permanecem disponíveis para o motorista,
+    // mas nunca participam da identidade da parada física.
+    let detalhesEntregasPorEndereco = {};
     // V77: mantém separado o número ORIGINAL da entrega no PDF e o número
     // físico do endereço agrupado. A Bipagem deve mostrar a entrega original.
     let entregaOriginalPorPacote = {};
@@ -3183,6 +3186,7 @@ function tocarIntroPs2Audio() {
         nomeExibicao: nomeExibicao,
         entregasOriginaisPorEndereco: entregasOriginaisPorEndereco,
         paradaFisicaPorEndereco: paradaFisicaPorEndereco,
+        detalhesEntregasPorEndereco: detalhesEntregasPorEndereco,
         entregaOriginalPorPacote: entregaOriginalPorPacote,
         totalEntregasPdfAtual: totalEntregasPdfAtual,
         pdfSemCodigosBipagem: pdfSemCodigosBipagem === true,
@@ -3190,7 +3194,7 @@ function tocarIntroPs2Audio() {
         pacotesBipados: Array.from(pacotesBipados),
         rotaInicioEm: rotaInicioEm || Date.now(),
         resumoFinalJaExibido: resumoFinalJaExibido === true,
-        versaoLeitura: 77,
+        versaoLeitura: 81.3,
         salvoEm: Date.now()
       };
       localStorage.setItem('rota_ativa_completa', JSON.stringify(dados));
@@ -3202,9 +3206,9 @@ function tocarIntroPs2Audio() {
 
       try {
         let parsed = JSON.parse(dadosSalvos);
-        if (Number(parsed.versaoLeitura || 0) < 77) {
+        if (Number(parsed.versaoLeitura || 0) < 81.3) {
           localStorage.removeItem('rota_ativa_completa');
-          notificar('A numeração da Bipagem foi corrigida. Importe o mesmo PDF novamente; os pacotes já bipados serão recuperados.');
+          notificar('A regra de paradas físicas foi atualizada. Importe o mesmo PDF novamente; os pacotes já bipados serão recuperados.');
           return;
         }
         mapaRotas = parsed.mapaRotas || {};
@@ -3212,6 +3216,7 @@ function tocarIntroPs2Audio() {
         nomeExibicao = parsed.nomeExibicao || {};
         entregasOriginaisPorEndereco = parsed.entregasOriginaisPorEndereco || {};
         paradaFisicaPorEndereco = parsed.paradaFisicaPorEndereco || {};
+        detalhesEntregasPorEndereco = parsed.detalhesEntregasPorEndereco || {};
         entregaOriginalPorPacote = parsed.entregaOriginalPorPacote || {};
         totalEntregasPdfAtual = Number(parsed.totalEntregasPdfAtual || 0);
         pdfSemCodigosBipagem = parsed.pdfSemCodigosBipagem === true;
@@ -3341,7 +3346,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             entregasPdf,
             numeroFisico,
             quantidadeEntregas: entregasPdf.length || 1,
-            quantidadePacotes: pacotes.length
+            quantidadePacotes: pacotes.length,
+            detalhesEntregas: Array.isArray(detalhesEntregasPorEndereco[end]) ? detalhesEntregasPorEndereco[end] : []
           };
         })
         .sort((a,b) => a.numeroFisico - b.numeroFisico);
@@ -3405,6 +3411,16 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             </div>
 
             <div class="endereco-texto-pro">${dados.endereco}</div>
+
+            ${dados.detalhesEntregas.some(item => item.complemento) ? `
+              <div style="margin-top:8px;display:grid;gap:5px;">
+                ${dados.detalhesEntregas
+                  .filter(item => item.complemento)
+                  .map(item => `<div style="font-size:.72rem;color:var(--text-muted);font-weight:700;line-height:1.35;">
+                    Entrega ${escaparHtmlHistorico(item.entregaPdf)}: ${escaparHtmlHistorico(item.complemento)}
+                  </div>`).join('')}
+              </div>
+            ` : ''}
 
             ${origemTexto && !ehMultipla ? `
               <div style="margin-top:7px;font-size:.72rem;color:var(--text-muted);font-weight:700;">
@@ -3699,8 +3715,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
       if (!ruaBruta || !numero) return null;
 
-      // Complementos de unidade fazem parte da identidade física.
-      // Ex: Apt 12 != Apt 13
+      // Complementos são preservados como informação operacional da entrega.
+      // Eles NÃO participam da identidade da parada física.
       let complemento = String(m[3] || '')
         .replace(/^[,\s]+/, '')
         .replace(/[.,\-_/]+/g, ' ')
@@ -3731,16 +3747,16 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     }
 
     function normalizarEndereco(texto) {
-      // V81 FINAL: a identidade física não pode ser somente rua + número.
-      // Reutiliza o mesmo parser conservador da criação das paradas físicas,
-      // para que os fallbacks do leitor não reintroduzam falsos agrupamentos.
+      // V81 HOTFIX FINAL 3 — REGRA DEFINITIVA DE PARADA FÍSICA:
+      // complemento (apto/bloco/torre/sala/loja/casa/unidade/andar etc.)
+      // continua armazenado, mas NÃO participa da chave física.
       const fisico = decomporEnderecoFisicoPdfV71(texto);
-      if (fisico?.chave) return fisico.chave;
+      if (fisico?.chaveBase) return fisico.chaveBase;
 
-      // Compatibilidade para formatos antigos que o parser V71 não reconhece.
-      // Mesmo aqui, complemento de unidade reconhecido entra na chave.
+      // Compatibilidade para formatos antigos: somente logradouro normalizado
+      // + número PRINCIPAL do imóvel. Nunca usa complemento como identidade.
       const d = decomporEnderecorota(texto);
-      if (!d) return "";
+      if (!d || d.numero === 'sn') return "";
       const aliases = {
         'mq': 'marques',
         'cnsl': 'conselheiro',
@@ -3749,8 +3765,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         'p': 'paes'
       };
       const rua = d.tokensRua.map(t => aliases[t] || t).join('');
-      const unidade = extrairUnidadeEnderecoPdfV81(d.complemento || '').chave;
-      return `${rua}_${d.numero}|u:${unidade || '-'}`;
+      return `${rua}_${d.numero}`;
     }
 
     function linhaPareceEnderecorota(texto) {
@@ -4039,6 +4054,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       while ((m = reNumero.exec(corpo))) {
         const antes = corpo.slice(0, m.index);
         const depois = corpo.slice(m.index + m[0].length);
+        // CEP brasileiro (ex.: 03195-010) nunca é número principal do imóvel.
+        if (/^\d{5}$/.test(m[1]) && /^-\d{3}\b/.test(depois)) continue;
+        if (/^\d{3}$/.test(m[1]) && /\d{5}-\s*$/.test(antes)) continue;
         const anterior = antes.match(/([A-Za-zÀ-ÿ.]+)\s*$/)?.[1] || '';
         const prox = depois.replace(/^\s+/, '');
         if (/^(?:ap|apt|apto|apartamento|bl|bloco|torre|sala|cj|conj|conjunto|andar|loja|casa|unid|unidade|fundos?|edificio|pr[eé]dio)\.?$/i.test(anterior)) continue;
@@ -4052,7 +4070,36 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         escolhido = { valor: m[1], indice: m.index, fim: m.index + m[0].length };
         break;
       }
-      if (!escolhido) return null;
+      if (!escolhido) {
+        // Endereço sem número principal seguro: preserva para roteirização/revisão,
+        // mas NÃO fornece chave compartilhável. Cada entrega ficará isolada.
+        const primeiraParte = corpo.split(',')[0].trim();
+        const tipoSemNumeroMatch = primeiraParte.match(/^\s*(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel|Acesso|Condom[ií]nio|Residencial|S[ií]tio|Fazenda|Ch[aá]cara)\s+/i);
+        const tipoSemNumero = normalizarTipoViaPdfV71(tipoSemNumeroMatch?.[1] || 'via');
+        const ruaSemNumero = tipoSemNumeroMatch ? primeiraParte.slice(tipoSemNumeroMatch[0].length).trim() : primeiraParte;
+        const tokensSemNumero = removerAcentosPdfV71(ruaSemNumero)
+          .toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean)
+          .filter(t => !['da','de','do','das','dos','e'].includes(t)).map(expandirTokenRuaPdfV71).filter(Boolean);
+        if (!tokensSemNumero.length) return null;
+        const caudaSemNumero = corpo.includes(',') ? corpo.slice(corpo.indexOf(',') + 1).trim() : '';
+        const unidadeSemNumero = extrairUnidadeEnderecoPdfV81(caudaSemNumero);
+        return {
+          original: texto,
+          tipo: tipoSemNumero,
+          numero: '',
+          semNumero: true,
+          tokensRua: tokensSemNumero,
+          ruaCanonica: tokensSemNumero.join(' '),
+          enderecoBaseExibicao: primeiraParte,
+          complementoBruto: caudaSemNumero,
+          complementoNormalizado: unidadeSemNumero.chave,
+          temComplementoUnidade: unidadeSemNumero.temUnidade,
+          complementoSeguro: unidadeSemNumero.segura,
+          complementosIncompletos: unidadeSemNumero.incompletos,
+          chaveBase: '',
+          chave: ''
+        };
+      }
 
       const antesNumero = corpo.slice(0, escolhido.indice).trim().replace(/[,:;\-]+$/g, '').trim();
       if (!/[A-Za-zÀ-ÿ]/.test(antesNumero)) return null;
@@ -4073,8 +4120,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       if (!numero) return null;
       const cauda = corpo.slice(escolhido.fim).replace(/^\s*[,;\-]\s*/, '').trim();
       const unidade = extrairUnidadeEnderecoPdfV81(cauda);
+      // REGRA DEFINITIVA: parada física = logradouro normalizado + número principal.
+      // O complemento continua extraído para exibição/diagnóstico, porém não decide agrupamento.
       const chaveBase = `${tipo}|${tokensRua.join('')}|${numero}`;
-      const chave = `${chaveBase}|u:${unidade.chave || '-'}`;
+      const chave = chaveBase;
+      const enderecoBaseExibicao = corpo.slice(0, escolhido.fim).trim().replace(/[,:;\-]+$/g, '').trim();
 
       return {
         original: texto,
@@ -4082,6 +4132,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         numero,
         tokensRua,
         ruaCanonica: tokensRua.join(' '),
+        enderecoBaseExibicao,
         complementoBruto: cauda,
         complementoNormalizado: unidade.chave,
         temComplementoUnidade: unidade.temUnidade,
@@ -6030,35 +6081,17 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         // Uma mesma entrega original não pode apontar para duas ruas/números
         // diferentes. Em vez de separar os pacotes, bloqueamos o dado contraditório.
         const bases = [...new Set(candidatos.map(c => c.dados.chaveBase).filter(Boolean))];
-        if (bases.length !== 1) {
+        if (bases.length > 1) {
           throw new Error(`ENTREGA_ORIGINAL_ENDERECO_CONFLITANTE|${numeroRef || grupo.chaveEntrega}`);
         }
 
-        const completosComUnidade = candidatos.filter(c =>
-          c.dados.complementoSeguro === true &&
-          c.dados.temComplementoUnidade === true &&
-          c.dados.complementoNormalizado
-        );
-        const unidadesCompletas = [...new Set(completosComUnidade.map(c => c.dados.complementoNormalizado))];
-        if (unidadesCompletas.length > 1) {
-          throw new Error(`ENTREGA_ORIGINAL_UNIDADE_CONFLITANTE|${numeroRef || grupo.chaveEntrega}`);
-        }
-
-        let conjuntoPreferido;
-        if (completosComUnidade.length) {
-          // Havendo uma versão completa do complemento, ela é a fonte mais precisa
-          // para toda a entrega, mesmo se outra linha do mesmo BR veio truncada.
-          conjuntoPreferido = completosComUnidade;
-        } else {
-          const incompletos = candidatos.filter(c =>
-            c.dados.temComplementoUnidade === true && c.dados.complementoSeguro === false
-          );
-          // Se qualquer fragmento evidencia complemento incompleto, não degradamos
-          // a entrega para "sem unidade": ela fica conservadoramente isolada.
-          conjuntoPreferido = incompletos.length ? incompletos : candidatos;
-        }
-
-        conjuntoPreferido.sort((a, b) => {
+        // Complementos diferentes dentro da mesma entrega NÃO são conflito físico.
+        // Eles são apenas dados de entrega. Preferimos a variante mais informativa
+        // para exibição, mas a chave continua sendo somente rua + número principal.
+        const candidatosComNumero = bases.length === 1
+          ? candidatos.filter(c => c.dados.chaveBase === bases[0])
+          : candidatos;
+        const conjuntoPreferido = candidatosComNumero.slice().sort((a, b) => {
           const partesA = String(a.dados.complementoNormalizado || '').split('|').filter(Boolean).length;
           const partesB = String(b.dados.complementoNormalizado || '').split('|').filter(Boolean).length;
           if (partesA !== partesB) return partesB - partesA;
@@ -6066,9 +6099,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         });
         const escolhido = conjuntoPreferido[0];
         const dadosEndereco = escolhido.dados;
-        const chaveFisica = dadosEndereco.complementoSeguro
-          ? dadosEndereco.chave
-          : `${dadosEndereco.chave}|entrega:${grupo.chaveEntrega}`;
+        const chaveFisica = dadosEndereco.chaveBase || `sem_numero|entrega:${grupo.chaveEntrega}`;
 
         const internos = grupo.registros
           .map(r => Number(r.numeroParada))
@@ -6084,14 +6115,18 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           identidadeOriginalConfirmada: grupo.identidadeOriginalConfirmada === true,
           chaveEntregaOriginal: grupo.chaveEntrega,
           endereco: escolhido.endereco,
+          enderecoBase: dadosEndereco.enderecoBaseExibicao || escolhido.endereco,
           chaveFisica,
           chaveBase: dadosEndereco.chaveBase,
           unidadeNormalizada: dadosEndereco.complementoNormalizado || '',
+          complementoBruto: dadosEndereco.complementoBruto || '',
+          variantesComplemento: [...new Set(candidatos.map(c => c.dados.complementoBruto || '').filter(Boolean))],
           temUnidade: dadosEndereco.temComplementoUnidade === true,
           unidadeSegura: dadosEndereco.complementoSeguro === true,
           unidadeIncompleta: dadosEndereco.complementosIncompletos || [],
           ruaNormalizada: dadosEndereco.ruaCanonica,
           numeroImovel: dadosEndereco.numero,
+          semNumero: dadosEndereco.semNumero === true || !dadosEndereco.numero,
           codigos: grupo.codigos.slice(),
           pagina: (() => {
             const paginas = grupo.registros.map(r => Number(r.pagina || 0)).filter(n => Number.isFinite(n) && n > 0);
@@ -6116,6 +6151,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       pacotesBipados = new Set();
       entregasOriginaisPorEndereco = {};
       paradaFisicaPorEndereco = {};
+      detalhesEntregasPorEndereco = {};
       entregaOriginalPorPacote = {};
       totalEntregasPdfAtual = 0;
       pdfSemCodigosBipagem = false;
@@ -6210,61 +6246,32 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         }))
         .sort((a,b) => a.entregas[0].numeroParada - b.entregas[0].numeroParada);
 
-      // Diagnóstico V81: decisão determinística par a par entre entregas que
-      // compartilham via + rua + número. Assim o console nunca chama um par
-      // efetivamente agrupado de "SEPARADAS" só porque existe uma terceira
-      // unidade diferente no mesmo prédio/número.
+      // Diagnóstico HOTFIX FINAL 3: a regra física definitiva é SOMENTE
+      // logradouro normalizado + número principal. Complementos são informativos.
       try {
-        const porBase = new Map();
-        const fisicaPorChave = new Map(
-          gruposOrdenados.map((grupo, indice) => [grupo.chave, indice + 1])
-        );
-        entregas.forEach(entrega => {
-          const base = entrega.chaveBase || entrega.chaveFisica;
-          if (!porBase.has(base)) porBase.set(base, []);
-          porBase.get(base).push(entrega);
-        });
-        window.diagnosticoAgrupamentoV81 = [];
-        const descrever = entrega => ({
-          entregaPdf: Number(entrega.numeroOriginalPdf || entrega.numeroParada),
-          enderecoBruto: entrega.endereco,
-          ruaNormalizada: entrega.ruaNormalizada,
-          numero: entrega.numeroImovel,
-          complementoNormalizado: entrega.unidadeNormalizada || '(sem unidade)',
-          chaveFisicaFinal: entrega.chaveFisica,
-          paradaFisica: fisicaPorChave.get(entrega.chaveFisica) || null
-        });
-        const motivoComparacao = (a, b) => {
-          if (a.unidadeSegura === false || b.unidadeSegura === false) return 'UNIDADE_INCOMPLETA';
-          if ((a.temUnidade === true) !== (b.temUnidade === true)) return 'UNIDADE_PRESENTE_EM_APENAS_UMA';
-          if (a.temUnidade !== true && b.temUnidade !== true) return 'MESMA_BASE_SEM_UNIDADE';
-          if ((a.unidadeNormalizada || '') === (b.unidadeNormalizada || '')) return 'MESMA_UNIDADE_NORMALIZADA';
-          return 'UNIDADES_DIFERENTES';
-        };
-
-        porBase.forEach(lista => {
-          if (lista.length < 2) return;
-          for (let i = 0; i < lista.length; i++) {
-            for (let j = i + 1; j < lista.length; j++) {
-              const a = lista[i];
-              const b = lista[j];
-              const juntas = a.chaveFisica === b.chaveFisica;
-              const item = {
-                base: a.chaveBase,
-                resultado: juntas ? 'JUNTAS' : 'SEPARADAS',
-                motivo: motivoComparacao(a, b),
-                paradaFisica: juntas ? (fisicaPorChave.get(a.chaveFisica) || null) : null,
-                entregas: [descrever(a), descrever(b)]
-              };
-              window.diagnosticoAgrupamentoV81.push(item);
-              console.groupCollapsed(`[PACOTE É MATO][AGRUPAMENTO] ${item.resultado} · ${item.motivo}`);
-              item.entregas.forEach(e => console.log(
-                `Entrega ${e.entregaPdf}:\n${e.enderecoBruto}\nbase = ${item.base}\nunidade = ${e.complementoNormalizado}\nchave = ${e.chaveFisicaFinal}\nparada física = ${e.paradaFisica ?? '-'}`
-              ));
-              console.log(`resultado: ${item.resultado}\nmotivo: ${item.motivo}`);
-              console.groupEnd();
-            }
-          }
+        window.diagnosticoAgrupamentoV81 = gruposOrdenados.map((grupo, indice) => ({
+          paradaFisica: indice + 1,
+          chaveFisica: grupo.chave,
+          resultado: grupo.entregas.length > 1 ? 'JUNTAS' : 'PARADA_SIMPLES',
+          motivo: grupo.entregas.some(e => e.semNumero) ? 'SEM_NUMERO_ISOLADA' : 'MESMO_LOGRADOURO_NUMERO',
+          entregas: grupo.entregas.map(entrega => ({
+            entregaPdf: Number(entrega.numeroOriginalPdf || entrega.numeroParada),
+            enderecoBruto: entrega.endereco,
+            ruaNormalizada: entrega.ruaNormalizada,
+            numero: entrega.numeroImovel,
+            complementoNormalizado: entrega.unidadeNormalizada || '(sem complemento)',
+            complementoBruto: entrega.complementoBruto || '',
+            chaveFisicaFinal: entrega.chaveFisica
+          }))
+        }));
+        window.diagnosticoAgrupamentoV81.forEach(item => {
+          if (item.entregas.length < 2) return;
+          console.groupCollapsed(`[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO`);
+          item.entregas.forEach(e => console.log(
+            `Entrega ${e.entregaPdf}:\n${e.enderecoBruto}\nrua = ${e.ruaNormalizada}\nnumero principal = ${e.numero}\ncomplemento (informativo) = ${e.complementoNormalizado}\nchave física = ${e.chaveFisicaFinal}`
+          ));
+          console.log(`resultado: JUNTAS\nmotivo: MESMO_LOGRADOURO_NUMERO`);
+          console.groupEnd();
         });
       } catch (erroDiagnostico) {
         console.warn('[PACOTE É MATO][AGRUPAMENTO] diagnóstico indisponível', erroDiagnostico);
@@ -6274,7 +6281,12 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         const numeroFisico = indiceFisico + 1;
         const endKey = grupo.chave;
         const enderecos = grupo.entregas.map(e => String(e.endereco || '')).filter(Boolean);
-        const exibicao = enderecos.sort((a,b) => b.length - a.length || a.localeCompare(b))[0] || 'Endereço do PDF';
+        // Card principal mostra somente o endereço físico base; complementos ficam
+        // preservados abaixo por entrega/pacote e não poluem a identidade da parada.
+        const basesExibicao = grupo.entregas.map(e => String(e.enderecoBase || '')).filter(Boolean);
+        const exibicao = basesExibicao.sort((a,b) => b.length - a.length || a.localeCompare(b))[0]
+          || enderecos.sort((a,b) => b.length - a.length || a.localeCompare(b))[0]
+          || 'Endereço do PDF';
         const linhasOriginais = [...new Set(
           grupo.entregas
             .map(e => Number(e.numeroOriginalPdf || e.numeroParada))
@@ -6286,6 +6298,13 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         nomeExibicao[endKey] = exibicao;
         entregasOriginaisPorEndereco[endKey] = linhasOriginais;
         paradaFisicaPorEndereco[endKey] = numeroFisico;
+        detalhesEntregasPorEndereco[endKey] = grupo.entregas.map(entrega => ({
+          entregaPdf: Number(entrega.numeroOriginalPdf || entrega.numeroParada),
+          enderecoCompleto: entrega.endereco,
+          complemento: entrega.complementoBruto || '',
+          complementoNormalizado: entrega.unidadeNormalizada || '',
+          pacotes: (entrega.codigos || []).slice()
+        }));
 
         grupo.entregas.forEach(entrega => {
           const numeroEntregaOriginal = Number(entrega.numeroOriginalPdf || entrega.numeroParada) || numeroFisico;
@@ -6366,9 +6385,10 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               endereco: nomeExibicao[chave],
               entregasPdf,
               pacotes,
+              detalhesEntregas: detalhesEntregasPorEndereco[chave] || [],
               multipla: pacotes.length > 1 || entregasPdf.length > 1,
               motivoAgrupamento: entregasPdf.length > 1
-                ? 'MESMA_UNIDADE_FISICA'
+                ? 'MESMO_LOGRADOURO_NUMERO'
                 : (pacotes.length > 1 ? 'MESMA_ENTREGA_ORIGINAL' : 'PARADA_SIMPLES')
             };
           })
@@ -6403,6 +6423,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       mapaRotas = {};
       stopCorrespondente = {};
       nomeExibicao = {};
+      entregasOriginaisPorEndereco = {};
+      paradaFisicaPorEndereco = {};
+      detalhesEntregasPorEndereco = {};
       todosPacotes = new Set();
       pacotesBipados = new Set();
       entregaOriginalPorPacote = {};
@@ -6483,8 +6506,12 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         const linhaEndereco = linha;
         const enderecoExibicao = extrairEnderecoExibicao(linhaEndereco);
         let endKey = normalizarEndereco(linhaEndereco);
+        const fisicoLegado = decomporEnderecoFisicoPdfV71(enderecoExibicao || linhaEndereco);
+        const decomposicaoLegada = decomporEnderecorota(enderecoExibicao || linhaEndereco);
+        if (!endKey && fisicoLegado?.semNumero) endKey = `sem_numero|entrega:${numeroParada}`;
+        if (!endKey && decomposicaoLegada?.numero === 'sn') endKey = `sem_numero|entrega:${numeroParada}`;
 
-        if (!endKey || !decomporEnderecorota(enderecoExibicao || linhaEndereco)) {
+        if (!endKey || (!fisicoLegado && !decomposicaoLegada)) {
           console.warn('Pacote É Mato: registro PDF ignorado por endereço incompleto.', { numeroParada, linhaEndereco, codigos });
           continue;
         }
@@ -6525,7 +6552,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
           let endKey = normalizarEndereco(linhaEndereco);
           const enderecoExibicao = extrairEnderecoExibicao(linhaEndereco);
-          if (!endKey || !decomporEnderecorota(enderecoExibicao || linhaEndereco)) {
+          const fisicoLegado = decomporEnderecoFisicoPdfV71(enderecoExibicao || linhaEndereco);
+          const decomposicaoLegada = decomporEnderecorota(enderecoExibicao || linhaEndereco);
+          if (!endKey && fisicoLegado?.semNumero) endKey = `sem_numero|entrega:${numeroParada}`;
+          if (!endKey && decomposicaoLegada?.numero === 'sn') endKey = `sem_numero|entrega:${numeroParada}`;
+          if (!endKey || (!fisicoLegado && !decomposicaoLegada)) {
             console.warn('Pacote É Mato: pacote sem endereço estrutural foi descartado do fallback.', { numeroParada, linhaEndereco, codigos });
             return;
           }
@@ -6559,29 +6590,42 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         )
       })).filter(registro => registro.codigos.length > 0);
 
+      // Compatibilidade legada com a REGRA DEFINITIVA: primeiro agrupa por
+      // logradouro+número e só então atribui o índice físico sequencial.
+      const indiceFisicoPorChave = new Map();
       registros.forEach(registro => {
-        const {
-          numeroParada,
-          enderecoExibicao,
-          endKey,
-          codigos
-        } = registro;
+        const { numeroParada, enderecoExibicao, endKey, codigos } = registro;
+
+        if (!indiceFisicoPorChave.has(endKey)) {
+          indiceFisicoPorChave.set(endKey, indiceFisicoPorChave.size + 1);
+        }
+        const numeroFisico = indiceFisicoPorChave.get(endKey);
 
         if (!mapaRotas[endKey]) {
           mapaRotas[endKey] = [];
-          nomeExibicao[endKey] =
-            enderecoExibicao ||
-            "Endereço não identificado no PDF";
+          const fisico = decomporEnderecoFisicoPdfV71(enderecoExibicao || '');
+          nomeExibicao[endKey] = fisico?.enderecoBaseExibicao || enderecoExibicao || "Endereço não identificado no PDF";
+          entregasOriginaisPorEndereco[endKey] = [];
+          detalhesEntregasPorEndereco[endKey] = [];
+          paradaFisicaPorEndereco[endKey] = numeroFisico;
         }
+
+        if (!entregasOriginaisPorEndereco[endKey].includes(numeroParada)) {
+          entregasOriginaisPorEndereco[endKey].push(numeroParada);
+        }
+        const dadosEntrega = decomporEnderecoFisicoPdfV71(enderecoExibicao || '');
+        detalhesEntregasPorEndereco[endKey].push({
+          entregaPdf: numeroParada,
+          enderecoCompleto: enderecoExibicao || '',
+          complemento: dadosEntrega?.complementoBruto || '',
+          complementoNormalizado: dadosEntrega?.complementoNormalizado || '',
+          pacotes: codigos.slice()
+        });
 
         codigos.forEach(codigo => {
           todosPacotes.add(codigo);
-
-          if (!mapaRotas[endKey].includes(codigo)) {
-            mapaRotas[endKey].push(codigo);
-          }
-
-          stopCorrespondente[codigo] = numeroParada;
+          if (!mapaRotas[endKey].includes(codigo)) mapaRotas[endKey].push(codigo);
+          stopCorrespondente[codigo] = numeroFisico;
           entregaOriginalPorPacote[codigo] = numeroParada;
         });
       });

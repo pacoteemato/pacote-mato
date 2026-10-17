@@ -1,3 +1,7 @@
+# AVISO DE REGRA FINAL — HOTFIX FINAL 3
+
+> **REGRA DEFINITIVA:** a partir do HOTFIX FINAL 3, qualquer seção histórica deste relatório que diga que apartamento, bloco, torre, sala, loja, unidade, andar, casa interna ou complemento **separam paradas físicas** está **CANCELADA/SUPERADA**. A chave física final usa apenas **logradouro normalizado + número principal do imóvel**. Complementos continuam armazenados apenas para exibição.
+
 # PACOTE É MATO — V81
 ## Relatório final — Endereços + Navegação ativa
 
@@ -935,21 +939,21 @@ Passaram:
 ```text
 Rua A, 100 == Rua A, 100
 Rua A, 100, Apto 10 == Rua A, 100, Apartamento 10
-Rua A, 100, Apto 10 != Rua A, 100, Apto 20
-Bloco 1 != Bloco 2
-Casa 1 != Casa 2
-sem unidade != Apto 10
+[SUPERADO] Apto 10 != Apto 20 — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] Bloco 1 != Bloco 2 — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] Casa 1 != Casa 2 — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] sem unidade != Apto 10 — regra cancelada no HOTFIX FINAL 3
 Av. Rudge, 417 == Avenida Rudge, 417
 Rua José da Silva, 50 == R. Jose Silva, 50
-Ancara Bloco 1/Apto 501 != Bloco 2/Apto 1208
+[SUPERADO] Ancara Bloco 1/Apto 501 != Bloco 2/Apto 1208 — agora é UMA parada
 Ancara Bloco 1/Apto 501 == BL 1/APTO 501
-Torre A != Torre B
-Sala 31 != Sala 32
-Loja 1 != Loja 2
-Unidade 4 != Unidade 5
-Conjunto 12 != CJ 13
-3º Andar != 4º Andar
-Fundos != unidade principal
+[SUPERADO] Torre A != Torre B — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] Sala 31 != Sala 32 — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] Loja 1 != Loja 2 — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] Unidade 4 != Unidade 5 — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] Conjunto 12 != CJ 13 — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] 3º Andar != 4º Andar — regra cancelada no HOTFIX FINAL 3
+[SUPERADO] Fundos != unidade principal — regra cancelada no HOTFIX FINAL 3
 Apto sem valor => unidade incompleta/insegura
 ```
 
@@ -1956,3 +1960,125 @@ Não é declarado neste relatório:
 "câmera física validada"
 "mapa OpenFreeMap real validado visualmente neste ambiente"
 ```
+
+
+---
+
+## 36. HOTFIX FINAL 3 — REGRA DEFINITIVA DE PARADAS FÍSICAS
+
+### 36.1 Regra final
+
+A identidade de uma parada física passou a ser exclusivamente:
+
+```text
+<logradouro_normalizado>|<numero_principal>
+```
+
+Na implementação interna o tipo normalizado da via pode compor a representação determinística, mas `R/R./Rua` e `Av/Av./Avenida` são normalizados para a mesma via. **Nenhum complemento de unidade participa da decisão de agrupamento.**
+
+Campos como apartamento, bloco, torre, sala, loja, casa interna, unidade, conjunto, andar, fundos e demais complementos continuam extraídos e preservados para exibição ao motorista.
+
+### 36.2 Número principal
+
+O parser seleciona o número do imóvel imediatamente associado ao logradouro e impede que CEP ou números de complemento sejam promovidos a número principal. Exemplos validados:
+
+```text
+Avenida Y, 5350, Torre 4 Apto 1507 => número principal 5350
+Rua Z, 451, Apartamento 714        => número principal 451
+```
+
+Quando nenhum número principal seguro é encontrado, a entrega recebe uma chave isolada por entrega original (`sem_numero|entrega:<id>`). Assim, endereços sem número não são fundidos somente pelo nome da rua.
+
+### 36.3 Ordem dos dados preservada
+
+Permanece:
+
+```text
+PDF
+→ ENTREGA ORIGINAL
+→ todos os BRs daquela entrega
+→ endereço físico
+→ agrupamento por logradouro + número principal
+→ PARADA FÍSICA
+```
+
+`entregaOriginalPorPacote` continua independente da numeração física da rota.
+
+### 36.4 Parada múltipla
+
+A definição final é:
+
+```text
+pacotes.length > 1 => PARADA MÚLTIPLA
+```
+
+Pacotes de apartamentos, blocos ou torres diferentes continuam na mesma parada quando logradouro e número principal forem iguais. Isso não muda a Bipagem individual: bipar um BR não bipa os demais.
+
+### 36.5 Validação real — 91.pdf
+
+O arquivo real `91.pdf` disponível nesta execução foi processado pelas funções reais de leitura PDF e pela formação de rota do aplicativo. Resultado:
+
+```text
+TOTAL DE PACOTES: 102
+TOTAL DE ENTREGAS DO PDF: 102
+TOTAL DE PARADAS FÍSICAS: 78
+PARADAS MÚLTIPLAS: 18
+PACOTES NAS PARADAS MÚLTIPLAS: 42
+```
+
+Grupos verificados incluem, entre outros:
+
+```text
+Avenida Angélica, 634             => 34, 35, 36
+R Martim Francisco, 107           => 38, 39, 40, 41
+Rua Doutor Sérgio Meira, 230      => 73, 74, 75
+Rua Anhangüera/Anhanguera, 451    => 84, 85, 86
+Avenida Rudge, 485                => 93, 94, 95
+```
+
+Em Sérgio Meira 230 e Anhangüera 451 os complementos são diferentes, mas a parada física é única, como exigido.
+
+### 36.6 Matriz de aceitação Spoke 123
+
+O arquivo exato `Spoke (1)(1).pdf` não estava disponível nos arquivos acessíveis desta execução. Portanto **não é declarado teste real desse PDF**. Foi executada uma matriz sintética fiel aos grupos e contagens fornecidos na especificação:
+
+```text
+123 PACOTES
+107 PARADAS FÍSICAS
+8 PARADAS MÚLTIPLAS
+24 PACOTES NAS PARADAS MÚLTIPLAS
+```
+
+Grupos testados:
+
+```text
+Rua Leais Paulistanos, 525  => 10, 11
+Avenida dos Estados, 5350   => 34, 35, 36
+Avenida Varsóvia, 850       => 53, 54
+Avenida João Pessoa, 873    => 69, 70, 71, 72, 73
+Rua do Centro, 1377         => 90, 91
+Rua Eleutério, 171          => 98, 99, 100, 101, 102
+Rua Ancara, 105             => 119, 120
+Rua Ancara, 100             => 121, 122, 123
+```
+
+Resultado da matriz: **PASS**.
+
+### 36.7 Bipagem
+
+```text
+ARQUIVOS MODIFICADOS EM js/bipagem/: 0
+```
+
+A rotina de scanner/câmera/voz não foi alterada. A regressão automatizada continua verificando que `processarCodigo()` marca somente o BR identificado, sem percorrer os demais pacotes da parada.
+
+### 36.8 Otimização e demais blocos
+
+O algoritmo em `js/roteirizacao/roteirizacao.js` não foi alterado. Mapa clean, login persistente, navigation-active e manobras do HOTFIX FINAL 2 também não receberam alteração funcional nesta revisão.
+
+### 36.9 Limitações
+
+- Não houve câmera física nesta execução.
+- Não houve condução em trânsito real.
+- O PDF exato `Spoke (1)(1).pdf` não estava disponível; sua aceitação foi coberta por matriz sintética, não por leitura real.
+- `91.pdf` foi testado de forma real no parser/estrutura de dados, mas não em scanner físico.

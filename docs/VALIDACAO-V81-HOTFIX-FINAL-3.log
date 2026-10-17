@@ -1,0 +1,872 @@
+PACOTE É MATO — V81 HOTFIX FINAL 3 — VALIDAÇÃO
+Data: 2026-10-17
+
+== NODE --CHECK TODOS OS JS ==
+PASS: 40 arquivos JS
+
+== SUÍTES ==
+--- tests/v81-final-enderecos-navegacao.js ---
+OK  Rua+número iguais agrupam
+OK  apartamento diferente NÃO separa parada física
+OK  bloco/apto diferentes NÃO separam parada física
+OK  casa interna diferente NÃO separa parada física
+OK  presença de complemento não muda a parada física
+OK  Av. e Avenida são equivalentes
+OK  acentos/preposições e R./Rua normalizam
+OK  Ancara 105 agrupa apesar de bloco/apto diferentes
+OK  torre diferente NÃO separa parada física
+OK  sala diferente NÃO separa parada física
+OK  loja diferente NÃO separa parada física
+OK  unidade diferente NÃO separa parada física
+OK  conjunto diferente NÃO separa parada física
+OK  andar diferente NÃO separa parada física
+OK  fundos NÃO separa parada física
+OK  número principal diferente separa
+OK  logradouro diferente separa
+OK  sem número principal seguro não cria chave física
+OK  complemento incompleto continua armazenado como dado informativo
+OK  limparPontosInteresse preserva labels de vias
+OK  limparPontosInteresse preserva place/city
+OK  POI não essencial continua reduzido
+OK  estilo ativo mantém vias em contraste total
+OK  nomes das ruas recebem contraste clean de navegação
+OK  labels de ruas ficam explicitamente visíveis no modo ativo
+OK  overview permanece no mesmo mapa base clean
+OK  overview preserva identidade clean das vias em vez de voltar ao Liberty colorido
+OK  existem estados OVERVIEW e NAVIGATION-ACTIVE
+OK  troca de estado mantém estilo clean e ativa reforço de navegação sem recarregar página
+OK  overview enquadra a rota completa
+OK  Navegar entra no modo ativo sem recalcular a rota
+OK  entrada no navigation-active não chama recálculo
+OK  source de rota não aplica simplificação geométrica adicional
+OK  SOURCE_ROUTE deriva da geometria real salva da rota
+OK  GPS bruto e posição visual permanecem separados
+OK  desvio usa nearest da posição bruta somente no modo ativo
+OK  câmera ativa usa pitch, zoom dinâmico e offset inferior
+OK  ícones cobrem curvas fortes, rotatória e chegada
+OK  segunda manobra é exibida quando existe instrução real seguinte
+OK  bottom sheet expansível preserva grabber dedicado
+OK  overview oculta painel de manobra de GPS
+OK  trecho percorrido permanece verde com baixa opacidade
+OK  câmera abre o enquadramento perto de uma curva/manobra
+OK  manobra Geoapify StartAt
+OK  manobra Geoapify StartAtRight
+OK  manobra Geoapify StartAtLeft
+OK  manobra Geoapify Straight
+OK  manobra Geoapify SlightRight
+OK  manobra Geoapify Right
+OK  manobra Geoapify SharpRight
+OK  manobra Geoapify TurnAroundRight
+OK  manobra Geoapify TurnAroundLeft
+OK  manobra Geoapify SharpLeft
+OK  manobra Geoapify Left
+OK  manobra Geoapify SlightLeft
+OK  manobra Geoapify ExitRight
+OK  manobra Geoapify ExitLeft
+OK  manobra Geoapify StayRight
+OK  manobra Geoapify StayLeft
+OK  manobra Geoapify Merge
+OK  manobra Geoapify MergeRight
+OK  manobra Geoapify MergeLeft
+OK  manobra Geoapify DestinationReached
+OK  manobra Geoapify DestinationReachedRight
+OK  manobra Geoapify DestinationReachedLeft
+OK  Roundabout sem saída real não inventa número
+OK  Roundabout usa saída real quando fornecida
+OK  manobra desconhecida usa seguir neutro
+OK  extrairInstrucoes preserva type
+OK  extrairInstrucoes preserva modifier
+OK  extrairInstrucoes preserva streets
+OK  extrairInstrucoes preserva street_name
+OK  extrairInstrucoes preserva exitNumber
+OK  extrairInstrucoes preserva exit_number
+OK  extrairInstrucoes preserva exitRoadName
+OK  extrairInstrucoes preserva exitTowards
+OK  extrairInstrucoes preserva roundabout_exit
+OK  extrairInstrucoes preserva transition_instruction
+OK  extrairInstrucoes preserva pre_transition_instruction
+OK  extrairInstrucoes preserva post_transition_instruction
+OK  extrairInstrucoes preserva distance
+OK  extrairInstrucoes preserva time
+OK  extrairInstrucoes preserva from_index
+OK  extrairInstrucoes preserva to_index
+OK  extrairInstrucoes preserva legIndex
+OK  extrairInstrucoes preserva fromIndexLeg
+OK  extrairInstrucoes preserva toIndexLeg
+OK  extrairInstrucoes preserva globalFromIndex
+OK  extrairInstrucoes preserva globalToIndex
+OK  Worker atual solicita instruction_details ao Geoapify
+OK  Worker preserva legs/steps reais do provedor
+OK  Bipagem sem alteração: js/bipagem/bipagem-area.js
+OK  Bipagem sem alteração: js/bipagem/operacoes-pacotes.js
+OK  Bipagem sem alteração: js/bipagem/rota-ativa-bridge.js
+OK  importação preservada byte a byte: js/importacao/fluxo-importacao.js
+OK  importação preservada byte a byte: js/importacao/xlsx.js
+OK  entregaOriginalPorPacote continua recebendo a numeração original do PDF
+OK  validador de código BR permanece presente
+
+V81 FINAL — testes de endereços/navegação concluídos.
+
+--- tests/v81-hotfix-pacotes-paradas.js ---
+OK  6 BRs foram reconstruídos em 3 entregas originais, não 6 entregas
+OK  entrega 119 mantém seus 3 pacotes juntos
+OK  entrega 120 mantém 1 pacote
+OK  entrega 121 mantém seus 2 pacotes juntos
+OK  mesma Rua X, 100 gera UMA parada mesmo com aptos 10 e 20
+OK  entregas PDF 119, 120 e 121 compartilham a mesma parada física
+OK  a parada física mantém os 6 pacotes independentes
+OK  BRs da entrega 119 continuam apontando para a entrega PDF 119
+OK  numeração original por pacote permanece correta nas demais entregas
+OK  complemento fragmentado da mesma entrega mantém os pacotes juntos
+OK  versão completa do complemento vence fragmento incompleto da mesma entrega
+OK  Ancara 105: blocos/apartamentos diferentes continuam na MESMA parada
+OK  chave física final é somente logradouro normalizado + número principal
+OK  endereço contraditório da mesma entrega é bloqueado, não fragmentado em paradas
+OK  sem número original confirmado, registros V73 não são fundidos como uma única entrega por suposição
+OK  contadores distinguem pacotes bipados, total de pacotes e paradas físicas
+OK  FALTAM calcula pacotes restantes, não paradas
+OK  Paradas Múltiplas inclui uma entrega com vários pacotes
+OK  Bipagem 0 alterações: js/bipagem/bipagem-area.js
+OK  Bipagem 0 alterações: js/bipagem/operacoes-pacotes.js
+OK  Bipagem 0 alterações: js/bipagem/rota-ativa-bridge.js
+OK  processarCodigo bipa somente o código identificado
+OK  processarCodigo não marca os demais pacotes da parada automaticamente
+
+V81 HOTFIX — pacotes/entregas/paradas concluído.
+
+--- tests/v81-hotfix-final-2.js ---
+OK  hash protegido: js/bipagem/bipagem-area.js
+OK  hash protegido: js/bipagem/operacoes-pacotes.js
+OK  hash protegido: js/bipagem/rota-ativa-bridge.js
+OK  hash protegido: js/roteirizacao/roteirizacao.js
+OK  chave física ignora apartamento/bloco/torre e usa somente a base
+OK  complementos continuam preservados para exibição
+OK  não existe mais unidade anexada à chave física
+OK  aplicarEstiloMapaClean aplica no overview
+OK  fundo clean claro
+OK  água suave
+OK  parque desaturado
+OK  road labels legíveis e preservados
+OK  POI comercial ocultado
+OK  road shield reduzido
+OK  navigation-active usa o mesmo mapa base clean
+OK  navigation-active reforça moderadamente a via sem trocar identidade
+OK  retorno ao overview não restaura mapa colorido
+OK  multi-leg extrai três instruções
+OK  leg 0 mantém offset 0
+OK  leg 1 soma offset 100
+OK  leg 2 soma offsets 100+70
+OK  ruas continuam associadas à leg correta
+OK  tipo real StartAt -> reta
+OK  tipo real StartAtRight -> direita
+OK  tipo real StartAtLeft -> esquerda
+OK  tipo real Straight -> reta
+OK  tipo real SlightRight -> leve_direita
+OK  tipo real Right -> direita
+OK  tipo real SharpRight -> acentuada_direita
+OK  tipo real TurnAroundRight -> retorno
+OK  tipo real TurnAroundLeft -> retorno
+OK  tipo real SharpLeft -> acentuada_esquerda
+OK  tipo real Left -> esquerda
+OK  tipo real SlightLeft -> leve_esquerda
+OK  tipo real ExitRight -> direita
+OK  tipo real ExitLeft -> esquerda
+OK  tipo real StayRight -> leve_direita
+OK  tipo real StayLeft -> leve_esquerda
+OK  tipo real Merge -> reta
+OK  tipo real MergeRight -> leve_direita
+OK  tipo real MergeLeft -> leve_esquerda
+OK  tipo real DestinationReached -> chegada
+OK  tipo real DestinationReachedRight -> chegada
+OK  tipo real DestinationReachedLeft -> chegada
+OK  rotatória sem saída não inventa saída
+OK  rotatória aceita roundabout_exit array real
+OK  GPS/painel preferem índices globais
+OK  GPS bruto mantém nearest operacional separado
+OK  map matching visual usa trilha separada
+OK  map matching visual prioriza janela ao redor do progresso
+OK  fitBounds de overview possui guard contra navigation-active
+OK  Firebase Auth usa persistência LOCAL
+OK  authAccessState possui todos os estados exclusivos
+OK  mostrarRenovacao só abre no estado expired confirmado
+OK  expiração/acesso usam confirmação atual do servidor
+OK  currentUser pode recuperar vínculo por UID
+OK  onAuthStateChanged restaura sessão automaticamente
+OK  fechar/recarregar não possui signOut automático próximo de beforeunload
+
+HOTFIX FINAL 2 — testes estruturais/automatizados concluídos.
+
+--- tests/v81-regression.js ---
+OK  sem regressão byte a byte: js/bipagem/bipagem-area.js
+OK  sem regressão byte a byte: js/bipagem/operacoes-pacotes.js
+OK  sem regressão byte a byte: js/bipagem/rota-ativa-bridge.js
+OK  sem regressão byte a byte: js/importacao/xlsx.js
+OK  sem regressão byte a byte: js/importacao/fluxo-importacao.js
+OK  sem regressão byte a byte: js/mapa/geocodificacao.js
+OK  sem regressão byte a byte: cloudflare/geocodificacao-worker.js
+OK  sem regressão byte a byte: cloudflare/admin-gateway-worker.js
+OK  mensal ativa por milissegundos
+OK  trimestral ativa
+OK  teste ativo
+OK  Firestore Timestamp com toMillis
+OK  expiraEm em segundos
+OK  Timestamp serializado
+OK  data ISO
+OK  conta antiga ativo:true
+OK  vitalícia
+OK  expirada de verdade
+OK  bloqueada continua bloqueada
+OK  renovação protegida por estado único expired + confirmação real
+OK  confirmação explícita usa Firestore servidor
+OK  Firebase LOCAL restaura currentUser sem exigir novo login
+OK  restauração pode recuperar vínculo seguro pelo UID
+OK  máquina única contém offline-error e signed-out
+OK  mesmo ID e rota reaberta
+OK  ordem otimizada preservada
+OK  geometria preservada
+OK  outras entregas permanecem concluídas
+OK  somente parada escolhida volta a pendente e pacote é preservado
+OK  GPS ativo não aceita posição antiga em cache
+OK  posição bruta separada da posição visual
+OK  câmera contínua usa jumpTo sem enfileirar easeTo
+OK  interpolação visual usa requestAnimationFrame
+OK  desvio continua baseado no GPS bruto/nearest operacional real
+OK  navegação não renderiza o aplicativo inteiro a cada GPS
+OK  ícones SVG de manobra ligados às instruções
+OK  bottom sheet possui grabber vertical dedicado
+OK  finalização exige confirmação de persistência local
+
+Regressões estáticas/lógicas V81 concluídas.
+
+--- tests/v81-optimization-equivalence.js ---
+OK  mesma rota vencedora V80/V81 (short, 3 paradas)
+OK  mesmas métricas/critério (short, 3 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 3)
+OK  mesma rota vencedora V80/V81 (short, 7 paradas)
+OK  mesmas métricas/critério (short, 7 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 7)
+OK  mesma rota vencedora V80/V81 (short, 12 paradas)
+OK  mesmas métricas/critério (short, 12 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 12)
+OK  mesma rota vencedora V80/V81 (balanced, 3 paradas)
+OK  mesmas métricas/critério (balanced, 3 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 3)
+OK  mesma rota vencedora V80/V81 (balanced, 7 paradas)
+OK  mesmas métricas/critério (balanced, 7 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 7)
+OK  mesma rota vencedora V80/V81 (balanced, 12 paradas)
+OK  mesmas métricas/critério (balanced, 12 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 12)
+
+Equivalência do vencedor comprovada com respostas mock idênticas.
+
+--- tests/v81-regra-definitiva-paradas.js ---
+OK  número principal 5350 não vira torre/apto 1507
+OK  número principal 451 não vira apartamento 714
+OK  complemento não altera a chave física
+OK  CEP não é interpretado como número principal
+OK  S/N não cria chave compartilhável
+OK  Spoke sintético de aceitação: 123 entregas do PDF preservadas
+OK  Spoke sintético de aceitação: nenhum BR perdido ou duplicado
+OK  Spoke: 107 paradas físicas
+OK  Spoke: 8 paradas múltiplas
+OK  Spoke: 24 pacotes nas paradas múltiplas
+OK  Spoke: Ancara 105 = 1 parada / 2 pacotes
+OK  Spoke: Ancara 100 = 1 parada / 3 pacotes
+OK  PDF 91 sintético de aceitação: 102 entregas do PDF preservadas
+OK  PDF 91 sintético de aceitação: nenhum BR perdido ou duplicado
+OK  PDF 91: 78 paradas físicas
+OK  PDF 91: 18 paradas múltiplas
+OK  PDF 91: 42 pacotes nas paradas múltiplas
+OK  PDF 91: Anhangüera 451 = 1 parada / 3 pacotes
+OK  PDF 91: Avenida Rudge 485 = 1 parada / 3 pacotes
+OK  PDF 91: Dr Sérgio Meira 230 = 1 parada / 3 pacotes
+OK  PDF 91: Martim Francisco 107 = 1 parada / 4 pacotes
+OK  Bipagem intacta: js/bipagem/bipagem-area.js
+OK  Bipagem intacta: js/bipagem/operacoes-pacotes.js
+OK  Bipagem intacta: js/bipagem/rota-ativa-bridge.js
+OK  bipar um BR marca somente o identificado
+OK  bipar um pacote não bipa os outros da parada
+
+REGRA DEFINITIVA DE PARADAS — ACEITAÇÃO CONCLUÍDA.
+
+== PDF REAL 91 ==
+page 1 by 32 nums 32 times 32 merged 32
+page 2 by 36 nums 36 times 36 merged 36
+page 3 by 34 nums 34 times 34 merged 34
+norm 102 BR unique 102
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 4:
+  Rua General Júlio Marcondes Salgado, 303, APTO 1603, São Paulo
+  rua = general julio marcondes salgado
+  numero principal = 303
+  complemento (informativo) = apt:1603
+  chave física = rua|generaljuliomarcondessalgado|303
+  Entrega 5:
+  Rua General Júlio Marcondes Salgado, 303, Apto 709, São Paulo
+  rua = general julio marcondes salgado
+  numero principal = 303
+  complemento (informativo) = apt:709
+  chave física = rua|generaljuliomarcondessalgado|303
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 11:
+  R. Mário de Andrade, 16, Barra Funda, São Paulo, 01154-060
+  rua = mario andrade
+  numero principal = 16
+  complemento (informativo) = (sem complemento)
+  chave física = rua|marioandrade|16
+  Entrega 12:
+  R. Mário de Andrade, 16, Barra Funda, São Paulo, 01154-060
+  rua = mario andrade
+  numero principal = 16
+  complemento (informativo) = (sem complemento)
+  chave física = rua|marioandrade|16
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 13:
+  Avenida General Olímpio da Silveira, 386, Santa Cecilia, São Paulo, 01150-000
+  rua = general olimpio silveira
+  numero principal = 386
+  complemento (informativo) = (sem complemento)
+  chave física = avenida|generalolimpiosilveira|386
+  Entrega 14:
+  Avenida General Olímpio da Silveira, 386, Santa Cecilia, São Paulo, 01150-000
+  rua = general olimpio silveira
+  numero principal = 386
+  complemento (informativo) = (sem complemento)
+  chave física = avenida|generalolimpiosilveira|386
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 25:
+  Rua Doutor Albuquerque Lins, 634, Apto 45, São Paulo
+  rua = doutor albuquerque lins
+  numero principal = 634
+  complemento (informativo) = apt:45
+  chave física = rua|doutoralbuquerquelins|634
+  Entrega 26:
+  Rua Doutor Albuquerque Lins, 634, Apto 45, São Paulo
+  rua = doutor albuquerque lins
+  numero principal = 634
+  complemento (informativo) = apt:45
+  chave física = rua|doutoralbuquerquelins|634
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 34:
+  Avenida Angélica, 634, Apt 1804, São Paulo
+  rua = angelica
+  numero principal = 634
+  complemento (informativo) = apt:1804
+  chave física = avenida|angelica|634
+  Entrega 35:
+  Avenida Angélica, 634, Apt 1804, São Paulo
+  rua = angelica
+  numero principal = 634
+  complemento (informativo) = apt:1804
+  chave física = avenida|angelica|634
+  Entrega 36:
+  Avenida Angélica, 634, Apt 1804, São Paulo
+  rua = angelica
+  numero principal = 634
+  complemento (informativo) = apt:1804
+  chave física = avenida|angelica|634
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 38:
+  R Martim Francisco, 107, Apartamento 64, São Paulo
+  rua = martim francisco
+  numero principal = 107
+  complemento (informativo) = apt:64
+  chave física = rua|martimfrancisco|107
+  Entrega 39:
+  R Martim Francisco, 107, Apartamento 64, São Paulo
+  rua = martim francisco
+  numero principal = 107
+  complemento (informativo) = apt:64
+  chave física = rua|martimfrancisco|107
+  Entrega 40:
+  R Martim Francisco, 107, Apartamento 64, São Paulo
+  rua = martim francisco
+  numero principal = 107
+  complemento (informativo) = apt:64
+  chave física = rua|martimfrancisco|107
+  Entrega 41:
+  R Martim Francisco, 107, Apartamento 64, São Paulo
+  rua = martim francisco
+  numero principal = 107
+  complemento (informativo) = apt:64
+  chave física = rua|martimfrancisco|107
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 42:
+  Alameda Glete, 1049, Campos Elíseos, São Paulo, 01215-001
+  rua = glete
+  numero principal = 1049
+  complemento (informativo) = (sem complemento)
+  chave física = alameda|glete|1049
+  Entrega 43:
+  Alameda Glete, 1049, Campos Elíseos, São Paulo, 01215-001
+  rua = glete
+  numero principal = 1049
+  complemento (informativo) = (sem complemento)
+  chave física = alameda|glete|1049
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 44:
+  Avenida São João, 1833, Campos Elíseos, São Paulo, 01211-101
+  rua = sao joao
+  numero principal = 1833
+  complemento (informativo) = (sem complemento)
+  chave física = avenida|saojoao|1833
+  Entrega 45:
+  Avenida São João, 1833, Campos Elíseos, São Paulo, 01211-101
+  rua = sao joao
+  numero principal = 1833
+  complemento (informativo) = (sem complemento)
+  chave física = avenida|saojoao|1833
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 47:
+  Rua João Monteiro, 58, Ap 1004, São Paulo
+  rua = joao monteiro
+  numero principal = 58
+  complemento (informativo) = apt:1004
+  chave física = rua|joaomonteiro|58
+  Entrega 48:
+  Rua João Monteiro, 58, Ap 1004, São Paulo
+  rua = joao monteiro
+  numero principal = 58
+  complemento (informativo) = apt:1004
+  chave física = rua|joaomonteiro|58
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 56:
+  Alameda Barão de Limeira, 1380, Apto 11, São Paulo
+  rua = barao limeira
+  numero principal = 1380
+  complemento (informativo) = apt:11
+  chave física = alameda|baraolimeira|1380
+  Entrega 57:
+  Alameda Barão de Limeira, 1380, Apartamento 24 edifício Saip, São Paulo
+  rua = barao limeira
+  numero principal = 1380
+  complemento (informativo) = edificio:saip|apt:24
+  chave física = alameda|baraolimeira|1380
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 70:
+  R Sousa Lima, 86, Apto 503, São Paulo
+  rua = sousa lima
+  numero principal = 86
+  complemento (informativo) = apt:503
+  chave física = rua|sousalima|86
+  Entrega 71:
+  Rua Sousa Lima, 86, Portaria, São Paulo
+  rua = sousa lima
+  numero principal = 86
+  complemento (informativo) = (sem complemento)
+  chave física = rua|sousalima|86
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 73:
+  R Dr Sérgio Meira, 230, Apto 103 bl 03, São Paulo
+  rua = doutor sergio meira
+  numero principal = 230
+  complemento (informativo) = bloco:03|apt:103
+  chave física = rua|doutorsergiomeira|230
+  Entrega 74:
+  R Dr Sérgio Meira, 230, Apto 103 bl 03, São Paulo
+  rua = doutor sergio meira
+  numero principal = 230
+  complemento (informativo) = bloco:03|apt:103
+  chave física = rua|doutorsergiomeira|230
+  Entrega 75:
+  Rua Doutor Sérgio Meira, 230, Bloco 1 ap 142, São Paulo
+  rua = doutor sergio meira
+  numero principal = 230
+  complemento (informativo) = bloco:1|apt:142
+  chave física = rua|doutorsergiomeira|230
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 78:
+  Rua do Bosque, 980, Torre C apt 86, São Paulo
+  rua = bosque
+  numero principal = 980
+  complemento (informativo) = torre:c|apt:86
+  chave física = rua|bosque|980
+  Entrega 79:
+  Rua do Bosque, 980, Apê N•166 Bloco A, São Paulo
+  rua = bosque
+  numero principal = 980
+  complemento (informativo) = bloco:a
+  chave física = rua|bosque|980
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 80:
+  Rua do Bosque, 804, 203 torre 2, São Paulo
+  rua = bosque
+  numero principal = 804
+  complemento (informativo) = torre:2
+  chave física = rua|bosque|804
+  Entrega 81:
+  Rua do Bosque, 804, Ap 118 torre 2, São Paulo
+  rua = bosque
+  numero principal = 804
+  complemento (informativo) = torre:2|apt:118
+  chave física = rua|bosque|804
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 84:
+  Rua Anhangüera, 451, Apt 2503, São Paulo
+  rua = anhanguera
+  numero principal = 451
+  complemento (informativo) = apt:2503
+  chave física = rua|anhanguera|451
+  Entrega 85:
+  Rua Anhangüera, 451, Apartamento 714, São Paulo
+  rua = anhanguera
+  numero principal = 451
+  complemento (informativo) = apt:714
+  chave física = rua|anhanguera|451
+  Entrega 86:
+  Rua Anhanguera, 451, Apt 2111, São Paulo
+  rua = anhanguera
+  numero principal = 451
+  complemento (informativo) = apt:2111
+  chave física = rua|anhanguera|451
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 87:
+  R Dr Ribeiro de Almeida, 88, APTO 181 BLOCO A, São Paulo
+  rua = doutor ribeiro almeida
+  numero principal = 88
+  complemento (informativo) = bloco:a|apt:181
+  chave física = rua|doutorribeiroalmeida|88
+  Entrega 88:
+  R Dr Ribeiro de Almeida, 88, Apt. 051 A, São Paulo
+  rua = doutor ribeiro almeida
+  numero principal = 88
+  complemento (informativo) = apt:051
+  chave física = rua|doutorribeiroalmeida|88
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 90:
+  Rua dos Americanos, 220, São Paulo
+  rua = americanos
+  numero principal = 220
+  complemento (informativo) = (sem complemento)
+  chave física = rua|americanos|220
+  Entrega 91:
+  Rua dos Americanos, 220, São Paulo
+  rua = americanos
+  numero principal = 220
+  complemento (informativo) = (sem complemento)
+  chave física = rua|americanos|220
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMO_LOGRADOURO_NUMERO
+  Entrega 93:
+  Avenida Rudge, 485, São Paulo
+  rua = rudge
+  numero principal = 485
+  complemento (informativo) = (sem complemento)
+  chave física = avenida|rudge|485
+  Entrega 94:
+  Avenida Rudge, 485, Apt 620, São Paulo
+  rua = rudge
+  numero principal = 485
+  complemento (informativo) = apt:620
+  chave física = avenida|rudge|485
+  Entrega 95:
+  Avenida Rudge, 485, Apartamento 1213, São Paulo
+  rua = rudge
+  numero principal = 485
+  complemento (informativo) = apt:1213
+  chave física = avenida|rudge|485
+  resultado: JUNTAS
+  motivo: MESMO_LOGRADOURO_NUMERO
+[PACOTE É MATO][DIAGNÓSTICO ROTA REAL]
+  TOTAL DE PACOTES: 102
+  TOTAL DE ENTREGAS DO PDF: 102
+  TOTAL DE PARADAS FÍSICAS: 78
+  PARADAS MÚLTIPLAS: 18
+  ┌─────────┬──────────────┬────────────────────────────────────────────┬─────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────┬──────────┬───────────────────────────┐
+  │ (index) │ paradaFisica │ endereco                                   │ entregasPdf                     │ pacotes                                                                      │ detalhesEntregas                                  │ multipla │ motivoAgrupamento         │
+  ├─────────┼──────────────┼────────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────┼──────────┼───────────────────────────┤
+  │ 0       │ 1            │ 'Rua Barão de Campinas, 635'               │ [ 1 ]                           │ [ 'BR261154731767A' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 1       │ 2            │ 'Rua Barão de Campinas, 747'               │ [ 2 ]                           │ [ 'BR262717518334M' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 2       │ 3            │ 'Alameda Nothmann, 1003'                   │ [ 3 ]                           │ [ 'BR262354130835X' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 3       │ 4            │ 'Rua General Júlio Marcondes Salgado, 303' │ [ 4, 5 ]                        │ [ 'BR263867285560L', 'BR260169788093C' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 4       │ 5            │ 'Av. São João, 2167'                       │ [ 6 ]                           │ [ 'BR2675362644122' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 5       │ 6            │ 'Rua das Palmeiras, 381'                   │ [ 7 ]                           │ [ 'BR268909376480O' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 6       │ 7            │ 'Rua das Palmeiras, 283'                   │ [ 8 ]                           │ [ 'BR264892132014F' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 7       │ 8            │ 'Rua Das Palmeiras, 225'                   │ [ 9 ]                           │ [ 'BR267827275699E' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 8       │ 9            │ 'Praça Marechal Deodoro, 390'              │ [ 10 ]                          │ [ 'BR268685576883W' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 9       │ 10           │ 'R. Mário de Andrade, 16'                  │ [ 11, 12 ]                      │ [ 'BR263168641779T', 'BR264664489430H' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 10      │ 11           │ 'Avenida General Olímpio da Silveira, 386' │ [ 13, 14 ]                      │ [ 'BR260323699915L', 'BR262021947317S' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 11      │ 12           │ 'R Francisco E Fortes, 139'                │ [ 15 ]                          │ [ 'BR261571606227F' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 12      │ 13           │ 'Avenida Pacaembu, 715'                    │ [ 16 ]                          │ [ 'BR269540593049Z' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 13      │ 14           │ 'Rua Tupi, 397'                            │ [ 17 ]                          │ [ 'BR263547868128R' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 14      │ 15           │ 'Rua Emílio de Menezes, 45'                │ [ 18 ]                          │ [ 'BR267601022985W' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 15      │ 16           │ 'Rua Dr Gabriel dos Santos, 405'           │ [ 19 ]                          │ [ 'BR260242775452G' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 16      │ 17           │ 'Rua Doutor Brasílio Machado, 147'         │ [ 20 ]                          │ [ 'BR264943357078J' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 17      │ 18           │ 'Rua Doutor Brasílio Machado, 217'         │ [ 21 ]                          │ [ 'BR2677167974094' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 18      │ 19           │ 'Rua Doutor Brasílio Machado, 421'         │ [ 22 ]                          │ [ 'BR269244939228A' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 19      │ 20           │ 'R Bra de Itu, 814'                        │ [ 23 ]                          │ [ 'BR266265787689U' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 20      │ 21           │ 'Rua Doutor Albuquerque Lins, 915'         │ [ 24 ]                          │ [ 'BR264024373372C' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 21      │ 22           │ 'Rua Doutor Albuquerque Lins, 634'         │ [ 25, 26 ]                      │ [ 'BR264423919450X', 'BR261027675954G' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 22      │ 23           │ 'Rua São Vicente de Paulo, 102'            │ [ 27 ]                          │ [ 'BR262888741501I' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 23      │ 24           │ 'R S Vicente de Paulo, 178'                │ [ 28 ]                          │ [ 'BR269489441285L' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 24      │ 25           │ 'Rua São Vicente de Paulo, 181'            │ [ 29 ]                          │ [ 'BR266387441596Z' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 25      │ 26           │ 'Avenida Angélica, 359'                    │ [ 30 ]                          │ [ 'BR266737491111O' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 26      │ 27           │ 'Rua Imaculada Conceição, 163'             │ [ 31 ]                          │ [ 'BR268329125271Z' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 27      │ 28           │ 'Rua Barão de Tatuí, 533'                  │ [ 32 ]                          │ [ 'BR266349783223P' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 28      │ 29           │ 'Rua São Vicente de Paulo, 722'            │ [ 33 ]                          │ [ 'BR260830329876F' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 29      │ 30           │ 'Avenida Angélica, 634'                    │ [ 34, 35, 36 ]                  │ [ 'BR268465531206P', 'BR263892193123Q', 'BR262314035176Q' ]                  │ [ [Object], [Object], [Object] ]                  │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 30      │ 31           │ 'Al Barros, 131'                           │ [ 37 ]                          │ [ 'BR262162742641X' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 31      │ 32           │ 'R Martim Francisco, 107'                  │ [ 38, 39, 40, ... 1 more item ] │ [ 'BR261248919158Z', 'BR268260719208D', 'BR268656113179V', ... 1 more item ] │ [ [Object], [Object], [Object], ... 1 more item ] │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 32      │ 33           │ 'Alameda Glete, 1049'                      │ [ 42, 43 ]                      │ [ 'BR2687553189965', 'BR260540182207W' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 33      │ 34           │ 'Avenida São João, 1833'                   │ [ 44, 45 ]                      │ [ 'BR264474284537P', 'BR2681400806894' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 34      │ 35           │ 'Rua Helvétia, 939'                        │ [ 46 ]                          │ [ 'BR265921434357X' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 35      │ 36           │ 'Rua João Monteiro, 58'                    │ [ 47, 48 ]                      │ [ 'BR263590946332G', 'BR260030714964Q' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 36      │ 37           │ 'Alameda Glete, 464'                       │ [ 49 ]                          │ [ 'BR260124136236I' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 37      │ 38           │ 'Rua Conselheiro Nébias, 1166'             │ [ 50 ]                          │ [ 'BR265880563832S' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 38      │ 39           │ 'Rua Conselheiro Nébias, 1384'             │ [ 51 ]                          │ [ 'BR265131687836X' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 39      │ 40           │ 'Rua Guaianases, 1513'                     │ [ 52 ]                          │ [ 'BR267222714394F' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 40      │ 41           │ 'R Guaianases, 1203'                       │ [ 53 ]                          │ [ 'BR266243726852U' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 41      │ 42           │ 'Alameda Ribeiro da Silva, 729'            │ [ 54 ]                          │ [ 'BR2615713967330' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 42      │ 43           │ 'Al Ribeiro da Silva, 681'                 │ [ 55 ]                          │ [ 'BR269194776537U' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 43      │ 44           │ 'Alameda Barão de Limeira, 1380'           │ [ 56, 57 ]                      │ [ 'BR2630964402111', 'BR264793521833O' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 44      │ 45           │ 'Al Eduardo Prado, 596'                    │ [ 58 ]                          │ [ 'BR263453111971I' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 45      │ 46           │ 'R Vitorino Carmilo, 533'                  │ [ 59 ]                          │ [ 'BR261040779383M' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 46      │ 47           │ 'Rua Brigadeiro Galvão, 153'               │ [ 60 ]                          │ [ 'BR269292820572G' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 47      │ 48           │ 'R. Oscar Thompson, 23'                    │ [ 61 ]                          │ [ 'BR264603963838D' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 48      │ 49           │ 'Rua Olímpia de Almeida Prado, 59'         │ [ 62 ]                          │ [ 'BR267119179204J' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 49      │ 50           │ 'R Brg Galvão, 555'                        │ [ 63 ]                          │ [ 'BR264626529627D' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 50      │ 51           │ 'Rua Olímpia de Almeida Prado, 27'         │ [ 64 ]                          │ [ 'BR2684850677773' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 51      │ 52           │ 'Rua Conselheiro Brotero, 456'             │ [ 65 ]                          │ [ 'BR268940157834C' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 52      │ 53           │ 'Rua Barra Funda, 227'                     │ [ 66 ]                          │ [ 'BR261326556270H' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 53      │ 54           │ 'R Dr Albuquerque Lins, 80'                │ [ 67 ]                          │ [ 'BR267995991641R' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 54      │ 55           │ 'Rua Lopes de Oliveira, 112'               │ [ 68 ]                          │ [ 'BR269787612030F' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 55      │ 56           │ 'Rua Sousa Lima, 103'                      │ [ 69 ]                          │ [ 'BR262535561832J' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 56      │ 57           │ 'Rua Sousa Lima, 86'                       │ [ 70, 71 ]                      │ [ 'BR267172437945M', 'BR263553550100M' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 57      │ 58           │ 'R Capistrano de Abreu, 405'               │ [ 72 ]                          │ [ 'BR2686022947089' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 58      │ 59           │ 'Rua Doutor Sérgio Meira, 230'             │ [ 73, 74, 75 ]                  │ [ 'BR260073698117I', 'BR267988873721Q', 'BR267306476392S' ]                  │ [ [Object], [Object], [Object] ]                  │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 59      │ 60           │ 'R Lopes Chaves, 104'                      │ [ 76 ]                          │ [ 'BR2659515253902' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 60      │ 61           │ 'R Camarajibe, 262'                        │ [ 77 ]                          │ [ 'BR2615394839367' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 61      │ 62           │ 'Rua do Bosque, 980'                       │ [ 78, 79 ]                      │ [ 'BR266180816860K', 'BR2625223378634' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 62      │ 63           │ 'Rua do Bosque, 804'                       │ [ 80, 81 ]                      │ [ 'BR263614234827I', 'BR2665878593905' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 63      │ 64           │ 'Avenida Doutor Abraão Ribeiro, 10'        │ [ 82 ]                          │ [ 'BR264873392126L' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 64      │ 65           │ 'Rua Norma Pieruccini Giannotti, 665'      │ [ 83 ]                          │ [ 'BR268202116345N' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 65      │ 66           │ 'Rua Anhanguera, 451'                      │ [ 84, 85, 86 ]                  │ [ 'BR260725064424E', 'BR260409453319X', 'BR2650007325901' ]                  │ [ [Object], [Object], [Object] ]                  │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 66      │ 67           │ 'R Dr Ribeiro de Almeida, 88'              │ [ 87, 88 ]                      │ [ 'BR2680555627621', 'BR260758952008X' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 67      │ 68           │ 'Rua dos Americanos, 185'                  │ [ 89 ]                          │ [ 'BR263132121731X' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 68      │ 69           │ 'Rua dos Americanos, 220'                  │ [ 90, 91 ]                      │ [ 'BR267044652919K', 'BR267855275633O' ]                                     │ [ [Object], [Object] ]                            │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 69      │ 70           │ 'Rua dos Americanos, 838'                  │ [ 92 ]                          │ [ 'BR2671214420292' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 70      │ 71           │ 'Avenida Rudge, 485'                       │ [ 93, 94, 95 ]                  │ [ 'BR2637923228582', 'BR264045032299G', 'BR2659869036140' ]                  │ [ [Object], [Object], [Object] ]                  │ true     │ 'MESMO_LOGRADOURO_NUMERO' │
+  │ 71      │ 72           │ 'Avenida Rudge, 459'                       │ [ 96 ]                          │ [ 'BR267541433738Z' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 72      │ 73           │ 'Avenida Rudge, 351'                       │ [ 97 ]                          │ [ 'BR264763526577E' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 73      │ 74           │ 'Rua do Bosque, 136'                       │ [ 98 ]                          │ [ 'BR264576217790Y' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 74      │ 75           │ 'R do Bosque, 234'                         │ [ 99 ]                          │ [ 'BR262856299063W' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 75      │ 76           │ 'Rua Anhangüera, 72'                       │ [ 100 ]                         │ [ 'BR265107156140G' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 76      │ 77           │ 'Rua Cônego Vicente Miguel Marino, 161'    │ [ 101 ]                         │ [ 'BR269029334041A' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  │ 77      │ 78           │ 'Rua Cônego Vicente Miguel Marino, 67'     │ [ 102 ]                         │ [ 'BR263396985590Q' ]                                                        │ [ [Object] ]                                      │ false    │ 'PARADA_SIMPLES'          │
+  └─────────┴──────────────┴────────────────────────────────────────────┴─────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────┴──────────┴───────────────────────────┘
+  {
+    PARADA: 4,
+    ENTREGAS_DO_PDF: [ 4, 5 ],
+    PACOTES: [ 'BR263867285560L', 'BR260169788093C' ],
+    ENDERECO: 'Rua General Júlio Marcondes Salgado, 303',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 10,
+    ENTREGAS_DO_PDF: [ 11, 12 ],
+    PACOTES: [ 'BR263168641779T', 'BR264664489430H' ],
+    ENDERECO: 'R. Mário de Andrade, 16',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 11,
+    ENTREGAS_DO_PDF: [ 13, 14 ],
+    PACOTES: [ 'BR260323699915L', 'BR262021947317S' ],
+    ENDERECO: 'Avenida General Olímpio da Silveira, 386',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 22,
+    ENTREGAS_DO_PDF: [ 25, 26 ],
+    PACOTES: [ 'BR264423919450X', 'BR261027675954G' ],
+    ENDERECO: 'Rua Doutor Albuquerque Lins, 634',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 30,
+    ENTREGAS_DO_PDF: [ 34, 35, 36 ],
+    PACOTES: [ 'BR268465531206P', 'BR263892193123Q', 'BR262314035176Q' ],
+    ENDERECO: 'Avenida Angélica, 634',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 32,
+    ENTREGAS_DO_PDF: [ 38, 39, 40, 41 ],
+    PACOTES: [
+      'BR261248919158Z',
+      'BR268260719208D',
+      'BR268656113179V',
+      'BR269032176824R'
+    ],
+    ENDERECO: 'R Martim Francisco, 107',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 33,
+    ENTREGAS_DO_PDF: [ 42, 43 ],
+    PACOTES: [ 'BR2687553189965', 'BR260540182207W' ],
+    ENDERECO: 'Alameda Glete, 1049',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 34,
+    ENTREGAS_DO_PDF: [ 44, 45 ],
+    PACOTES: [ 'BR264474284537P', 'BR2681400806894' ],
+    ENDERECO: 'Avenida São João, 1833',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 36,
+    ENTREGAS_DO_PDF: [ 47, 48 ],
+    PACOTES: [ 'BR263590946332G', 'BR260030714964Q' ],
+    ENDERECO: 'Rua João Monteiro, 58',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 44,
+    ENTREGAS_DO_PDF: [ 56, 57 ],
+    PACOTES: [ 'BR2630964402111', 'BR264793521833O' ],
+    ENDERECO: 'Alameda Barão de Limeira, 1380',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 57,
+    ENTREGAS_DO_PDF: [ 70, 71 ],
+    PACOTES: [ 'BR267172437945M', 'BR263553550100M' ],
+    ENDERECO: 'Rua Sousa Lima, 86',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 59,
+    ENTREGAS_DO_PDF: [ 73, 74, 75 ],
+    PACOTES: [ 'BR260073698117I', 'BR267988873721Q', 'BR267306476392S' ],
+    ENDERECO: 'Rua Doutor Sérgio Meira, 230',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 62,
+    ENTREGAS_DO_PDF: [ 78, 79 ],
+    PACOTES: [ 'BR266180816860K', 'BR2625223378634' ],
+    ENDERECO: 'Rua do Bosque, 980',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 63,
+    ENTREGAS_DO_PDF: [ 80, 81 ],
+    PACOTES: [ 'BR263614234827I', 'BR2665878593905' ],
+    ENDERECO: 'Rua do Bosque, 804',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 66,
+    ENTREGAS_DO_PDF: [ 84, 85, 86 ],
+    PACOTES: [ 'BR260725064424E', 'BR260409453319X', 'BR2650007325901' ],
+    ENDERECO: 'Rua Anhanguera, 451',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 67,
+    ENTREGAS_DO_PDF: [ 87, 88 ],
+    PACOTES: [ 'BR2680555627621', 'BR260758952008X' ],
+    ENDERECO: 'R Dr Ribeiro de Almeida, 88',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 69,
+    ENTREGAS_DO_PDF: [ 90, 91 ],
+    PACOTES: [ 'BR267044652919K', 'BR267855275633O' ],
+    ENDERECO: 'Rua dos Americanos, 220',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+  {
+    PARADA: 71,
+    ENTREGAS_DO_PDF: [ 93, 94, 95 ],
+    PACOTES: [ 'BR2637923228582', 'BR264045032299G', 'BR2659869036140' ],
+    ENDERECO: 'Avenida Rudge, 485',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMO_LOGRADOURO_NUMERO'
+  }
+RESULT 102 102 78 18
+MULTI
+4 [ 4, 5 ] 2 Rua General Júlio Marcondes Salgado, 303 [ 'APTO 1603, São Paulo', 'Apto 709, São Paulo' ]
+10 [ 11, 12 ] 2 R. Mário de Andrade, 16 [
+  'Barra Funda, São Paulo, 01154-060',
+  'Barra Funda, São Paulo, 01154-060'
+]
+11 [ 13, 14 ] 2 Avenida General Olímpio da Silveira, 386 [
+  'Santa Cecilia, São Paulo, 01150-000',
+  'Santa Cecilia, São Paulo, 01150-000'
+]
+22 [ 25, 26 ] 2 Rua Doutor Albuquerque Lins, 634 [ 'Apto 45, São Paulo', 'Apto 45, São Paulo' ]
+30 [ 34, 35, 36 ] 3 Avenida Angélica, 634 [ 'Apt 1804, São Paulo', 'Apt 1804, São Paulo', 'Apt 1804, São Paulo' ]
+32 [ 38, 39, 40, 41 ] 4 R Martim Francisco, 107 [
+  'Apartamento 64, São Paulo',
+  'Apartamento 64, São Paulo',
+  'Apartamento 64, São Paulo',
+  'Apartamento 64, São Paulo'
+]
+33 [ 42, 43 ] 2 Alameda Glete, 1049 [
+  'Campos Elíseos, São Paulo, 01215-001',
+  'Campos Elíseos, São Paulo, 01215-001'
+]
+34 [ 44, 45 ] 2 Avenida São João, 1833 [
+  'Campos Elíseos, São Paulo, 01211-101',
+  'Campos Elíseos, São Paulo, 01211-101'
+]
+36 [ 47, 48 ] 2 Rua João Monteiro, 58 [ 'Ap 1004, São Paulo', 'Ap 1004, São Paulo' ]
+44 [ 56, 57 ] 2 Alameda Barão de Limeira, 1380 [ 'Apto 11, São Paulo', 'Apartamento 24 edifício Saip, São Paulo' ]
+57 [ 70, 71 ] 2 Rua Sousa Lima, 86 [ 'Apto 503, São Paulo', 'Portaria, São Paulo' ]
+59 [ 73, 74, 75 ] 3 Rua Doutor Sérgio Meira, 230 [
+  'Apto 103 bl 03, São Paulo',
+  'Apto 103 bl 03, São Paulo',
+  'Bloco 1 ap 142, São Paulo'
+]
+62 [ 78, 79 ] 2 Rua do Bosque, 980 [ 'Torre C apt 86, São Paulo', 'Apê N•166 Bloco A, São Paulo' ]
+63 [ 80, 81 ] 2 Rua do Bosque, 804 [ '203 torre 2, São Paulo', 'Ap 118 torre 2, São Paulo' ]
+66 [ 84, 85, 86 ] 3 Rua Anhanguera, 451 [
+  'Apt 2503, São Paulo',
+  'Apartamento 714, São Paulo',
+  'Apt 2111, São Paulo'
+]
+67 [ 87, 88 ] 2 R Dr Ribeiro de Almeida, 88 [ 'APTO 181 BLOCO A, São Paulo', 'Apt. 051 A, São Paulo' ]
+69 [ 90, 91 ] 2 Rua dos Americanos, 220 [ 'São Paulo', 'São Paulo' ]
+71 [ 93, 94, 95 ] 3 Avenida Rudge, 485 [ 'São Paulo', 'Apt 620, São Paulo', 'Apartamento 1213, São Paulo' ]
+
+== HASHES PROTEGIDOS ==
+8254623dc75a4620a81f95baba39f07bbf9392c950e4810ea9bf043f6894ff7a  /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-3/js/bipagem/bipagem-area.js
+c6b1bbb874055323efa833ac8bfcac26e13dff91812fe89d28491af26de688a1  /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-3/js/bipagem/operacoes-pacotes.js
+6eda7298a85a1b4a89a7f5ef3de34874bd8fa304dcb35030a8086b330fd82610  /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-3/js/bipagem/rota-ativa-bridge.js
+b5f80a0fc471d8297c0cd326b944f3eff2f3156d36237e52e0919fc3ed8f91f4  /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-3/js/roteirizacao/roteirizacao.js
