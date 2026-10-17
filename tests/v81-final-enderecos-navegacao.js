@@ -113,7 +113,7 @@ ok(/acentuada_esquerda/.test(nav) && /acentuada_direita/.test(nav) && /rotatoria
 ok(/navManeuverAfter/.test(html) && /navManeuverNextIcon/.test(html) && /proximaInst/.test(nav),'segunda manobra é exibida quando existe instrução real seguinte');
 ok(/navPanelGrabber/.test(html) && /pointermove/.test(nav),'bottom sheet expansível preserva grabber dedicado');
 ok(/data-pemato-nav-mode="overview"/.test(css) && /nav-maneuver-card\{display:none/.test(css),'overview oculta painel de manobra de GPS');
-ok(/line-opacity':\.36/.test(nav) || /line-opacity':0\.36/.test(nav),'trecho percorrido permanece verde com baixa opacidade');
+ok(/'line-color':'#96a69f'/.test(nav) && (/line-opacity':\.20/.test(nav) || /line-opacity':0\.20/.test(nav)),'trecho percorrido fica bem mais fraco e cinza-esverdeado no FINAL 7');
 ok(/distanciaProximaManobra < 120/.test(nav) && /Math\.min\(zoom, 18\.32\)/.test(nav),'câmera abre o enquadramento perto de uma curva/manobra');
 
 // Mapeamento real das manobras: executa a função usada pelo painel, não só regex estrutural.

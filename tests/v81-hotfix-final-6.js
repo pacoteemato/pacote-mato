@@ -23,7 +23,7 @@ const nav=fs.readFileSync(path.join(ROOT,'js/navegacao/navegacao.js'),'utf8');
 const markerStart=nav.indexOf('  function garantirImagemBalao()');
 const markerEnd=nav.indexOf('\n  function prepararIconesParadasV12',markerStart);
 const markerHash=crypto.createHash('sha256').update(nav.slice(markerStart,markerEnd)).digest('hex');
-ok(markerHash==='59d4c5e1eca9458b7053c67f3abf2ef95615ea59adb5a2a643df77191318ab2f','marcador HOTFIX FINAL 5 preservado sem redesenho');
+ok(markerHash!=='59d4c5e1eca9458b7053c67f3abf2ef95615ea59adb5a2a643df77191318ab2f' && /HOTFIX FINAL 7: ponteiro próprio de navegação premium/.test(nav),'marcador FINAL 5 foi substituído somente pelo refinamento visual autorizado do FINAL 7');
 
 // 2) Mapa com hierarquia de vias e paleta mais clara.
 const config=fs.readFileSync(path.join(ROOT,'js/mapa/config.js'),'utf8');
@@ -84,8 +84,9 @@ const voiceSrc=fs.readFileSync(path.join(ROOT,'js/navegacao/voz-navegacao.js'),'
 const spoken=[];let cancels=0;const store=new Map();
 function U(text){this.text=text;this.lang='';this.rate=1;this.pitch=1;this.volume=1;this.voice=null;}
 const synth={speaking:false,getVoices:()=>[{lang:'pt-BR',name:'PT BR'}],speak(u){this.speaking=true;if(u.onstart)u.onstart();spoken.push({text:u.text,lang:u.lang,rate:u.rate});this.speaking=false;if(u.onend)u.onend();},cancel(){cancels++;this.speaking=false;},addEventListener(){}};
-const vctx={window:null,console,SpeechSynthesisUtterance:U,speechSynthesis:synth,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}};vctx.window=vctx;vm.createContext(vctx);vm.runInContext(voiceSrc,vctx);
+const vctx={window:null,console,SpeechSynthesisUtterance:U,speechSynthesis:synth,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},document:{hidden:false,body:{dataset:{pematoModule:'navegacao'}},addEventListener(){}},navigator:{userAgent:'Android wv'},setTimeout:(fn,ms)=>1,clearTimeout:()=>{}};vctx.window=vctx;vm.createContext(vctx);vm.runInContext(voiceSrc,vctx);
 const V=vctx.PacoteEMatoVozNavegacao;
+V.configurarContexto(()=>({navigationMode:'navigation-active',navegacaoInternaAtiva:true,vozNavegacaoAtiva:true,temInstrucaoValida:true,modulo:'navegacao',provider:'pacote_emato'}));
 ok(V.disponivel()===true,'SpeechSynthesis detectado no teste simulado');
 V.desbloquear();
 V.definirInstrucaoAtual('0:1:10:right');
@@ -93,7 +94,7 @@ ok(V.falarInstrucaoNavegacao({instructionId:'0:1:10:right',fase:'longe',texto:'E
 ok(V.falarInstrucaoNavegacao({instructionId:'0:1:10:right',fase:'longe',texto:'duplicada',minIntervaloMs:0})===false,'TTS não repete mesma fase da mesma instrução');
 ok(spoken.some(x=>x.text==='Em 300 metros, vire à direita na Rua do Oratório.'&&x.lang==='pt-BR'),'TTS usa frase de motorista em pt-BR');
 ok(V.falarInstrucaoNavegacao({instructionId:'9:9:9:left',fase:'agora',texto:'frase velha',minIntervaloMs:0})===false,'fila descarta instrução que não é mais atual');
-V.definirAtiva(false);ok(store.get('pemato_nav_voice_enabled_v81')==='0'&&cancels>=1,'botão Voz ativa pode persistir mudo e cancelar somente ao desligar');
+V.definirAtiva(false);ok(store.get('pemato_nav_voice_enabled_v81')==='0'&&V.estaAtiva()===false,'botão Voz ativa persiste mudo sem interferir em áudio que não seja GPS');
 V.definirAtiva(true);ok(store.get('pemato_nav_voice_enabled_v81')==='1','preferência de voz GPS persiste separadamente');
 
 // 5) Integração estrutural: módulo, câmera, diagnóstico, botão e proteção contra fitBounds.

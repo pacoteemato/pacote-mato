@@ -1,0 +1,56 @@
+[
+  {
+    "file": "CURVA-DIREITA-HOTFIX7-HARNESS.png",
+    "scenario": "right",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "CURVA-ESQUERDA-HOTFIX7-HARNESS.png",
+    "scenario": "left",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "LEVE-DIREITA-HOTFIX7-HARNESS.png",
+    "scenario": "slightRight",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "LEVE-ESQUERDA-HOTFIX7-HARNESS.png",
+    "scenario": "slightLeft",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "RETORNO-HOTFIX7-HARNESS.png",
+    "scenario": "uturn",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "ROTATORIA-HOTFIX7-HARNESS.png",
+    "scenario": "roundabout",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "NOVO-INDICADOR-HOTFIX7-HARNESS.png",
+    "scenario": "right",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "ROTA-PERCORRIDA-HOTFIX7-HARNESS.png",
+    "scenario": "right",
+    "maneuverVisible": true,
+    "driverVisible": true
+  },
+  {
+    "file": "MAPA-REFINADO-HOTFIX7-HARNESS.png",
+    "scenario": "right",
+    "maneuverVisible": true,
+    "driverVisible": true
+  }
+]

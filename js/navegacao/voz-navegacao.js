@@ -2,19 +2,45 @@
   'use strict';
 
   const STORAGE_KEY = 'pemato_nav_voice_enabled_v81';
+  const MAX_RETRY = 3;
+  const WATCHDOG_MS = 1000;
+  const RETRY_DELAY_MS = 260;
   const falasExecutadas = new Set();
+  const falasPendentes = new Set();
+  const falasFalhadas = new Set();
+
   let ativa = true;
   let desbloqueada = false;
+  let contextoProvider = null;
   let instructionIdAtual = '';
   let ultimaChave = '';
   let ultimaFalaEm = 0;
   let utteranceAtual = null;
   let vozPreferida = null;
   let ultimoTexto = '';
+  let ultimaFase = '';
   let ultimoStatus = 'idle';
+  let ultimoStart = 0;
+  let ultimoEnd = 0;
+  let ultimoErro = '';
+  let retryCount = 0;
+  let watchdogAtual = null;
+  let background = false;
+  let voicesListenerRegistrado = false;
 
   function disponivel() {
     return !!(global.speechSynthesis && global.SpeechSynthesisUtterance);
+  }
+
+  function detectarRuntime() {
+    const ua = String(global.navigator?.userAgent || '');
+    if (global.Capacitor?.isNativePlatform?.()) return 'capacitor';
+    if (global.cordova) return 'cordova';
+    if (/; wv\)|\bwv\b/i.test(ua) || (/Android/i.test(ua) && /Version\/\d+/i.test(ua))) return 'android-webview';
+    if (/Android/i.test(ua) && /(Chrome|CriOS)/i.test(ua)) return 'android-browser-ou-twa';
+    if (/Android/i.test(ua)) return 'android-runtime';
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'ios-web-runtime';
+    return 'browser';
   }
 
   function carregarPreferencia() {
@@ -36,11 +62,68 @@
     vozPreferida = vozes.find(v => String(v.lang || '').toLowerCase() === 'pt-br')
       || vozes.find(v => String(v.lang || '').toLowerCase().startsWith('pt-br'))
       || vozes.find(v => String(v.lang || '').toLowerCase().startsWith('pt'))
+      || vozes.find(v => v?.default)
+      || vozes[0]
       || null;
     return vozPreferida;
   }
 
+  function contextoAtual() {
+    let contexto = {};
+    try { contexto = typeof contextoProvider === 'function' ? (contextoProvider() || {}) : {}; } catch (_) { contexto = {}; }
+    return {
+      navigationMode: String(contexto.navigationMode || ''),
+      navegacaoInternaAtiva: contexto.navegacaoInternaAtiva === true,
+      vozNavegacaoAtiva: contexto.vozNavegacaoAtiva !== false,
+      temInstrucaoValida: contexto.temInstrucaoValida === true,
+      modulo: String(contexto.modulo || global.document?.body?.dataset?.pematoModule || ''),
+      provider: String(contexto.provider || '')
+    };
+  }
+
+  function podeFalarNavegacao({ exigirInstrucao = true } = {}) {
+    const c = contextoAtual();
+    if (!ativa || !disponivel() || background || global.document?.hidden) return false;
+    if (c.navigationMode !== 'navigation-active') return false;
+    if (c.navegacaoInternaAtiva !== true) return false;
+    if (c.vozNavegacaoAtiva !== true) return false;
+    if (c.modulo && c.modulo !== 'navegacao') return false;
+    if (c.provider && c.provider !== 'pacote_emato') return false;
+    if (exigirInstrucao && c.temInstrucaoValida !== true) return false;
+    return true;
+  }
+
+  function limparWatchdog() {
+    if (watchdogAtual != null) {
+      try { global.clearTimeout?.(watchdogAtual); } catch (_) {}
+      watchdogAtual = null;
+    }
+  }
+
   function atualizarDiagnostico(extra) {
+    const c = contextoAtual();
+    global.diagnosticoTTSAndroidV81 = Object.assign(global.diagnosticoTTSAndroidV81 || {}, {
+      runtime: detectarRuntime(),
+      navigationMode: c.navigationMode || null,
+      navegacaoInternaAtiva: c.navegacaoInternaAtiva,
+      vozNavegacaoAtiva: ativa && c.vozNavegacaoAtiva,
+      podeFalar: podeFalarNavegacao({ exigirInstrucao:false }),
+      speechSynthesisDisponivel: !!global.speechSynthesis,
+      utteranceDisponivel: !!global.SpeechSynthesisUtterance,
+      voicesCount: disponivel() ? Number(global.speechSynthesis.getVoices?.()?.length || 0) : 0,
+      selectedVoice: vozPreferida ? { name:String(vozPreferida.name || ''), lang:String(vozPreferida.lang || '') } : null,
+      ttsState: ultimoStatus,
+      lastInstructionId: instructionIdAtual || null,
+      lastText: ultimoTexto || '',
+      lastPhase: ultimaFase || null,
+      lastStart: ultimoStart || null,
+      lastEnd: ultimoEnd || null,
+      lastError: ultimoErro || null,
+      retryCount,
+      failedKeysCount: falasFalhadas.size
+    }, extra || {});
+
+    // Compatibilidade com o diagnóstico já usado pelo HOTFIX FINAL 6/7.
     global.diagnosticoNavegacaoVozV81 = Object.assign(global.diagnosticoNavegacaoVozV81 || {}, {
       instructionId: instructionIdAtual || null,
       faseFalando: ultimoStatus,
@@ -51,63 +134,68 @@
       voiceLang: vozPreferida?.lang || null,
       ultimaChaveFala: ultimaChave || null,
       ultimaFalaEm: ultimaFalaEm || null
-    }, extra || {});
+    });
+  }
+
+  function registrarVoicesChanged() {
+    if (!disponivel() || voicesListenerRegistrado) return;
+    voicesListenerRegistrado = true;
+    try {
+      global.speechSynthesis.addEventListener?.('voiceschanged', () => {
+        escolherVoz();
+        atualizarDiagnostico({ voicesChangedAt: Date.now() });
+      });
+    } catch (_) {}
   }
 
   function inicializar() {
     carregarPreferencia();
     escolherVoz();
-    try {
-      global.speechSynthesis?.addEventListener?.('voiceschanged', escolherVoz);
-    } catch (_) {}
-    atualizarDiagnostico({faseFalando:'initialized'});
+    registrarVoicesChanged();
+    ultimoStatus = disponivel() ? (ativa ? 'idle' : 'muted') : 'unavailable';
+    atualizarDiagnostico();
     return ativa;
   }
 
-  function desbloquear() {
-    escolherVoz();
-    if (!disponivel() || desbloqueada) {
-      desbloqueada = disponivel() ? true : desbloqueada;
-      atualizarDiagnostico({faseFalando:desbloqueada?'ready':'unavailable'});
-      return desbloqueada;
-    }
-    try {
-      // Chamado somente após gesto explícito (Navegar / iniciar rota).
-      // O utterance silencioso inicializa engines de TTS que exigem interação no WebView.
-      const u = new global.SpeechSynthesisUtterance(' ');
-      u.lang = 'pt-BR';
-      u.rate = 1;
-      u.pitch = 1;
-      u.volume = 0;
-      const v = escolherVoz(); if (v) u.voice = v;
-      global.speechSynthesis.speak(u);
-      desbloqueada = true;
-      atualizarDiagnostico({faseFalando:'ready'});
-      return true;
-    } catch (_) {
-      atualizarDiagnostico({faseFalando:'unlock-error'});
-      return false;
-    }
+  function configurarContexto(provider) {
+    contextoProvider = typeof provider === 'function' ? provider : null;
+    atualizarDiagnostico();
   }
 
   function estaAtiva() { return ativa; }
+
+  function cancelarSomenteGps() {
+    limparWatchdog();
+    const haviaFalaGps = !!utteranceAtual || falasPendentes.size > 0 || ['initializing','speaking','retrying'].includes(ultimoStatus);
+    if (haviaFalaGps) {
+      try { global.speechSynthesis?.cancel?.(); } catch (_) {}
+    }
+    utteranceAtual = null;
+    falasPendentes.clear();
+  }
 
   function definirAtiva(valor) {
     ativa = valor !== false;
     persistirPreferencia();
     if (!ativa) {
-      try { global.speechSynthesis?.cancel?.(); } catch (_) {}
-      utteranceAtual = null;
+      cancelarSomenteGps();
       ultimoStatus = 'muted';
+      desbloqueada = false;
     } else {
-      ultimoStatus = 'ready';
+      falasFalhadas.clear();
+      ultimoStatus = disponivel() ? 'idle' : 'unavailable';
     }
     atualizarDiagnostico();
     return ativa;
   }
 
   function definirInstrucaoAtual(id) {
-    instructionIdAtual = String(id || '');
+    const novo = String(id || '');
+    if (instructionIdAtual && novo && novo !== instructionIdAtual && utteranceAtual && ultimoStatus === 'speaking') {
+      // Só interrompe quando a instrução realmente mudou e a anterior ficou velha.
+      cancelarSomenteGps();
+    }
+    instructionIdAtual = novo;
     atualizarDiagnostico();
   }
 
@@ -115,81 +203,217 @@
     return `${String(instructionId || 'sem-instrucao')}|${String(fase || 'agora')}`;
   }
 
-  function falarInstrucaoNavegacao({instructionId, fase, texto, urgente=false, minIntervaloMs=1800} = {}) {
+  function agendar(fn, atraso) {
+    if (typeof global.setTimeout === 'function') return global.setTimeout(fn, atraso);
+    return null;
+  }
+
+  function tentativaFala({instructionId, fase, texto, urgente=false, minIntervaloMs=1800, exigirInstrucao=true, onStarted, onEnded, onError, tentativa=0, chaveForcada=''} = {}) {
     const id = String(instructionId || '');
     const frase = String(texto || '').trim();
     const faseNorm = String(fase || 'agora');
-    const chave = chaveFala(id, faseNorm);
+    const chave = chaveForcada || chaveFala(id, faseNorm);
     const agora = Date.now();
 
-    if (!ativa || !disponivel() || !frase) return false;
-    if (id && instructionIdAtual && id !== instructionIdAtual && !id.startsWith('stop:') && !id.startsWith('route:')) return false;
-    if (falasExecutadas.has(chave)) return false;
+    if (!frase || !podeFalarNavegacao({ exigirInstrucao })) return false;
+    if (id && instructionIdAtual && id !== instructionIdAtual && !id.startsWith('stop:') && !id.startsWith('route:') && !id.startsWith('system:')) return false;
+    if (falasExecutadas.has(chave) || falasPendentes.has(chave) || falasFalhadas.has(chave)) return false;
     if (agora - ultimaFalaEm < Number(minIntervaloMs || 0)) return false;
 
     try {
-      // Não cancelar a cada posição GPS. Somente uma instrução urgente diferente
-      // pode substituir a frase ainda em andamento.
       if (global.speechSynthesis.speaking) {
         if (!urgente) return false;
-        if (ultimaChave && ultimaChave !== chave) global.speechSynthesis.cancel?.();
+        if (ultimaChave && ultimaChave !== chave && utteranceAtual) cancelarSomenteGps();
       }
 
+      falasPendentes.add(chave);
+      retryCount = tentativa;
+      ultimoTexto = frase;
+      ultimaFase = faseNorm;
+      ultimaChave = chave;
+      ultimoErro = '';
+      ultimoStatus = tentativa > 0 ? 'retrying' : 'initializing';
+
+      try { global.speechSynthesis.resume?.(); } catch (_) {}
       const u = new global.SpeechSynthesisUtterance(frase);
       u.lang = 'pt-BR';
       u.rate = 1.02;
       u.pitch = 1.0;
       u.volume = 1.0;
       const v = escolherVoz(); if (v) u.voice = v;
-      u.onstart = () => { ultimoStatus = faseNorm; atualizarDiagnostico(); };
-      u.onend = () => { if (utteranceAtual === u) utteranceAtual = null; ultimoStatus = 'idle'; atualizarDiagnostico(); };
-      u.onerror = () => { if (utteranceAtual === u) utteranceAtual = null; ultimoStatus = 'error'; atualizarDiagnostico(); };
-
-      falasExecutadas.add(chave);
-      ultimaChave = chave;
-      ultimaFalaEm = agora;
-      ultimoTexto = frase;
       utteranceAtual = u;
-      ultimoStatus = faseNorm;
+
+      let iniciou = false;
+      let terminou = false;
+      const finalizarTimeout = () => {
+        if (iniciou || terminou || utteranceAtual !== u) return;
+        falasPendentes.delete(chave);
+        ultimoErro = 'TTS_START_TIMEOUT';
+        ultimoStatus = 'timeout';
+        atualizarDiagnostico();
+        if (tentativa + 1 < MAX_RETRY && podeFalarNavegacao({ exigirInstrucao })) {
+          try { global.speechSynthesis.cancel?.(); } catch (_) {}
+          try { global.speechSynthesis.resume?.(); } catch (_) {}
+          agendar(() => tentativaFala({instructionId:id,fase:faseNorm,texto:frase,urgente:true,minIntervaloMs:0,exigirInstrucao,onStarted,onEnded,onError,tentativa:tentativa+1,chaveForcada:chave}), RETRY_DELAY_MS);
+        } else {
+          falasFalhadas.add(chave);
+          try { onError?.('TTS_START_TIMEOUT'); } catch (_) {}
+        }
+      };
+
+      u.onstart = () => {
+        if (utteranceAtual !== u) return;
+        iniciou = true;
+        limparWatchdog();
+        falasPendentes.delete(chave);
+        falasExecutadas.add(chave); // FINAL 8: só marca como falada após onstart real.
+        desbloqueada = true;
+        ultimoStatus = 'speaking';
+        ultimoStart = Date.now();
+        ultimaFalaEm = ultimoStart;
+        retryCount = tentativa;
+        atualizarDiagnostico();
+        try { onStarted?.(); } catch (_) {}
+      };
+      u.onend = () => {
+        terminou = true;
+        limparWatchdog();
+        falasPendentes.delete(chave);
+        if (utteranceAtual === u) utteranceAtual = null;
+        ultimoEnd = Date.now();
+        if (!iniciou) {
+          ultimoErro = 'TTS_END_SEM_ONSTART';
+          ultimoStatus = 'error';
+          try { onError?.(ultimoErro); } catch (_) {}
+        } else {
+          ultimoStatus = 'ready';
+          try { onEnded?.(); } catch (_) {}
+        }
+        atualizarDiagnostico();
+      };
+      u.onerror = event => {
+        terminou = true;
+        limparWatchdog();
+        falasPendentes.delete(chave);
+        if (utteranceAtual === u) utteranceAtual = null;
+        ultimoErro = String(event?.error || 'TTS_ERROR');
+        ultimoStatus = 'error';
+        atualizarDiagnostico();
+        if (!iniciou && tentativa + 1 < MAX_RETRY && podeFalarNavegacao({ exigirInstrucao })) {
+          try { global.speechSynthesis.cancel?.(); } catch (_) {}
+          try { global.speechSynthesis.resume?.(); } catch (_) {}
+          agendar(() => tentativaFala({instructionId:id,fase:faseNorm,texto:frase,urgente:true,minIntervaloMs:0,exigirInstrucao,onStarted,onEnded,onError,tentativa:tentativa+1,chaveForcada:chave}), RETRY_DELAY_MS);
+        } else {
+          if (!iniciou) falasFalhadas.add(chave);
+          try { onError?.(ultimoErro); } catch (_) {}
+        }
+      };
+
       global.speechSynthesis.speak(u);
+      watchdogAtual = agendar(finalizarTimeout, WATCHDOG_MS);
       atualizarDiagnostico();
       return true;
-    } catch (_) {
+    } catch (erro) {
+      falasPendentes.delete(chave);
+      ultimoErro = String(erro?.message || erro || 'TTS_EXCEPTION');
       ultimoStatus = 'error';
       atualizarDiagnostico();
+      try { onError?.(ultimoErro); } catch (_) {}
       return false;
     }
   }
 
+  function desbloquear({ confirmar=false } = {}) {
+    escolherVoz();
+    registrarVoicesChanged();
+    if (!disponivel()) {
+      ultimoStatus = 'unavailable';
+      atualizarDiagnostico();
+      return false;
+    }
+    if (!podeFalarNavegacao({ exigirInstrucao:false })) {
+      atualizarDiagnostico({ unlockBlocked:true });
+      return false;
+    }
+    if (confirmar) {
+      return tentativaFala({
+        instructionId:'system:voice-enabled', fase:'confirmacao', texto:'Voz de navegação ativada.',
+        urgente:true, minIntervaloMs:0, exigirInstrucao:false, chaveForcada:`system:voice-enabled|${Date.now()}`
+      });
+    }
+    if (desbloqueada) return true;
+    // Gesto do usuário: acorda/resume o engine sem afirmar que a voz está READY.
+    // O estado READY só será confirmado quando uma utterance real disparar onstart.
+    try { global.speechSynthesis.resume?.(); } catch (_) {}
+    ultimoStatus = 'initializing';
+    atualizarDiagnostico();
+    return true;
+  }
+
+  function falarInstrucaoNavegacao(opcoes = {}) {
+    return tentativaFala(Object.assign({}, opcoes, { exigirInstrucao:true }));
+  }
+
+  function pausarParaBackground() {
+    background = true;
+    cancelarSomenteGps();
+    ultimoStatus = 'background';
+    atualizarDiagnostico();
+  }
+
+  function retomarDoBackground() {
+    background = false;
+    try { global.speechSynthesis?.resume?.(); } catch (_) {}
+    ultimoStatus = ativa && disponivel() ? 'idle' : (ativa ? 'unavailable' : 'muted');
+    atualizarDiagnostico();
+    return podeFalarNavegacao({ exigirInstrucao:false });
+  }
+
   function limparEstado({cancelar=true} = {}) {
     falasExecutadas.clear();
+    falasPendentes.clear();
+    falasFalhadas.clear();
     instructionIdAtual = '';
     ultimaChave = '';
     ultimaFalaEm = 0;
     ultimoTexto = '';
-    ultimoStatus = 'idle';
-    utteranceAtual = null;
-    if (cancelar) {
-      try { global.speechSynthesis?.cancel?.(); } catch (_) {}
-    }
+    ultimaFase = '';
+    ultimoErro = '';
+    retryCount = 0;
+    desbloqueada = false;
+    if (cancelar) cancelarSomenteGps();
+    else { limparWatchdog(); utteranceAtual = null; }
+    ultimoStatus = ativa && disponivel() ? 'idle' : (ativa ? 'unavailable' : 'muted');
     atualizarDiagnostico();
   }
 
   function diagnostico() {
+    escolherVoz();
     atualizarDiagnostico();
-    return Object.assign({}, global.diagnosticoNavegacaoVozV81 || {});
+    return Object.assign({}, global.diagnosticoTTSAndroidV81 || {});
   }
+
+  try {
+    global.document?.addEventListener?.('visibilitychange', () => {
+      if (global.document.hidden) pausarParaBackground();
+      else retomarDoBackground();
+    });
+  } catch (_) {}
 
   inicializar();
 
   global.PacoteEMatoVozNavegacao = Object.freeze({
     inicializar,
+    configurarContexto,
     desbloquear,
     disponivel,
     estaAtiva,
     definirAtiva,
     definirInstrucaoAtual,
+    podeFalarNavegacao,
     falarInstrucaoNavegacao,
+    pausarParaBackground,
+    retomarDoBackground,
     limparEstado,
     diagnostico
   });
