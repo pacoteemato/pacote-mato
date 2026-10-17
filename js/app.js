@@ -3264,11 +3264,14 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             ? ` • ${dados.pacotes.length} pacote${dados.pacotes.length === 1 ? '' : 's'}`
             : '';
           const entregasJuntas = origemTexto
-            ? `<div style="margin-top:5px;font-size:.76rem;font-weight:900;letter-spacing:.01em;">ENTREGAS ${origemTexto} JUNTAS</div>`
+            ? `<div style="margin-top:5px;font-size:.76rem;font-weight:900;letter-spacing:.01em;">ENTREGAS DO PDF: ${origemTexto} · JUNTAS</div>`
             : '';
           badge = `<div class="tag-duplo-info">PARADA MÚLTIPLA • ${dados.quantidadeEntregas} entregas${detalhePacotes}${entregasJuntas}</div>`;
         } else {
-          badge = `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">${pdfSemCodigosBipagem ? '1 entrega' : `${Math.max(1, dados.pacotes.length)} pacote${dados.pacotes.length === 1 ? '' : 's'}`}</div>`;
+          const origemUnica = origemTexto
+            ? `<div style="margin-top:3px;font-size:.64rem;color:var(--text-muted);font-weight:800;">ENTREGA DO PDF: ${origemTexto}</div>`
+            : '';
+          badge = `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">${pdfSemCodigosBipagem ? '1 entrega' : `${Math.max(1, dados.pacotes.length)} pacote${dados.pacotes.length === 1 ? '' : 's'}`}</div>${origemUnica}`;
         }
 
         const enderecoUrl = encodeURIComponent(String(dados.endereco || '')).replace(/'/g, '%27');
@@ -3618,13 +3621,16 @@ document.getElementById('cardRetomarRota').style.display = 'none';
     }
 
     function normalizarEndereco(texto) {
+      // V81 FINAL: a identidade física não pode ser somente rua + número.
+      // Reutiliza o mesmo parser conservador da criação das paradas físicas,
+      // para que os fallbacks do leitor não reintroduzam falsos agrupamentos.
+      const fisico = decomporEnderecoFisicoPdfV71(texto);
+      if (fisico?.chave) return fisico.chave;
+
+      // Compatibilidade para formatos antigos que o parser V71 não reconhece.
+      // Mesmo aqui, complemento de unidade reconhecido entra na chave.
       const d = decomporEnderecorota(texto);
       if (!d) return "";
-
-      // CORREÇÃO V12:
-      // Parada é o imóvel: LOGRADOURO + NÚMERO.
-      // Apartamento, bloco, torre, sala e complementos não criam nova parada.
-      // Também remove abreviações comuns do rota.
       const aliases = {
         'mq': 'marques',
         'cnsl': 'conselheiro',
@@ -3632,12 +3638,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         'fr': 'frei',
         'p': 'paes'
       };
-
-      const rua = d.tokensRua
-        .map(t => aliases[t] || t)
-        .join('');
-
-      return `${rua}_${d.numero}`;
+      const rua = d.tokensRua.map(t => aliases[t] || t).join('');
+      const unidade = extrairUnidadeEnderecoPdfV81(d.complemento || '').chave;
+      return `${rua}_${d.numero}|u:${unidade || '-'}`;
     }
 
     function linhaPareceEnderecorota(texto) {
@@ -3803,31 +3806,123 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       return t;
     }
 
+    function normalizarValorUnidadePdfV81(valor) {
+      return removerAcentosPdfV71(String(valor || ''))
+        .toLowerCase()
+        .replace(/[º°ª]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, '');
+    }
+
+    function extrairUnidadeEnderecoPdfV81(caudaOriginal) {
+      const bruto = removerAcentosPdfV71(String(caudaOriginal || ''))
+        .toLowerCase()
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const detectados = new Set();
+      const valores = new Map();
+      const registrar = (tipo, valor) => {
+        detectados.add(tipo);
+        const v = normalizarValorUnidadePdfV81(valor);
+        if (!v) return;
+        if (!valores.has(tipo)) valores.set(tipo, new Set());
+        valores.get(tipo).add(v);
+      };
+
+      // Detecta o rótulo primeiro. Se houver rótulo sem valor seguro, a entrega
+      // será mantida separada na etapa de agrupamento (falso negativo > positivo).
+      const marcadores = [
+        ['apt', /\b(?:apartamento|apto|apt|ap|a\s+p)\.?\b/g],
+        ['bloco', /\b(?:bloco|bl|b\s+l)\.?\b/g],
+        ['torre', /\btorre\b/g],
+        ['sala', /\bsala\b/g],
+        ['conjunto', /\b(?:conjunto|conj|cj)\.?\b/g],
+        ['loja', /\bloja\b/g],
+        ['casa', /\bcasa\b/g],
+        ['unidade', /\b(?:unidade|unid)\.?\b/g],
+        ['andar', /\bandar\b/g],
+        ['fundos', /\bfundos?\b/g],
+        ['edificio', /\b(?:edificio|predio)\b/g]
+      ];
+      marcadores.forEach(([tipo, re]) => { if (re.test(bruto)) detectados.add(tipo); });
+
+      const simples = [
+        // Exige separador real após o rótulo. Isso impede, por exemplo,
+        // que "Apto" sem número seja retrocedido para "apt" + valor "o".
+        ['apt', /\b(?:apartamento|apto|apt|ap|a\s+p)\.?(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['bloco', /\b(?:bloco|bl|b\s+l)\.?(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['torre', /\btorre(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['sala', /\bsala(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['conjunto', /\b(?:conjunto|conj|cj)\.?(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['loja', /\bloja(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['casa', /\bcasa(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['unidade', /\b(?:unidade|unid)\.?(?:\s*[:#-]\s*|\s+)([a-z0-9]+(?:[-\/]?[a-z0-9]+)*)\b/g],
+        ['andar', /\bandar(?:\s*[:#-]\s*|\s+)(\d+[a-z]?)\b/g]
+      ];
+      simples.forEach(([tipo, re]) => {
+        let m;
+        while ((m = re.exec(bruto))) registrar(tipo, m[1]);
+      });
+
+      // Formatos como "3º andar" / "3 andar".
+      let mAndar;
+      const reAndarInvertido = /\b(\d+[a-z]?)\s*(?:o|º|°)?\s*andar\b/g;
+      while ((mAndar = reAndarInvertido.exec(bruto))) registrar('andar', mAndar[1]);
+
+      // "fundos" é um diferenciador mesmo sem número. Não captura palavra
+      // aleatória após o marcador para evitar transformar cidade/bairro em unidade.
+      if (/\bfundos?\b/.test(bruto)) {
+        const fm = bruto.match(/\bfundos?\s*[:#-]?\s*(\d+[a-z]?|[a-z])\b/);
+        registrar('fundos', fm?.[1] || 'sim');
+      }
+
+      // Edifício/prédio só entra quando há identificação explícita delimitada.
+      // É um diferenciador secundário útil em condomínios com mesmo número.
+      const reEdificio = /\b(?:edificio|predio)\s+([a-z0-9][a-z0-9 .'-]{0,40}?)(?=\s*,|\s+\b(?:apartamento|apto|apt|ap|bloco|bl|torre|sala|conjunto|conj|cj|loja|casa|unidade|unid|andar|fundos?)\b|$)/g;
+      let me;
+      while ((me = reEdificio.exec(bruto))) registrar('edificio', me[1]);
+
+      const ordem = ['edificio','bloco','torre','apt','sala','conjunto','loja','casa','unidade','andar','fundos'];
+      const partes = [];
+      ordem.forEach(tipo => {
+        const lista = valores.has(tipo) ? [...valores.get(tipo)].sort() : [];
+        lista.forEach(valor => partes.push(`${tipo}:${valor}`));
+      });
+
+      const extraidos = new Set([...valores.keys()]);
+      // fundos sem número é extraído como fundos:sim.
+      if (detectados.has('fundos') && partes.some(p => p.startsWith('fundos:'))) extraidos.add('fundos');
+      const incompletos = [...detectados].filter(tipo => !extraidos.has(tipo));
+
+      return {
+        chave: partes.join('|'),
+        partes,
+        marcadores: [...detectados],
+        incompletos,
+        temUnidade: detectados.size > 0,
+        segura: incompletos.length === 0
+      };
+    }
+
     function decomporEnderecoFisicoPdfV71(valor) {
       const original = limparTextoEnderecoPdfV71(valor);
       if (!original || original.length < 4) return null;
 
       const texto = original.replace(/\s+/g, ' ').trim();
-      // Evita \\b depois de caracteres como "ç" (Pç), pois o boundary do JS é
-      // baseado em ASCII e pode falhar em abreviações brasileiras.
       const viaRegex = /(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel|Acesso|Condom[ií]nio|Residencial|S[ií]tio|Fazenda|Ch[aá]cara)(?=\s)/i;
       const via = texto.match(viaRegex);
-
-      // Alguns exports omitem "Rua/Av." e deixam somente "Jorge Augusto, 831".
-      // Aceitamos esse formato APENAS quando há vírgula explícita antes do número,
-      // evitando transformar bairro/CEP/observação em endereço.
       const genericoSemTipo = !via &&
         /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9.'’\- ]{2,100},\s*\d{1,6}[A-Za-z]?(?:\b|,)/.test(texto);
-
       if (!via && !genericoSemTipo) return null;
 
-      let inicio = via ? via.index : 0;
-      let corpo = texto.slice(inicio).trim();
+      const inicio = via ? via.index : 0;
+      const corpo = texto.slice(inicio).trim();
       if (!corpo) return null;
 
-      // A unidade física é identificada pelo primeiro número que parece número
-      // de imóvel. Isso evita escolher "25" em Rua 25 de Março e evita pegar
-      // "609A" em "Avenida Rudge 351 apto 609A".
+      // Número do imóvel: ignora números contextualizados como unidade.
       const reNumero = /\b(\d{1,6}[A-Za-z]?)\b/g;
       let escolhido = null;
       let m;
@@ -3836,36 +3931,24 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         const depois = corpo.slice(m.index + m[0].length);
         const anterior = antes.match(/([A-Za-zÀ-ÿ.]+)\s*$/)?.[1] || '';
         const prox = depois.replace(/^\s+/, '');
-
-        if (/^(?:ap|apt|apto|apartamento|bl|bloco|torre|sala|cj|conj|conjunto|andar|loja|casa|fundos?)\.?$/i.test(anterior)) {
-          continue;
-        }
-
+        if (/^(?:ap|apt|apto|apartamento|bl|bloco|torre|sala|cj|conj|conjunto|andar|loja|casa|unid|unidade|fundos?|edificio|pr[eé]dio)\.?$/i.test(anterior)) continue;
         const temNomeAntes = /[A-Za-zÀ-ÿ]{2}/.test(antes);
         if (!temNomeAntes) continue;
-
         const marcadorForte =
           /^\s*[,\-]/.test(depois) ||
-          /^(?:ap|apt|apto|apartamento|bl|bloco|torre|sala|cj|conj|conjunto|andar|loja|casa|fundos?|portaria|recep[cç][aã]o|condom[ií]nio|pr[eé]dio|edif[ií]cio)\b/i.test(prox) ||
+          /^(?:ap|apt|apto|apartamento|bl|bloco|torre|sala|cj|conj|conjunto|andar|loja|casa|unid|unidade|fundos?|portaria|recep[cç][aã]o|condom[ií]nio|pr[eé]dio|edif[ií]cio)\b/i.test(prox) ||
           /^(?:S[aã]o\s+Paulo|Osasco|Guarulhos|Santo\s+Andr[eé]|S[aã]o\s+Bernardo|$)/i.test(prox);
-
-        // Números que fazem parte do nome da rua costumam ser seguidos de
-        // preposição/palavra (Rua 25 de Março). Nesse caso seguimos procurando.
         if (!marcadorForte && /^[A-Za-zÀ-ÿ]/.test(prox)) continue;
-
-        escolhido = { valor: m[1], indice: m.index };
+        escolhido = { valor: m[1], indice: m.index, fim: m.index + m[0].length };
         break;
       }
-
       if (!escolhido) return null;
 
       const antesNumero = corpo.slice(0, escolhido.indice).trim().replace(/[,:;\-]+$/g, '').trim();
       if (!/[A-Za-zÀ-ÿ]/.test(antesNumero)) return null;
-
       const tipoMatch = antesNumero.match(/^\s*(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Travessa|Tv\.?|Estrada|Est\.?|Rodovia|Rod\.?|Pra[cç]a|P[cç]\.?|Pca\.?|Largo|Lg\.?|Viela|Passagem|Comunidade|Beco|Servid[aã]o|Marginal|Ladeira|Via|Rodoanel|Acesso|Condom[ií]nio|Residencial|S[ií]tio|Fazenda|Ch[aá]cara)\s+/i);
       const tipo = normalizarTipoViaPdfV71(tipoMatch?.[1] || 'via');
       const ruaBruta = tipoMatch ? antesNumero.slice(tipoMatch[0].length).trim() : antesNumero;
-
       const tokensRua = removerAcentosPdfV71(ruaBruta)
         .toLowerCase()
         .replace(/[^a-z0-9 ]+/g, ' ')
@@ -3874,11 +3957,14 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .filter(t => !['da','de','do','das','dos','e'].includes(t))
         .map(expandirTokenRuaPdfV71)
         .filter(Boolean);
-
       if (!tokensRua.length) return null;
 
       const numero = String(escolhido.valor || '').toLowerCase().replace(/[^0-9a-z]/g, '');
       if (!numero) return null;
+      const cauda = corpo.slice(escolhido.fim).replace(/^\s*[,;\-]\s*/, '').trim();
+      const unidade = extrairUnidadeEnderecoPdfV81(cauda);
+      const chaveBase = `${tipo}|${tokensRua.join('')}|${numero}`;
+      const chave = `${chaveBase}|u:${unidade.chave || '-'}`;
 
       return {
         original: texto,
@@ -3886,7 +3972,13 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         numero,
         tokensRua,
         ruaCanonica: tokensRua.join(' '),
-        chave: `${tipo}|${tokensRua.join('')}|${numero}`
+        complementoBruto: cauda,
+        complementoNormalizado: unidade.chave,
+        temComplementoUnidade: unidade.temUnidade,
+        complementoSeguro: unidade.segura,
+        complementosIncompletos: unidade.incompletos,
+        chaveBase,
+        chave
       };
     }
 
@@ -5836,18 +5928,31 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           throw new Error(`ENDERECO_NAO_IDENTIFICADO|${numero}`);
         }
 
+        // V81 FINAL: complemento de unidade incompleto nunca é usado para
+        // fundir entregas. Nesse caso a própria entrega vira uma chave isolada.
+        const chaveAgrupamento = dadosEndereco.complementoSeguro
+          ? dadosEndereco.chave
+          : `${dadosEndereco.chave}|entrega:${numero}`;
+
         const existente = porNumero.get(numero);
         if (!existente) {
           porNumero.set(numero, {
             numeroParada: numero,
             numeroOriginalPdf: Number(registro.numeroOriginalPdf || numero) || numero,
             endereco: registro.endereco,
-            chaveFisica: dadosEndereco.chave,
+            chaveFisica: chaveAgrupamento,
+            chaveBase: dadosEndereco.chaveBase,
+            unidadeNormalizada: dadosEndereco.complementoNormalizado || '',
+            temUnidade: dadosEndereco.temComplementoUnidade === true,
+            unidadeSegura: dadosEndereco.complementoSeguro === true,
+            unidadeIncompleta: dadosEndereco.complementosIncompletos || [],
+            ruaNormalizada: dadosEndereco.ruaCanonica,
+            numeroImovel: dadosEndereco.numero,
             codigos: registro.codigos.slice(),
             pagina: registro.pagina || 0
           });
         } else {
-          if (existente.chaveFisica !== dadosEndereco.chave) {
+          if (existente.chaveFisica !== chaveAgrupamento) {
             throw new Error(`PARADA_AMBIGUA|${numero}`);
           }
           if (!Number.isFinite(Number(existente.numeroOriginalPdf)) && Number(registro.numeroOriginalPdf) > 0) {
@@ -5885,6 +5990,66 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           entregas: lista.slice().sort((a,b) => a.numeroParada - b.numeroParada)
         }))
         .sort((a,b) => a.entregas[0].numeroParada - b.entregas[0].numeroParada);
+
+      // Diagnóstico V81: decisão determinística par a par entre entregas que
+      // compartilham via + rua + número. Assim o console nunca chama um par
+      // efetivamente agrupado de "SEPARADAS" só porque existe uma terceira
+      // unidade diferente no mesmo prédio/número.
+      try {
+        const porBase = new Map();
+        const fisicaPorChave = new Map(
+          gruposOrdenados.map((grupo, indice) => [grupo.chave, indice + 1])
+        );
+        entregas.forEach(entrega => {
+          const base = entrega.chaveBase || entrega.chaveFisica;
+          if (!porBase.has(base)) porBase.set(base, []);
+          porBase.get(base).push(entrega);
+        });
+        window.diagnosticoAgrupamentoV81 = [];
+        const descrever = entrega => ({
+          entregaPdf: Number(entrega.numeroOriginalPdf || entrega.numeroParada),
+          enderecoBruto: entrega.endereco,
+          ruaNormalizada: entrega.ruaNormalizada,
+          numero: entrega.numeroImovel,
+          complementoNormalizado: entrega.unidadeNormalizada || '(sem unidade)',
+          chaveFisicaFinal: entrega.chaveFisica,
+          paradaFisica: fisicaPorChave.get(entrega.chaveFisica) || null
+        });
+        const motivoComparacao = (a, b) => {
+          if (a.unidadeSegura === false || b.unidadeSegura === false) return 'UNIDADE_INCOMPLETA';
+          if ((a.temUnidade === true) !== (b.temUnidade === true)) return 'UNIDADE_PRESENTE_EM_APENAS_UMA';
+          if (a.temUnidade !== true && b.temUnidade !== true) return 'MESMA_BASE_SEM_UNIDADE';
+          if ((a.unidadeNormalizada || '') === (b.unidadeNormalizada || '')) return 'MESMA_UNIDADE_NORMALIZADA';
+          return 'UNIDADES_DIFERENTES';
+        };
+
+        porBase.forEach(lista => {
+          if (lista.length < 2) return;
+          for (let i = 0; i < lista.length; i++) {
+            for (let j = i + 1; j < lista.length; j++) {
+              const a = lista[i];
+              const b = lista[j];
+              const juntas = a.chaveFisica === b.chaveFisica;
+              const item = {
+                base: a.chaveBase,
+                resultado: juntas ? 'JUNTAS' : 'SEPARADAS',
+                motivo: motivoComparacao(a, b),
+                paradaFisica: juntas ? (fisicaPorChave.get(a.chaveFisica) || null) : null,
+                entregas: [descrever(a), descrever(b)]
+              };
+              window.diagnosticoAgrupamentoV81.push(item);
+              console.groupCollapsed(`[PACOTE É MATO][AGRUPAMENTO] ${item.resultado} · ${item.motivo}`);
+              item.entregas.forEach(e => console.log(
+                `Entrega ${e.entregaPdf}:\n${e.enderecoBruto}\nbase = ${item.base}\nunidade = ${e.complementoNormalizado}\nchave = ${e.chaveFisicaFinal}\nparada física = ${e.paradaFisica ?? '-'}`
+              ));
+              console.log(`resultado: ${item.resultado}\nmotivo: ${item.motivo}`);
+              console.groupEnd();
+            }
+          }
+        });
+      } catch (erroDiagnostico) {
+        console.warn('[PACOTE É MATO][AGRUPAMENTO] diagnóstico indisponível', erroDiagnostico);
+      }
 
       gruposOrdenados.forEach((grupo, indiceFisico) => {
         const numeroFisico = indiceFisico + 1;

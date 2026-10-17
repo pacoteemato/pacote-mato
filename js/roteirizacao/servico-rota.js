@@ -579,19 +579,40 @@
     legs.forEach((leg, legIndex) => {
       (leg?.steps || []).forEach((step, stepIndex) => {
         const detalhe = step?.instruction && typeof step.instruction === 'object' ? step.instruction : {};
+        const type = String(detalhe?.type || step?.type || '');
+        const modifier = String(detalhe?.modifier || detalhe?.direction || step?.modifier || step?.direction || '');
+        const streetName = String(detalhe?.street_name || step?.street_name || step?.name || '');
+        const exitNumber = detalhe?.exit_number ?? step?.exit_number ?? null;
+        const transitionInstruction = String(detalhe?.transition_instruction || step?.transition_instruction || '');
+        const preTransitionInstruction = String(detalhe?.pre_transition_instruction || step?.pre_transition_instruction || '');
+        const fromIndex = Number.isFinite(Number(step?.from_index)) ? Number(step.from_index) : null;
+        const toIndex = Number.isFinite(Number(step?.to_index)) ? Number(step.to_index) : null;
+        const distance = Number(step?.distance || 0);
+        const time = Number(step?.time || 0);
         instrucoes.push({
           id: `${legIndex}:${stepIndex}`,
           legIndex, stepIndex,
-          texto: textoInstrucao(step) || 'Continue pela rota',
-          distancia: Number(step?.distance || 0), tempo: Number(step?.time || 0),
-          fromIndex: Number.isFinite(Number(step?.from_index)) ? Number(step.from_index) : null,
-          toIndex: Number.isFinite(Number(step?.to_index)) ? Number(step.to_index) : null,
-          tipo: String(detalhe?.type || step?.type || ''),
-          modificador: String(detalhe?.modifier || detalhe?.direction || step?.modifier || step?.direction || ''),
+          texto: textoInstrucao(step) || transitionInstruction || preTransitionInstruction || 'Continue pela rota',
+          distancia: distance, tempo: time,
+          fromIndex, toIndex,
+          tipo: type,
+          modificador: modifier,
           direcao: String(detalhe?.direction || step?.direction || ''),
           angulo: Number.isFinite(Number(detalhe?.turn_angle ?? step?.turn_angle)) ? Number(detalhe?.turn_angle ?? step?.turn_angle) : null,
-          rua: String(detalhe?.street_name || step?.name || ''),
-          exitNumber: detalhe?.exit_number ?? step?.exit_number ?? null
+          rua: streetName,
+          exitNumber,
+          // Preserva também os nomes do payload Geoapify para o renderer não
+          // precisar reconstruir/inventar uma manobra.
+          type,
+          modifier,
+          street_name: streetName,
+          exit_number: exitNumber,
+          transition_instruction: transitionInstruction,
+          pre_transition_instruction: preTransitionInstruction,
+          distance,
+          time,
+          from_index: fromIndex,
+          to_index: toIndex
         });
       });
     });

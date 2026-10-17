@@ -36,6 +36,9 @@
   let rafVisual = null;
   let ultimaAtualizacaoCameraFrame = 0;
   let velocidadeVisualMs = 0;
+  let modoMapaNavegacao = 'overview';
+  let ultimaAssinaturaGeometriaDiagnostico = '';
+  let distanciaProximaManobra = Infinity;
 
   const SOURCE_ROUTE = 'pemato-nav-route';
   const SOURCE_ROUTE_STATUS = 'pemato-nav-route-status';
@@ -76,7 +79,8 @@
   function fc(features) { return { type: 'FeatureCollection', features: features || [] }; }
 
   function providerAtual() { return String(global.PacoteEMatoConfiguracoes?.obter?.().navegacao || global.appState?.navegacao?.provider || 'pacote_emato'); }
-  function navegacaoInternaAtiva() { return providerAtual() === 'pacote_emato'; }
+  function navegacaoInternaAtiva() { return providerAtual() === 'pacote_emato' && modoMapaNavegacao === 'navigation-active'; }
+  function modoOverview() { return modoMapaNavegacao === 'overview'; }
 
   function coordenadaValida(lat, lon) {
     if (lat === null || lat === undefined || lon === null || lon === undefined || String(lat).trim() === '' || String(lon).trim() === '') return false;
@@ -203,8 +207,9 @@
     if (mapa.getSource(id)) return;
     const opcoes = { type:'geojson', data };
     if (id === SOURCE_ROUTE || id === SOURCE_ROUTE_STATUS || id === SOURCE_PROGRESS) {
-      // V20: geometria estável; simplificação leve apenas no pipeline do MapLibre.
-      opcoes.tolerance = 0.2;
+      // V81 FINAL: preserve a geometria viária integral também no render do MapLibre.
+      // Não simplifica curvas/rotatórias perceptíveis da resposta do provedor.
+      opcoes.tolerance = 0;
       opcoes.buffer = 128;
       opcoes.maxzoom = 20;
     }
@@ -219,7 +224,7 @@
       (mapa.getStyle()?.layers || []).forEach(layer => {
         if (layer?.type === 'fill-extrusion' && mapa.getLayer(layer.id)) mapa.removeLayer(layer.id);
       });
-      mapa.setPitch?.(0);
+      if (!navegacaoInternaAtiva()) mapa.setPitch?.(0);
     } catch (_) {}
   }
 
@@ -283,9 +288,9 @@
     garantirImagemBalao();
     const before = antesRotulos();
     if (!mapa.getLayer(LAYER_ROUTE_CASE)) mapa.addLayer({ id:LAYER_ROUTE_CASE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':['interpolate',['linear'],['zoom'],10,3.8,13,5.2,16,7.6,18,8.6],'line-opacity':.72,'line-blur':0}}, before);
-    if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({ id:LAYER_ROUTE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#3f9d72','line-width':['interpolate',['linear'],['zoom'],10,1.9,13,3,16,4.8,18,5.5],'line-opacity':.64,'line-blur':0}}, before);
+    if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({ id:LAYER_ROUTE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#047857','line-width':['interpolate',['linear'],['zoom'],10,2.2,13,3.4,16,5.3,18,6.2],'line-opacity':.92,'line-blur':0}}, before);
     if (!mapa.getLayer(LAYER_ROUTE_STATUS_CASE)) mapa.addLayer({ id:LAYER_ROUTE_STATUS_CASE,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':['interpolate',['linear'],['zoom'],10,4.4,13,5.9,16,8.5,18,9.5],'line-opacity':.86}}, before);
-    if (!mapa.getLayer(LAYER_ROUTE_STATUS)) mapa.addLayer({ id:LAYER_ROUTE_STATUS,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','status'],'passado','#9ca3af','proxima','#047857','#047857'],'line-width':['interpolate',['linear'],['zoom'],10,2.5,13,3.8,16,5.9,18,6.7],'line-opacity':['match',['get','status'],'passado',0.84,'proxima',1,0.9]}}, before);
+    if (!mapa.getLayer(LAYER_ROUTE_STATUS)) mapa.addLayer({ id:LAYER_ROUTE_STATUS,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','status'],'passado','#3f9d72','proxima','#047857','#047857'],'line-width':['interpolate',['linear'],['zoom'],10,2.5,13,3.8,16,5.9,18,6.7],'line-opacity':['match',['get','status'],'passado',0.34,'proxima',1,0.94]}}, before);
     // V81: o trecho percorrido mantém a identidade verde, mas fica apagado.
     // A geometria não muda; apenas a apresentação do caminho já percorrido.
     if (!mapa.getLayer(LAYER_PROGRESS)) mapa.addLayer({ id:LAYER_PROGRESS,type:'line',source:SOURCE_PROGRESS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#3f9d72','line-width':['interpolate',['linear'],['zoom'],10,2.4,13,3.6,16,5.5,18,6.2],'line-opacity':.36,'line-blur':0}}, before);
@@ -358,6 +363,50 @@
     return c && coordenadaValida(c[1], c[0]) ? c : (cfg().initialCenter || [-46.6333,-23.5505]);
   }
 
+  function enquadrarOverview(duracao = 0) {
+    if (!mapa || !mapReady) return;
+    const coords = geometriaPontos(rota?.geometria).filter(c => Array.isArray(c) && coordenadaValida(c[1], c[0]));
+    if (!coords.length) {
+      try { mapa.jumpTo({center:centroDaRota(),zoom:15,pitch:0,bearing:0,offset:[0,0]}); } catch (_) {}
+      return;
+    }
+    let minLon=Infinity,minLat=Infinity,maxLon=-Infinity,maxLat=-Infinity;
+    coords.forEach(c => { minLon=Math.min(minLon,Number(c[0])); maxLon=Math.max(maxLon,Number(c[0])); minLat=Math.min(minLat,Number(c[1])); maxLat=Math.max(maxLat,Number(c[1])); });
+    const mobile = global.matchMedia?.('(max-width: 820px)')?.matches;
+    const padding = mobile ? {top:96,right:28,bottom:245,left:28} : {top:96,right:42,bottom:42,left:42};
+    try {
+      mapa.stop?.();
+      mapa.fitBounds([[minLon,minLat],[maxLon,maxLat]], {padding,maxZoom:16.3,pitch:0,bearing:0,duration:Math.max(0,Number(duracao)||0)});
+    } catch (_) {}
+  }
+
+  function aplicarModoVisualMapa() {
+    if (!mapa || !mapReady) return;
+    if (navegacaoInternaAtiva()) global.PacoteEMatoMapaConfig?.aplicarEstiloNavegacaoAtiva?.(mapa);
+    else global.PacoteEMatoMapaConfig?.restaurarEstiloMapaOverview?.(mapa);
+  }
+
+  function definirModoMapa(modo, opcoes = {}) {
+    modoMapaNavegacao = modo === 'navigation-active' ? 'navigation-active' : 'overview';
+    document.body.dataset.pematoNavMode = modoMapaNavegacao;
+    if (global.appState?.navegacao) global.appState.navegacao.modo = modoMapaNavegacao;
+    aplicarModoVisualMapa();
+    if (modoMapaNavegacao === 'navigation-active') {
+      definirPainelNav('collapsed');
+      if (opcoes.acompanhar !== false) definirAcompanhamento(true);
+      atualizarInstrucao(nearestOnRoute(ultimaPosicao));
+      acompanharCamera(Number(opcoes.duracao || 0));
+    } else {
+      definirAcompanhamento(false);
+      definirPainelNav('expanded');
+      setSource(SOURCE_PROGRESS, fc([]));
+      enquadrarOverview(Number(opcoes.duracao || 0));
+    }
+    atualizarBotaoVoz();
+    atualizarBotaoFollow();
+    atualizarFontesPontos();
+  }
+
   function atualizarTermino() {
     const el = $('navRouteEtaTime');
     const fim = Number(rota?.horarioTerminoEstimado);
@@ -409,12 +458,14 @@
         ocultarFallbackMapa();
         assinaturaParadasV11 = '';
         removerCamadas3D();
-        acompanharCamera(0);
         garantirCamadas();
         bindEventosMarcadoresNav();
+        aplicarModoVisualMapa();
         try { mapa.resize(); mapa.triggerRepaint?.(); } catch (_) {}
         desenharRota();
         atualizarFontesPontos();
+        if (navegacaoInternaAtiva()) acompanharCamera(0);
+        else enquadrarOverview(0);
       };
 
       mapa.on('load', ready);
@@ -490,9 +541,26 @@
   function desenharRota() {
     if (!mapa || !mapReady) return;
     const g = normalizarGeometriaVisual(rota?.geometria);
-    setSource(SOURCE_ROUTE, fc(g ? [{type:'Feature',properties:{},geometry:g}] : []));
+    const routeData = fc(g ? [{type:'Feature',properties:{},geometry:g}] : []);
+    setSource(SOURCE_ROUTE, routeData);
     const segmentosStatus = global.PacoteEMatoMarcadores?.segmentosStatusDaRota?.(rota) || [];
-    setSource(SOURCE_ROUTE_STATUS, fc(segmentosStatus));
+    const statusData = fc(segmentosStatus);
+    setSource(SOURCE_ROUTE_STATUS, statusData);
+
+    try {
+      const pontos = g?.type === 'LineString' ? g.coordinates.length : (g?.coordinates || []).reduce((n,l)=>n+(l?.length||0),0);
+      const assinatura = `${g?.type||'none'}:${pontos}:${segmentosStatus.length}`;
+      if (assinatura !== ultimaAssinaturaGeometriaDiagnostico) {
+        ultimaAssinaturaGeometriaDiagnostico = assinatura;
+        global.diagnosticoNavegacaoV81 = Object.assign(global.diagnosticoNavegacaoV81 || {}, {
+          SOURCE_ROUTE:{type:g?.type||null,pontos,origem:'rota.geometria'},
+          SOURCE_ROUTE_STATUS:{type:'FeatureCollection',features:segmentosStatus.length,origem:'segmentosStatusDaRota'},
+          SOURCE_PROGRESS:global.diagnosticoNavegacaoV81?.SOURCE_PROGRESS || {type:'FeatureCollection',pontos:0},
+          modo:modoMapaNavegacao
+        });
+        console.info('[PACOTE É MATO][NAVEGAÇÃO][GEOMETRIA]', global.diagnosticoNavegacaoV81);
+      }
+    } catch (_) {}
   }
 
   function atualizarFonteMotoristaVisual() {
@@ -595,6 +663,12 @@
     if(!mapa||!mapReady||!coords.length||!nearest){setSource(SOURCE_PROGRESS,fc([]));return;}
     const usados=coords.slice(0,nearest.index+1); usados.push(nearest.point);
     setSource(SOURCE_PROGRESS,fc(usados.length>=2?[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:usados}}]:[]));
+    try {
+      global.diagnosticoNavegacaoV81 = Object.assign(global.diagnosticoNavegacaoV81 || {}, {
+        SOURCE_PROGRESS:{type:'LineString',pontos:usados.length,origem:'projeção visual sobre rota.geometria'},
+        modo:modoMapaNavegacao
+      });
+    } catch (_) {}
   }
 
   function vozDisponivel() { return 'speechSynthesis' in global && 'SpeechSynthesisUtterance' in global; }
@@ -614,13 +688,24 @@
   }
 
   function tipoVisualManobra(inst) {
-    const texto = `${inst?.tipo || ''} ${inst?.modificador || ''} ${inst?.direcao || ''} ${inst?.texto || ''}`.toLocaleLowerCase('pt-BR');
-    if (/u[- ]?turn|retorno|retorne|meia volta/.test(texto)) return 'retorno';
-    if (/roundabout|rotat[oó]ria|rotatoria/.test(texto)) return Number(inst?.exitNumber) > 0 ? 'rotatoria_saida' : 'rotatoria';
-    if (/slight.+left|leve.+esquer|esquer.+leve/.test(texto)) return 'leve_esquerda';
-    if (/slight.+right|leve.+direit|direit.+leve/.test(texto)) return 'leve_direita';
-    if (/left|esquerda/.test(texto)) return 'esquerda';
-    if (/right|direita/.test(texto)) return 'direita';
+    const tipo = String(inst?.tipo || inst?.type || '').toLowerCase();
+    const mod = String(inst?.modificador || inst?.modifier || inst?.direcao || '').toLowerCase();
+    const texto = String(inst?.texto || inst?.transition_instruction || '').toLocaleLowerCase('pt-BR');
+    const tudo = `${tipo} ${mod} ${texto}`;
+    if (/(arrive|arrival|destination|chegada|chegue|destino)/.test(tudo)) return 'chegada';
+    if (/u[- ]?turn|retorno|retorne|meia volta/.test(tudo)) return 'retorno';
+    if (/roundabout|rotary|rotat[oó]ria|rotatoria/.test(tudo)) {
+      if (Number(inst?.exitNumber ?? inst?.exit_number) > 0 || /(exit|sa[ií]da|sair)/.test(tudo)) return 'rotatoria_saida';
+      if (/(enter|entrar|entrada)/.test(tudo)) return 'rotatoria_entrada';
+      return 'rotatoria';
+    }
+    if (/sharp.+left|left.+sharp|acentuad.+esquer|esquer.+acentuad/.test(tudo)) return 'acentuada_esquerda';
+    if (/sharp.+right|right.+sharp|acentuad.+direit|direit.+acentuad/.test(tudo)) return 'acentuada_direita';
+    if (/slight.+left|left.+slight|leve.+esquer|esquer.+leve/.test(tudo)) return 'leve_esquerda';
+    if (/slight.+right|right.+slight|leve.+direit|direit.+leve/.test(tudo)) return 'leve_direita';
+    if (/\bleft\b|esquerda/.test(tudo)) return 'esquerda';
+    if (/\bright\b|direita/.test(tudo)) return 'direita';
+    // Fallback neutro: não inventa direção quando Geoapify não a informou.
     return 'reta';
   }
 
@@ -633,25 +718,58 @@
       direita:'<path d="M14 40V27c0-6 4-10 10-10h14M30 9l8 8-8 8"/>',
       leve_esquerda:'<path d="M32 40V30c0-5-2-8-6-11L13 10M14 21l-1-11 11 1"/>',
       leve_direita:'<path d="M16 40V30c0-5 2-8 6-11L35 10M34 21l1-11-11 1"/>',
+      acentuada_esquerda:'<path d="M35 40V25c0-7-4-11-11-11H10M18 6l-8 8 8 8"/>',
+      acentuada_direita:'<path d="M13 40V25c0-7 4-11 11-11h14M30 6l8 8-8 8"/>',
       retorno:'<path d="M34 40V23c0-7-4-11-10-11S14 16 14 22v4M7 20l7 7 7-7"/>',
+      rotatoria_entrada:'<path d="M24 43V34M14 18a12 12 0 1 1-1 13M8 20l6-2 1 6"/>',
       rotatoria:'<path d="M14 18a12 12 0 1 1-1 13M8 20l6-2 1 6"/><path d="M24 8V3"/>',
-      rotatoria_saida:'<path d="M14 18a12 12 0 1 1 7 17M8 20l6-2 1 6"/><path d="M30 26l11-11M33 14h8v8"/>'
+      rotatoria_saida:'<path d="M14 18a12 12 0 1 1 7 17M8 20l6-2 1 6"/><path d="M30 26l11-11M33 14h8v8"/>',
+      chegada:'<path d="M11 41V8M14 10h22l-5 8 5 8H14"/>'
     };
     return `<svg ${base} ${comum}>${paths[tipo] || paths.reta}</svg>`;
   }
 
+  function indiceInstrucaoAtual(nearest) {
+    const lista=Array.isArray(rota?.instrucoes)?rota.instrucoes:[];
+    if(!lista.length) return -1;
+    if(!nearest) return 0;
+    const idx=lista.findIndex(inst => Number.isFinite(Number(inst.toIndex ?? inst.to_index)) && Number(inst.toIndex ?? inst.to_index)>=nearest.index);
+    return idx >= 0 ? idx : lista.length - 1;
+  }
+
   function atualizarInstrucao(nearest) {
-    const coords=geometriaPontos(rota?.geometria), inst=instrucaoAtual(nearest);
-    const dist=inst&&nearest&&Number.isFinite(Number(inst.toIndex))?distanciaAoLongo(coords,nearest.index,Number(inst.toIndex),nearest.point):Number(inst?.distancia||NaN);
-    if($('navManeuverText')) $('navManeuverText').textContent=inst?.texto||'Siga a rota destacada';
-    if($('navManeuverStreet')) $('navManeuverStreet').textContent=inst?.rua||'Acompanhe o mapa e a próxima parada';
+    const lista=Array.isArray(rota?.instrucoes)?rota.instrucoes:[];
+    const indice=indiceInstrucaoAtual(nearest);
+    const inst=indice>=0?lista[indice]:null;
+    const proximaInst=indice>=0?lista[indice+1]:null;
+    const coords=geometriaPontos(rota?.geometria);
+    const toIndex=inst?.toIndex ?? inst?.to_index;
+    const dist=inst&&nearest&&Number.isFinite(Number(toIndex))?distanciaAoLongo(coords,nearest.index,Number(toIndex),nearest.point):Number(inst?.distancia ?? inst?.distance ?? NaN);
+    distanciaProximaManobra = Number.isFinite(dist) ? Math.max(0, dist) : Infinity;
+    const saida=Number(inst?.exitNumber ?? inst?.exit_number);
+    const textoBase=inst?.texto||inst?.transition_instruction||inst?.pre_transition_instruction||'Siga a rota destacada';
+    const textoRotatoria=Number.isFinite(saida)&&saida>0&&/rotat|roundabout|rotary/i.test(`${inst?.tipo||inst?.type||''} ${textoBase}`)
+      ? `${textoBase} · ${saida}ª saída` : textoBase;
+    const ruaAtual=inst?.rua||inst?.street_name||'';
+    if($('navManeuverText')) $('navManeuverText').textContent=ruaAtual||textoRotatoria;
+    if($('navManeuverStreet')) $('navManeuverStreet').textContent=ruaAtual?textoRotatoria:'Acompanhe o mapa e a próxima parada';
     if($('navManeuverDistance')) $('navManeuverDistance').textContent=Number.isFinite(dist)?formatarDistancia(dist):'—';
     if($('navManeuverIcon')) $('navManeuverIcon').innerHTML=svgManobra(tipoVisualManobra(inst));
-    if(inst&&Number.isFinite(dist)){
+
+    const after=$('navManeuverAfter');
+    if(after){
+      if(proximaInst){
+        after.hidden=false;
+        if($('navManeuverNextIcon')) $('navManeuverNextIcon').innerHTML=svgManobra(tipoVisualManobra(proximaInst));
+        if($('navManeuverNextStreet')) $('navManeuverNextStreet').textContent=proximaInst?.rua||proximaInst?.street_name||proximaInst?.texto||'Próxima manobra';
+      } else after.hidden=true;
+    }
+
+    if(inst&&Number.isFinite(dist)&&navegacaoInternaAtiva()){
       const id=inst.id||`${inst.legIndex}:${inst.stepIndex}`;
-      if(dist<=35) falar(inst.texto,`${id}:35`);
-      else if(dist<=120) falar(`Em ${Math.max(20,Math.round(dist/10)*10)} metros, ${inst.texto}`,`${id}:120`);
-      else if(dist<=400) falar(`Em ${Math.round(dist/50)*50} metros, ${inst.texto}`,`${id}:400`);
+      if(dist<=35) falar(textoBase,`${id}:35`);
+      else if(dist<=120) falar(`Em ${Math.max(20,Math.round(dist/10)*10)} metros, ${textoBase}`,`${id}:120`);
+      else if(dist<=400) falar(`Em ${Math.round(dist/50)*50} metros, ${textoBase}`,`${id}:400`);
     }
   }
 
@@ -695,11 +813,16 @@
 
   function zoomNavegacaoInterna() {
     const kmh = Math.max(0, Number(velocidadeVisualMs || 0) * 3.6);
-    if (kmh < 12) return 18.65;
-    if (kmh < 28) return 18.45;
-    if (kmh < 50) return 18.2;
-    if (kmh < 75) return 17.95;
-    return 17.7;
+    let zoom = 17.7;
+    if (kmh < 12) zoom = 18.5;
+    else if (kmh < 28) zoom = 18.4;
+    else if (kmh < 50) zoom = 18.2;
+    else if (kmh < 75) zoom = 17.95;
+    // Próximo à manobra abre ligeiramente o enquadramento para manter ao mesmo
+    // tempo o motorista e a curva/cruzamento à frente dentro da área útil.
+    if (distanciaProximaManobra < 120) zoom = Math.min(zoom, 18.25);
+    if (distanciaProximaManobra < 55) zoom = Math.min(zoom, 18.1);
+    return zoom;
   }
 
   function offsetCameraInterna() {
@@ -737,7 +860,7 @@
       zoom:interna?zoomNavegacaoInterna():16,
       pitch:interna?60:0,
       bearing,
-      offset:duracao>0&&interna?offsetCameraInterna():[0,0]
+      offset:interna?offsetCameraInterna():[0,0]
     };
     try {
       if (duracao > 0) {
@@ -987,19 +1110,26 @@
     alvoVisual=alvoVisualDaPosicao(ultimaPosicao,nearest);
     if(!posicaoVisual&&alvoVisual){posicaoVisual={...alvoVisual};headingVisual=normalizarAngulo(alvoVisual.heading) ?? direcaoCamera();}
     iniciarInterpolacaoVisual();
-    atualizarProgressoVisual(nearest);
-    atualizarInstrucao(nearest);
-
-    const p=proxima(); if(p&&coordenadaValida(p.latitude,p.longitude)){
-      const d=haversine([ultimaPosicao.lon,ultimaPosicao.lat],[Number(p.longitude),Number(p.latitude)]);
-      if(d<=120) falar(`Aproximando-se da próxima parada: ${p.enderecoOriginal||'destino'}`,`stop:${p.id}:near`);
-      if(d<=30) falar('Você chegou à parada.',`stop:${p.id}:arrived`);
+    if (navegacaoInternaAtiva()) {
+      atualizarProgressoVisual(nearest);
+      atualizarInstrucao(nearest);
+      const p=proxima(); if(p&&coordenadaValida(p.latitude,p.longitude)){
+        const d=haversine([ultimaPosicao.lon,ultimaPosicao.lat],[Number(p.longitude),Number(p.latitude)]);
+        if(d<=120) falar(`Aproximando-se da próxima parada: ${p.enderecoOriginal||'destino'}`,`stop:${p.id}:near`);
+        if(d<=30) falar('Você chegou à parada.',`stop:${p.id}:arrived`);
+      }
+      // Desvio/recálculo usam EXCLUSIVAMENTE a posição GPS bruta.
+      const limite=Math.max(80,(ultimaPosicao.accuracy||0)*2.2);
+      if(nearest&&nearest.distance>limite) eventosForaRota++; else eventosForaRota=0;
+      if(global.appState?.navegacao) global.appState.navegacao.foraDaRota=eventosForaRota>=3;
+      if($('navGpsStatus')) $('navGpsStatus').textContent=eventosForaRota>=3?'Fora da rota planejada':`GPS ativo${ultimaPosicao.accuracy?` · precisão ${Math.round(ultimaPosicao.accuracy)} m`:''}`;
+      if(eventosForaRota>=3&&Date.now()-ultimoRecalculo>60000&&global.PacoteEMatoServicoRota?.endpoint?.('route')) recalcular('desvio');
+    } else {
+      eventosForaRota=0;
+      if(global.appState?.navegacao) global.appState.navegacao.foraDaRota=false;
+      setSource(SOURCE_PROGRESS,fc([]));
+      if($('navGpsStatus')) $('navGpsStatus').textContent=`Visualização da rota${ultimaPosicao.accuracy?` · GPS ${Math.round(ultimaPosicao.accuracy)} m`:''}`;
     }
-    const limite=Math.max(80,(ultimaPosicao.accuracy||0)*2.2);
-    if(nearest&&nearest.distance>limite) eventosForaRota++; else eventosForaRota=0;
-    if(global.appState?.navegacao) global.appState.navegacao.foraDaRota=eventosForaRota>=3;
-    if($('navGpsStatus')) $('navGpsStatus').textContent=eventosForaRota>=3?'Fora da rota planejada':`GPS ativo${ultimaPosicao.accuracy?` · precisão ${Math.round(ultimaPosicao.accuracy)} m`:''}`;
-    if(eventosForaRota>=3&&Date.now()-ultimoRecalculo>60000&&global.PacoteEMatoServicoRota?.endpoint?.('route')) recalcular('desvio');
   }
 
   function iniciarGPS() {
@@ -1147,13 +1277,17 @@
   async function navegarPreferido(){
     const pref=String(global.PacoteEMatoConfiguracoes?.obter?.().navegacao||'pacote_emato');
     if(global.appState?.navegacao)global.appState.navegacao.provider=pref;
-    if(pref==='waze'||pref==='google') { try{global.speechSynthesis?.cancel?.();}catch(_){} atualizarBotaoVoz(); atualizarFontesPontos(); return abrirExterno(pref); }
-    await persistirSelecao({motivo:'navegacao_interna',navegacaoProvider:'pacote_emato'});
-    definirAcompanhamento(true);
+    if(pref==='waze'||pref==='google') {
+      definirModoMapa('overview',{duracao:0,acompanhar:false});
+      try{global.speechSynthesis?.cancel?.();}catch(_){}
+      atualizarBotaoVoz(); atualizarFontesPontos();
+      return abrirExterno(pref);
+    }
+    // Não recalcula nem recarrega: usa a geometria/instruções já salvas da rota.
+    definirModoMapa('navigation-active',{duracao:220,acompanhar:true});
+    await persistirSelecao({motivo:'navegacao_interna',navegacaoProvider:'pacote_emato',modoNavegacao:'navigation-active'});
     if(watchId==null)iniciarGPS();
     if($('navGpsStatus'))$('navGpsStatus').textContent=emDestinoFinal()?'Navegando até o ponto final':'Navegação Pacote É Mato ativa';
-    definirPainelNav('collapsed');
-    acompanharCamera(180);
   }
 
   async function iniciar(rotaEntrada){
@@ -1162,16 +1296,22 @@
     if(!rota||!geometriaValida(rota.geometria)){global.notificar?.('Calcule uma rota válida antes de iniciar a navegação.');return;}
     global.PacoteEMatoMarcadores?.capturarBaseVisualStatus?.(rota, false);
     atualizarPendentes();let idExterno=null;try{idExterno=sessionStorage.getItem('pemato_parada_externa');sessionStorage.removeItem('pemato_parada_externa');}catch(_){}cartaoSelecionadoId=idExterno||rota.paradaSelecionadaId||global.appState?.navegacao?.paradaExibidaId||proxima()?.id||null;posicaoAnterior=null;ultimaPosicaoBruta=null;posicaoVisual=null;alvoVisual=null;headingVisual=null;ultimoTimestampGps=0; const pref=global.PacoteEMatoConfiguracoes?.obter?.().navegacao||'pacote_emato';
-    if(global.appState?.navegacao){global.appState.navegacao.ativa=true;global.appState.navegacao.provider=pref;global.appState.navegacao.iniciadaEm=global.appState.navegacao.iniciadaEm||Date.now();global.appState.navegacao.paradaExibidaId=cartaoSelecionadoId;rota.iniciadoEm=rota.iniciadoEm||global.appState.navegacao.iniciadaEm;vozAtiva=pref==='pacote_emato' && global.appState.navegacao.vozAtiva!==false;seguirPosicao=rota.navegacaoSeguirPosicao!==false;global.appState.navegacao.seguirPosicao=seguirPosicao;}
-    definirPainelNav(pref==='pacote_emato'?'collapsed':'expanded');
-    garantirMapa(); acompanharCamera(0); desenharRota(); atualizarPainel(); atualizarBotaoFollow(); atualizarBotaoVoz();
+    const retomarAtiva = pref==='pacote_emato' && global.appState?.navegacao?.modo === 'navigation-active';
+    if(global.appState?.navegacao){global.appState.navegacao.ativa=true;global.appState.navegacao.provider=pref;global.appState.navegacao.iniciadaEm=global.appState.navegacao.iniciadaEm||Date.now();global.appState.navegacao.paradaExibidaId=cartaoSelecionadoId;rota.iniciadoEm=rota.iniciadoEm||global.appState.navegacao.iniciadaEm;vozAtiva=pref==='pacote_emato' && global.appState.navegacao.vozAtiva!==false;}
+    modoMapaNavegacao=retomarAtiva?'navigation-active':'overview';
+    seguirPosicao=retomarAtiva;
+    document.body.dataset.pematoNavMode=modoMapaNavegacao;
+    if(global.appState?.navegacao){global.appState.navegacao.modo=modoMapaNavegacao;global.appState.navegacao.seguirPosicao=seguirPosicao;}
+    definirPainelNav(retomarAtiva?'collapsed':'expanded');
+    garantirMapa(); desenharRota(); atualizarPainel(); atualizarBotaoFollow(); atualizarBotaoVoz();
+    if(mapReady) definirModoMapa(modoMapaNavegacao,{duracao:0,acompanhar:retomarAtiva});
     iniciarGPS();
-    if(pref!=='pacote_emato'&&$('navGpsStatus'))$('navGpsStatus').textContent=`GPS ativo · navegação preferida: ${pref==='waze'?'Waze':'Google Maps'}`;
-    await persistirSelecao({motivo:'abrir_navegacao',navegacaoProvider:pref});
+    if($('navGpsStatus')) $('navGpsStatus').textContent=retomarAtiva?'Navegação Pacote É Mato retomada':(pref!=='pacote_emato'?`GPS ativo · navegação preferida: ${pref==='waze'?'Waze':'Google Maps'}`:'Visualização da rota · toque Navegar para iniciar o GPS guiado');
+    await persistirSelecao({motivo:'abrir_navegacao',navegacaoProvider:pref,modoNavegacao:modoMapaNavegacao});
     if(!ordemPendente.length && !destinoFinalDaRota())mostrarConclusao();
   }
 
-  async function encerrar(){const ok=await global.PacoteEMatoDialog?.confirmar?.({titulo:'Sair da navegação?',mensagem:'A rota e todo o progresso serão preservados para você continuar depois.',confirmar:'Sair da navegação',cancelar:'Continuar na rota'});if(ok===false)return;pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};if(global.appState?.navegacao)global.appState.navegacao.ativa=false;global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');}
+  async function encerrar(){const ok=await global.PacoteEMatoDialog?.confirmar?.({titulo:'Sair da navegação?',mensagem:'A rota e todo o progresso serão preservados para você continuar depois.',confirmar:'Sair da navegação',cancelar:'Continuar na rota'});if(ok===false)return;pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};if(global.appState?.navegacao){global.appState.navegacao.ativa=false;global.appState.navegacao.modo='overview';}modoMapaNavegacao='overview';global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');}
   function pausar(){pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};}
   function mapaNavegacaoSaudavel(){
     try {
@@ -1199,10 +1339,12 @@
     const forcar=!mapa || contextoPerdido || !mapa.getCanvas?.()?.isConnected;
     if(forcar) reconstruirMapaNavegacao();
     else { try{mapa.resize();mapa.triggerRepaint?.();}catch(_){} garantirCamadas();desenharRota();atualizarFontesPontos(); }
-    if(seguirPosicao) acompanharCamera(0);
+    aplicarModoVisualMapa();
+    if(navegacaoInternaAtiva()&&seguirPosicao) acompanharCamera(0);
+    else if(modoOverview()) enquadrarOverview(0);
     atualizarPainel(); atualizarBotaoFollow(); atualizarBotaoVoz();
     pararGPS(); iniciarGPS();
-    if($('navGpsStatus'))$('navGpsStatus').textContent='Retorno ao Pacote É Mato · GPS retomado';
+    if($('navGpsStatus'))$('navGpsStatus').textContent=navegacaoInternaAtiva()?'Retorno ao Pacote É Mato · GPS retomado':'Visualização da rota';
     persistirSelecao({motivo:'retorno_primeiro_plano'});
   }
 
@@ -1299,6 +1441,7 @@
     $('navActionExit')?.addEventListener('click',()=>{fecharAcoesRota();encerrar();});
     $('navRecalculateBtn')?.addEventListener('click',()=>recalcular('manual')); $('navEndBtn')?.addEventListener('click',encerrar);
     $('navFollowBtn')?.addEventListener('click',()=>{
+      if(!navegacaoInternaAtiva()){enquadrarOverview(180);return;}
       definirAcompanhamento(true);
       acompanharCamera(180);
       iniciarGPS();

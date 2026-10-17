@@ -1,22 +1,27 @@
-# Pacote É Mato — V81 NAVEGAÇÃO FLUIDA
+# Pacote É Mato — V81 ENDEREÇOS + NAVEGAÇÃO
 
-Versão construída sobre a V80 com alterações cirúrgicas em login/sessão, navegação interna, histórico e performance técnica da otimização.
+Versão final congelada da V81, construída sobre `Pacote-Em-Mato-V81-NAVEGACAO-FLUIDA` com alterações cirúrgicas no agrupamento físico de endereços e na experiência de navegação interna.
 
-## Alterações principais
+## Implementado nesta revisão final
 
-- Estado de acesso separado em verificando, ativo, expirado confirmado e erro temporário de conexão.
-- Restauração automática da sessão Firebase sem transformar cache/atraso de Firestore em assinatura expirada.
-- Navegação interna mais próxima, com zoom dinâmico, câmera apontada para a frente, posição visual suavizada e GPS bruto preservado para decisões operacionais.
-- Trecho percorrido em verde com baixa opacidade; trecho futuro continua verde forte.
-- Ícones SVG de manobra baseados nas instruções reais da rota.
-- Bottom sheet compacto/expandido com grabber dedicado; no compacto ficam endereço, Não entregue e Entregue.
-- Histórico concluído consultável por parada, com correção explícita de status que reabre a mesma rota sem reotimizar.
-- Finalização só limpa a rota ativa depois que a cópia concluída foi confirmada no armazenamento local.
-- Otimização executa alternativas independentes com concorrência máxima 2, mantendo os mesmos candidatos e a mesma regra de escolha da V80.
-- Textos de processamento mais claros para o motorista.
+- Identidade física conservadora: via + logradouro + número + unidade/complemento contextual quando existir.
+- Normalização segura de AP/APTO/APARTAMENTO, BL/BLOCO, TORRE, CASA, SALA, LOJA, UNIDADE, CONJUNTO, ANDAR, FUNDOS e edifício/prédio explícito.
+- Complemento ausente em apenas uma entrega ou complemento incompleto não é usado para fundir destinos.
+- Diagnóstico `[PACOTE É MATO][AGRUPAMENTO]` explica decisões JUNTAS/SEPARADAS e a chave física final.
+- `OVERVIEW` e `NAVIGATION-ACTIVE` são estados separados.
+- Navigation-active usa câmera próxima, heading/pitch, offset do motorista, GPS visual suavizado, map matching apenas visual e recentralização completa.
+- Estilo vetorial de navegação aumenta contraste de vias e labels sem trocar o provedor OpenFreeMap.
+- Geometria da rota não recebe simplificação adicional na renderização da navegação.
+- Painel de manobras usa instruções reais do provedor, com SVGs próprios, segunda manobra e tratamento de rotatória quando os dados existem.
+- Bottom sheet permanece compacto no modo ativo e expansível pelo grabber.
+- Histórico concluído e restauração de sessão da V81 anterior foram preservados.
+- Cache-buster/build desta revisão foi alterado para evitar que uma instalação V81 anterior reutilize JS/CSS antigo.
 
 ## Proteções de regressão
 
-Os arquivos de Bipagem, importação XLSX/CSV, geocodificação e Workers foram mantidos byte a byte iguais à V80. O leitor/parser de PDF dentro de `js/app.js` não foi reescrito; as mudanças nesse arquivo ficaram no bloco de autenticação/sessão.
+- Arquivos em `js/bipagem/`: **0 modificados**.
+- Módulos de importação separados (`js/importacao/`) permanecem byte a byte iguais à base recebida.
+- `entregaOriginalPorPacote` e validação dos códigos BR continuam preservados.
+- A lógica de otimização não foi alterada; o teste de equivalência V80/V81 continua escolhendo o mesmo vencedor com as mesmas respostas de teste.
 
-Consulte `docs/RELATORIO-V81-NAVEGACAO-FLUIDA.md` para detalhes, testes executados e riscos restantes.
+Consulte `docs/RELATORIO-V81-ENDERECOS-NAVEGACAO.md` para a comparação antes/depois, testes executados, limitações e riscos restantes.

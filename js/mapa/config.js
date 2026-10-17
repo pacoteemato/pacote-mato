@@ -84,6 +84,92 @@
     });
   }
 
+  const backupEstiloNavegacao = new WeakMap();
+
+  function textoLayer(layer) {
+    return `${layer?.id || ''} ${layer?.['source-layer'] || ''}`.toLowerCase();
+  }
+
+  function guardarPropriedade(mapa, backup, layer, grupo, propriedade) {
+    const chave = `${layer.id}|${grupo}|${propriedade}`;
+    if (backup.has(chave)) return;
+    let valor;
+    try {
+      valor = grupo === 'paint'
+        ? mapa.getPaintProperty(layer.id, propriedade)
+        : mapa.getLayoutProperty(layer.id, propriedade);
+    } catch (_) { valor = undefined; }
+    backup.set(chave, { layerId: layer.id, grupo, propriedade, valor });
+  }
+
+  function definirComBackup(mapa, backup, layer, grupo, propriedade, valor) {
+    if (!mapa?.getLayer?.(layer.id)) return;
+    guardarPropriedade(mapa, backup, layer, grupo, propriedade);
+    try {
+      if (grupo === 'paint') mapa.setPaintProperty(layer.id, propriedade, valor);
+      else mapa.setLayoutProperty(layer.id, propriedade, valor);
+    } catch (_) {}
+  }
+
+  // V81 FINAL: contraste específico para navegação automotiva. A alteração é
+  // reversível e aplicada somente nas layers que realmente existem no estilo.
+  function aplicarEstiloNavegacaoAtiva(mapa) {
+    if (!mapa?.getStyle) return;
+    let backup = backupEstiloNavegacao.get(mapa);
+    if (!backup) { backup = new Map(); backupEstiloNavegacao.set(mapa, backup); }
+
+    const layers = mapa.getStyle()?.layers || [];
+    layers.forEach(layer => {
+      if (!layer?.id || /^pemato-/i.test(layer.id)) return;
+      const txt = textoLayer(layer);
+
+      if (layer.type === 'background') {
+        definirComBackup(mapa, backup, layer, 'paint', 'background-color', '#e8edef');
+        return;
+      }
+
+      const via = /(road|street|highway|motorway|trunk|primary|secondary|tertiary|residential|transportation)/i.test(txt);
+      if (layer.type === 'line' && via) {
+        const casing = /(casing|outline|border)/i.test(txt);
+        const principal = /(motorway|trunk|highway|primary)/i.test(txt);
+        const secundaria = /(secondary|tertiary)/i.test(txt);
+        const cor = casing ? '#aab7c1' : principal ? '#ffffff' : secundaria ? '#f8fafb' : '#f3f6f8';
+        definirComBackup(mapa, backup, layer, 'paint', 'line-color', cor);
+        definirComBackup(mapa, backup, layer, 'paint', 'line-opacity', 1);
+        return;
+      }
+
+      if (layer.type === 'symbol') {
+        const rotuloVia = /(road|street|highway|motorway|trunk|primary|secondary|tertiary|residential)/i.test(txt);
+        const rotuloLugar = /(place|neighbourhood|neighborhood|suburb|city|town|village)/i.test(txt);
+        if (rotuloVia || rotuloLugar) {
+          definirComBackup(mapa, backup, layer, 'layout', 'visibility', 'visible');
+          definirComBackup(mapa, backup, layer, 'paint', 'text-color', rotuloVia ? '#24333f' : '#475569');
+          definirComBackup(mapa, backup, layer, 'paint', 'text-halo-color', '#f8fafc');
+          definirComBackup(mapa, backup, layer, 'paint', 'text-halo-width', rotuloVia ? 1.7 : 1.25);
+          definirComBackup(mapa, backup, layer, 'paint', 'text-halo-blur', 0.25);
+          definirComBackup(mapa, backup, layer, 'paint', 'text-opacity', 1);
+        }
+      }
+    });
+  }
+
+  function restaurarEstiloMapaOverview(mapa) {
+    const backup = backupEstiloNavegacao.get(mapa);
+    if (!mapa || !backup) return;
+    backup.forEach(item => {
+      if (!mapa.getLayer?.(item.layerId)) return;
+      try {
+        // null remove o override e devolve o default da layer quando a propriedade
+        // não existia antes do modo ativo; evita deixar estilo de navegação no overview.
+        const valorOriginal = item.valor === undefined ? null : item.valor;
+        if (item.grupo === 'paint') mapa.setPaintProperty(item.layerId, item.propriedade, valorOriginal);
+        else mapa.setLayoutProperty(item.layerId, item.propriedade, valorOriginal);
+      } catch (_) {}
+    });
+    backup.clear();
+  }
+
   function configurarWorkerBaseUrl() {
     // Mantido por compatibilidade com telas antigas, mas o backend oficial não pode ser trocado.
     limparOverridesAntigos();
@@ -125,6 +211,8 @@
   global.PacoteEMatoMapaConfig = Object.freeze({
     exibirConstrucoes2D,
     limparPontosInteresse,
+    aplicarEstiloNavegacaoAtiva,
+    restaurarEstiloMapaOverview,
     configurarWorkerBaseUrl,
     obterWorkerBaseUrl,
     derivarEndpoints
