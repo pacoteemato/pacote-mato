@@ -1,0 +1,107 @@
+[
+  {
+    "type": "Right",
+    "file": "/mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-6/tests/visual/hotfix6/MANOBRA-Right.png",
+    "metrics": {
+      "display": "grid",
+      "visibility": "visible",
+      "opacity": "1",
+      "width": 58,
+      "height": 58,
+      "svgWidth": 56,
+      "svgHeight": 56,
+      "color": "rgb(167, 243, 208)"
+    },
+    "phrase": "Vire à direita na Rua do Oratório"
+  },
+  {
+    "type": "Left",
+    "file": "/mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-6/tests/visual/hotfix6/MANOBRA-Left.png",
+    "metrics": {
+      "display": "grid",
+      "visibility": "visible",
+      "opacity": "1",
+      "width": 58,
+      "height": 58,
+      "svgWidth": 56,
+      "svgHeight": 56,
+      "color": "rgb(167, 243, 208)"
+    },
+    "phrase": "Vire à esquerda na Rua Ancara"
+  },
+  {
+    "type": "SlightRight",
+    "file": "/mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-6/tests/visual/hotfix6/MANOBRA-SlightRight.png",
+    "metrics": {
+      "display": "grid",
+      "visibility": "visible",
+      "opacity": "1",
+      "width": 58,
+      "height": 58,
+      "svgWidth": 56,
+      "svgHeight": 56,
+      "color": "rgb(167, 243, 208)"
+    },
+    "phrase": "Mantenha-se à direita para Avenida Presidente Wilson"
+  },
+  {
+    "type": "SlightLeft",
+    "file": "/mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-6/tests/visual/hotfix6/MANOBRA-SlightLeft.png",
+    "metrics": {
+      "display": "grid",
+      "visibility": "visible",
+      "opacity": "1",
+      "width": 58,
+      "height": 58,
+      "svgWidth": 56,
+      "svgHeight": 56,
+      "color": "rgb(167, 243, 208)"
+    },
+    "phrase": "Mantenha-se à esquerda para Rua Pe. Corrado Stefani"
+  },
+  {
+    "type": "TurnAroundRight",
+    "file": "/mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-6/tests/visual/hotfix6/MANOBRA-UTurn.png",
+    "metrics": {
+      "display": "grid",
+      "visibility": "visible",
+      "opacity": "1",
+      "width": 58,
+      "height": 58,
+      "svgWidth": 56,
+      "svgHeight": 56,
+      "color": "rgb(167, 243, 208)"
+    },
+    "phrase": "Faça o retorno"
+  },
+  {
+    "type": "Roundabout",
+    "file": "/mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-6/tests/visual/hotfix6/MANOBRA-Roundabout.png",
+    "metrics": {
+      "display": "grid",
+      "visibility": "visible",
+      "opacity": "1",
+      "width": 58,
+      "height": 58,
+      "svgWidth": 56,
+      "svgHeight": 56,
+      "color": "rgb(167, 243, 208)"
+    },
+    "phrase": "Na rotatória, pegue a 2ª saída para Avenida X"
+  },
+  {
+    "type": "DestinationReached",
+    "file": "/mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-6/tests/visual/hotfix6/MANOBRA-Arrival.png",
+    "metrics": {
+      "display": "grid",
+      "visibility": "visible",
+      "opacity": "1",
+      "width": 58,
+      "height": 58,
+      "svgWidth": 56,
+      "svgHeight": 56,
+      "color": "rgb(167, 243, 208)"
+    },
+    "phrase": "Você chegou ao destino"
+  }
+]

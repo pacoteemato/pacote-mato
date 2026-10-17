@@ -101,25 +101,42 @@
   }
 
   function categoriaVia(txt) {
-    if (/(motorway|trunk|freeway)/i.test(txt)) return 'principal';
-    if (/(primary|highway)/i.test(txt)) return 'principal';
-    if (/(secondary|tertiary)/i.test(txt)) return 'secundaria';
-    if (/(residential|living_street|street|road|service|transportation)/i.test(txt)) return 'local';
+    // HOTFIX FINAL 6: hierarquia visual explícita. A classificação continua
+    // baseada em id + source-layer e não depende de um único ID do Liberty.
+    if (/(motorway|trunk|freeway)/i.test(txt)) return 'rodovia';
+    if (/(primary)/i.test(txt)) return 'primary';
+    if (/(secondary)/i.test(txt)) return 'secondary';
+    if (/(tertiary)/i.test(txt)) return 'tertiary';
+    if (/(residential|living_street|street|road|service|transportation|highway)/i.test(txt)) return 'local';
     return '';
   }
 
   function larguraViaClean(categoria, casing, navegacaoAtiva) {
-    const extra = navegacaoAtiva ? 0.35 : 0;
-    const valores = categoria === 'principal'
-      ? [10, 1.4, 13, 2.7, 16, 5.0, 19, 8.2]
-      : categoria === 'secundaria'
-        ? [10, 1.0, 13, 2.1, 16, 3.8, 19, 6.0]
-        : [10, 0.75, 13, 1.55, 16, 2.8, 19, 4.5];
+    const extra = navegacaoAtiva ? 0.28 : 0;
+    const tabela = {
+      rodovia:   [10,1.55,13,3.05,16,5.55,19,8.75],
+      primary:   [10,1.35,13,2.65,16,4.85,19,7.65],
+      secondary: [10,1.08,13,2.20,16,4.05,19,6.45],
+      tertiary:  [10,0.90,13,1.82,16,3.35,19,5.25],
+      local:     [10,0.72,13,1.48,16,2.75,19,4.30]
+    };
+    const valores = tabela[categoria] || tabela.local;
+    const casingExtra = casing ? ({rodovia:2.2,primary:1.95,secondary:1.6,tertiary:1.45,local:1.25}[categoria] || 1.25) : 0;
     const expr = ['interpolate', ['linear'], ['zoom']];
-    for (let i = 0; i < valores.length; i += 2) {
-      expr.push(valores[i], valores[i + 1] + extra + (casing ? (categoria === 'principal' ? 1.8 : 1.35) : 0));
-    }
+    for (let i = 0; i < valores.length; i += 2) expr.push(valores[i], valores[i + 1] + extra + casingExtra);
     return expr;
+  }
+
+  function coresViaClean(categoria, casing) {
+    const cores = {
+      rodovia:   {base:'#efd9a9', borda:'#d4bb82'},
+      primary:   {base:'#f3e5c5', borda:'#ddc89c'},
+      secondary: {base:'#f7edd8', borda:'#e4d7bc'},
+      tertiary:  {base:'#fbf8ef', borda:'#e0ded7'},
+      local:     {base:'#ffffff', borda:'#d9dee1'}
+    };
+    const c = cores[categoria] || cores.local;
+    return casing ? c.borda : c.base;
   }
 
   // HOTFIX FINAL 2: identidade base única para OVERVIEW e NAVIGATION-ACTIVE.
@@ -134,25 +151,25 @@
       const txt = textoLayer(layer);
 
       if (layer.type === 'background') {
-        setPaintSeguro(mapa, layer, 'background-color', '#f3f5f6');
+        setPaintSeguro(mapa, layer, 'background-color', '#f7f8f7');
         setPaintSeguro(mapa, layer, 'background-opacity', 1);
         return;
       }
 
       if (layer.type === 'fill') {
         if (/(water|ocean|lake|river|waterway)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#e2f0f5');
+          setPaintSeguro(mapa, layer, 'fill-color', '#e5f2f7');
           setPaintSeguro(mapa, layer, 'fill-opacity', 0.9);
         } else if (/(park|grass|wood|forest|green|nature|landcover)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#edf3ed');
+          setPaintSeguro(mapa, layer, 'fill-color', '#edf5ed');
           setPaintSeguro(mapa, layer, 'fill-opacity', 0.68);
         } else if (/(building)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#e9edef');
-          setPaintSeguro(mapa, layer, 'fill-opacity', 0.38);
-          setPaintSeguro(mapa, layer, 'fill-outline-color', '#dde3e6');
+          setPaintSeguro(mapa, layer, 'fill-color', '#eef0f1');
+          setPaintSeguro(mapa, layer, 'fill-opacity', 0.30);
+          setPaintSeguro(mapa, layer, 'fill-outline-color', '#e4e7e9');
         } else if (/(landuse|industrial|commercial|retail|residential-area)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#f1f3f3');
-          setPaintSeguro(mapa, layer, 'fill-opacity', 0.34);
+          setPaintSeguro(mapa, layer, 'fill-color', '#f6f7f6');
+          setPaintSeguro(mapa, layer, 'fill-opacity', 0.24);
         }
         return;
       }
@@ -166,11 +183,9 @@
         const via = categoriaVia(txt);
         if (via) {
           const casing = /(casing|outline|border)/i.test(txt);
-          const cor = casing
-            ? (via === 'principal' ? '#b8c2c8' : '#c9d0d4')
-            : (via === 'principal' ? '#cfd6da' : via === 'secundaria' ? '#d7dde1' : '#e0e4e7');
+          const cor = coresViaClean(via, casing);
           setPaintSeguro(mapa, layer, 'line-color', cor);
-          setPaintSeguro(mapa, layer, 'line-opacity', casing ? 0.95 : 1);
+          setPaintSeguro(mapa, layer, 'line-opacity', casing ? 0.92 : 1);
           setPaintSeguro(mapa, layer, 'line-width', larguraViaClean(via, casing, navegacaoAtiva));
           return;
         }
@@ -179,7 +194,7 @@
           setPaintSeguro(mapa, layer, 'line-opacity', 0.45);
         }
         if (/(waterway|river|stream)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'line-color', '#c9e4ee');
+          setPaintSeguro(mapa, layer, 'line-color', '#c9e7f0');
           setPaintSeguro(mapa, layer, 'line-opacity', 0.75);
         }
         return;
@@ -195,10 +210,10 @@
 
       if (ehRoadLabel) {
         setLayoutSeguro(mapa, layer, 'visibility', 'visible');
-        setLayoutSeguro(mapa, layer, 'text-size', ['interpolate', ['linear'], ['zoom'], 11, 10.5, 14, 12.2, 16, navegacaoAtiva ? 14.2 : 13.6, 19, navegacaoAtiva ? 16.2 : 15.4]);
-        setPaintSeguro(mapa, layer, 'text-color', '#303b42');
-        setPaintSeguro(mapa, layer, 'text-halo-color', '#f7f8f8');
-        setPaintSeguro(mapa, layer, 'text-halo-width', navegacaoAtiva ? 1.65 : 1.45);
+        setLayoutSeguro(mapa, layer, 'text-size', ['interpolate', ['linear'], ['zoom'], 11, 10.8, 14, 12.6, 16, navegacaoAtiva ? 14.7 : 14.0, 19, navegacaoAtiva ? 16.8 : 16.0]);
+        setPaintSeguro(mapa, layer, 'text-color', '#2f3438');
+        setPaintSeguro(mapa, layer, 'text-halo-color', '#fbfbfa');
+        setPaintSeguro(mapa, layer, 'text-halo-width', navegacaoAtiva ? 1.8 : 1.55);
         setPaintSeguro(mapa, layer, 'text-halo-blur', 0.2);
         setPaintSeguro(mapa, layer, 'text-opacity', 1);
         setPaintSeguro(mapa, layer, 'icon-opacity', 0.38);

@@ -86,11 +86,11 @@ ok(layout.get('place-city|visibility') === 'visible','limparPontosInteresse pres
 ok(layout.get('poi-shop|visibility') === 'none','POI não essencial continua reduzido');
 MC.aplicarEstiloNavegacaoAtiva(mockMap);
 ok(paint.get('road-primary|line-opacity') === 1,'estilo ativo mantém vias em contraste total');
-ok(paint.get('road-label|text-color') === '#303b42','nomes das ruas recebem contraste clean de navegação');
+ok(paint.get('road-label|text-color') === '#2f3438','nomes das ruas recebem contraste clean de navegação');
 ok(layout.get('road-label|visibility') === 'visible','labels de ruas ficam explicitamente visíveis no modo ativo');
 const corViaAtiva=paint.get('road-primary|line-color');
 MC.restaurarEstiloMapaOverview(mockMap);
-ok(paint.get('background|background-color') === '#f3f5f6','overview permanece no mesmo mapa base clean');
+ok(paint.get('background|background-color') === '#f7f8f7','overview permanece no mesmo mapa base clean');
 ok(paint.get('road-primary|line-color') === corViaAtiva && paint.get('road-primary|line-opacity') === 1,'overview preserva identidade clean das vias em vez de voltar ao Liberty colorido');
 
 // 3) Navegação — garantias estruturais da implementação real.
@@ -108,13 +108,13 @@ ok(/opcoes\.tolerance = 0/.test(nav),'source de rota não aplica simplificação
 ok(/SOURCE_ROUTE.*rota\.geometria/s.test(nav),'SOURCE_ROUTE deriva da geometria real salva da rota');
 ok(/ultimaPosicaoBruta/.test(nav) && /posicaoVisual/.test(nav) && /alvoVisualDaPosicao/.test(nav),'GPS bruto e posição visual permanecem separados');
 ok(/nearestOperacional&&nearestOperacional\.distance>limite/.test(nav) && /navegacaoInternaAtiva\(\)/.test(nav),'desvio usa nearest da posição bruta somente no modo ativo');
-ok(/pitch:interna\?60:0/.test(nav) && /zoomNavegacaoInterna/.test(nav) && /offsetCameraInterna/.test(nav),'câmera ativa usa pitch, zoom dinâmico e offset inferior');
+ok(/pitch:interna\?56:0/.test(nav) && /zoomNavegacaoInterna/.test(nav) && /offsetCameraInterna/.test(nav),'câmera ativa usa pitch, zoom dinâmico e offset inferior');
 ok(/acentuada_esquerda/.test(nav) && /acentuada_direita/.test(nav) && /rotatoria_entrada/.test(nav) && /rotatoria_saida/.test(nav) && /chegada/.test(nav),'ícones cobrem curvas fortes, rotatória e chegada');
 ok(/navManeuverAfter/.test(html) && /navManeuverNextIcon/.test(html) && /proximaInst/.test(nav),'segunda manobra é exibida quando existe instrução real seguinte');
 ok(/navPanelGrabber/.test(html) && /pointermove/.test(nav),'bottom sheet expansível preserva grabber dedicado');
 ok(/data-pemato-nav-mode="overview"/.test(css) && /nav-maneuver-card\{display:none/.test(css),'overview oculta painel de manobra de GPS');
 ok(/line-opacity':\.36/.test(nav) || /line-opacity':0\.36/.test(nav),'trecho percorrido permanece verde com baixa opacidade');
-ok(/distanciaProximaManobra < 120/.test(nav) && /Math\.min\(zoom, 18\.25\)/.test(nav),'câmera abre o enquadramento perto de uma curva/manobra');
+ok(/distanciaProximaManobra < 120/.test(nav) && /Math\.min\(zoom, 18\.32\)/.test(nav),'câmera abre o enquadramento perto de uma curva/manobra');
 
 // Mapeamento real das manobras: executa a função usada pelo painel, não só regex estrutural.
 const manStart = nav.indexOf('  function tipoGeoapifyNormalizado(inst)');
@@ -126,8 +126,8 @@ const M = manCtx.tipoVisualManobra;
 const manobrasGeoapify = {
   StartAt:'reta', StartAtRight:'direita', StartAtLeft:'esquerda', Straight:'reta',
   SlightRight:'leve_direita', Right:'direita', SharpRight:'acentuada_direita',
-  TurnAroundRight:'retorno', TurnAroundLeft:'retorno', SharpLeft:'acentuada_esquerda',
-  Left:'esquerda', SlightLeft:'leve_esquerda', ExitRight:'direita', ExitLeft:'esquerda',
+  TurnAroundRight:'retorno_direita', TurnAroundLeft:'retorno_esquerda', SharpLeft:'acentuada_esquerda',
+  Left:'esquerda', SlightLeft:'leve_esquerda', ExitRight:'saida_direita', ExitLeft:'saida_esquerda',
   StayRight:'leve_direita', StayLeft:'leve_esquerda', Merge:'reta', MergeRight:'leve_direita', MergeLeft:'leve_esquerda',
   DestinationReached:'chegada', DestinationReachedRight:'chegada', DestinationReachedLeft:'chegada'
 };

@@ -41,18 +41,18 @@ const map={getStyle:()=>({layers}),getLayer:id=>layers.find(x=>x.id===id),setPai
 const cc={window:null,localStorage:{removeItem(){}},CustomEvent:function(){},console};cc.window=cc;vm.createContext(cc);vm.runInContext(config,cc);
 const C=cc.PacoteEMatoMapaConfig;
 ok(C.aplicarEstiloMapaClean(map,{navegacaoAtiva:false})===true,'aplicarEstiloMapaClean aplica no overview');
-ok(paint.get('background|background-color')==='#f3f5f6','fundo clean claro');
-ok(paint.get('water|fill-color')==='#e2f0f5','água suave');
-ok(paint.get('park|fill-color')==='#edf3ed','parque desaturado');
-ok(paint.get('road-label|text-color')==='#303b42' && layout.get('road-label|visibility')==='visible','road labels legíveis e preservados');
+ok(paint.get('background|background-color')==='#f7f8f7','fundo clean claro');
+ok(paint.get('water|fill-color')==='#e5f2f7','água suave');
+ok(paint.get('park|fill-color')==='#edf5ed','parque desaturado');
+ok(paint.get('road-label|text-color')==='#2f3438' && layout.get('road-label|visibility')==='visible','road labels legíveis e preservados');
 ok(layout.get('poi-restaurant|visibility')==='none','POI comercial ocultado');
 ok(Number(paint.get('road-shield|text-opacity'))<=0.28,'road shield reduzido');
 const widthOverview=JSON.stringify(paint.get('road-primary|line-width'));
 C.aplicarEstiloNavegacaoAtiva(map);
-ok(paint.get('background|background-color')==='#f3f5f6','navigation-active usa o mesmo mapa base clean');
+ok(paint.get('background|background-color')==='#f7f8f7','navigation-active usa o mesmo mapa base clean');
 ok(JSON.stringify(paint.get('road-primary|line-width'))!==widthOverview,'navigation-active reforça moderadamente a via sem trocar identidade');
 C.restaurarEstiloMapaOverview(map);
-ok(paint.get('background|background-color')==='#f3f5f6','retorno ao overview não restaura mapa colorido');
+ok(paint.get('background|background-color')==='#f7f8f7','retorno ao overview não restaura mapa colorido');
 
 // 3) Geoapify multi-leg: índices locais reiniciam; globais seguem a geometria achatada 100/70/80.
 const svcSrc=fs.readFileSync(path.join(ROOT,'js/roteirizacao/servico-rota.js'),'utf8');
@@ -75,7 +75,7 @@ ok(inst.map(x=>x.street_name).join('|')==='Rua 0|Rua 1|Rua 2','ruas continuam as
 const nav=fs.readFileSync(path.join(ROOT,'js/navegacao/navegacao.js'),'utf8');
 const a=nav.indexOf('  function tipoGeoapifyNormalizado(inst)'); const b=nav.indexOf('  function svgManobra(tipo)',a);
 const mc={};vm.createContext(mc);vm.runInContext(nav.slice(a,b).replace(/^  /gm,'')+'\nthis.M=tipoVisualManobra;this.exit=valorSaidaRotatoria;',mc);
-const expected={StartAt:'reta',StartAtRight:'direita',StartAtLeft:'esquerda',Straight:'reta',SlightRight:'leve_direita',Right:'direita',SharpRight:'acentuada_direita',TurnAroundRight:'retorno',TurnAroundLeft:'retorno',SharpLeft:'acentuada_esquerda',Left:'esquerda',SlightLeft:'leve_esquerda',ExitRight:'direita',ExitLeft:'esquerda',StayRight:'leve_direita',StayLeft:'leve_esquerda',Merge:'reta',MergeRight:'leve_direita',MergeLeft:'leve_esquerda',DestinationReached:'chegada',DestinationReachedRight:'chegada',DestinationReachedLeft:'chegada'};
+const expected={StartAt:'reta',StartAtRight:'direita',StartAtLeft:'esquerda',Straight:'reta',SlightRight:'leve_direita',Right:'direita',SharpRight:'acentuada_direita',TurnAroundRight:'retorno_direita',TurnAroundLeft:'retorno_esquerda',SharpLeft:'acentuada_esquerda',Left:'esquerda',SlightLeft:'leve_esquerda',ExitRight:'saida_direita',ExitLeft:'saida_esquerda',StayRight:'leve_direita',StayLeft:'leve_esquerda',Merge:'reta',MergeRight:'leve_direita',MergeLeft:'leve_esquerda',DestinationReached:'chegada',DestinationReachedRight:'chegada',DestinationReachedLeft:'chegada'};
 for(const [t,e] of Object.entries(expected)) ok(mc.M({type:t})===e,'tipo real '+t+' -> '+e);
 ok(mc.M({type:'Roundabout'})==='rotatoria','rotatória sem saída não inventa saída');
 ok(mc.M({type:'Roundabout',roundabout_exit:['3']})==='rotatoria_saida' && mc.exit({roundabout_exit:['3']})===3,'rotatória aceita roundabout_exit array real');

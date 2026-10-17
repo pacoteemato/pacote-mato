@@ -1,4 +1,4 @@
-# Pacote É Mato — V81 HOTFIX FINAL 4
+# Pacote É Mato — V81 HOTFIX FINAL 6
 
 Versão V81 com a **regra definitiva de paradas físicas** aplicada sobre o `Pacote-Em-Mato-V81-HOTFIX-FINAL-2`.
 
@@ -55,3 +55,34 @@ Se o número principal não puder ser determinado com segurança, a entrega fica
 - A otimização, mapa, login, navigation-active e manobras do HOTFIX FINAL 2 não foram alterados por esta revisão, salvo o novo cache-buster de `app.js`.
 
 Consulte `docs/RELATORIO-V81-ENDERECOS-NAVEGACAO.md` para os testes, comparação e limitações.
+
+
+## Ajuste do ícone do veículo / navigation-active
+
+Este hotfix mantém toda a lógica da V81 HOTFIX FINAL 4 e altera **somente a apresentação visual do ícone do motorista/veículo** em `navigation-active`.
+
+Resumo do ajuste:
+
+- substitui o triângulo pontudo por um **SVG próprio** com corpo arredondado e frente suave;
+- preenchimento em **verde da marca**, contorno branco e sombra discreta;
+- mantém rotação suave pelo `headingVisual`;
+- não altera GPS bruto, map matching, recálculo, desvio ou coordenadas reais;
+- preserva mapa, login, navigation-active, manobras, otimização e Bipagem.
+
+## HOTFIX FINAL 6 — mapa, manobras e voz GPS
+
+Base: `Pacote-Em-Mato-V81-HOTFIX-FINAL-5`.
+
+Este hotfix altera apenas a experiência de navegação interna:
+
+- mapa com hierarquia visual de vias (`motorway/trunk > primary > secondary > tertiary > residential`);
+- setas SVG próprias e grandes para manobras reais;
+- frase de navegação em português baseada no `type` real do Geoapify;
+- segunda manobra quando útil;
+- módulo separado `js/navegacao/voz-navegacao.js` para TTS GPS;
+- avisos longe/perto/agora com antirrepetição;
+- preferência local do botão `Voz ativa`.
+
+Permanecem congelados: Bipagem, scanner, `processarCodigo()`, `entregaOriginalPorPacote`, múltiplos, regra logradouro+número, ATENÇÃO, voz da Bipagem, login/sessão, histórico, importação e otimização.
+
+O marcador de veículo aprovado no HOTFIX FINAL 5 permanece exatamente o mesmo.

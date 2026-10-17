@@ -20,11 +20,9 @@
   let backgroundEm = 0;
   let reconstruindoMapa = false;
   let estadoPainelNav = 'collapsed';
-  let ultimaFalaEm = 0;
-  let ultimaChaveFala = '';
+  let instructionSpeechState = {instructionId:'',falouLonge:false,falouPerto:false,falouAgora:false};
   let mapLoadTimer = null;
   let fallbackBaseAtivo = false;
-  const falasFeitas = new Set();
   let assinaturaParadasV11 = '';
   let persistenciaCartaoTimer = null;
   let ultimaPosicaoBruta = null;
@@ -233,15 +231,36 @@
     if (!mapa) return;
     try {
       if (!mapa.hasImage?.('pemato-driver-arrow')) {
-        const a = document.createElement('canvas'); a.width = 56; a.height = 56;
+        const a = document.createElement('canvas'); a.width = 64; a.height = 64;
         const c = a.getContext('2d');
         if (c) {
-          c.clearRect(0,0,56,56); c.beginPath(); c.moveTo(28,3); c.lineTo(49,49); c.lineTo(28,39); c.lineTo(7,49); c.closePath();
-          c.fillStyle='#159766'; c.fill(); c.strokeStyle='#fff'; c.lineWidth=4; c.stroke();
-          mapa.addImage('pemato-driver-arrow',c.getImageData(0,0,56,56));
+          const caminho = 'M32 8 C38 12 43 18 45 27 C46 34 44 41 39 47 C35 51 29 51 25 47 C20 41 18 34 19 27 C21 18 26 12 32 8 Z';
+          const brilho = 'M32 14 C36 17 39 22 40 28 C39 24 35 21 31 20 C28 20 25 22 23 25 C24 21 27 17 32 14 Z';
+          const base = new Path2D(caminho);
+          const detalhe = new Path2D(brilho);
+          c.clearRect(0,0,64,64);
+          c.save();
+          c.shadowColor = 'rgba(15, 23, 42, 0.22)';
+          c.shadowBlur = 8;
+          c.shadowOffsetY = 2;
+          c.fillStyle = '#0b8f55';
+          c.fill(base);
+          c.restore();
+          c.lineJoin = 'round';
+          c.lineCap = 'round';
+          c.strokeStyle = '#ffffff';
+          c.lineWidth = 3.2;
+          c.stroke(base);
+          c.fillStyle = 'rgba(255,255,255,0.22)';
+          c.fill(detalhe);
+          c.beginPath();
+          c.arc(32, 30, 2.6, 0, Math.PI * 2);
+          c.fillStyle = 'rgba(255,255,255,0.92)';
+          c.fill();
+          mapa.addImage('pemato-driver-arrow', c.getImageData(0,0,64,64));
         }
       }
-    } catch(_){}
+    } catch(_){ }
   }
 
   function prepararIconesParadasV12(features) {
@@ -295,9 +314,9 @@
     // V81: o trecho percorrido mantém a identidade verde, mas fica apagado.
     // A geometria não muda; apenas a apresentação do caminho já percorrido.
     if (!mapa.getLayer(LAYER_PROGRESS)) mapa.addLayer({ id:LAYER_PROGRESS,type:'line',source:SOURCE_PROGRESS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#3f9d72','line-width':['interpolate',['linear'],['zoom'],10,2.4,13,3.6,16,5.5,18,6.2],'line-opacity':.36,'line-blur':0}}, before);
-    if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':12,'circle-color':'rgba(5,150,105,.16)','circle-stroke-color':'rgba(5,150,105,.35)','circle-stroke-width':1} });
+    if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':['case',['==',['get','mode'],'internal'],13,11],'circle-color':['case',['==',['get','mode'],'internal'],'rgba(11,143,85,.12)','rgba(5,150,105,.16)'],'circle-stroke-color':['case',['==',['get','mode'],'internal'],'rgba(255,255,255,.92)','rgba(5,150,105,.35)'],'circle-stroke-width':['case',['==',['get','mode'],'internal'],1.2,1]} });
     if (!mapa.getLayer(LAYER_DRIVER_DOT)) mapa.addLayer({ id:LAYER_DRIVER_DOT,type:'circle',source:SOURCE_DRIVER,filter:['==',['get','mode'],'external'],paint:{'circle-radius':7,'circle-color':'#059669','circle-stroke-color':'#ffffff','circle-stroke-width':3} });
-    if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id:LAYER_DRIVER,type:'symbol',source:SOURCE_DRIVER,filter:['==',['get','mode'],'internal'],layout:{'icon-image':'pemato-driver-arrow','icon-size':1,'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','heading'],0]} });
+    if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id:LAYER_DRIVER,type:'symbol',source:SOURCE_DRIVER,filter:['==',['get','mode'],'internal'],layout:{'icon-image':'pemato-driver-arrow','icon-size':['interpolate',['linear'],['zoom'],12,0.66,15,0.7,18,0.75],'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-anchor':'center','icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','heading'],0]} });
     const layoutMarcadorV12 = {
       'icon-image':['get','iconV12'],
       'icon-anchor':'center',
@@ -703,24 +722,30 @@
     } catch (_) {}
   }
 
-  function vozDisponivel() { return 'speechSynthesis' in global && 'SpeechSynthesisUtterance' in global; }
-  function falar(texto, chave) {
-    if(!navegacaoInternaAtiva()||!vozAtiva||!texto||!vozDisponivel()||falasFeitas.has(chave)) return;
-    const agora=Date.now();
-    if(chave===ultimaChaveFala && agora-ultimaFalaEm<12000) return;
-    if(agora-ultimaFalaEm<2400) return;
-    falasFeitas.add(chave); ultimaChaveFala=chave; ultimaFalaEm=agora;
-    try{
-      global.speechSynthesis.cancel?.();
-      const u=new SpeechSynthesisUtterance(texto); u.lang='pt-BR'; u.rate=.98;
-      const vozes=global.speechSynthesis.getVoices?.()||[];
-      u.voice=vozes.find(v=>String(v.lang||'').toLowerCase().startsWith('pt-br'))||vozes.find(v=>String(v.lang||'').toLowerCase().startsWith('pt'))||null;
-      global.speechSynthesis.speak(u);
-    }catch(_){ }
+  function moduloVozNavegacao() { return global.PacoteEMatoVozNavegacao || null; }
+  function vozDisponivel() { return moduloVozNavegacao()?.disponivel?.() === true; }
+  function falar(texto, chave, opcoes = {}) {
+    if (!navegacaoInternaAtiva() || !vozAtiva || !texto) return false;
+    const modulo = moduloVozNavegacao();
+    if (!modulo) return false;
+    const key = String(chave || 'navegacao');
+    const corte = key.lastIndexOf(':');
+    const especial = /^(?:route|stop):/.test(key);
+    const instructionId = String(opcoes.instructionId || (especial ? key : (corte > 0 ? key.slice(0, corte) : key)));
+    const fase = String(opcoes.fase || (corte > 0 ? key.slice(corte + 1) : 'agora'));
+    return modulo.falarInstrucaoNavegacao({instructionId,fase,texto,urgente:opcoes.urgente===true,minIntervaloMs:opcoes.minIntervaloMs||1800});
   }
 
   function tipoGeoapifyNormalizado(inst) {
-    return String(inst?.tipo || inst?.type || '').replace(/[^a-z0-9]/gi,'').toLowerCase();
+    return String(inst?.tipo || inst?.type || '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[^a-z0-9]+/gi,' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  function tipoGeoapifyCompacto(inst) {
+    return tipoGeoapifyNormalizado(inst).replace(/\s+/g,'');
   }
 
   function valorSaidaRotatoria(inst) {
@@ -730,62 +755,158 @@
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
-  function nomeRuaInstrucao(inst) {
+  function nomeRuaInstrucao(inst, {fallbackTexto=false}={}) {
     const streets = Array.isArray(inst?.streets) ? inst.streets : (inst?.streets ? [inst.streets] : []);
     const exitRoadName = Array.isArray(inst?.exitRoadName) ? inst.exitRoadName : (inst?.exitRoadName ? [inst.exitRoadName] : []);
-    return String(streets[0] || inst?.street_name || inst?.rua || inst?.name || exitRoadName[0] || inst?.texto || inst?.transition_instruction || '').trim();
+    const candidatos=[streets[0],inst?.street_name,inst?.rua,inst?.name,exitRoadName[0]];
+    const achada=candidatos.map(v=>String(v||'').trim()).find(Boolean);
+    if (achada) return achada;
+    if (!fallbackTexto) return '';
+    return String(inst?.transition_instruction || inst?.pre_transition_instruction || inst?.texto || '').trim();
   }
 
   function tipoVisualManobra(inst) {
-    const tipo = tipoGeoapifyNormalizado(inst);
+    const tipo = tipoGeoapifyCompacto(inst);
     const mapaTipos = {
       none:'reta', startat:'reta', straight:'reta', merge:'reta', ferryenter:'reta', ferryexit:'reta',
       startatright:'direita', startatleft:'esquerda',
       slightright:'leve_direita', stayright:'leve_direita', mergeright:'leve_direita',
       slightleft:'leve_esquerda', stayleft:'leve_esquerda', mergeleft:'leve_esquerda',
-      right:'direita', exitright:'direita', left:'esquerda', exitleft:'esquerda',
+      right:'direita', exitright:'saida_direita', left:'esquerda', exitleft:'saida_esquerda',
       sharpright:'acentuada_direita', sharpleft:'acentuada_esquerda',
-      turnaroundright:'retorno', turnaroundleft:'retorno',
+      turnaroundright:'retorno_direita', turnaroundleft:'retorno_esquerda',
       destinationreached:'chegada', destinationreachedright:'chegada', destinationreachedleft:'chegada'
     };
     if (tipo === 'roundabout') return valorSaidaRotatoria(inst) ? 'rotatoria_saida' : 'rotatoria';
     if (mapaTipos[tipo]) return mapaTipos[tipo];
 
-    // Compatibilidade com rotas antigas/texto localizado. Nunca inventa direção.
+    // Fallback textual somente quando o tipo real não existe. Nunca inventa uma direção.
     const mod = String(inst?.modificador || inst?.modifier || inst?.direcao || '').toLowerCase();
     const texto = String(inst?.texto || inst?.transition_instruction || '').toLocaleLowerCase('pt-BR');
     const tudo = `${tipo} ${mod} ${texto}`;
     if (/(arrive|arrival|destination|chegada|chegue|destino)/.test(tudo)) return 'chegada';
-    if (/u[- ]?turn|retorno|retorne|meia volta/.test(tudo)) return 'retorno';
+    if (/u[- ]?turn|retorno|retorne|meia volta/.test(tudo)) return /left|esquer/.test(tudo)?'retorno_esquerda':'retorno_direita';
     if (/roundabout|rotary|rotat[oó]ria|rotatoria/.test(tudo)) return valorSaidaRotatoria(inst) ? 'rotatoria_saida' : 'rotatoria';
     if (/sharp\s*left|acentuad.+esquer/.test(tudo)) return 'acentuada_esquerda';
     if (/sharp\s*right|acentuad.+direit/.test(tudo)) return 'acentuada_direita';
     if (/slight\s*left|stay\s*left|merge\s*left|leve.+esquer/.test(tudo)) return 'leve_esquerda';
     if (/slight\s*right|stay\s*right|merge\s*right|leve.+direit/.test(tudo)) return 'leve_direita';
+    if (/exit\s*left|sa[ií]da.+esquer/.test(tudo)) return 'saida_esquerda';
+    if (/exit\s*right|sa[ií]da.+direit/.test(tudo)) return 'saida_direita';
     if (/\bleft\b|esquerda/.test(tudo)) return 'esquerda';
     if (/\bright\b|direita/.test(tudo)) return 'direita';
     return 'reta';
   }
 
-
   function svgManobra(tipo) {
-    const base='viewBox="0 0 48 48" focusable="false" aria-hidden="true"';
-    const comum='fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"';
+    const base='viewBox="0 0 64 64" focusable="false" aria-hidden="true" role="img"';
+    const comum='fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"';
     const paths={
-      reta:'<path d="M24 40V9M15 18l9-9 9 9"/>',
-      esquerda:'<path d="M34 40V27c0-6-4-10-10-10H10M18 9l-8 8 8 8"/>',
-      direita:'<path d="M14 40V27c0-6 4-10 10-10h14M30 9l8 8-8 8"/>',
-      leve_esquerda:'<path d="M32 40V30c0-5-2-8-6-11L13 10M14 21l-1-11 11 1"/>',
-      leve_direita:'<path d="M16 40V30c0-5 2-8 6-11L35 10M34 21l1-11-11 1"/>',
-      acentuada_esquerda:'<path d="M35 40V25c0-7-4-11-11-11H10M18 6l-8 8 8 8"/>',
-      acentuada_direita:'<path d="M13 40V25c0-7 4-11 11-11h14M30 6l8 8-8 8"/>',
-      retorno:'<path d="M34 40V23c0-7-4-11-10-11S14 16 14 22v4M7 20l7 7 7-7"/>',
-      rotatoria_entrada:'<path d="M24 43V34M14 18a12 12 0 1 1-1 13M8 20l6-2 1 6"/>',
-      rotatoria:'<path d="M14 18a12 12 0 1 1-1 13M8 20l6-2 1 6"/><path d="M24 8V3"/>',
-      rotatoria_saida:'<path d="M14 18a12 12 0 1 1 7 17M8 20l6-2 1 6"/><path d="M30 26l11-11M33 14h8v8"/>',
-      chegada:'<path d="M11 41V8M14 10h22l-5 8 5 8H14"/>'
+      reta:'<path d="M32 55V10M20 22l12-12 12 12"/>',
+      esquerda:'<path d="M46 54V38c0-10-7-17-17-17H13M24 10L13 21l11 11"/>',
+      direita:'<path d="M18 54V38c0-10 7-17 17-17h16M40 10l11 11-11 11"/>',
+      leve_esquerda:'<path d="M43 54V42c0-9-4-15-11-21L16 9M18 25L16 9l16 2"/>',
+      leve_direita:'<path d="M21 54V42c0-9 4-15 11-21L48 9M46 25l2-16-16 2"/>',
+      acentuada_esquerda:'<path d="M48 54V35c0-11-7-18-18-18H12M24 6L12 17l12 12"/>',
+      acentuada_direita:'<path d="M16 54V35c0-11 7-18 18-18h18M40 6l12 11-12 12"/>',
+      retorno_direita:'<path d="M20 55V30c0-12 7-19 18-19s18 7 18 18v7M45 25l11 11 8-11"/>',
+      retorno_esquerda:'<path d="M44 55V30c0-12-7-19-18-19S8 18 8 29v7M19 25L8 36 0 25"/>',
+      saida_direita:'<path d="M22 55V35c0-10 6-16 16-16h12M40 9l10 10-10 10"/><path d="M22 35V14"/>',
+      saida_esquerda:'<path d="M42 55V35c0-10-6-16-16-16H14M24 9L14 19l10 10"/><path d="M42 35V14"/>',
+      rotatoria_entrada:'<path d="M32 58V47"/><path d="M19 20a18 18 0 1 1-2 23M10 22l9-2 2 9"/>',
+      rotatoria:'<path d="M19 20a18 18 0 1 1-2 23M10 22l9-2 2 9"/><path d="M32 10V4"/>',
+      rotatoria_saida:'<path d="M19 20a18 18 0 1 1 10 29M10 22l9-2 2 9"/><path d="M40 36l16-16M44 18h12v12"/>',
+      chegada:'<path d="M16 56V9M19 11h31l-7 11 7 11H19"/><path d="M27 17h8M35 17v8M27 25h8"/>'
     };
     return `<svg ${base} ${comum}>${paths[tipo] || paths.reta}</svg>`;
+  }
+
+  function fraseBaseManobra(inst) {
+    const tipo=tipoGeoapifyCompacto(inst);
+    const saida=valorSaidaRotatoria(inst);
+    if(tipo==='roundabout') return saida?`Na rotatória, pegue a ${saida}ª saída`:'Entre na rotatória';
+    const frases={
+      startat:'Siga em frente',startatright:'Siga à direita',startatleft:'Siga à esquerda',straight:'Continue em frente',
+      slightright:'Mantenha-se à direita',right:'Vire à direita',sharpright:'Faça uma curva acentuada à direita',
+      turnaroundright:'Faça o retorno',turnaroundleft:'Faça o retorno',
+      sharpleft:'Faça uma curva acentuada à esquerda',left:'Vire à esquerda',slightleft:'Mantenha-se à esquerda',
+      exitright:'Pegue a saída à direita',exitleft:'Pegue a saída à esquerda',
+      stayright:'Mantenha-se à direita',stayleft:'Mantenha-se à esquerda',
+      merge:'Entre na via',mergeright:'Entre à direita',mergeleft:'Entre à esquerda',
+      destinationreached:'Você chegou ao destino',destinationreachedright:'Você chegou ao destino',destinationreachedleft:'Você chegou ao destino'
+    };
+    return frases[tipo] || 'Siga a rota destacada';
+  }
+
+  function fraseManobra(inst, {comRua=true,pontuar=false}={}) {
+    const base=fraseBaseManobra(inst);
+    const rua=nomeRuaInstrucao(inst);
+    const tipo=tipoGeoapifyCompacto(inst);
+    let frase=base;
+    if(comRua && rua && !/^destinationreached/.test(tipo)) {
+      if(tipo==='roundabout' && valorSaidaRotatoria(inst)) frase += ` para ${rua}`;
+      else if(/^(straight|startat)$/.test(tipo)) frase += ` pela ${rua}`;
+      else if(/^(slightright|slightleft|stayright|stayleft|mergeright|mergeleft|merge)$/.test(tipo)) frase += ` para ${rua}`;
+      else if(!/^turnaround/.test(tipo)) frase += ` na ${rua}`;
+    }
+    return pontuar && !/[.!?]$/.test(frase) ? `${frase}.` : frase;
+  }
+
+  function idInstrucaoVoz(inst) {
+    return [inst?.legIndex ?? 'x',inst?.stepIndex ?? 'x',inst?.globalFromIndex ?? inst?.fromIndex ?? 'x',tipoGeoapifyCompacto(inst)||'none'].join(':');
+  }
+
+  function distanciaNaturalFala(metros) {
+    const d=Math.max(0,Number(metros)||0);
+    if(d<80) return Math.max(20,Math.round(d/10)*10);
+    if(d<180) return Math.round(d/20)*20;
+    return Math.round(d/50)*50;
+  }
+
+  function limitesFalaPorVelocidade() {
+    const kmh=Math.max(0,Number(velocidadeVisualMs||0)*3.6);
+    if(kmh>=70) return {longe:430,perto:170,agora:65};
+    if(kmh>=45) return {longe:360,perto:140,agora:50};
+    if(kmh>=20) return {longe:310,perto:115,agora:40};
+    return {longe:260,perto:90,agora:30};
+  }
+
+  function retaRelevante(lista, indice) {
+    const inst=lista[indice];
+    if(tipoGeoapifyCompacto(inst)!=='straight') return true;
+    const rua=nomeRuaInstrucao(inst).toLocaleLowerCase('pt-BR');
+    const anterior=nomeRuaInstrucao(lista[indice-1]).toLocaleLowerCase('pt-BR');
+    return !!rua && rua!==anterior;
+  }
+
+  function atualizarDiagnosticoManobra(inst, tipoVisual, fraseVisual, fraseTTS, distancia, fase) {
+    global.diagnosticoNavegacaoVozV81 = Object.assign(global.diagnosticoNavegacaoVozV81 || {}, {
+      instructionId:idInstrucaoVoz(inst),legIndex:inst?.legIndex??null,stepIndex:inst?.stepIndex??null,
+      typeBruto:inst?.type||inst?.tipo||'',modifierBruto:inst?.modifier||inst?.modificador||'',tipoVisual,fraseVisual,fraseTTS,
+      rua:nomeRuaInstrucao(inst),distancia:Number.isFinite(Number(distancia))?Number(distancia):null,faseFalando:fase||'idle',
+      falouLonge:instructionSpeechState.falouLonge,falouPerto:instructionSpeechState.falouPerto,falouAgora:instructionSpeechState.falouAgora,
+      speechSynthesisDisponivel:vozDisponivel()
+    });
+  }
+
+  function atualizarDiagnosticoManobrasReal() {
+    try {
+      const lista=Array.isArray(rota?.instrucoes)?rota.instrucoes:[];
+      global.diagnosticoManobrasReal=lista.map(inst=>({
+        legIndex:inst?.legIndex??null,
+        stepIndex:inst?.stepIndex??null,
+        typeBruto:inst?.type||inst?.tipo||'',
+        modifierBruto:inst?.modifier||inst?.modificador||'',
+        texto:inst?.texto||'',
+        rua:nomeRuaInstrucao(inst),
+        fromIndexLeg:inst?.fromIndexLeg??inst?.from_index??null,
+        toIndexLeg:inst?.toIndexLeg??inst?.to_index??null,
+        globalFromIndex:inst?.globalFromIndex??null,
+        globalToIndex:inst?.globalToIndex??null,
+        tipoVisual:tipoVisualManobra(inst),
+        svgEscolhido:svgManobra(tipoVisualManobra(inst))
+      }));
+    } catch (_) {}
   }
 
   function indiceGlobalInstrucao(inst, campo) {
@@ -807,6 +928,7 @@
 
   function atualizarInstrucao(nearest) {
     const lista=Array.isArray(rota?.instrucoes)?rota.instrucoes:[];
+    atualizarDiagnosticoManobrasReal();
     const indice=indiceInstrucaoAtual(nearest);
     const inst=indice>=0?lista[indice]:null;
     const proximaInst=indice>=0?lista[indice+1]:null;
@@ -814,31 +936,56 @@
     const toIndex=inst ? indiceGlobalInstrucao(inst, 'to') : null;
     const dist=inst&&nearest&&toIndex!=null?distanciaAoLongo(coords,nearest.index,toIndex,nearest.point):Number(inst?.distancia ?? inst?.distance ?? NaN);
     distanciaProximaManobra = Number.isFinite(dist) ? Math.max(0, dist) : Infinity;
-    const saida=valorSaidaRotatoria(inst);
-    const textoBase=inst?.texto||inst?.transition_instruction||inst?.pre_transition_instruction||inst?.post_transition_instruction||'Siga a rota destacada';
-    const ehRotatoria=tipoGeoapifyNormalizado(inst)==='roundabout'||/rotat|roundabout|rotary/i.test(textoBase);
-    const textoRotatoria=saida&&ehRotatoria ? `${textoBase} · ${saida}ª saída` : textoBase;
-    const ruaAtual=nomeRuaInstrucao(inst);
-    if($('navManeuverText')) $('navManeuverText').textContent=ruaAtual||textoRotatoria;
-    if($('navManeuverStreet')) $('navManeuverStreet').textContent=ruaAtual&&ruaAtual!==textoRotatoria?textoRotatoria:'Acompanhe o mapa e a próxima parada';
+
+    const tipoVisual=tipoVisualManobra(inst);
+    const ruaAtual=nomeRuaInstrucao(inst,{fallbackTexto:true});
+    const fraseVisual=fraseManobra(inst,{comRua:true,pontuar:false});
+    const fraseTTS=fraseManobra(inst,{comRua:true,pontuar:true});
+
+    if($('navManeuverText')) $('navManeuverText').textContent=ruaAtual||'Próxima manobra';
+    if($('navManeuverStreet')) $('navManeuverStreet').textContent=fraseVisual;
     if($('navManeuverDistance')) $('navManeuverDistance').textContent=Number.isFinite(dist)?formatarDistancia(dist):'—';
-    if($('navManeuverIcon')) $('navManeuverIcon').innerHTML=svgManobra(tipoVisualManobra(inst));
+    if($('navManeuverIcon')) $('navManeuverIcon').innerHTML=svgManobra(tipoVisual);
 
     const after=$('navManeuverAfter');
     if(after){
-      if(proximaInst){
+      const atualTo=inst?indiceGlobalInstrucao(inst,'to'):null;
+      const proxTo=proximaInst?indiceGlobalInstrucao(proximaInst,'to'):null;
+      const gap=atualTo!=null&&proxTo!=null&&coords[atualTo]?distanciaAoLongo(coords,atualTo,proxTo,coords[atualTo]):Number(proximaInst?.distancia??proximaInst?.distance??Infinity);
+      const mostrarSegunda=!!proximaInst && (!Number.isFinite(gap) || gap<=700);
+      if(mostrarSegunda){
         after.hidden=false;
         if($('navManeuverNextIcon')) $('navManeuverNextIcon').innerHTML=svgManobra(tipoVisualManobra(proximaInst));
-        if($('navManeuverNextStreet')) $('navManeuverNextStreet').textContent=nomeRuaInstrucao(proximaInst)||'Próxima manobra';
+        if($('navManeuverNextStreet')) $('navManeuverNextStreet').textContent=fraseManobra(proximaInst,{comRua:true,pontuar:false});
       } else after.hidden=true;
     }
 
     if(inst&&Number.isFinite(dist)&&navegacaoInternaAtiva()){
-      const id=inst.id||`${inst.legIndex}:${inst.stepIndex}`;
-      if(dist<=35) falar(textoBase,`${id}:35`);
-      else if(dist<=120) falar(`Em ${Math.max(20,Math.round(dist/10)*10)} metros, ${textoBase}`,`${id}:120`);
-      else if(dist<=400) falar(`Em ${Math.round(dist/50)*50} metros, ${textoBase}`,`${id}:400`);
-    }
+      const instructionId=idInstrucaoVoz(inst);
+      const modulo=moduloVozNavegacao();
+      modulo?.definirInstrucaoAtual?.(instructionId);
+      if(instructionSpeechState.instructionId!==instructionId) instructionSpeechState={instructionId,falouLonge:false,falouPerto:false,falouAgora:false};
+      const limites=limitesFalaPorVelocidade();
+      const podeFalar=retaRelevante(lista,indice);
+      let fase='idle', textoFalado='';
+      const atualTo=indiceGlobalInstrucao(inst,'to');
+      const proxTo=proximaInst?indiceGlobalInstrucao(proximaInst,'to'):null;
+      const gapSegunda=atualTo!=null&&proxTo!=null&&coords[atualTo]?distanciaAoLongo(coords,atualTo,proxTo,coords[atualTo]):Infinity;
+      const segundaUtil=proximaInst&&Number.isFinite(gapSegunda)&&gapSegunda<=Math.max(100,Math.min(180,limites.perto+35));
+      const depois=segundaUtil?` Depois, ${fraseManobra(proximaInst,{comRua:true,pontuar:true}).replace(/^./,c=>c.toLocaleLowerCase('pt-BR'))}`:'';
+
+      if(podeFalar && dist<=limites.agora && !instructionSpeechState.falouAgora){
+        fase='agora'; textoFalado=`${fraseTTS}${depois}`;
+        if(modulo?.falarInstrucaoNavegacao?.({instructionId,fase,texto:textoFalado,urgente:true,minIntervaloMs:1200})) instructionSpeechState.falouAgora=true;
+      } else if(podeFalar && dist<=limites.perto && !instructionSpeechState.falouPerto){
+        fase='perto'; textoFalado=`Em ${distanciaNaturalFala(dist)} metros, ${fraseTTS.charAt(0).toLocaleLowerCase('pt-BR')+fraseTTS.slice(1)}${depois}`;
+        if(modulo?.falarInstrucaoNavegacao?.({instructionId,fase,texto:textoFalado,minIntervaloMs:2500})) instructionSpeechState.falouPerto=true;
+      } else if(podeFalar && dist<=limites.longe && dist>limites.perto+35 && !instructionSpeechState.falouLonge){
+        fase='longe'; textoFalado=`Em ${distanciaNaturalFala(dist)} metros, ${fraseTTS.charAt(0).toLocaleLowerCase('pt-BR')+fraseTTS.slice(1)}`;
+        if(modulo?.falarInstrucaoNavegacao?.({instructionId,fase,texto:textoFalado,minIntervaloMs:3000})) instructionSpeechState.falouLonge=true;
+      }
+      atualizarDiagnosticoManobra(inst,tipoVisual,fraseVisual,textoFalado||fraseTTS,dist,fase);
+    } else if(inst) atualizarDiagnosticoManobra(inst,tipoVisual,fraseVisual,fraseTTS,dist,'idle');
   }
 
 
@@ -882,15 +1029,15 @@
 
   function zoomNavegacaoInterna() {
     const kmh = Math.max(0, Number(velocidadeVisualMs || 0) * 3.6);
-    let zoom = 17.7;
-    if (kmh < 12) zoom = 18.5;
-    else if (kmh < 28) zoom = 18.4;
-    else if (kmh < 50) zoom = 18.2;
-    else if (kmh < 75) zoom = 17.95;
-    // Próximo à manobra abre ligeiramente o enquadramento para manter ao mesmo
-    // tempo o motorista e a curva/cruzamento à frente dentro da área útil.
-    if (distanciaProximaManobra < 120) zoom = Math.min(zoom, 18.25);
-    if (distanciaProximaManobra < 55) zoom = Math.min(zoom, 18.1);
+    let zoom = 18.35;
+    if (kmh < 12) zoom = 18.65;
+    else if (kmh < 28) zoom = 18.55;
+    else if (kmh < 50) zoom = 18.42;
+    else if (kmh < 75) zoom = 18.30;
+    else zoom = 18.20;
+    // Próximo à manobra abre só o necessário para manter veículo + cruzamento.
+    if (distanciaProximaManobra < 120) zoom = Math.min(zoom, 18.32);
+    if (distanciaProximaManobra < 55) zoom = Math.min(zoom, 18.22);
     return zoom;
   }
 
@@ -927,7 +1074,7 @@
     const opcoes={
       center,
       zoom:interna?zoomNavegacaoInterna():16,
-      pitch:interna?60:0,
+      pitch:interna?56:0,
       bearing,
       offset:interna?offsetCameraInterna():[0,0]
     };
@@ -941,7 +1088,14 @@
     } catch (_) {}
   }
 
-  function atualizarBotaoVoz(){ const b=$('navVoiceBtn'); if(b){const interna=navegacaoInternaAtiva();b.style.display=interna?'':'none';b.classList.toggle('active',vozAtiva&&interna);b.textContent=vozAtiva?'Voz ativa':'Voz muda';if(!interna)try{global.speechSynthesis?.cancel?.();}catch(_){}} }
+  function atualizarBotaoVoz(){
+    const b=$('navVoiceBtn'); if(!b)return;
+    const interna=navegacaoInternaAtiva();
+    b.style.display=interna?'':'none';
+    b.classList.toggle('active',vozAtiva&&interna);
+    b.textContent=vozAtiva?'Voz ativa':'Voz muda';
+    b.setAttribute('aria-pressed',vozAtiva?'true':'false');
+  }
 
   function detalhesDaParada(p) {
     if (!p) return '';
@@ -1083,6 +1237,8 @@
     if(btn){btn.disabled=true;btn.textContent='Recalculando...';}
     if($('navGpsStatus')) $('navGpsStatus').textContent='Recalculando trajeto pelas ruas...';
     try{
+      moduloVozNavegacao()?.limparEstado?.({cancelar:true});
+      instructionSpeechState={instructionId:'',falouLonge:false,falouPerto:false,falouAgora:false};
       const response=await global.PacoteEMatoServicoRota.calcularRotaPelasRuas(rota,points), feature=response.feature;
       rota.geometria=feature.geometry; rota.distanciaTotalMetros=Number(feature.properties?.distance||0); rota.duracaoDirecaoSegundos=Number(feature.properties?.time||0);
       rota.pernas=Array.isArray(feature.properties?.legs)?feature.properties.legs:[]; rota.instrucoes=global.PacoteEMatoServicoRota.extrairInstrucoes(feature); ultimoIndiceVisualRota=null; rota.recalculadoEm=Date.now();
@@ -1185,8 +1341,8 @@
       atualizarInstrucao(nearestVisual);
       const p=proxima(); if(p&&coordenadaValida(p.latitude,p.longitude)){
         const d=haversine([ultimaPosicao.lon,ultimaPosicao.lat],[Number(p.longitude),Number(p.latitude)]);
-        if(d<=120) falar(`Aproximando-se da próxima parada: ${p.enderecoOriginal||'destino'}`,`stop:${p.id}:near`);
-        if(d<=30) falar('Você chegou à parada.',`stop:${p.id}:arrived`);
+        if(d<=120) falar('Seu destino está próximo.',`stop:${p.id}:near`,{instructionId:`stop:${p.id}`,fase:'near'});
+        if(d<=30) falar('Você chegou ao destino.',`stop:${p.id}:arrived`,{instructionId:`stop:${p.id}`,fase:'arrived',urgente:true});
       }
       // Desvio/recálculo usam EXCLUSIVAMENTE a posição GPS bruta.
       const limite=Math.max(80,(ultimaPosicao.accuracy||0)*2.2);
@@ -1331,7 +1487,7 @@
       const persistida=await global.PacoteEMatoRotaStore.obterRota(rota.id);
       if(!persistida||persistida.status!=='concluida'||Number(persistida.paradas?.length||0)!==Number(rota.paradas?.length||0)) throw new Error('A cópia concluída ainda não foi confirmada no histórico local.');
       pararGPS();
-      try{global.speechSynthesis?.cancel?.();}catch(_){}
+      moduloVozNavegacao()?.limparEstado?.({cancelar:true});
       if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';
       await global.PacoteEMatoRotaStore.limparRotaAtiva();
       global.PacoteEMatoAppShell?.abrirModulo?.('historico');
@@ -1349,11 +1505,12 @@
     if(global.appState?.navegacao)global.appState.navegacao.provider=pref;
     if(pref==='waze'||pref==='google') {
       definirModoMapa('overview',{duracao:0,acompanhar:false});
-      try{global.speechSynthesis?.cancel?.();}catch(_){}
+      moduloVozNavegacao()?.limparEstado?.({cancelar:true});
       atualizarBotaoVoz(); atualizarFontesPontos();
       return abrirExterno(pref);
     }
     // Não recalcula nem recarrega: usa a geometria/instruções já salvas da rota.
+    moduloVozNavegacao()?.desbloquear?.();
     definirModoMapa('navigation-active',{duracao:220,acompanhar:true});
     await persistirSelecao({motivo:'navegacao_interna',navegacaoProvider:'pacote_emato',modoNavegacao:'navigation-active'});
     if(watchId==null)iniciarGPS();
@@ -1367,7 +1524,8 @@
     global.PacoteEMatoMarcadores?.capturarBaseVisualStatus?.(rota, false);
     atualizarPendentes();let idExterno=null;try{idExterno=sessionStorage.getItem('pemato_parada_externa');sessionStorage.removeItem('pemato_parada_externa');}catch(_){}cartaoSelecionadoId=idExterno||rota.paradaSelecionadaId||global.appState?.navegacao?.paradaExibidaId||proxima()?.id||null;posicaoAnterior=null;ultimaPosicaoBruta=null;posicaoVisual=null;alvoVisual=null;headingVisual=null;ultimoIndiceVisualRota=null;ultimoTimestampGps=0; const pref=global.PacoteEMatoConfiguracoes?.obter?.().navegacao||'pacote_emato';
     const retomarAtiva = pref==='pacote_emato' && global.appState?.navegacao?.modo === 'navigation-active';
-    if(global.appState?.navegacao){global.appState.navegacao.ativa=true;global.appState.navegacao.provider=pref;global.appState.navegacao.iniciadaEm=global.appState.navegacao.iniciadaEm||Date.now();global.appState.navegacao.paradaExibidaId=cartaoSelecionadoId;rota.iniciadoEm=rota.iniciadoEm||global.appState.navegacao.iniciadaEm;vozAtiva=pref==='pacote_emato' && global.appState.navegacao.vozAtiva!==false;}
+    vozAtiva=pref==='pacote_emato' && (moduloVozNavegacao()?.estaAtiva?.() ?? (global.appState?.navegacao?.vozAtiva!==false));
+    if(global.appState?.navegacao){global.appState.navegacao.ativa=true;global.appState.navegacao.provider=pref;global.appState.navegacao.iniciadaEm=global.appState.navegacao.iniciadaEm||Date.now();global.appState.navegacao.paradaExibidaId=cartaoSelecionadoId;rota.iniciadoEm=rota.iniciadoEm||global.appState.navegacao.iniciadaEm;global.appState.navegacao.vozAtiva=vozAtiva;}
     modoMapaNavegacao=retomarAtiva?'navigation-active':'overview';
     seguirPosicao=retomarAtiva;
     document.body.dataset.pematoNavMode=modoMapaNavegacao;
@@ -1381,8 +1539,8 @@
     if(!ordemPendente.length && !destinoFinalDaRota())mostrarConclusao();
   }
 
-  async function encerrar(){const ok=await global.PacoteEMatoDialog?.confirmar?.({titulo:'Sair da navegação?',mensagem:'A rota e todo o progresso serão preservados para você continuar depois.',confirmar:'Sair da navegação',cancelar:'Continuar na rota'});if(ok===false)return;pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};if(global.appState?.navegacao){global.appState.navegacao.ativa=false;global.appState.navegacao.modo='overview';}modoMapaNavegacao='overview';global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');}
-  function pausar(){pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};}
+  async function encerrar(){const ok=await global.PacoteEMatoDialog?.confirmar?.({titulo:'Sair da navegação?',mensagem:'A rota e todo o progresso serão preservados para você continuar depois.',confirmar:'Sair da navegação',cancelar:'Continuar na rota'});if(ok===false)return;pararGPS();moduloVozNavegacao()?.limparEstado?.({cancelar:true});if(global.appState?.navegacao){global.appState.navegacao.ativa=false;global.appState.navegacao.modo='overview';}modoMapaNavegacao='overview';global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');}
+  function pausar(){pararGPS();}
   function mapaNavegacaoSaudavel(){
     try {
       const container=$('mapaNavegacao'); const canvas=mapa?.getCanvas?.();
@@ -1516,7 +1674,7 @@
       acompanharCamera(180);
       iniciarGPS();
     });
-    $('navVoiceBtn')?.addEventListener('click',()=>{if(!navegacaoInternaAtiva())return;vozAtiva=!vozAtiva;if(global.appState?.navegacao)global.appState.navegacao.vozAtiva=vozAtiva;if(!vozAtiva)try{global.speechSynthesis?.cancel?.();}catch(_){};atualizarBotaoVoz();});
+    $('navVoiceBtn')?.addEventListener('click',()=>{if(!navegacaoInternaAtiva())return;vozAtiva=!vozAtiva;moduloVozNavegacao()?.definirAtiva?.(vozAtiva);if(vozAtiva)moduloVozNavegacao()?.desbloquear?.();if(global.appState?.navegacao)global.appState.navegacao.vozAtiva=vozAtiva;atualizarBotaoVoz();});
     $('navCompletionFinishBtn')?.addEventListener('click',finalizarRota); $('navCompletionReviewBtn')?.addEventListener('click',revisarResultados);
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden&&global.appState?.navegacao?.ativa){backgroundEm=Date.now();if($('navGpsStatus'))$('navGpsStatus').textContent='Aplicativo em segundo plano; rota preservada.';persistirSelecao({motivo:'background_navegacao'});}
