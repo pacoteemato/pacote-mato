@@ -52,9 +52,11 @@ ok(E.contaTemAcessoAtivo({ativo:true},now)===true,'conta antiga ativo:true');
 ok(E.contaTemAcessoAtivo({vitalicio:true},now)===true,'vitalícia');
 ok(E.contaTemAcessoAtivo({expiraEm:now-1},now)===false,'expirada de verdade');
 ok(E.contaTemAcessoAtivo({bloqueado:true,vitalicio:true},now)===false,'bloqueada continua bloqueada');
-ok(/mostrarRenovacao\(zap, expiracaoConfirmada = false\)[\s\S]*estadoAcessoAtual !== 'expirado'/.test(appSource),'renovação protegida por expiração confirmada');
+ok(/mostrarRenovacao\(zap, expiracaoConfirmada = false\)[\s\S]*authAccessState !== AUTH_ACCESS_STATES\.EXPIRED/.test(appSource),'renovação protegida por estado único expired + confirmação real');
 ok(/get\(\{ source: 'server' \}\)/.test(appSource),'confirmação explícita usa Firestore servidor');
-ok(/onAuthStateChanged[\s\S]*iniciarMonitoramentoSessao\(zapSalvoInicial\)/.test(appSource),'sessão Firebase restaurada inicia monitoramento sem exigir novo login');
+ok(/Auth\.Persistence\.LOCAL/.test(appSource) && /onAuthStateChanged[\s\S]*restaurarSessaoFirebase\(user\)/.test(appSource),'Firebase LOCAL restaura currentUser sem exigir novo login');
+ok(/where\('authUid', '==', user\.uid\)/.test(appSource),'restauração pode recuperar vínculo seguro pelo UID');
+ok(/OFFLINE:'offline-error'/.test(appSource) && /SIGNED_OUT:'signed-out'/.test(appSource),'máquina única contém offline-error e signed-out');
 
 // 3) Histórico: reabrir só a parada escolhida sem alterar ordem/geometria/pacotes.
 const histSource=fs.readFileSync(path.join(ROOT,'js/historico/historico-rotas.js'),'utf8');
@@ -76,7 +78,7 @@ ok(/maximumAge:0/.test(nav) && /enableHighAccuracy:true/.test(nav),'GPS ativo n�
 ok(/ultimaPosicaoBruta/.test(nav) && /posicaoVisual/.test(nav) && /alvoVisualDaPosicao/.test(nav),'posição bruta separada da posição visual');
 ok(/mapa\.jumpTo\(opcoes\)/.test(nav),'câmera contínua usa jumpTo sem enfileirar easeTo');
 ok(/requestAnimationFrame\(frame\)/.test(nav),'interpolação visual usa requestAnimationFrame');
-ok(/nearest\.distance>limite/.test(nav),'desvio continua baseado no GPS bruto/nearest real');
+ok(/nearestOperacional&&nearestOperacional\.distance>limite/.test(nav),'desvio continua baseado no GPS bruto/nearest operacional real');
 ok(!/renderizarTudo\(/.test(nav),'navegação não renderiza o aplicativo inteiro a cada GPS');
 ok(/navManeuverIcon/.test(nav) && /svgManobra/.test(nav),'ícones SVG de manobra ligados às instruções');
 ok(/navPanelGrabber/.test(nav) && /pointermove/.test(nav),'bottom sheet possui grabber vertical dedicado');

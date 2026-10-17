@@ -1,0 +1,265 @@
+===== tests/v81-hotfix-pacotes-paradas.js =====
+OK  6 BRs foram reconstruídos em 3 entregas originais, não 6 entregas
+OK  entrega 119 mantém seus 3 pacotes juntos
+OK  entrega 120 mantém 1 pacote
+OK  entrega 121 mantém seus 2 pacotes juntos
+OK  3 entregas e 6 pacotes resultam em 2 paradas físicas
+OK  entregas 119 e 120 equivalentes compartilham a mesma parada
+OK  entrega 121 / apto 20 fica em parada separada
+OK  BRs da entrega 119 continuam apontando para a entrega PDF 119
+OK  numeração original por pacote permanece correta nas demais entregas
+OK  complemento fragmentado da mesma entrega mantém os pacotes juntos
+OK  versão completa do complemento vence fragmento incompleto da mesma entrega
+OK  Ancara bloco 1 apto 501 normalizado junta entregas equivalentes
+OK  Ancara bloco 2 apto 1208 permanece separado
+OK  endereço contraditório da mesma entrega é bloqueado, não fragmentado em paradas
+OK  sem número original confirmado, registros V73 não são fundidos como uma única entrega por suposição
+OK  contadores distinguem pacotes bipados, total de pacotes e paradas físicas
+OK  FALTAM calcula pacotes restantes, não paradas
+OK  Paradas Múltiplas inclui uma entrega com vários pacotes
+OK  Bipagem 0 alterações: js/bipagem/bipagem-area.js
+OK  Bipagem 0 alterações: js/bipagem/operacoes-pacotes.js
+OK  Bipagem 0 alterações: js/bipagem/rota-ativa-bridge.js
+OK  processarCodigo bipa somente o código identificado
+OK  processarCodigo não marca os demais pacotes da parada automaticamente
+
+V81 HOTFIX — pacotes/entregas/paradas concluído.
+===== tests/v81-final-enderecos-navegacao.js =====
+OK  Rua+número sem unidade podem agrupar
+OK  AP/APTO/APARTAMENTO normalizam
+OK  apartamentos diferentes ficam separados
+OK  blocos diferentes ficam separados
+OK  casas diferentes ficam separadas
+OK  unidade presente só em uma fica separada
+OK  Av. e Avenida são equivalentes
+OK  acentos/preposições e R./Rua normalizam
+OK  caso real 119/120 gera DUAS paradas
+OK  variações equivalentes de bloco/apto geram UMA parada
+OK  torres diferentes ficam separadas
+OK  salas diferentes ficam separadas
+OK  lojas diferentes ficam separadas
+OK  unidades diferentes ficam separadas
+OK  conjuntos diferentes ficam separados
+OK  andares diferentes ficam separados
+OK  fundos diferencia da unidade principal
+OK  unidade incompleta é marcada como insegura
+OK  limparPontosInteresse preserva labels de vias
+OK  limparPontosInteresse preserva place/city
+OK  POI não essencial continua reduzido
+OK  estilo ativo aumenta contraste das vias
+OK  nomes das ruas recebem contraste de navegação
+OK  labels de ruas ficam explicitamente visíveis no modo ativo
+OK  overview restaura pintura original do mapa
+OK  existem estados OVERVIEW e NAVIGATION-ACTIVE
+OK  troca de estado aplica/restaura estilo sem recarregar página
+OK  overview enquadra a rota completa
+OK  Navegar entra no modo ativo sem recalcular a rota
+OK  entrada no navigation-active não chama recálculo
+OK  source de rota não aplica simplificação geométrica adicional
+OK  SOURCE_ROUTE deriva da geometria real salva da rota
+OK  GPS bruto e posição visual permanecem separados
+OK  desvio usa nearest da posição bruta somente no modo ativo
+OK  câmera ativa usa pitch, zoom dinâmico e offset inferior
+OK  ícones cobrem curvas fortes, rotatória e chegada
+OK  tipo desconhecido usa direção neutra em vez de inventar
+OK  segunda manobra é exibida quando existe instrução real seguinte
+OK  bottom sheet expansível preserva grabber dedicado
+OK  overview oculta painel de manobra de GPS
+OK  trecho percorrido permanece verde com baixa opacidade
+OK  câmera abre o enquadramento perto de uma curva/manobra
+OK  manobra: seguir reto
+OK  manobra: esquerda
+OK  manobra: direita
+OK  manobra: leve esquerda
+OK  manobra: leve direita
+OK  manobra: acentuada esquerda
+OK  manobra: acentuada direita
+OK  manobra: retorno
+OK  manobra: entrar na rotatória
+OK  manobra: continuar na rotatória
+OK  manobra: saída da rotatória
+OK  manobra: chegada
+OK  manobra desconhecida usa seguir neutro
+OK  extrairInstrucoes preserva type
+OK  extrairInstrucoes preserva modifier
+OK  extrairInstrucoes preserva street_name
+OK  extrairInstrucoes preserva exit_number
+OK  extrairInstrucoes preserva transition_instruction
+OK  extrairInstrucoes preserva pre_transition_instruction
+OK  extrairInstrucoes preserva distance
+OK  extrairInstrucoes preserva time
+OK  extrairInstrucoes preserva from_index
+OK  extrairInstrucoes preserva to_index
+OK  Worker atual solicita instruction_details ao Geoapify
+OK  Worker preserva legs/steps reais do provedor
+OK  Bipagem sem alteração: js/bipagem/bipagem-area.js
+OK  Bipagem sem alteração: js/bipagem/operacoes-pacotes.js
+OK  Bipagem sem alteração: js/bipagem/rota-ativa-bridge.js
+OK  importação preservada byte a byte: js/importacao/fluxo-importacao.js
+OK  importação preservada byte a byte: js/importacao/xlsx.js
+OK  entregaOriginalPorPacote continua recebendo a numeração original do PDF
+OK  validador de código BR permanece presente
+
+V81 FINAL — testes de endereços/navegação concluídos.
+===== tests/v81-regression.js =====
+OK  sem regressão byte a byte: js/bipagem/bipagem-area.js
+OK  sem regressão byte a byte: js/bipagem/operacoes-pacotes.js
+OK  sem regressão byte a byte: js/bipagem/rota-ativa-bridge.js
+OK  sem regressão byte a byte: js/importacao/xlsx.js
+OK  sem regressão byte a byte: js/importacao/fluxo-importacao.js
+OK  sem regressão byte a byte: js/mapa/geocodificacao.js
+OK  sem regressão byte a byte: cloudflare/geocodificacao-worker.js
+OK  sem regressão byte a byte: cloudflare/admin-gateway-worker.js
+OK  mensal ativa por milissegundos
+OK  trimestral ativa
+OK  teste ativo
+OK  Firestore Timestamp com toMillis
+OK  expiraEm em segundos
+OK  Timestamp serializado
+OK  data ISO
+OK  conta antiga ativo:true
+OK  vitalícia
+OK  expirada de verdade
+OK  bloqueada continua bloqueada
+OK  renovação protegida por expiração confirmada
+OK  confirmação explícita usa Firestore servidor
+OK  sessão Firebase restaurada inicia monitoramento sem exigir novo login
+OK  mesmo ID e rota reaberta
+OK  ordem otimizada preservada
+OK  geometria preservada
+OK  outras entregas permanecem concluídas
+OK  somente parada escolhida volta a pendente e pacote é preservado
+OK  GPS ativo não aceita posição antiga em cache
+OK  posição bruta separada da posição visual
+OK  câmera contínua usa jumpTo sem enfileirar easeTo
+OK  interpolação visual usa requestAnimationFrame
+OK  desvio continua baseado no GPS bruto/nearest real
+OK  navegação não renderiza o aplicativo inteiro a cada GPS
+OK  ícones SVG de manobra ligados às instruções
+OK  bottom sheet possui grabber vertical dedicado
+OK  finalização exige confirmação de persistência local
+
+Regressões estáticas/lógicas V81 concluídas.
+===== tests/v81-optimization-equivalence.js =====
+OK  mesma rota vencedora V80/V81 (short, 3 paradas)
+OK  mesmas métricas/critério (short, 3 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 3)
+OK  mesma rota vencedora V80/V81 (short, 7 paradas)
+OK  mesmas métricas/critério (short, 7 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 7)
+OK  mesma rota vencedora V80/V81 (short, 12 paradas)
+OK  mesmas métricas/critério (short, 12 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 12)
+OK  mesma rota vencedora V80/V81 (balanced, 3 paradas)
+OK  mesmas métricas/critério (balanced, 3 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 3)
+OK  mesma rota vencedora V80/V81 (balanced, 7 paradas)
+OK  mesmas métricas/critério (balanced, 7 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 7)
+OK  mesma rota vencedora V80/V81 (balanced, 12 paradas)
+OK  mesmas métricas/critério (balanced, 12 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 12)
+
+Equivalência do vencedor comprovada com respostas mock idênticas.
+
+===== REAL PDF HARNESS =====
+[PACOTE É MATO][DIAGNÓSTICO ROTA REAL]
+  TOTAL DE PACOTES: 11
+  TOTAL DE ENTREGAS DO PDF: 11
+  TOTAL DE PARADAS FÍSICAS: 11
+  PARADAS MÚLTIPLAS: 0
+  ┌─────────┬──────────────┬───────────────────────────────────────────────────────────────────────────┬─────────────┬───────────────────────┬──────────┬───────────────────┐
+  │ (index) │ paradaFisica │ endereco                                                                  │ entregasPdf │ pacotes               │ multipla │ motivoAgrupamento │
+  ├─────────┼──────────────┼───────────────────────────────────────────────────────────────────────────┼─────────────┼───────────────────────┼──────────┼───────────────────┤
+  │ 0       │ 1            │ 'Pç Jesuíno Bandeira, 61b, São Paulo'                                     │ [ 1 ]       │ [ 'BR260658852925A' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 1       │ 2            │ 'R Hungara, 157, Apartamento 61, São Pau lo'                              │ [ 2 ]       │ [ 'BR269717962777N' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 2       │ 3            │ 'Rua Afonso Sardinha, 104, Banca de jorn al da cor vermelh, São Paulo'    │ [ 3 ]       │ [ 'BR2657881087670' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 3       │ 4            │ 'R D João V, 550, Ap 62, São Paulo'                                       │ [ 4 ]       │ [ 'BR267696112609Q' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 4       │ 5            │ 'R Caativa, 15, São Paulo'                                                │ [ 5 ]       │ [ 'BR2667137824443' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 5       │ 6            │ 'R João T Machado, 153, rua do restauran te Sr Gluton, Osasco'            │ [ 6 ]       │ [ 'BR268760655062H' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 6       │ 7            │ 'Rua André Thomaz, 222, Clínica Núcleo J oy, Osasco'                      │ [ 7 ]       │ [ 'BR262206975258L' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 7       │ 8            │ 'Rua Presidente Castelo Branco, 45, Porta ria(zelador), Osasco'           │ [ 8 ]       │ [ 'BR2650405021619' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 8       │ 9            │ 'Avenida Manoel Pedro Pimentel, 205, A p. 101 - Bloco D, Osasco'          │ [ 9 ]       │ [ 'BR262959277169A' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 9       │ 10           │ 'Comunidade Manuel Antônio Portella, 166, Associação comunitaria, Osasco' │ [ 10 ]      │ [ 'BR263281721966E' ] │ false    │ 'PARADA_SIMPLES'  │
+  │ 10      │ 11           │ 'Rua Manuel de Oliveira, 28, São Paulo'                                   │ [ 11 ]      │ [ 'BR263978310376Y' ] │ false    │ 'PARADA_SIMPLES'  │
+  └─────────┴──────────────┴───────────────────────────────────────────────────────────────────────────┴─────────────┴───────────────────────┴──────────┴───────────────────┘
+OK  PDF real: 11 âncoras BR encontradas
+OK  PDF real: 11 entregas normalizadas
+OK  PDF real: nenhum BR duplicado/desaparecido
+OK  PDF real: 11 pacotes preservados após formação física
+OK  PDF real: entregaOriginalPorPacote cobre todos os BRs
+OK  PDF real: numeração original preservada
+OK  PDF real: fragmentação A p. 101 presente no conteúdo extraído
+OK  PDF real: A p. 101 + Bloco D vira unidade contextual segura
+[PACOTE É MATO][AGRUPAMENTO] JUNTAS · MESMA_UNIDADE_NORMALIZADA
+  Entrega 119:
+  R Ancara, 105, Bloco 1, Apartamento 501
+  base = rua|ancara|105
+  unidade = bloco:1|apt:501
+  chave = rua|ancara|105|u:bloco:1|apt:501
+  parada física = 1
+  Entrega 120:
+  Rua Ancara, 105, BL 1, APTO 501
+  base = rua|ancara|105
+  unidade = bloco:1|apt:501
+  chave = rua|ancara|105|u:bloco:1|apt:501
+  parada física = 1
+  resultado: JUNTAS
+  motivo: MESMA_UNIDADE_NORMALIZADA
+[PACOTE É MATO][AGRUPAMENTO] SEPARADAS · UNIDADES_DIFERENTES
+  Entrega 119:
+  R Ancara, 105, Bloco 1, Apartamento 501
+  base = rua|ancara|105
+  unidade = bloco:1|apt:501
+  chave = rua|ancara|105|u:bloco:1|apt:501
+  parada física = 1
+  Entrega 121:
+  Rua Ancara, 105, Bloco 2, Apartamento 1208
+  base = rua|ancara|105
+  unidade = bloco:2|apt:1208
+  chave = rua|ancara|105|u:bloco:2|apt:1208
+  parada física = 2
+  resultado: SEPARADAS
+  motivo: UNIDADES_DIFERENTES
+[PACOTE É MATO][AGRUPAMENTO] SEPARADAS · UNIDADES_DIFERENTES
+  Entrega 120:
+  Rua Ancara, 105, BL 1, APTO 501
+  base = rua|ancara|105
+  unidade = bloco:1|apt:501
+  chave = rua|ancara|105|u:bloco:1|apt:501
+  parada física = 1
+  Entrega 121:
+  Rua Ancara, 105, Bloco 2, Apartamento 1208
+  base = rua|ancara|105
+  unidade = bloco:2|apt:1208
+  chave = rua|ancara|105|u:bloco:2|apt:1208
+  parada física = 2
+  resultado: SEPARADAS
+  motivo: UNIDADES_DIFERENTES
+[PACOTE É MATO][DIAGNÓSTICO ROTA REAL]
+  TOTAL DE PACOTES: 4
+  TOTAL DE ENTREGAS DO PDF: 3
+  TOTAL DE PARADAS FÍSICAS: 2
+  PARADAS MÚLTIPLAS: 1
+  ┌─────────┬──────────────┬──────────────────────────────────────────────┬──────────────┬─────────────────────────────────────────────────────────────┬──────────┬────────────────────────┐
+  │ (index) │ paradaFisica │ endereco                                     │ entregasPdf  │ pacotes                                                     │ multipla │ motivoAgrupamento      │
+  ├─────────┼──────────────┼──────────────────────────────────────────────┼──────────────┼─────────────────────────────────────────────────────────────┼──────────┼────────────────────────┤
+  │ 0       │ 1            │ 'R Ancara, 105, Bloco 1, Apartamento 501'    │ [ 119, 120 ] │ [ 'BR260000000001A', 'BR260000000004D', 'BR260000000002B' ] │ true     │ 'MESMA_UNIDADE_FISICA' │
+  │ 1       │ 2            │ 'Rua Ancara, 105, Bloco 2, Apartamento 1208' │ [ 121 ]      │ [ 'BR260000000003C' ]                                       │ false    │ 'PARADA_SIMPLES'       │
+  └─────────┴──────────────┴──────────────────────────────────────────────┴──────────────┴─────────────────────────────────────────────────────────────┴──────────┴────────────────────────┘
+  {
+    PARADA: 1,
+    ENTREGAS_DO_PDF: [ 119, 120 ],
+    PACOTES: [ 'BR260000000001A', 'BR260000000004D', 'BR260000000002B' ],
+    ENDERECO: 'R Ancara, 105, Bloco 1, Apartamento 501',
+    MOTIVO_DO_AGRUPAMENTO: 'MESMA_UNIDADE_FISICA'
+  }
+OK  múltiplos: 119/120 agrupam e 121 fica separado
+OK  múltiplos: nenhum BR some ao agrupar fisicamente
+OK  múltiplos: 4 registros/BRs recompõem 3 entregas do PDF
+OK  múltiplos: parada 119/120 contém 3 pacotes, incluindo 2 da mesma entrega 119
+OK  múltiplos: entregaOriginalPorPacote permanece exata
+PDF_REAL_OK
+
+===== NODE --check all JS =====
+ALL_JS_SYNTAX_OK

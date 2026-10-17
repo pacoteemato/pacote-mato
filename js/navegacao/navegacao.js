@@ -39,6 +39,7 @@
   let modoMapaNavegacao = 'overview';
   let ultimaAssinaturaGeometriaDiagnostico = '';
   let distanciaProximaManobra = Infinity;
+  let ultimoIndiceVisualRota = null;
 
   const SOURCE_ROUTE = 'pemato-nav-route';
   const SOURCE_ROUTE_STATUS = 'pemato-nav-route-status';
@@ -364,7 +365,7 @@
   }
 
   function enquadrarOverview(duracao = 0) {
-    if (!mapa || !mapReady) return;
+    if (!mapa || !mapReady || navegacaoInternaAtiva()) return;
     const coords = geometriaPontos(rota?.geometria).filter(c => Array.isArray(c) && coordenadaValida(c[1], c[0]));
     if (!coords.length) {
       try { mapa.jumpTo({center:centroDaRota(),zoom:15,pitch:0,bearing:0,offset:[0,0]}); } catch (_) {}
@@ -383,11 +384,12 @@
   function aplicarModoVisualMapa() {
     if (!mapa || !mapReady) return;
     if (navegacaoInternaAtiva()) global.PacoteEMatoMapaConfig?.aplicarEstiloNavegacaoAtiva?.(mapa);
-    else global.PacoteEMatoMapaConfig?.restaurarEstiloMapaOverview?.(mapa);
+    else global.PacoteEMatoMapaConfig?.aplicarEstiloMapaClean?.(mapa, { navegacaoAtiva:false });
   }
 
   function definirModoMapa(modo, opcoes = {}) {
     modoMapaNavegacao = modo === 'navigation-active' ? 'navigation-active' : 'overview';
+    assinaturaParadasV11 = '';
     document.body.dataset.pematoNavMode = modoMapaNavegacao;
     if (global.appState?.navegacao) global.appState.navegacao.modo = modoMapaNavegacao;
     aplicarModoVisualMapa();
@@ -450,7 +452,7 @@
       mapa.on('webglcontextrestored', () => { contextoPerdido = false; });
       mapa.touchZoomRotate?.enableRotation?.();
       ['dragstart','zoomstart','rotatestart','pitchstart'].forEach(nome => mapa.on(nome, explorarMapa));
-      mapa.on('zoomend', () => { atualizarProgressoVisual(nearestOnRoute(ultimaPosicao)); });
+      mapa.on('zoomend', () => { atualizarProgressoVisual(nearestOnRoute(ultimaPosicao,{visual:true})); });
 
       const ready = () => {
         mapReady = true;
@@ -614,34 +616,64 @@
       // e a parada consultada pelo motorista também fica verde sem substituir a ativa.
       features.push({type:'Feature',properties:{id:String(stop.id),ids:ids.join(','),order:principal.order,multi,stackIndex,markerOffset:[0,0],status:stop.statusEntrega||'pendente',current,selected,highlighted:(current||selected)},geometry:{type:'Point',coordinates:[lon,lat]}});
     });
-    prepararIconesParadasV12(features);
-    const assinatura = features.map(f => {
+    let featuresVisiveis = features;
+    if (navegacaoInternaAtiva()) {
+      const ordenadasPendentes = paradasPorOrdem().filter(stop => !paradaFinalizada(stop));
+      const indiceAtivo = ordenadasPendentes.findIndex(stop => String(stop.id) === String(p?.id || ''));
+      const proximaDepois = indiceAtivo >= 0 ? ordenadasPendentes[indiceAtivo + 1] : ordenadasPendentes[1];
+      const permitidos = new Set([p?.id, proximaDepois?.id, cartaoSelecionadoId].filter(Boolean).map(String));
+      featuresVisiveis = features.filter(feature => String(feature?.properties?.ids || feature?.properties?.id || '').split(',').some(id => permitidos.has(String(id))));
+    }
+    prepararIconesParadasV12(featuresVisiveis);
+    const assinatura = `${modoMapaNavegacao}|` + featuresVisiveis.map(f => {
       const p = f.properties || {};
       const c = f.geometry?.coordinates || [];
       return `${p.id}:${p.order}:${p.multi}:${p.status||''}:${p.current?1:0}:${p.selected?1:0}:${p.highlighted?1:0}:${p.iconV12||''}:${c[0]}:${c[1]}`;
     }).join('|');
     if (assinatura !== assinaturaParadasV11) {
       assinaturaParadasV11 = assinatura;
-      setSource(SOURCE_STOPS, fc(features));
+      setSource(SOURCE_STOPS, fc(featuresVisiveis));
     }
   }
 
-  function nearestOnRoute(pos) {
-    const coords = geometriaPontos(rota?.geometria);
+  function nearestNoIntervalo(coords, pos, inicio, fim) {
     if (!coords.length || !pos) return null;
     const lon0 = Number(pos.lon), lat0 = Number(pos.lat), rad = Math.PI/180;
     const cos = Math.cos(lat0*rad), kx=111320*cos, ky=110540;
-    let best={distance:Infinity,index:0,t:0,point:coords[0]};
-    for(let i=0;i<coords.length-1;i++){
+    let best={distance:Infinity,index:Math.max(0,inicio||0),t:0,point:coords[Math.max(0,inicio||0)]};
+    const de=Math.max(0,Math.min(coords.length-2,Number(inicio||0)));
+    const ate=Math.max(de,Math.min(coords.length-2,Number(fim ?? coords.length-2)));
+    for(let i=de;i<=ate;i++){
       const a=coords[i], b=coords[i+1];
       const ax=(a[0]-lon0)*kx, ay=(a[1]-lat0)*ky, bx=(b[0]-lon0)*kx, by=(b[1]-lat0)*ky;
       const dx=bx-ax, dy=by-ay, den=dx*dx+dy*dy;
       const t=den?Math.max(0,Math.min(1,-(ax*dx+ay*dy)/den)):0;
       const px=ax+t*dx, py=ay+t*dy, d=Math.hypot(px,py);
-      if(d<best.distance){best={distance:d,index:i,t,point:[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]};}
+      if(d<best.distance) best={distance:d,index:i,t,point:[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]};
     }
     return best;
   }
+
+  function nearestOnRoute(pos, opcoes = {}) {
+    const coords = geometriaPontos(rota?.geometria);
+    if (!coords.length || !pos) return null;
+    const globalBest = () => nearestNoIntervalo(coords, pos, 0, coords.length - 2);
+    if (opcoes.visual !== true || !navegacaoInternaAtiva() || !Number.isFinite(Number(ultimoIndiceVisualRota))) return globalBest();
+
+    // Map matching SOMENTE visual: procura primeiro perto do progresso anterior para
+    // não saltar para outro trecho quando a rota cruza a si mesma.
+    const anterior = Number(ultimoIndiceVisualRota);
+    const local = nearestNoIntervalo(coords, pos, anterior - 35, anterior + 220);
+    const limiteLocal = Math.max(45, Math.min(110, Number(pos?.accuracy || 0) * 2.5 + 25));
+    let escolhido = local;
+    if (!local || Number(local.distance) > limiteLocal) escolhido = globalBest();
+    if (escolhido) {
+      if (escolhido.index < anterior - 30 && local && Number(local.distance) <= limiteLocal * 1.35) escolhido = local;
+      ultimoIndiceVisualRota = Number(escolhido.index);
+    }
+    return escolhido;
+  }
+
 
   function distanciaAoLongo(coords, fromIndex, toIndex, firstPoint) {
     if (!coords.length) return Infinity;
@@ -687,27 +719,54 @@
     }catch(_){ }
   }
 
+  function tipoGeoapifyNormalizado(inst) {
+    return String(inst?.tipo || inst?.type || '').replace(/[^a-z0-9]/gi,'').toLowerCase();
+  }
+
+  function valorSaidaRotatoria(inst) {
+    const bruto = inst?.roundabout_exit ?? inst?.exitNumber ?? inst?.exit_number;
+    const valor = Array.isArray(bruto) ? bruto[0] : bruto;
+    const n = Number(String(valor ?? '').match(/\d+/)?.[0]);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  function nomeRuaInstrucao(inst) {
+    const streets = Array.isArray(inst?.streets) ? inst.streets : (inst?.streets ? [inst.streets] : []);
+    const exitRoadName = Array.isArray(inst?.exitRoadName) ? inst.exitRoadName : (inst?.exitRoadName ? [inst.exitRoadName] : []);
+    return String(streets[0] || inst?.street_name || inst?.rua || inst?.name || exitRoadName[0] || inst?.texto || inst?.transition_instruction || '').trim();
+  }
+
   function tipoVisualManobra(inst) {
-    const tipo = String(inst?.tipo || inst?.type || '').toLowerCase();
+    const tipo = tipoGeoapifyNormalizado(inst);
+    const mapaTipos = {
+      none:'reta', startat:'reta', straight:'reta', merge:'reta', ferryenter:'reta', ferryexit:'reta',
+      startatright:'direita', startatleft:'esquerda',
+      slightright:'leve_direita', stayright:'leve_direita', mergeright:'leve_direita',
+      slightleft:'leve_esquerda', stayleft:'leve_esquerda', mergeleft:'leve_esquerda',
+      right:'direita', exitright:'direita', left:'esquerda', exitleft:'esquerda',
+      sharpright:'acentuada_direita', sharpleft:'acentuada_esquerda',
+      turnaroundright:'retorno', turnaroundleft:'retorno',
+      destinationreached:'chegada', destinationreachedright:'chegada', destinationreachedleft:'chegada'
+    };
+    if (tipo === 'roundabout') return valorSaidaRotatoria(inst) ? 'rotatoria_saida' : 'rotatoria';
+    if (mapaTipos[tipo]) return mapaTipos[tipo];
+
+    // Compatibilidade com rotas antigas/texto localizado. Nunca inventa direção.
     const mod = String(inst?.modificador || inst?.modifier || inst?.direcao || '').toLowerCase();
     const texto = String(inst?.texto || inst?.transition_instruction || '').toLocaleLowerCase('pt-BR');
     const tudo = `${tipo} ${mod} ${texto}`;
     if (/(arrive|arrival|destination|chegada|chegue|destino)/.test(tudo)) return 'chegada';
     if (/u[- ]?turn|retorno|retorne|meia volta/.test(tudo)) return 'retorno';
-    if (/roundabout|rotary|rotat[oó]ria|rotatoria/.test(tudo)) {
-      if (Number(inst?.exitNumber ?? inst?.exit_number) > 0 || /(exit|sa[ií]da|sair)/.test(tudo)) return 'rotatoria_saida';
-      if (/(enter|entrar|entrada)/.test(tudo)) return 'rotatoria_entrada';
-      return 'rotatoria';
-    }
-    if (/sharp.+left|left.+sharp|acentuad.+esquer|esquer.+acentuad/.test(tudo)) return 'acentuada_esquerda';
-    if (/sharp.+right|right.+sharp|acentuad.+direit|direit.+acentuad/.test(tudo)) return 'acentuada_direita';
-    if (/slight.+left|left.+slight|leve.+esquer|esquer.+leve/.test(tudo)) return 'leve_esquerda';
-    if (/slight.+right|right.+slight|leve.+direit|direit.+leve/.test(tudo)) return 'leve_direita';
+    if (/roundabout|rotary|rotat[oó]ria|rotatoria/.test(tudo)) return valorSaidaRotatoria(inst) ? 'rotatoria_saida' : 'rotatoria';
+    if (/sharp\s*left|acentuad.+esquer/.test(tudo)) return 'acentuada_esquerda';
+    if (/sharp\s*right|acentuad.+direit/.test(tudo)) return 'acentuada_direita';
+    if (/slight\s*left|stay\s*left|merge\s*left|leve.+esquer/.test(tudo)) return 'leve_esquerda';
+    if (/slight\s*right|stay\s*right|merge\s*right|leve.+direit/.test(tudo)) return 'leve_direita';
     if (/\bleft\b|esquerda/.test(tudo)) return 'esquerda';
     if (/\bright\b|direita/.test(tudo)) return 'direita';
-    // Fallback neutro: não inventa direção quando Geoapify não a informou.
     return 'reta';
   }
+
 
   function svgManobra(tipo) {
     const base='viewBox="0 0 48 48" focusable="false" aria-hidden="true"';
@@ -729,11 +788,20 @@
     return `<svg ${base} ${comum}>${paths[tipo] || paths.reta}</svg>`;
   }
 
+  function indiceGlobalInstrucao(inst, campo) {
+    const globalCampo = campo === 'from' ? inst?.globalFromIndex : inst?.globalToIndex;
+    const legado = campo === 'from' ? (inst?.fromIndex ?? inst?.from_index) : (inst?.toIndex ?? inst?.to_index);
+    return Number.isFinite(Number(globalCampo)) ? Number(globalCampo) : (Number.isFinite(Number(legado)) ? Number(legado) : null);
+  }
+
   function indiceInstrucaoAtual(nearest) {
     const lista=Array.isArray(rota?.instrucoes)?rota.instrucoes:[];
     if(!lista.length) return -1;
     if(!nearest) return 0;
-    const idx=lista.findIndex(inst => Number.isFinite(Number(inst.toIndex ?? inst.to_index)) && Number(inst.toIndex ?? inst.to_index)>=nearest.index);
+    const idx=lista.findIndex(inst => {
+      const to = indiceGlobalInstrucao(inst, 'to');
+      return to != null && to >= nearest.index;
+    });
     return idx >= 0 ? idx : lista.length - 1;
   }
 
@@ -743,16 +811,16 @@
     const inst=indice>=0?lista[indice]:null;
     const proximaInst=indice>=0?lista[indice+1]:null;
     const coords=geometriaPontos(rota?.geometria);
-    const toIndex=inst?.toIndex ?? inst?.to_index;
-    const dist=inst&&nearest&&Number.isFinite(Number(toIndex))?distanciaAoLongo(coords,nearest.index,Number(toIndex),nearest.point):Number(inst?.distancia ?? inst?.distance ?? NaN);
+    const toIndex=inst ? indiceGlobalInstrucao(inst, 'to') : null;
+    const dist=inst&&nearest&&toIndex!=null?distanciaAoLongo(coords,nearest.index,toIndex,nearest.point):Number(inst?.distancia ?? inst?.distance ?? NaN);
     distanciaProximaManobra = Number.isFinite(dist) ? Math.max(0, dist) : Infinity;
-    const saida=Number(inst?.exitNumber ?? inst?.exit_number);
-    const textoBase=inst?.texto||inst?.transition_instruction||inst?.pre_transition_instruction||'Siga a rota destacada';
-    const textoRotatoria=Number.isFinite(saida)&&saida>0&&/rotat|roundabout|rotary/i.test(`${inst?.tipo||inst?.type||''} ${textoBase}`)
-      ? `${textoBase} · ${saida}ª saída` : textoBase;
-    const ruaAtual=inst?.rua||inst?.street_name||'';
+    const saida=valorSaidaRotatoria(inst);
+    const textoBase=inst?.texto||inst?.transition_instruction||inst?.pre_transition_instruction||inst?.post_transition_instruction||'Siga a rota destacada';
+    const ehRotatoria=tipoGeoapifyNormalizado(inst)==='roundabout'||/rotat|roundabout|rotary/i.test(textoBase);
+    const textoRotatoria=saida&&ehRotatoria ? `${textoBase} · ${saida}ª saída` : textoBase;
+    const ruaAtual=nomeRuaInstrucao(inst);
     if($('navManeuverText')) $('navManeuverText').textContent=ruaAtual||textoRotatoria;
-    if($('navManeuverStreet')) $('navManeuverStreet').textContent=ruaAtual?textoRotatoria:'Acompanhe o mapa e a próxima parada';
+    if($('navManeuverStreet')) $('navManeuverStreet').textContent=ruaAtual&&ruaAtual!==textoRotatoria?textoRotatoria:'Acompanhe o mapa e a próxima parada';
     if($('navManeuverDistance')) $('navManeuverDistance').textContent=Number.isFinite(dist)?formatarDistancia(dist):'—';
     if($('navManeuverIcon')) $('navManeuverIcon').innerHTML=svgManobra(tipoVisualManobra(inst));
 
@@ -761,7 +829,7 @@
       if(proximaInst){
         after.hidden=false;
         if($('navManeuverNextIcon')) $('navManeuverNextIcon').innerHTML=svgManobra(tipoVisualManobra(proximaInst));
-        if($('navManeuverNextStreet')) $('navManeuverNextStreet').textContent=proximaInst?.rua||proximaInst?.street_name||proximaInst?.texto||'Próxima manobra';
+        if($('navManeuverNextStreet')) $('navManeuverNextStreet').textContent=nomeRuaInstrucao(proximaInst)||'Próxima manobra';
       } else after.hidden=true;
     }
 
@@ -772,6 +840,7 @@
       else if(dist<=400) falar(`Em ${Math.round(dist/50)*50} metros, ${textoBase}`,`${id}:400`);
     }
   }
+
 
   function definirAcompanhamento(ativo) {
     seguirPosicao = ativo;
@@ -803,7 +872,7 @@
     const h = ultimaPosicao?.heading;
     if(h != null && Number.isFinite(Number(h))) return Number(h);
     const pos = ultimaPosicao || {lon:centroDaRota()[0],lat:centroDaRota()[1]};
-    const perto=nearestOnRoute(pos), pontos=geometriaPontos(rota?.geometria);
+    const perto=nearestOnRoute(pos,{visual:true}), pontos=geometriaPontos(rota?.geometria);
     if(perto && perto.distance < 100 && pontos[perto.index+1]) {
       const a=pontos[perto.index], b=pontos[perto.index+1];
       return bearingEntre({lon:a[0],lat:a[1]},{lon:b[0],lat:b[1]}) ?? mapa?.getBearing?.() ?? 0;
@@ -1016,7 +1085,7 @@
     try{
       const response=await global.PacoteEMatoServicoRota.calcularRotaPelasRuas(rota,points), feature=response.feature;
       rota.geometria=feature.geometry; rota.distanciaTotalMetros=Number(feature.properties?.distance||0); rota.duracaoDirecaoSegundos=Number(feature.properties?.time||0);
-      rota.pernas=Array.isArray(feature.properties?.legs)?feature.properties.legs:[]; rota.instrucoes=global.PacoteEMatoServicoRota.extrairInstrucoes(feature); rota.recalculadoEm=Date.now();
+      rota.pernas=Array.isArray(feature.properties?.legs)?feature.properties.legs:[]; rota.instrucoes=global.PacoteEMatoServicoRota.extrairInstrucoes(feature); ultimoIndiceVisualRota=null; rota.recalculadoEm=Date.now();
       const pendentesAgora=ordemPendente.length; rota.duracaoParadasSegundos=pendentesAgora*Number(rota.tempoParadaSegundos||0);
       rota.duracaoTotalSegundos=Number(rota.duracaoDirecaoSegundos||0)+Number(rota.duracaoParadasSegundos||0);
       rota.horarioTerminoEstimado=Date.now()+rota.duracaoTotalSegundos*1000;
@@ -1106,13 +1175,14 @@
     }
     posicaoAnterior = { ...ultimaPosicao };
 
-    const nearest=nearestOnRoute(ultimaPosicao);
-    alvoVisual=alvoVisualDaPosicao(ultimaPosicao,nearest);
+    const nearestOperacional=nearestOnRoute(ultimaPosicao,{visual:false});
+    const nearestVisual=nearestOnRoute(ultimaPosicao,{visual:true}) || nearestOperacional;
+    alvoVisual=alvoVisualDaPosicao(ultimaPosicao,nearestVisual);
     if(!posicaoVisual&&alvoVisual){posicaoVisual={...alvoVisual};headingVisual=normalizarAngulo(alvoVisual.heading) ?? direcaoCamera();}
     iniciarInterpolacaoVisual();
     if (navegacaoInternaAtiva()) {
-      atualizarProgressoVisual(nearest);
-      atualizarInstrucao(nearest);
+      atualizarProgressoVisual(nearestVisual);
+      atualizarInstrucao(nearestVisual);
       const p=proxima(); if(p&&coordenadaValida(p.latitude,p.longitude)){
         const d=haversine([ultimaPosicao.lon,ultimaPosicao.lat],[Number(p.longitude),Number(p.latitude)]);
         if(d<=120) falar(`Aproximando-se da próxima parada: ${p.enderecoOriginal||'destino'}`,`stop:${p.id}:near`);
@@ -1120,7 +1190,7 @@
       }
       // Desvio/recálculo usam EXCLUSIVAMENTE a posição GPS bruta.
       const limite=Math.max(80,(ultimaPosicao.accuracy||0)*2.2);
-      if(nearest&&nearest.distance>limite) eventosForaRota++; else eventosForaRota=0;
+      if(nearestOperacional&&nearestOperacional.distance>limite) eventosForaRota++; else eventosForaRota=0;
       if(global.appState?.navegacao) global.appState.navegacao.foraDaRota=eventosForaRota>=3;
       if($('navGpsStatus')) $('navGpsStatus').textContent=eventosForaRota>=3?'Fora da rota planejada':`GPS ativo${ultimaPosicao.accuracy?` · precisão ${Math.round(ultimaPosicao.accuracy)} m`:''}`;
       if(eventosForaRota>=3&&Date.now()-ultimoRecalculo>60000&&global.PacoteEMatoServicoRota?.endpoint?.('route')) recalcular('desvio');
@@ -1295,7 +1365,7 @@
     if(rota?.precisaRecalculo){global.notificar?.('A rota foi alterada. Recalcule o trajeto antes de iniciar a navegação.');return;}
     if(!rota||!geometriaValida(rota.geometria)){global.notificar?.('Calcule uma rota válida antes de iniciar a navegação.');return;}
     global.PacoteEMatoMarcadores?.capturarBaseVisualStatus?.(rota, false);
-    atualizarPendentes();let idExterno=null;try{idExterno=sessionStorage.getItem('pemato_parada_externa');sessionStorage.removeItem('pemato_parada_externa');}catch(_){}cartaoSelecionadoId=idExterno||rota.paradaSelecionadaId||global.appState?.navegacao?.paradaExibidaId||proxima()?.id||null;posicaoAnterior=null;ultimaPosicaoBruta=null;posicaoVisual=null;alvoVisual=null;headingVisual=null;ultimoTimestampGps=0; const pref=global.PacoteEMatoConfiguracoes?.obter?.().navegacao||'pacote_emato';
+    atualizarPendentes();let idExterno=null;try{idExterno=sessionStorage.getItem('pemato_parada_externa');sessionStorage.removeItem('pemato_parada_externa');}catch(_){}cartaoSelecionadoId=idExterno||rota.paradaSelecionadaId||global.appState?.navegacao?.paradaExibidaId||proxima()?.id||null;posicaoAnterior=null;ultimaPosicaoBruta=null;posicaoVisual=null;alvoVisual=null;headingVisual=null;ultimoIndiceVisualRota=null;ultimoTimestampGps=0; const pref=global.PacoteEMatoConfiguracoes?.obter?.().navegacao||'pacote_emato';
     const retomarAtiva = pref==='pacote_emato' && global.appState?.navegacao?.modo === 'navigation-active';
     if(global.appState?.navegacao){global.appState.navegacao.ativa=true;global.appState.navegacao.provider=pref;global.appState.navegacao.iniciadaEm=global.appState.navegacao.iniciadaEm||Date.now();global.appState.navegacao.paradaExibidaId=cartaoSelecionadoId;rota.iniciadoEm=rota.iniciadoEm||global.appState.navegacao.iniciadaEm;vozAtiva=pref==='pacote_emato' && global.appState.navegacao.vozAtiva!==false;}
     modoMapaNavegacao=retomarAtiva?'navigation-active':'overview';

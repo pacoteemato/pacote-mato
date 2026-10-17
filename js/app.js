@@ -646,6 +646,11 @@ function tocarIntroPs2Audio() {
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    // HOTFIX FINAL 2: persistência explícita LOCAL. Fechar WebView/app não é logout.
+    const authPersistenceReady = auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(erro => {
+      console.warn('Pacote É Mato: não foi possível confirmar persistência LOCAL do Firebase Auth.', erro?.message || erro);
+      return null;
+    });
     let usuarioAtualZap = localStorage.getItem('usuario_zap_salvo') || '';
 
     const CLOUDFLARE_WORKER_URL = "https://holy-frog-272c.joaovitor250p.workers.dev";
@@ -834,6 +839,7 @@ function tocarIntroPs2Audio() {
           senhaAntigaLegada = String(senhaAntiga).trim();
         }
 
+        await authPersistenceReady;
         cred = await auth.createUserWithEmailAndPassword(email, senha);
         const uid = cred.user.uid;
         const base = {
@@ -1368,6 +1374,7 @@ function tocarIntroPs2Audio() {
           return;
         }
 
+        await authPersistenceReady;
         const cred = await auth.signInWithEmailAndPassword(data.email, senha);
         if (cred.user.uid !== data.authUid) {
           await auth.signOut();
@@ -1377,8 +1384,7 @@ function tocarIntroPs2Audio() {
 
         tentativasLoginFalhas = 0;
         if (data.bloqueado) {
-          await auth.signOut();
-          mostrarMensagemAuth('erro', 'Este número foi bloqueado pelo administrador.');
+          desconectarForcado('Este número foi bloqueado pelo administrador.', { estado:AUTH_ACCESS_STATES.BLOCKED, encerrarAuth:true });
           return;
         }
 
@@ -1387,7 +1393,7 @@ function tocarIntroPs2Audio() {
         await ref.update({ deviceId: MEU_DEVICE_ID, ultimoLoginEm: Date.now() });
 
         if (!contaTemAcessoAtivo(data, agora)) {
-          definirEstadoAcesso('expirado', { confirmado: true, motivo: 'login_servidor' });
+          definirEstadoAcesso(AUTH_ACCESS_STATES.EXPIRED, { confirmado: true, motivo: 'login_servidor' });
           mostrarRenovacao(zap, true);
           mostrarMensagemAuth('erro', 'Acesso expirado. Selecione um plano abaixo para renovar.');
           return;
@@ -1414,23 +1420,35 @@ function tocarIntroPs2Audio() {
     }
 
     let timerExpiracaoSessao = null;
-    let estadoAcessoAtual = 'verificando';
+    const AUTH_ACCESS_STATES = Object.freeze({
+      BOOTING:'booting', CHECKING:'checking', ACTIVE:'active', EXPIRED:'expired',
+      BLOCKED:'blocked', OFFLINE:'offline-error', SIGNED_OUT:'signed-out'
+    });
+    let authAccessState = AUTH_ACCESS_STATES.BOOTING;
     let acessoConfirmadoEm = 0;
     let ultimoAcessoConfirmado = null;
     let checagemServidorSessao = null;
 
     function definirEstadoAcesso(estado, detalhe = {}) {
-      estadoAcessoAtual = estado;
-      document.body.dataset.pematoAccessState = estado;
-      if (estado === 'ativo') {
+      const validos = new Set(Object.values(AUTH_ACCESS_STATES));
+      authAccessState = validos.has(estado) ? estado : AUTH_ACCESS_STATES.CHECKING;
+      globalThis.authAccessState = authAccessState;
+      document.body.dataset.pematoAccessState = authAccessState;
+      if (authAccessState === AUTH_ACCESS_STATES.ACTIVE) {
         acessoConfirmadoEm = Date.now();
         if (detalhe?.dados) ultimoAcessoConfirmado = detalhe.dados;
       }
-      return estado;
+      if (authAccessState !== AUTH_ACCESS_STATES.EXPIRED) {
+        const aviso = document.getElementById('avisoRenovacao');
+        if (aviso) aviso.style.display = 'none';
+        const area = document.getElementById('areaPlanosRenovacao');
+        if (area) area.dataset.expired = 'false';
+      }
+      return authAccessState;
     }
 
     function mostrarVerificandoAcesso(mensagem = 'Verificando seu acesso…') {
-      definirEstadoAcesso('verificando');
+      definirEstadoAcesso(AUTH_ACCESS_STATES.CHECKING);
       limparAvisoRenovacao();
       const erro = document.getElementById('msgErro');
       const sucesso = document.getElementById('msgSucessoAuth');
@@ -1444,7 +1462,7 @@ function tocarIntroPs2Audio() {
     }
 
     function mostrarErroTemporarioAcesso(mensagem = 'Não foi possível confirmar seu acesso agora. Verifique sua conexão e tente novamente.') {
-      definirEstadoAcesso('erro_conexao');
+      definirEstadoAcesso(AUTH_ACCESS_STATES.OFFLINE);
       const jaEstavaLiberado = acessoConfirmadoEm > 0;
       if (jaEstavaLiberado) {
         const dias = document.getElementById('diasRestantes');
@@ -1470,9 +1488,10 @@ function tocarIntroPs2Audio() {
 
     function mostrarRenovacao(zap, expiracaoConfirmada = false) {
       // V81: renovação só pode aparecer após uma leitura válida confirmar expiração.
-      if (!expiracaoConfirmada && estadoAcessoAtual !== 'expirado') return false;
+      if (expiracaoConfirmada !== true || authAccessState !== AUTH_ACCESS_STATES.EXPIRED) return false;
       document.getElementById('inputTel').value = zap;
       document.getElementById('avisoRenovacao').style.display = 'block';
+      document.getElementById('areaPlanosRenovacao').dataset.expired = 'true';
       document.getElementById('btnTesteGratis').style.display = 'none';
       document.getElementById('telaBloqueio').style.display = 'flex';
       setTimeout(atualizarCamadasSistemaConfig, 0);
@@ -1507,10 +1526,15 @@ function tocarIntroPs2Audio() {
 
     function aplicarAcessoAtivo(zap, data) {
       const agora = Date.now();
-      definirEstadoAcesso('ativo', { dados: data, motivo: 'conta_confirmada' });
+      definirEstadoAcesso(AUTH_ACCESS_STATES.ACTIVE, { dados: data, motivo: 'conta_confirmada' });
       usuarioAtualZap = zap;
       localStorage.setItem('usuario_zap_salvo', zap);
       limparAvisoRenovacao();
+      const areaPlanos = document.getElementById('areaPlanosRenovacao');
+      if (areaPlanos) { areaPlanos.dataset.expired = 'false'; areaPlanos.classList.remove('is-expired'); }
+      const erroAuth = document.getElementById('msgErro');
+      if (erroAuth && /expirad/i.test(erroAuth.textContent || '')) { erroAuth.textContent=''; erroAuth.style.display='none'; }
+      salvarVinculoSessaoLocal(auth.currentUser?.uid, zap);
       agendarChecagemExpiracao(zap, data);
 
       const expiraSessao = adminExpiry(data);
@@ -1523,7 +1547,7 @@ function tocarIntroPs2Audio() {
         document.getElementById('diasRestantes').innerText = 'Acesso Ativo';
       }
       const sucesso = document.getElementById('msgSucessoAuth');
-      if (sucesso && sucesso.textContent === 'Verificando seu acesso…') sucesso.style.display = 'none';
+      if (sucesso && /(verificando|confirmando)/i.test(sucesso.textContent || '')) { sucesso.textContent=''; sucesso.style.display = 'none'; }
       document.getElementById('telaBloqueio').style.display = 'none';
       setTimeout(atualizarCamadasSistemaConfig, 0);
     }
@@ -1536,7 +1560,7 @@ function tocarIntroPs2Audio() {
           if (opcoes.confirmadoServidor !== true) confirmarEstadoSessaoNoServidor(zap, 'documento_ausente_cache');
           return false;
         }
-        desconectarForcado('Conta não encontrada.');
+        desconectarForcado('Conta não encontrada.', { estado:AUTH_ACCESS_STATES.SIGNED_OUT, encerrarAuth:true });
         return false;
       }
 
@@ -1545,15 +1569,15 @@ function tocarIntroPs2Audio() {
       const user = auth.currentUser;
 
       if (data.authUid && (!user || data.authUid !== user.uid)) {
-        desconectarForcado('A sessão autenticada não corresponde a esta conta.');
+        desconectarForcado('A sessão autenticada não corresponde a esta conta.', { estado:AUTH_ACCESS_STATES.SIGNED_OUT, encerrarAuth:true });
         return false;
       }
       if (data.bloqueado) {
-        desconectarForcado('Seu acesso foi bloqueado pelo administrador.');
+        desconectarForcado('Seu acesso foi bloqueado pelo administrador.', { estado:AUTH_ACCESS_STATES.BLOCKED, encerrarAuth:true });
         return false;
       }
       if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
-        desconectarForcado('Esta conta foi conectada em outro aparelho!');
+        desconectarForcado('Esta conta foi conectada em outro aparelho!', { estado:AUTH_ACCESS_STATES.SIGNED_OUT, encerrarAuth:true });
         return false;
       }
 
@@ -1564,8 +1588,8 @@ function tocarIntroPs2Audio() {
           confirmarEstadoSessaoNoServidor(zap, 'expiracao_em_cache');
           return false;
         }
-        definirEstadoAcesso('expirado', { confirmado: true, dados: data, motivo: opcoes.motivo || 'snapshot_servidor' });
-        desconectarForcado('Assinatura expirada.', zap);
+        definirEstadoAcesso(AUTH_ACCESS_STATES.EXPIRED, { confirmado: true, dados: data, motivo: opcoes.motivo || 'snapshot_servidor' });
+        desconectarForcado('Assinatura expirada.', { estado:AUTH_ACCESS_STATES.EXPIRED, zapRenovacao:zap, encerrarAuth:false });
         return false;
       }
 
@@ -1613,7 +1637,7 @@ function tocarIntroPs2Audio() {
       );
     }
 
-    function desconectarForcado(motivo, zapRenovacao = null) {
+    function desconectarForcado(motivo, opcoes = {}) {
       clearTimeout(timerExpiracaoSessao);
       if (listenerSessaoRealtime) {
         listenerSessaoRealtime();
@@ -1624,26 +1648,37 @@ function tocarIntroPs2Audio() {
       if (sb) sb.classList.remove('active');
       let ov = document.getElementById('overlay');
       if (ov) ov.style.display = 'none';
-
       finalizarCameraHardware();
 
-      if (zapRenovacao && estadoAcessoAtual === 'expirado') {
+      const estado = opcoes.estado || AUTH_ACCESS_STATES.SIGNED_OUT;
+      const zapRenovacao = opcoes.zapRenovacao || null;
+      definirEstadoAcesso(estado);
+
+      if (estado === AUTH_ACCESS_STATES.EXPIRED && zapRenovacao) {
+        usuarioAtualZap = zapRenovacao;
         localStorage.setItem('usuario_zap_salvo', zapRenovacao);
         mostrarRenovacao(zapRenovacao, true);
       } else {
-        if (!zapRenovacao) localStorage.removeItem('usuario_zap_salvo');
         limparAvisoRenovacao();
       }
+
+      if (opcoes.encerrarAuth === true) {
+        localStorage.removeItem('usuario_zap_salvo');
+        usuarioAtualZap = '';
+        try { auth.signOut(); } catch (_) {}
+      }
+
       let msgErro = document.getElementById('msgErro');
-      msgErro.innerText = motivo;
-      msgErro.style.display = 'block';
+      if (msgErro) { msgErro.innerText = motivo; msgErro.style.display = 'block'; }
+      const sucesso = document.getElementById('msgSucessoAuth');
+      if (sucesso) sucesso.style.display = 'none';
       document.getElementById('telaBloqueio').style.display = 'flex';
       setTimeout(atualizarCamadasSistemaConfig, 0);
     }
 
     function sairDoApp() {
       clearTimeout(timerExpiracaoSessao);
-      definirEstadoAcesso('verificando');
+      definirEstadoAcesso(AUTH_ACCESS_STATES.SIGNED_OUT);
       acessoConfirmadoEm = 0;
       ultimoAcessoConfirmado = null;
       limparAvisoRenovacao();
@@ -1673,23 +1708,92 @@ function tocarIntroPs2Audio() {
 
     document.getElementById('inputTel').addEventListener('input', limparAvisoRenovacao);
 
-    auth.onAuthStateChanged(async (user) => {
-      const zapSalvoInicial = normalizarTelefone(localStorage.getItem('usuario_zap_salvo') || '');
-      if (user && zapSalvoInicial) {
-        usuarioAtualZap = zapSalvoInicial;
-        // A sessão do Firebase é restaurada primeiro. A assinatura é confirmada pelo
-        // listener; enquanto isso, "verificando" nunca é tratado como "expirado".
-        iniciarMonitoramentoSessao(zapSalvoInicial);
+    function chaveVinculoUid(uid) { return uid ? `pemato_auth_uid_zap_${uid}` : ''; }
+
+    function salvarVinculoSessaoLocal(uid, zap) {
+      const numero = normalizarTelefone(zap || '');
+      if (!uid || !validarNumeroWhatsApp(numero)) return false;
+      try { localStorage.setItem(chaveVinculoUid(uid), numero); } catch (_) {}
+      return true;
+    }
+
+    function zapVinculadoLocal(user) {
+      if (!user?.uid) return '';
+      let valor = '';
+      try { valor = localStorage.getItem(chaveVinculoUid(user.uid)) || ''; } catch (_) {}
+      const numero = normalizarTelefone(valor);
+      return validarNumeroWhatsApp(numero) ? numero : '';
+    }
+
+    async function validarZapSalvoNoCache(user, zap) {
+      const numero = normalizarTelefone(zap || '');
+      if (!user?.uid || !validarNumeroWhatsApp(numero)) return '';
+      try {
+        const doc = await db.collection('usuarios').doc(numero).get({ source:'cache' });
+        const dados = doc?.exists ? (doc.data() || {}) : null;
+        if (dados?.authUid === user.uid) return numero;
+      } catch (_) {}
+      return '';
+    }
+
+    async function recuperarZapPorUid(user) {
+      if (!user?.uid) return '';
+      const local = zapVinculadoLocal(user);
+      if (local) return local;
+      try {
+        const snap = await db.collection('usuarios').where('authUid', '==', user.uid).limit(2).get({ source:'server' });
+        if (snap.size !== 1) return '';
+        const doc = snap.docs[0];
+        const dados = doc.data() || {};
+        if (dados.authUid && dados.authUid !== user.uid) return '';
+        const zap = normalizarTelefone(dados.whatsapp || doc.id || '');
+        if (!validarNumeroWhatsApp(zap)) return '';
+        salvarVinculoSessaoLocal(user.uid, zap);
+        localStorage.setItem('usuario_zap_salvo', zap);
+        return zap;
+      } catch (erro) {
+        console.warn('Pacote É Mato: não foi possível recuperar vínculo da sessão pelo UID.', erro?.message || erro);
+        return '';
+      }
+    }
+
+    async function restaurarSessaoFirebase(user) {
+      if (!user) {
+        if (authAccessState === AUTH_ACCESS_STATES.BLOCKED) {
+          limparAvisoRenovacao();
+          document.getElementById('telaBloqueio').style.display = 'flex';
+          return;
+        }
+        definirEstadoAcesso(AUTH_ACCESS_STATES.SIGNED_OUT);
+        limparAvisoRenovacao();
+        const sucesso = document.getElementById('msgSucessoAuth');
+        if (sucesso) sucesso.style.display = 'none';
+        document.getElementById('telaBloqueio').style.display = 'flex';
+        setTimeout(atualizarCamadasSistemaConfig, 0);
         return;
       }
 
-      definirEstadoAcesso('verificando');
-      limparAvisoRenovacao();
-      const sucesso = document.getElementById('msgSucessoAuth');
-      if (sucesso) sucesso.style.display = 'none';
-      document.getElementById('telaBloqueio').style.display = 'flex';
-      setTimeout(atualizarCamadasSistemaConfig, 0);
-    });
+      mostrarVerificandoAcesso('Confirmando sua assinatura…');
+      let zap = zapVinculadoLocal(user);
+      if (!zap) zap = await recuperarZapPorUid(user);
+      if (!zap) {
+        const legado = normalizarTelefone(localStorage.getItem('usuario_zap_salvo') || '');
+        zap = await validarZapSalvoNoCache(user, legado);
+      }
+      if (!zap) {
+        mostrarErroTemporarioAcesso('Sua sessão do Firebase foi restaurada, mas não foi possível recuperar o vínculo da conta agora. Verifique sua conexão.');
+        return;
+      }
+      usuarioAtualZap = zap;
+      salvarVinculoSessaoLocal(user.uid, zap);
+      iniciarMonitoramentoSessao(zap);
+    }
+
+    function iniciarRestauracaoAuth() {
+      auth.onAuthStateChanged(user => { restaurarSessaoFirebase(user); });
+    }
+    authPersistenceReady.then(iniciarRestauracaoAuth, iniciarRestauracaoAuth);
+
 
     // ==========================================
     // SISTEMA INDIQUE E GANHE DIAS GRÁTIS
@@ -3236,7 +3340,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             pacotes,
             entregasPdf,
             numeroFisico,
-            quantidadeEntregas: entregasPdf.length || Math.max(1, pacotes.length)
+            quantidadeEntregas: entregasPdf.length || 1,
+            quantidadePacotes: pacotes.length
           };
         })
         .sort((a,b) => a.numeroFisico - b.numeroFisico);
@@ -3246,7 +3351,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       const cards = [];
 
       grupos.forEach(dados => {
-        const ehMultipla = dados.quantidadeEntregas > 1;
+        // Parada múltipla = mais de uma entrega OU mais de um pacote na mesma parada.
+        // Uma entrega com 3 BRs continua sendo 1 entrega, mas é uma parada com múltiplos pacotes.
+        const ehMultipla = dados.quantidadeEntregas > 1 || dados.quantidadePacotes > 1;
         if (ehMultipla) {
           totalParadasMultiplas++;
           totalEntregasMultiplas += dados.quantidadeEntregas;
@@ -3260,13 +3367,16 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
         let badge;
         if (ehMultipla) {
-          const detalhePacotes = !pdfSemCodigosBipagem && dados.pacotes.length
-            ? ` • ${dados.pacotes.length} pacote${dados.pacotes.length === 1 ? '' : 's'}`
+          const detalhePacotes = !pdfSemCodigosBipagem
+            ? ` • ${dados.quantidadePacotes} pacote${dados.quantidadePacotes === 1 ? '' : 's'}`
             : '';
-          const entregasJuntas = origemTexto
+          const rotuloEntregas = `${dados.quantidadeEntregas} entrega${dados.quantidadeEntregas === 1 ? '' : 's'}`;
+          const entregasJuntas = dados.quantidadeEntregas > 1 && origemTexto
             ? `<div style="margin-top:5px;font-size:.76rem;font-weight:900;letter-spacing:.01em;">ENTREGAS DO PDF: ${origemTexto} · JUNTAS</div>`
-            : '';
-          badge = `<div class="tag-duplo-info">PARADA MÚLTIPLA • ${dados.quantidadeEntregas} entregas${detalhePacotes}${entregasJuntas}</div>`;
+            : (origemTexto
+              ? `<div style="margin-top:5px;font-size:.72rem;font-weight:800;">ENTREGA DO PDF: ${origemTexto}</div>`
+              : '');
+          badge = `<div class="tag-duplo-info">PARADA MÚLTIPLA • ${rotuloEntregas}${detalhePacotes}${entregasJuntas}</div>`;
         } else {
           const origemUnica = origemTexto
             ? `<div style="margin-top:3px;font-size:.64rem;color:var(--text-muted);font-weight:800;">ENTREGA DO PDF: ${origemTexto}</div>`
@@ -5851,6 +5961,153 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       return Object.keys(mapaRotas || {}).length > 0 && totalEntregasPdfAtual > 0;
     }
 
+    // V81 HOTFIX — a unidade física nasce da ENTREGA ORIGINAL, nunca do BR.
+    // O leitor pode produzir mais de um registro visual para a mesma entrega quando
+    // há vários códigos de pacote. Esta etapa recompõe primeiro a entrega e só depois
+    // permite o agrupamento entre entregas por endereço físico.
+    function reconstruirEntregasOriginaisV81(registrosEntrada) {
+      const gruposEntrega = new Map();
+
+      const origemTemNumeroInterno = registro => {
+        const origem = String(registro?.origemLeitura || registro?.origemLeituraOriginal || '').toLowerCase();
+        // Nos leitores numerados/legados, numeroParada veio diretamente da coluna #.
+        // No determinístico V73 ele pode ser apenas uma sequência interna por registro.
+        return !/(?:deterministico-v73|codigo-v73|codigo-v71)/.test(origem);
+      };
+
+      const identidadeEntrega = registro => {
+        const numeroInterno = Number(registro?.numeroParada);
+        const originalExplicito = Number(registro?.numeroOriginalPdf);
+        if (Number.isFinite(originalExplicito) && originalExplicito > 0) {
+          return { chave: `pdf:${originalExplicito}`, numeroOriginalPdf: originalExplicito, forte: true };
+        }
+        if (origemTemNumeroInterno(registro) && Number.isFinite(numeroInterno) && numeroInterno > 0) {
+          return { chave: `pdf:${numeroInterno}`, numeroOriginalPdf: numeroInterno, forte: true };
+        }
+        // Sem número original comprovado não fundimos registros por endereço. Isso
+        // evita transformar duas entregas distintas em uma só por similaridade vaga.
+        return {
+          chave: `registro:${Number(registro?._indice || 0)}:${Number.isFinite(numeroInterno) ? numeroInterno : 0}`,
+          numeroOriginalPdf: null,
+          forte: false
+        };
+      };
+
+      (Array.isArray(registrosEntrada) ? registrosEntrada : [])
+        .filter(registro => registro && registro.auxiliarDestino !== true)
+        .forEach(registro => {
+          const identidade = identidadeEntrega(registro);
+          if (!gruposEntrega.has(identidade.chave)) {
+            gruposEntrega.set(identidade.chave, {
+              chaveEntrega: identidade.chave,
+              numeroOriginalPdf: identidade.numeroOriginalPdf,
+              identidadeOriginalConfirmada: identidade.forte,
+              registros: [],
+              codigos: []
+            });
+          }
+          const grupo = gruposEntrega.get(identidade.chave);
+          grupo.registros.push(registro);
+          (registro.codigos || []).forEach(codigo => {
+            const normal = normalizarCodigoPacoteBr(codigo);
+            if (normal && !grupo.codigos.includes(normal)) grupo.codigos.push(normal);
+          });
+        });
+
+      const entregas = [];
+      gruposEntrega.forEach(grupo => {
+        const candidatos = grupo.registros
+          .map(registro => {
+            const endereco = limparTextoEnderecoPdfV71(registro.endereco || '');
+            const dados = decomporEnderecoFisicoPdfV71(endereco);
+            return dados ? { registro, endereco, dados } : null;
+          })
+          .filter(Boolean);
+
+        const numeroRef = Number(grupo.numeroOriginalPdf || grupo.registros[0]?.numeroParada || 0) || 0;
+        if (!candidatos.length) throw new Error(`ENDERECO_NAO_IDENTIFICADO|${numeroRef || '?'}`);
+
+        // Uma mesma entrega original não pode apontar para duas ruas/números
+        // diferentes. Em vez de separar os pacotes, bloqueamos o dado contraditório.
+        const bases = [...new Set(candidatos.map(c => c.dados.chaveBase).filter(Boolean))];
+        if (bases.length !== 1) {
+          throw new Error(`ENTREGA_ORIGINAL_ENDERECO_CONFLITANTE|${numeroRef || grupo.chaveEntrega}`);
+        }
+
+        const completosComUnidade = candidatos.filter(c =>
+          c.dados.complementoSeguro === true &&
+          c.dados.temComplementoUnidade === true &&
+          c.dados.complementoNormalizado
+        );
+        const unidadesCompletas = [...new Set(completosComUnidade.map(c => c.dados.complementoNormalizado))];
+        if (unidadesCompletas.length > 1) {
+          throw new Error(`ENTREGA_ORIGINAL_UNIDADE_CONFLITANTE|${numeroRef || grupo.chaveEntrega}`);
+        }
+
+        let conjuntoPreferido;
+        if (completosComUnidade.length) {
+          // Havendo uma versão completa do complemento, ela é a fonte mais precisa
+          // para toda a entrega, mesmo se outra linha do mesmo BR veio truncada.
+          conjuntoPreferido = completosComUnidade;
+        } else {
+          const incompletos = candidatos.filter(c =>
+            c.dados.temComplementoUnidade === true && c.dados.complementoSeguro === false
+          );
+          // Se qualquer fragmento evidencia complemento incompleto, não degradamos
+          // a entrega para "sem unidade": ela fica conservadoramente isolada.
+          conjuntoPreferido = incompletos.length ? incompletos : candidatos;
+        }
+
+        conjuntoPreferido.sort((a, b) => {
+          const partesA = String(a.dados.complementoNormalizado || '').split('|').filter(Boolean).length;
+          const partesB = String(b.dados.complementoNormalizado || '').split('|').filter(Boolean).length;
+          if (partesA !== partesB) return partesB - partesA;
+          return b.endereco.length - a.endereco.length;
+        });
+        const escolhido = conjuntoPreferido[0];
+        const dadosEndereco = escolhido.dados;
+        const chaveFisica = dadosEndereco.complementoSeguro
+          ? dadosEndereco.chave
+          : `${dadosEndereco.chave}|entrega:${grupo.chaveEntrega}`;
+
+        const internos = grupo.registros
+          .map(r => Number(r.numeroParada))
+          .filter(n => Number.isFinite(n) && n > 0);
+        const numeroInterno = internos.length ? Math.min(...internos) : (entregas.length + 1);
+        const numeroOriginalPdf = Number(grupo.numeroOriginalPdf) > 0
+          ? Number(grupo.numeroOriginalPdf)
+          : numeroInterno;
+
+        entregas.push({
+          numeroParada: numeroInterno,
+          numeroOriginalPdf,
+          identidadeOriginalConfirmada: grupo.identidadeOriginalConfirmada === true,
+          chaveEntregaOriginal: grupo.chaveEntrega,
+          endereco: escolhido.endereco,
+          chaveFisica,
+          chaveBase: dadosEndereco.chaveBase,
+          unidadeNormalizada: dadosEndereco.complementoNormalizado || '',
+          temUnidade: dadosEndereco.temComplementoUnidade === true,
+          unidadeSegura: dadosEndereco.complementoSeguro === true,
+          unidadeIncompleta: dadosEndereco.complementosIncompletos || [],
+          ruaNormalizada: dadosEndereco.ruaCanonica,
+          numeroImovel: dadosEndereco.numero,
+          codigos: grupo.codigos.slice(),
+          pagina: (() => {
+            const paginas = grupo.registros.map(r => Number(r.pagina || 0)).filter(n => Number.isFinite(n) && n > 0);
+            return paginas.length ? Math.min(...paginas) : 0;
+          })(),
+          registrosOriginais: grupo.registros.length
+        });
+      });
+
+      return entregas.sort((a, b) => {
+        const oa = Number(a.numeroOriginalPdf || a.numeroParada || 0);
+        const ob = Number(b.numeroOriginalPdf || b.numeroParada || 0);
+        return oa - ob || a.numeroParada - b.numeroParada;
+      });
+    }
+
     function processarRegistrosrota(registros, nomeArquivo) {
       mapaRotas = {};
       stopCorrespondente = {};
@@ -5867,7 +6124,12 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .map((registro, indice) => ({
           ...registro,
           numeroParada: Number(registro?.numeroParada),
-          numeroOriginalPdf: Number(registro?.numeroOriginalPdf || registro?.numeroParada),
+          // Não fabricar número de entrega original com a sequência interna V73.
+          // A reconstrução abaixo decide quando numeroParada é realmente a coluna #.
+          numeroOriginalPdf: (() => {
+            const n = Number(registro?.numeroOriginalPdf);
+            return Number.isFinite(n) && n > 0 ? n : null;
+          })(),
           endereco: limparTextoEnderecoPdfV71(registro?.endereco || ''),
           codigos: [...new Set((registro?.codigos || []).map(normalizarCodigoPacoteBr).filter(Boolean))],
           _indice: indice
@@ -5918,62 +6180,19 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         }
       }
 
-      const porNumero = new Map();
-      const donoCodigo = new Map();
-
-      entregasBase.forEach(registro => {
-        const numero = registro.numeroParada;
-        const dadosEndereco = decomporEnderecoFisicoPdfV71(registro.endereco);
-        if (!dadosEndereco) {
-          throw new Error(`ENDERECO_NAO_IDENTIFICADO|${numero}`);
-        }
-
-        // V81 FINAL: complemento de unidade incompleto nunca é usado para
-        // fundir entregas. Nesse caso a própria entrega vira uma chave isolada.
-        const chaveAgrupamento = dadosEndereco.complementoSeguro
-          ? dadosEndereco.chave
-          : `${dadosEndereco.chave}|entrega:${numero}`;
-
-        const existente = porNumero.get(numero);
-        if (!existente) {
-          porNumero.set(numero, {
-            numeroParada: numero,
-            numeroOriginalPdf: Number(registro.numeroOriginalPdf || numero) || numero,
-            endereco: registro.endereco,
-            chaveFisica: chaveAgrupamento,
-            chaveBase: dadosEndereco.chaveBase,
-            unidadeNormalizada: dadosEndereco.complementoNormalizado || '',
-            temUnidade: dadosEndereco.temComplementoUnidade === true,
-            unidadeSegura: dadosEndereco.complementoSeguro === true,
-            unidadeIncompleta: dadosEndereco.complementosIncompletos || [],
-            ruaNormalizada: dadosEndereco.ruaCanonica,
-            numeroImovel: dadosEndereco.numero,
-            codigos: registro.codigos.slice(),
-            pagina: registro.pagina || 0
-          });
-        } else {
-          if (existente.chaveFisica !== chaveAgrupamento) {
-            throw new Error(`PARADA_AMBIGUA|${numero}`);
-          }
-          if (!Number.isFinite(Number(existente.numeroOriginalPdf)) && Number(registro.numeroOriginalPdf) > 0) {
-            existente.numeroOriginalPdf = Number(registro.numeroOriginalPdf);
-          }
-          registro.codigos.forEach(c => {
-            if (!existente.codigos.includes(c)) existente.codigos.push(c);
-          });
-          if (registro.endereco.length > existente.endereco.length) existente.endereco = registro.endereco;
-        }
-      });
-
-      const entregas = Array.from(porNumero.values()).sort((a,b) => a.numeroParada - b.numeroParada);
+      // HOTFIX: primeiro recompõe a ENTREGA ORIGINAL com todos os seus BRs.
+      // Somente depois a entrega entra na comparação de endereço físico.
+      const entregas = reconstruirEntregasOriginaisV81(entregasBase);
       if (!entregas.length) throw new Error('NENHUM_REGISTRO_PDF');
+      const donoCodigo = new Map();
 
       entregas.forEach(entrega => {
         entrega.codigos.forEach(codigo => {
-          if (donoCodigo.has(codigo) && donoCodigo.get(codigo) !== entrega.numeroParada) {
-            throw new Error(`PACOTE_EM_DUAS_PARADAS|${codigo}|${donoCodigo.get(codigo)}|${entrega.numeroParada}`);
+          const donoEntrega = entrega.chaveEntregaOriginal || `pdf:${entrega.numeroOriginalPdf || entrega.numeroParada}`;
+          if (donoCodigo.has(codigo) && donoCodigo.get(codigo) !== donoEntrega) {
+            throw new Error(`PACOTE_EM_DUAS_ENTREGAS|${codigo}|${donoCodigo.get(codigo)}|${donoEntrega}`);
           }
-          donoCodigo.set(codigo, entrega.numeroParada);
+          donoCodigo.set(codigo, donoEntrega);
         });
       });
 
@@ -6126,8 +6345,10 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       atualizarStats();
       if (!pdfSemCodigosBipagem) iniciarScanner();
 
-      const gruposMultiplos = Object.keys(mapaRotas).filter(chave => (entregasOriginaisPorEndereco[chave] || []).length > 1);
-      const entregasEmMultiplas = gruposMultiplos.reduce((s, chave) => s + (entregasOriginaisPorEndereco[chave] || []).length, 0);
+      const gruposMultiplos = Object.keys(mapaRotas).filter(chave =>
+        (mapaRotas[chave] || []).length > 1 || (entregasOriginaisPorEndereco[chave] || []).length > 1
+      );
+      const entregasEmMultiplas = gruposMultiplos.reduce((s, chave) => s + Math.max(1, (entregasOriginaisPorEndereco[chave] || []).length), 0);
 
       try {
         window.diagnosticoRotaReal = {
@@ -6135,15 +6356,39 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           totalEntregas: totalEntregasPdfAtual,
           totalPacotes: todosPacotes.size,
           totalParadas: Object.keys(mapaRotas).length,
+          totalParadasMultiplas: gruposMultiplos.length,
           semCodigos: pdfSemCodigosBipagem,
-          paradas: Object.keys(mapaRotas).map(chave => ({
-            paradaFisica: paradaFisicaPorEndereco[chave],
-            endereco: nomeExibicao[chave],
-            entregasPdf: entregasOriginaisPorEndereco[chave] || [],
-            pacotes: mapaRotas[chave] || []
-          }))
+          paradas: Object.keys(mapaRotas).map(chave => {
+            const entregasPdf = entregasOriginaisPorEndereco[chave] || [];
+            const pacotes = mapaRotas[chave] || [];
+            return {
+              paradaFisica: paradaFisicaPorEndereco[chave],
+              endereco: nomeExibicao[chave],
+              entregasPdf,
+              pacotes,
+              multipla: pacotes.length > 1 || entregasPdf.length > 1,
+              motivoAgrupamento: entregasPdf.length > 1
+                ? 'MESMA_UNIDADE_FISICA'
+                : (pacotes.length > 1 ? 'MESMA_ENTREGA_ORIGINAL' : 'PARADA_SIMPLES')
+            };
+          })
         };
+        console.groupCollapsed('[PACOTE É MATO][DIAGNÓSTICO ROTA REAL]');
+        console.log('TOTAL DE PACOTES:', window.diagnosticoRotaReal.totalPacotes);
+        console.log('TOTAL DE ENTREGAS DO PDF:', window.diagnosticoRotaReal.totalEntregas);
+        console.log('TOTAL DE PARADAS FÍSICAS:', window.diagnosticoRotaReal.totalParadas);
+        console.log('PARADAS MÚLTIPLAS:', window.diagnosticoRotaReal.totalParadasMultiplas);
         console.table(window.diagnosticoRotaReal.paradas);
+        window.diagnosticoRotaReal.paradas.filter(p => p.multipla).forEach(p => {
+          console.log({
+            PARADA: p.paradaFisica,
+            ENTREGAS_DO_PDF: p.entregasPdf,
+            PACOTES: p.pacotes,
+            ENDERECO: p.endereco,
+            MOTIVO_DO_AGRUPAMENTO: p.motivoAgrupamento
+          });
+        });
+        console.groupEnd();
       } catch (_) {}
 
       if (pdfSemCodigosBipagem) {

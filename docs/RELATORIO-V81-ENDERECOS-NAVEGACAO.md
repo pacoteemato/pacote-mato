@@ -1077,3 +1077,882 @@ ARQUIVOS DA BIPAGEM MODIFICADOS: 0
 ```
 
 A entrega foi validada por syntax check, testes unitários/estruturais, regressão V81 existente, equivalência da otimização, teste de estado de navegação e teste com PDF real. Não foi declarada validação em trânsito real.
+
+---
+
+## 34. HOTFIX FINAL — PACOTES MÚLTIPLOS E PARADAS FÍSICAS
+
+### 34.1 Sintoma observado no aparelho
+
+Foi reportado um cenário semelhante a:
+
+```text
+123 PACOTES
+122 PARADAS FÍSICAS
+```
+
+Esse número não foi hard-coded nem usado como meta. O hotfix trata a causa estrutural que pode fazer uma entrega com vários códigos BR ser fragmentada antes da formação das paradas.
+
+### 34.2 Causa raiz encontrada
+
+O leitor V73 trabalha corretamente com âncoras de código e pode produzir mais de um registro visual para a **mesma entrega original** quando uma entrega contém vários códigos BR ou quando a coluna `Notes` é fragmentada pelo PDF.
+
+Antes deste hotfix:
+
+1. cada registro visual mantinha, quando disponível, `numeroOriginalPdf`;
+2. `normalizarRegistrosPdfV73()` atribuía uma sequência interna em `numeroParada` para os registros normalizados;
+3. `processarRegistrosrota()` reconstruía a unidade de entrega usando principalmente `numeroParada`;
+4. assim, dois BRs da mesma entrega original podiam ser tratados temporariamente como duas entregas independentes;
+5. se as linhas de endereço desses registros viessem fragmentadas de forma diferente, a fase de chave física podia produzir chaves diferentes e transformar uma entrega real em mais de uma parada.
+
+A regressão não estava no scanner. Ela estava **antes da Bipagem**, na reconstrução dos dados da rota.
+
+### 34.3 Ordem corrigida
+
+A formação da rota agora segue explicitamente:
+
+```text
+PDF
+→ registros visuais
+→ ENTREGA ORIGINAL DO PDF
+→ todos os BRs da entrega
+→ endereço/unidade da entrega
+→ comparação com OUTRAS entregas
+→ PARADA FÍSICA
+```
+
+Foi criada em `js/app.js`:
+
+```text
+reconstruirEntregasOriginaisV81()
+```
+
+Ela executa antes do agrupamento físico.
+
+### 34.4 Regra da entrega original
+
+Quando `numeroOriginalPdf` está confirmado, todos os registros com esse mesmo número são reunidos em uma única entrega e seus BRs são unidos sem duplicação.
+
+Exemplo validado:
+
+```text
+Entrega 119
+BR-1
+BR-2
+BR-3
+```
+
+permanece:
+
+```text
+1 entrega
+3 pacotes
+```
+
+antes de qualquer decisão de parada física.
+
+Se o leitor V73 não possuir número original confirmado, o hotfix **não inventa** que dois registros são a mesma entrega apenas porque o endereço parece semelhante.
+
+### 34.5 Endereço fragmentado dentro da mesma entrega
+
+A mesma entrega pode conter registros visuais com variações como:
+
+```text
+Rua A, 50, Apto
+Rua A, 50, Apto 501
+```
+
+Se uma versão completa e segura do complemento existir dentro da mesma entrega, ela é escolhida como referência da entrega inteira.
+
+Resultado validado:
+
+```text
+apt:501
+```
+
+Os BRs continuam juntos.
+
+Se registros da **mesma entrega original** apontarem para rua/número realmente conflitantes, o sistema bloqueia com diagnóstico em vez de dividir silenciosamente os BRs em paradas diferentes.
+
+Erros de proteção adicionados:
+
+```text
+ENTREGA_ORIGINAL_ENDERECO_CONFLITANTE
+ENTREGA_ORIGINAL_UNIDADE_CONFLITANTE
+PACOTE_EM_DUAS_ENTREGAS
+```
+
+### 34.6 Agrupamento físico continua conservador
+
+Somente depois da entrega estar reconstruída, a V81 compara sua chave física.
+
+Caso validado:
+
+```text
+Entrega 119
+R Ancara, 105, Bloco 1, Apto 501
+2 pacotes
+
+Entrega 120
+Rua Ancara, 105, BL 1, APTO 501
+1 pacote
+```
+
+Resultado:
+
+```text
+1 PARADA FÍSICA
+2 ENTREGAS DO PDF
+3 PACOTES
+```
+
+Enquanto:
+
+```text
+R Ancara, 105, Bloco 2, Apto 1208
+```
+
+permanece em outra parada.
+
+### 34.7 Paradas Múltiplas
+
+A tela de `Paradas Múltiplas` foi ajustada na camada principal para considerar uma parada múltipla quando:
+
+```text
+quantidade de entregas > 1
+OU
+quantidade de pacotes > 1
+```
+
+Portanto uma única entrega com três BRs é corretamente reconhecida como uma parada física com múltiplos pacotes, sem fingir que existem três entregas.
+
+A palavra `JUNTAS` continua reservada ao caso em que **mais de uma entrega do PDF** foi realmente agrupada na mesma unidade física.
+
+### 34.8 Contadores da Bipagem
+
+A implementação existente foi conferida e preservada:
+
+```text
+BIPADOS = pacotesBipados.size
+TOTAL = todosPacotes.size
+PARADAS FÍSICAS = Object.keys(mapaRotas).length
+FALTAM = TOTAL - BIPADOS
+```
+
+Ou seja, `FALTAM` continua contando **pacotes**, não paradas.
+
+### 34.9 Diagnóstico de rota real
+
+`window.diagnosticoRotaReal` agora inclui:
+
+```text
+TOTAL DE PACOTES
+TOTAL DE ENTREGAS DO PDF
+TOTAL DE PARADAS FÍSICAS
+PARADAS MÚLTIPLAS
+```
+
+Para cada parada também são registrados:
+
+```text
+paradaFisica
+endereco
+entregasPdf
+pacotes
+multipla
+motivoAgrupamento
+```
+
+Motivos usados:
+
+```text
+MESMA_ENTREGA_ORIGINAL
+MESMA_UNIDADE_FISICA
+PARADA_SIMPLES
+```
+
+O console imprime o detalhamento das paradas múltiplas com entregas, BRs, endereço e motivo.
+
+### 34.10 Teste sintético obrigatório — 6 pacotes / 3 entregas / 2 paradas
+
+Entrada:
+
+```text
+Entrega 119 — Apto 10
+BR-1
+BR-2
+BR-3
+
+Entrega 120 — AP 10
+BR-4
+
+Entrega 121 — Apto 20
+BR-5
+BR-6
+```
+
+Resultado do teste automatizado:
+
+```text
+PASS — 6 BRs
+PASS — 3 entregas originais
+PASS — 2 paradas físicas
+PASS — entrega 119 mantém 3 BRs
+PASS — entrega 121 mantém 2 BRs
+PASS — 119 + 120 compartilham parada
+PASS — 121 permanece separada
+```
+
+### 34.11 Teste Ancara com pacote múltiplo
+
+Entrada simulada usando a lógica real do app:
+
+```text
+Entrega 119
+R Ancara, 105, Bloco 1, Apartamento 501
+BR260000000001A
+BR260000000004D
+
+Entrega 120
+Rua Ancara, 105, BL 1, APTO 501
+BR260000000002B
+
+Entrega 121
+Rua Ancara, 105, Bloco 2, Apartamento 1208
+BR260000000003C
+```
+
+Resultado real do harness:
+
+```text
+TOTAL DE PACOTES: 4
+TOTAL DE ENTREGAS DO PDF: 3
+TOTAL DE PARADAS FÍSICAS: 2
+PARADAS MÚLTIPLAS: 1
+```
+
+Parada 1:
+
+```text
+ENTREGAS DO PDF: 119, 120
+PACOTES:
+BR260000000001A
+BR260000000004D
+BR260000000002B
+MOTIVO: MESMA_UNIDADE_FISICA
+```
+
+Parada 2:
+
+```text
+ENTREGA DO PDF: 121
+PACOTE:
+BR260000000003C
+```
+
+### 34.12 PDF real disponível para regressão
+
+O PDF real disponível nesta sessão (`Spoke-30-V81-Teste.pdf`) foi processado novamente com o código do hotfix.
+
+Resultado:
+
+```text
+TOTAL DE PACOTES: 11
+TOTAL DE ENTREGAS DO PDF: 11
+TOTAL DE PARADAS FÍSICAS: 11
+PARADAS MÚLTIPLAS: 0
+```
+
+Também passou:
+
+```text
+11/11 âncoras BR encontradas
+11/11 pacotes preservados
+0 BR perdido
+0 BR duplicado
+entregaOriginalPorPacote cobrindo todos os BRs
+fragmentação "A p. 101" normalizada para apt:101
+```
+
+**Limitação importante:** o PDF específico do aparelho que apresentou `123 pacotes / 122 paradas físicas` não estava disponível nos arquivos acessíveis desta execução. Portanto não é declarado que esse arquivo específico foi reproduzido aqui. A causa estrutural foi reproduzida em teste automatizado e corrigida; o PDF real disponível foi usado como regressão adicional.
+
+### 34.13 Bipagem — arquivos modificados
+
+Resultado obrigatório:
+
+```text
+ARQUIVOS MODIFICADOS EM js/bipagem/: 0
+```
+
+Hashes dos três módulos protegidos permanecem os mesmos da V81 anterior:
+
+```text
+js/bipagem/bipagem-area.js
+js/bipagem/operacoes-pacotes.js
+js/bipagem/rota-ativa-bridge.js
+```
+
+A rotina principal `processarCodigo()` também foi verificada: ela continua executando somente:
+
+```text
+pacotesBipados.add(identificado)
+```
+
+Não existe laço marcando automaticamente os demais BRs da parada.
+
+### 34.14 Otimização, login, histórico e navegação
+
+Nenhuma lógica de otimização foi modificada neste hotfix.
+
+A suíte existente foi executada novamente e confirmou:
+
+```text
+PASS — vencedor equivalente V80/V81 em short: 3, 7 e 12 paradas
+PASS — vencedor equivalente V80/V81 em balanced: 3, 7 e 12 paradas
+PASS — mesmos candidatos/métricas dos testes de equivalência
+PASS — regressão de sessão/login
+PASS — histórico/correção de parada
+PASS — GPS bruto x visual
+PASS — navigation-active estrutural
+PASS — manobras existentes da V81
+```
+
+### 34.15 Syntax check
+
+Executado `node --check` em todos os arquivos `.js` da árvore do projeto após o hotfix.
+
+Resultado:
+
+```text
+ALL_JS_SYNTAX_OK
+```
+
+### 34.16 Arquivos alterados neste hotfix
+
+Em comparação com `Pacote-Em-Mato-V81-ENDERECOS-NAVEGACAO`:
+
+```text
+README.md
+index.html
+js/app.js
+tests/v81-final-enderecos-navegacao.js
+tests/v81-hotfix-pacotes-paradas.js (novo)
+docs/RELATORIO-V81-ENDERECOS-NAVEGACAO.md
+docs/VALIDACAO-V81-HOTFIX-PACOTES-PARADAS.log (novo)
+```
+
+`index.html` recebeu apenas novo cache-buster para garantir carregamento do `js/app.js` corrigido.
+
+### 34.17 Estado final desta correção
+
+Implementado e testado neste ambiente:
+
+```text
+PACOTE ≠ ENTREGA ≠ PARADA FÍSICA
+1 pacote não implica 1 parada
+vários BRs da mesma entrega são recompostos antes do agrupamento físico
+entregaOriginalPorPacote permanece original
+contadores continuam em pacotes
+paradas continuam físicas
+Bipagem modular permanece intocada
+```
+
+Não foi realizada condução em trânsito real nem teste de câmera física nesta execução.
+
+
+## 35. HOTFIX FINAL 2 — MAPA, SESSÃO E MANOBRAS
+
+Data da execução: 17/10/2026.
+
+Base utilizada: `Pacote-Em-Mato-V81-HOTFIX-FINAL`, isto é, a V81 que já contém o hotfix aprovado de pacotes múltiplos/paradas físicas.
+
+### 35.1 Escopo congelado
+
+A lógica aprovada de pacote → entrega original → parada física **não foi alterada** neste hotfix. Foram comparados hashes/blocos da base aprovada com a árvore final.
+
+Resultados:
+
+```text
+PASS — reconstruirEntregasOriginaisV81() idêntica
+PASS — extrairUnidadeEnderecoPdfV81() idêntica
+PASS — decomporEnderecoFisicoPdfV71() / trecho idêntico
+PASS — chaveFisicaPdfV71() / trecho idêntico
+PASS — normalizarRegistrosPdfV73() / trecho idêntico
+PASS — processarRegistrosrota() / trecho idêntico
+PASS — js/bipagem/bipagem-area.js idêntico
+PASS — js/bipagem/operacoes-pacotes.js idêntico
+PASS — js/bipagem/rota-ativa-bridge.js idêntico
+PASS — js/roteirizacao/roteirizacao.js idêntico
+```
+
+Resultado obrigatório:
+
+```text
+ARQUIVOS MODIFICADOS EM js/bipagem/: 0
+```
+
+A regressão funcional do hotfix anterior também foi executada novamente: vários BRs da mesma entrega permanecem juntos, BRs são bipados individualmente, entregas equivalentes podem compartilhar a mesma parada, bloco/apartamento diferente permanece separado e os contadores continuam distinguindo pacotes de paradas físicas.
+
+### 35.2 MAPA — causa e implementação clean
+
+O mapa anterior ainda mantinha a aparência original colorida do Liberty no overview e aplicava ajustes mais fortes apenas no modo ativo. Isso produzia uma identidade inconsistente e deixava rodovias, áreas temáticas, POIs e labels secundários competindo com a rota.
+
+Foi consolidada em `js/mapa/config.js` a função:
+
+```text
+aplicarEstiloMapaClean(mapa, { navegacaoAtiva })
+```
+
+A classificação é feita por `id` + `source-layer` + `type`, sem depender de um único ID rígido do estilo.
+
+Paleta aplicada:
+
+```text
+fundo:          #f3f5f6
+água:           #e2f0f5
+parques/verde:  #edf3ed
+prédios:        #e9edef com baixa opacidade
+vias principais:#cfd6da
+vias secundárias:#d7dde1
+vias locais:    #e0e4e7
+road labels:    #303b42 com halo claro
+rota futura:    verde Pacote É Mato
+rota percorrida:verde apagado/baixa opacidade
+```
+
+Layers/categorias reduzidas ou ocultadas quando identificadas:
+
+```text
+poi
+amenity
+shop/store
+restaurant/cafe/bar
+commercial labels
+tourism/attraction
+school/college/university/kindergarten
+church/place_of_worship
+hotel/lodging
+building extrusion
+detalhes excessivos de landuse
+```
+
+Road shields (`SP-*`, `BR-*`, refs de highway/motorway) não são apagados indiscriminadamente, mas recebem `text-opacity`/`icon-opacity` reduzidos para não dominar a tela.
+
+Preservado explicitamente:
+
+```text
+road/street labels
+transportation_name
+primary/secondary/tertiary/residential
+place/city/town/village/neighbourhood
+water
+boundary útil
+```
+
+A largura das vias agora mantém hierarquia visual `principal > secundária > local`, com pequeno reforço adicional em `navigation-active`.
+
+`limparPontosInteresse()` continua preservando labels de rua/localidade e remove somente símbolos secundários compatíveis com POI.
+
+### 35.3 Mesmo mapa no OVERVIEW e NAVIGATION-ACTIVE
+
+`OVERVIEW` e `NAVIGATION-ACTIVE` agora usam a mesma identidade clean.
+
+No overview:
+
+```text
+mapa clean
+rota completa
+paradas da rota
+fitBounds permitido
+```
+
+No navigation-active:
+
+```text
+mesmo mapa clean
+vias levemente reforçadas
+câmera próxima
+pitch/bearing
+seta/posição visual
+manobras
+markers filtrados para reduzir poluição
+```
+
+`restaurarEstiloMapaOverview()` não restaura mais o Liberty colorido; ele reaplica o estilo clean de overview.
+
+### 35.4 Screenshots / validação visual
+
+Foram gerados:
+
+```text
+tests/visual/OVERVIEW-HOTFIX2-SIMULADO.png
+tests/visual/NAVIGATION-ACTIVE-HOTFIX2-SIMULADO.png
+```
+
+Essas imagens são **harness visual offline**, marcadas no próprio arquivo como `NÃO É TRÂNSITO REAL`. Elas validam paleta, contraste, hierarquia de ruas, destaque da rota, painel de manobra e bottom sheet conceitualmente.
+
+O ambiente desta execução não conseguiu concluir a captura com tiles reais do OpenFreeMap/Liberty por indisponibilidade de recursos externos/Chromium headless. Portanto **não** se declara screenshot de mapa online real nem validação em trânsito.
+
+Além do harness, a lógica real de `aplicarEstiloMapaClean()` foi executada contra um mock de layers Liberty-like e confirmou:
+
+```text
+PASS — fundo clean
+PASS — água suave
+PASS — parque desaturado
+PASS — road labels preservados/legíveis
+PASS — POI comercial ocultado
+PASS — road shield reduzido
+PASS — overview e navigation-active mantêm a mesma identidade base
+PASS — navigation-active reforça moderadamente a via
+```
+
+### 35.5 LOGIN — causa do logout/reabertura
+
+Na base anterior, `onAuthStateChanged` só restaurava o monitoramento quando existiam simultaneamente:
+
+```text
+Firebase currentUser
+E
+usuario_zap_salvo
+```
+
+Se o Firebase recuperasse `currentUser`, mas `usuario_zap_salvo` estivesse ausente/inconsistente, a interface caía para o fluxo de login. Além disso, a persistência `LOCAL` do Firebase Auth não era solicitada explicitamente antes de cadastro/login.
+
+Também havia mais de uma representação textual de estado (`verificando`, `ativo`, `expirado`, `erro_conexao`) e `mostrarRenovacao()` aceitava `expiracaoConfirmada=true` sem exigir simultaneamente que o estado atual ainda fosse `expired`, o que permitia UI antiga conflitante em condições de corrida.
+
+### 35.6 LOGIN — máquina única e persistência
+
+Foi consolidado:
+
+```text
+authAccessState =
+booting
+checking
+active
+expired
+blocked
+offline-error
+signed-out
+```
+
+Foi adicionada persistência explícita:
+
+```text
+firebase.auth.Auth.Persistence.LOCAL
+```
+
+Cadastro e login aguardam a configuração de persistência.
+
+Na abertura:
+
+```text
+1. aguarda persistência Firebase;
+2. registra onAuthStateChanged;
+3. se currentUser existir, entra em checking;
+4. tenta vínculo UID → WhatsApp local;
+5. se necessário, consulta único usuário com authUid == currentUser.uid;
+6. somente depois inicia monitoramento da conta/assinatura.
+```
+
+`usuario_zap_salvo` deixou de ser ponto único de falha. O vínculo por UID é mantido localmente e pode ser recuperado de forma segura pelo Firestore. O fallback legado só é aceito se o cache confirmar que `authUid` corresponde ao usuário Firebase atual.
+
+`mostrarRenovacao()` agora exige as duas condições:
+
+```text
+expiracaoConfirmada === true
+E
+authAccessState === expired
+```
+
+`checking`, `booting`, `active`, `offline-error` e `signed-out` não podem abrir renovação.
+
+Ao entrar em `active`, mensagens/classes/datasets antigos de expiração são limpos.
+
+Fechar/recarregar WebView não contém `signOut()`. Logout é reservado para ação explícita ou invalidação/bloqueio confirmado.
+
+### 35.7 Teste de login — nível de validação
+
+Executado nesta sessão:
+
+```text
+PASS — conta vitalícia continua considerada ativa pela regra de acesso
+PASS — mensal ativa
+PASS — trimestral ativa
+PASS — teste ativo
+PASS — expiração real é distinguida de conta ativa
+PASS — bloqueio continua bloqueio
+PASS — Firebase Auth Persistence.LOCAL presente
+PASS — onAuthStateChanged restaura currentUser via restaurarSessaoFirebase()
+PASS — recuperação segura de vínculo por UID presente
+PASS — offline-error é diferente de expired
+PASS — mostrarRenovacao exige expired + confirmação real
+PASS — não há signOut automático por fechamento/reload no fluxo analisado
+```
+
+**Limitação:** não foi possível executar nesta sessão um ciclo físico `login → fechar processo Android → abrir processo Android` com uma conta real Vitalícia/mensal. Portanto isso é validação automatizada/estrutural da implementação, não “login validado no Android real”.
+
+### 35.8 NAVIGATION-ACTIVE — persistência do modo e câmera
+
+A entrada em `Navegar > Pacote É Mato` continua utilizando a rota já calculada e não reotimiza.
+
+`enquadrarOverview()` passou a possuir guard explícito:
+
+```text
+se navigation-active: não executar fitBounds
+```
+
+No modo ativo continuam aplicados:
+
+```text
+zoom urbano próximo de 18.x
+pitch 60° na câmera ativa
+bearing suavizado
+posição visual do motorista abaixo do centro
+mais área útil à frente
+follow contínuo
+recentralização sem fitBounds
+```
+
+Interação manual desliga temporariamente o follow. O botão `Recentralizar` restaura o acompanhamento do carro; não abre a rota inteira.
+
+No overview podem aparecer todas as paradas. No modo ativo, a fonte de markers é filtrada para priorizar parada atual/selecionada e próxima parada, reduzindo poluição visual.
+
+### 35.9 GPS bruto x map matching visual
+
+A separação foi reforçada:
+
+```text
+nearestOperacional = GPS bruto projetado globalmente
+nearestVisual      = posição usada para seta/câmera/progresso visual
+```
+
+`nearestOperacional` continua responsável por desvio e decisão de recálculo.
+
+`nearestVisual` pode usar map matching visual próximo do progresso atual. Foi introduzido `ultimoIndiceVisualRota`; a busca visual tenta primeiro uma janela ao redor do índice anterior (`-35 / +220`) antes de procurar globalmente, reduzindo saltos para outro trecho quando a rota cruza a si mesma.
+
+Isso não sobrescreve coordenada GPS bruta nem a posição real das paradas.
+
+### 35.10 MANOBRAS — schema real preservado
+
+`extrairInstrucoes(feature)` foi ampliado para preservar, quando presentes:
+
+```text
+type
+modifier
+streets
+street_name
+name/rua derivada
+exitNumber
+exit_number
+exitRoadName
+exitTowards
+roundabout_exit
+transition_instruction
+pre_transition_instruction
+post_transition_instruction
+distance
+time
+from_index
+to_index
+```
+
+A prioridade do nome da rua usada pelo painel passou a ser:
+
+```text
+streets[0]
+street_name
+rua/name
+exitRoadName[0]
+texto real da instrução
+```
+
+Não é inventado nome de rua.
+
+### 35.11 MANOBRAS — tipos Geoapify
+
+Foram executados testes diretos de parsing CamelCase para:
+
+```text
+StartAt
+StartAtRight
+StartAtLeft
+Straight
+SlightRight
+Right
+SharpRight
+TurnAroundRight
+TurnAroundLeft
+SharpLeft
+Left
+SlightLeft
+ExitRight
+ExitLeft
+StayRight
+StayLeft
+Merge
+MergeRight
+MergeLeft
+Roundabout
+DestinationReached
+DestinationReachedRight
+DestinationReachedLeft
+```
+
+Resultado: todos os tipos laterais, retornos e chegada foram classificados sem cair erroneamente em `reta`.
+
+Tipo desconhecido continua em fallback neutro `reta` em vez de inventar direção.
+
+Rotatória aceita saída real via `roundabout_exit`, `exitNumber` ou `exit_number`, inclusive number/string/array. Sem número real, nenhuma saída é inventada.
+
+### 35.12 Correção MULTI-LEG
+
+O bug crítico era que `from_index`/`to_index` de cada leg podiam ser reutilizados como se fossem índices globais da geometria achatada. A extração agora mantém:
+
+```text
+legIndex
+fromIndexLeg
+toIndexLeg
+globalFromIndex
+globalToIndex
+```
+
+Para `MultiLineString`, os offsets reproduzem a concatenação real das LineStrings usada pelo navegador.
+
+Teste obrigatório executado:
+
+```text
+leg 0 = 100 pontos
+leg 1 = 70 pontos
+leg 2 = 80 pontos
+
+from_index local = 10 em cada leg
+
+leg 0 -> globalFromIndex = 10
+leg 1 -> globalFromIndex = 110
+leg 2 -> globalFromIndex = 180
+```
+
+Resultado: PASS.
+
+`indiceInstrucaoAtual()` e `atualizarInstrucao()` agora preferem índices globais e mantêm fallback para rotas antigas que só tenham índices legados.
+
+### 35.13 Rota futura / percorrida
+
+Mantido:
+
+```text
+FUTURO: verde forte Pacote É Mato
+PERCORRIDO: verde com baixa opacidade (~36%)
+```
+
+O overview também deixou de usar cinza forte para o trecho já percorrido.
+
+A geometria continua vindo de `rota.geometria`. A navegação mantém `tolerance = 0` na fonte renderizada, sem substituir a rota por linhas retas entre paradas.
+
+### 35.14 Bottom sheet
+
+A implementação existente de bottom sheet compacto/grabber foi preservada. Durante `navigation-active`, o conteúdo prioritário continua:
+
+```text
+parada/progresso
+endereço
+Não entregue
+Entregue
+```
+
+O grabber expande informações complementares. A lógica de status das entregas não foi alterada neste hotfix.
+
+### 35.15 Otimização congelada
+
+`js/roteirizacao/roteirizacao.js` permaneceu byte a byte idêntico à base aprovada.
+
+A suíte de equivalência foi executada novamente:
+
+```text
+PASS — short: 3, 7, 12 paradas
+PASS — balanced: 3, 7, 12 paradas
+PASS — mesmo vencedor
+PASS — mesmas métricas/critério
+PASS — mesmo conjunto de candidatos nos cenários mockados
+```
+
+Nenhum algoritmo/candidato/refinamento/vencedor foi modificado.
+
+### 35.16 Syntax check
+
+Foi executado `node --check` em todos os arquivos JavaScript da árvore final.
+
+Resultado:
+
+```text
+29 arquivos JS verificados
+ALL JS SYNTAX OK
+```
+
+Também foram executadas as suítes:
+
+```text
+tests/v81-hotfix-final-2.js
+tests/v81-final-enderecos-navegacao.js
+tests/v81-regression.js
+tests/v81-hotfix-pacotes-paradas.js
+tests/v81-optimization-equivalence.js
+```
+
+Resultado final das suítes: PASS.
+
+### 35.17 Arquivos alterados no HOTFIX FINAL 2
+
+Em comparação direta com `Pacote-Em-Mato-V81-HOTFIX-FINAL`:
+
+```text
+README.md
+index.html
+css/navegacao.css
+js/app.js
+js/mapa/config.js
+js/mapa/mapa.js
+js/navegacao/navegacao.js
+js/roteirizacao/servico-rota.js
+tests/v81-final-enderecos-navegacao.js
+tests/v81-regression.js
+tests/v81-hotfix-pacotes-paradas.js (teste tornou-se autocontido por hashes aprovados)
+tests/v81-hotfix-final-2.js (novo)
+tests/visual/hotfix2-map-harness.html (novo)
+tests/visual/OVERVIEW-HOTFIX2-SIMULADO.png (novo)
+tests/visual/NAVIGATION-ACTIVE-HOTFIX2-SIMULADO.png (novo)
+docs/RELATORIO-V81-ENDERECOS-NAVEGACAO.md
+docs/VALIDACAO-V81-HOTFIX-FINAL-2.log (novo)
+```
+
+`index.html` recebeu novo cache-buster para os arquivos alterados, evitando que o WebView reutilize JS/CSS do hotfix anterior.
+
+### 35.18 Limitações e riscos restantes
+
+Não foi realizado nesta execução:
+
+```text
+condução em trânsito real;
+GPS físico em veículo;
+fechar/reabrir processo Android com conta real;
+scanner/câmera física;
+render de tiles OpenFreeMap reais no Chromium deste ambiente;
+chamada real ao Geoapify durante condução.
+```
+
+Os testes de manobra utilizaram payload estruturado compatível com o schema real esperado do provedor, incluindo múltiplas legs e índices reiniciando em cada leg.
+
+Risco restante principal: diferenças futuras do estilo Liberty podem introduzir novos IDs/source-layers. A implementação reduz esse risco classificando por padrões de `id + source-layer + type`, mas a revisão visual em aparelho com tiles reais continua recomendada.
+
+### 35.19 Estado da entrega
+
+O código do `HOTFIX FINAL 2` está implementado e passou nos testes automatizados disponíveis. O artefato pode ser levado ao aparelho para validação final de ambiente real.
+
+Não é declarado neste relatório:
+
+```text
+"validado em trânsito real"
+"login validado no Android real"
+"câmera física validada"
+"mapa OpenFreeMap real validado visualmente neste ambiente"
+```

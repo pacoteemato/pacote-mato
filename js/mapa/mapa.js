@@ -276,9 +276,9 @@
       id: LAYER_ROUTE_STATUS, type: 'line', source: SOURCE_ROUTE_STATUS,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': ['match', ['get', 'status'], 'passado', '#9ca3af', 'proxima', '#047857', '#047857'],
+        'line-color': ['match', ['get', 'status'], 'passado', '#3f9d72', 'proxima', '#047857', '#047857'],
         'line-width': ['interpolate', ['linear'], ['zoom'], 9, 2.4, 12, 3.4, 14, 4.7, 16, 6.4],
-        'line-opacity': ['match', ['get', 'status'], 'passado', 0.82, 'proxima', 1, 0.9]
+        'line-opacity': ['match', ['get', 'status'], 'passado', 0.36, 'proxima', 1, 0.9]
       }
     }, before);
     if (!mapa.getLayer(LAYER_STOPS_GROUP_RING)) mapa.addLayer({
@@ -361,7 +361,7 @@
       });
       mapa.touchZoomRotate?.disableRotation?.();
       const mapaPronto = () => {
-        pronto = true; clearTimeout(loadTimer); if (state()) state().mapaDisponivel = true; ocultarFallback(); removerCamadas3D(); global.PacoteEMatoMapaConfig?.limparPontosInteresse?.(mapa);
+        pronto = true; clearTimeout(loadTimer); if (state()) state().mapaDisponivel = true; ocultarFallback(); removerCamadas3D(); global.PacoteEMatoMapaConfig?.limparPontosInteresse?.(mapa); global.PacoteEMatoMapaConfig?.aplicarEstiloMapaClean?.(mapa, { navegacaoAtiva:false });
         garantirCamadas(); bindEventosMapa(); try { mapa.resize(); } catch (_) {} renderizar({ fit: !fitFeito });
       };
       loadTimer = setTimeout(() => { if (!pronto && !ativarMapaBaseFallback()) mostrarFallback('O mapa base não respondeu. Verifique sua conexão.'); }, 8500);

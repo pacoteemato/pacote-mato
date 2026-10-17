@@ -84,18 +84,20 @@ ok(layout.get('road-label|visibility') === 'visible','limparPontosInteresse pres
 ok(layout.get('place-city|visibility') === 'visible','limparPontosInteresse preserva place/city');
 ok(layout.get('poi-shop|visibility') === 'none','POI não essencial continua reduzido');
 MC.aplicarEstiloNavegacaoAtiva(mockMap);
-ok(paint.get('road-primary|line-opacity') === 1,'estilo ativo aumenta contraste das vias');
-ok(paint.get('road-label|text-color') === '#24333f','nomes das ruas recebem contraste de navegação');
+ok(paint.get('road-primary|line-opacity') === 1,'estilo ativo mantém vias em contraste total');
+ok(paint.get('road-label|text-color') === '#303b42','nomes das ruas recebem contraste clean de navegação');
 ok(layout.get('road-label|visibility') === 'visible','labels de ruas ficam explicitamente visíveis no modo ativo');
+const corViaAtiva=paint.get('road-primary|line-color');
 MC.restaurarEstiloMapaOverview(mockMap);
-ok(paint.get('road-primary|line-color') === '#ddd' && paint.get('road-primary|line-opacity') === 0.7,'overview restaura pintura original do mapa');
+ok(paint.get('background|background-color') === '#f3f5f6','overview permanece no mesmo mapa base clean');
+ok(paint.get('road-primary|line-color') === corViaAtiva && paint.get('road-primary|line-opacity') === 1,'overview preserva identidade clean das vias em vez de voltar ao Liberty colorido');
 
 // 3) Navegação — garantias estruturais da implementação real.
 const nav = fs.readFileSync(path.join(ROOT,'js/navegacao/navegacao.js'),'utf8');
 const html = fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
 const css = fs.readFileSync(path.join(ROOT,'css/navegacao.css'),'utf8');
 ok(/modoMapaNavegacao\s*=\s*'overview'/.test(nav) && /'navigation-active'/.test(nav),'existem estados OVERVIEW e NAVIGATION-ACTIVE');
-ok(/function definirModoMapa\(/.test(nav) && /aplicarEstiloNavegacaoAtiva/.test(nav) && /restaurarEstiloMapaOverview/.test(nav),'troca de estado aplica/restaura estilo sem recarregar página');
+ok(/function definirModoMapa\(/.test(nav) && /aplicarEstiloNavegacaoAtiva/.test(nav) && /aplicarEstiloMapaClean/.test(nav),'troca de estado mantém estilo clean e ativa reforço de navegação sem recarregar página');
 ok(/function enquadrarOverview\(/.test(nav) && /fitBounds/.test(nav),'overview enquadra a rota completa');
 ok(/definirModoMapa\('navigation-active'.*persistirSelecao/s.test(nav),'Navegar entra no modo ativo sem recalcular a rota');
 const navPrefStart = nav.indexOf('  async function navegarPreferido()');
@@ -104,10 +106,9 @@ ok(!/recalcular\s*\(/.test(nav.slice(navPrefStart, navPrefEnd)),'entrada no navi
 ok(/opcoes\.tolerance = 0/.test(nav),'source de rota não aplica simplificação geométrica adicional');
 ok(/SOURCE_ROUTE.*rota\.geometria/s.test(nav),'SOURCE_ROUTE deriva da geometria real salva da rota');
 ok(/ultimaPosicaoBruta/.test(nav) && /posicaoVisual/.test(nav) && /alvoVisualDaPosicao/.test(nav),'GPS bruto e posição visual permanecem separados');
-ok(/nearest&&nearest\.distance>limite/.test(nav) && /navegacaoInternaAtiva\(\)/.test(nav),'desvio usa nearest da posição bruta somente no modo ativo');
+ok(/nearestOperacional&&nearestOperacional\.distance>limite/.test(nav) && /navegacaoInternaAtiva\(\)/.test(nav),'desvio usa nearest da posição bruta somente no modo ativo');
 ok(/pitch:interna\?60:0/.test(nav) && /zoomNavegacaoInterna/.test(nav) && /offsetCameraInterna/.test(nav),'câmera ativa usa pitch, zoom dinâmico e offset inferior');
 ok(/acentuada_esquerda/.test(nav) && /acentuada_direita/.test(nav) && /rotatoria_entrada/.test(nav) && /rotatoria_saida/.test(nav) && /chegada/.test(nav),'ícones cobrem curvas fortes, rotatória e chegada');
-ok(/Fallback neutro/.test(nav),'tipo desconhecido usa direção neutra em vez de inventar');
 ok(/navManeuverAfter/.test(html) && /navManeuverNextIcon/.test(html) && /proximaInst/.test(nav),'segunda manobra é exibida quando existe instrução real seguinte');
 ok(/navPanelGrabber/.test(html) && /pointermove/.test(nav),'bottom sheet expansível preserva grabber dedicado');
 ok(/data-pemato-nav-mode="overview"/.test(css) && /nav-maneuver-card\{display:none/.test(css),'overview oculta painel de manobra de GPS');
@@ -115,29 +116,28 @@ ok(/line-opacity':\.36/.test(nav) || /line-opacity':0\.36/.test(nav),'trecho per
 ok(/distanciaProximaManobra < 120/.test(nav) && /Math\.min\(zoom, 18\.25\)/.test(nav),'câmera abre o enquadramento perto de uma curva/manobra');
 
 // Mapeamento real das manobras: executa a função usada pelo painel, não só regex estrutural.
-const manStart = nav.indexOf('  function tipoVisualManobra(inst)');
-const manEnd = nav.indexOf('  function indiceInstrucaoAtual(nearest)', manStart);
+const manStart = nav.indexOf('  function tipoGeoapifyNormalizado(inst)');
+const manEnd = nav.indexOf('  function svgManobra(tipo)', manStart);
 if (manStart < 0 || manEnd < 0) throw new Error('bloco de manobras não encontrado');
 const manCtx = {}; vm.createContext(manCtx);
-vm.runInContext(nav.slice(manStart, manEnd).replace(/^  /gm,'') + '\nthis.tipoVisualManobra=tipoVisualManobra;', manCtx);
+vm.runInContext(nav.slice(manStart, manEnd).replace(/^  /gm,'') + '\nthis.tipoVisualManobra=tipoVisualManobra;this.valorSaidaRotatoria=valorSaidaRotatoria;', manCtx);
 const M = manCtx.tipoVisualManobra;
-ok(M({type:'continue',modifier:'straight'})==='reta','manobra: seguir reto');
-ok(M({type:'turn',modifier:'left'})==='esquerda','manobra: esquerda');
-ok(M({type:'turn',modifier:'right'})==='direita','manobra: direita');
-ok(M({type:'turn',modifier:'slight left'})==='leve_esquerda','manobra: leve esquerda');
-ok(M({type:'turn',modifier:'slight right'})==='leve_direita','manobra: leve direita');
-ok(M({type:'turn',modifier:'sharp left'})==='acentuada_esquerda','manobra: acentuada esquerda');
-ok(M({type:'turn',modifier:'sharp right'})==='acentuada_direita','manobra: acentuada direita');
-ok(M({type:'uturn'})==='retorno','manobra: retorno');
-ok(M({type:'roundabout',transition_instruction:'Entrar na rotatória'})==='rotatoria_entrada','manobra: entrar na rotatória');
-ok(M({type:'roundabout',transition_instruction:'Continue na rotatória'})==='rotatoria','manobra: continuar na rotatória');
-ok(M({type:'roundabout',exit_number:3,transition_instruction:'Sair da rotatória'})==='rotatoria_saida','manobra: saída da rotatória');
-ok(M({type:'arrival'})==='chegada','manobra: chegada');
+const manobrasGeoapify = {
+  StartAt:'reta', StartAtRight:'direita', StartAtLeft:'esquerda', Straight:'reta',
+  SlightRight:'leve_direita', Right:'direita', SharpRight:'acentuada_direita',
+  TurnAroundRight:'retorno', TurnAroundLeft:'retorno', SharpLeft:'acentuada_esquerda',
+  Left:'esquerda', SlightLeft:'leve_esquerda', ExitRight:'direita', ExitLeft:'esquerda',
+  StayRight:'leve_direita', StayLeft:'leve_esquerda', Merge:'reta', MergeRight:'leve_direita', MergeLeft:'leve_esquerda',
+  DestinationReached:'chegada', DestinationReachedRight:'chegada', DestinationReachedLeft:'chegada'
+};
+for (const [tipo, esperado] of Object.entries(manobrasGeoapify)) ok(M({type:tipo})===esperado,`manobra Geoapify ${tipo}`);
+ok(M({type:'Roundabout'})==='rotatoria','Roundabout sem saída real não inventa número');
+ok(M({type:'Roundabout',roundabout_exit:['3']})==='rotatoria_saida','Roundabout usa saída real quando fornecida');
 ok(M({type:'mystery',modifier:'unknown'})==='reta','manobra desconhecida usa seguir neutro');
 
 // 4) Instruções reais do Geoapify preservadas.
 const svc = fs.readFileSync(path.join(ROOT,'js/roteirizacao/servico-rota.js'),'utf8');
-for (const field of ['type','modifier','street_name','exit_number','transition_instruction','pre_transition_instruction','distance','time','from_index','to_index']) {
+for (const field of ['type','modifier','streets','street_name','exitNumber','exit_number','exitRoadName','exitTowards','roundabout_exit','transition_instruction','pre_transition_instruction','post_transition_instruction','distance','time','from_index','to_index','legIndex','fromIndexLeg','toIndexLeg','globalFromIndex','globalToIndex']) {
   ok(new RegExp(`\\b${field}\\b`).test(svc),`extrairInstrucoes preserva ${field}`);
 }
 const worker = fs.readFileSync(path.join(ROOT,'cloudflare/WORKER-HOLY-FROG-V79-AVISOS-MANUTENCAO-COMPLETO.txt'),'utf8');
@@ -145,12 +145,16 @@ ok(/details",\s*"instruction_details"/.test(worker),'Worker atual solicita instr
 ok(/legs:\s*Array\.isArray\(props\.legs\)\s*\?\s*props\.legs/.test(worker),'Worker preserva legs/steps reais do provedor');
 
 // 5) Bipagem/importação: módulos proibidos continuam byte a byte iguais à base V81 recebida.
-const baseline = path.resolve(ROOT,'../../pacote_v81_baseline');
-for (const rel of ['js/bipagem/bipagem-area.js','js/bipagem/operacoes-pacotes.js','js/bipagem/rota-ativa-bridge.js']) {
-  ok(sha(path.join(ROOT,rel)) === sha(path.join(baseline,rel)), `Bipagem sem alteração: ${rel}`);
-}
-for (const rel of ['js/importacao/fluxo-importacao.js','js/importacao/xlsx.js']) {
-  ok(sha(path.join(ROOT,rel)) === sha(path.join(baseline,rel)), `importação preservada byte a byte: ${rel}`);
+const hashesProtegidos = {
+  'js/bipagem/bipagem-area.js':'8254623dc75a4620a81f95baba39f07bbf9392c950e4810ea9bf043f6894ff7a',
+  'js/bipagem/operacoes-pacotes.js':'c6b1bbb874055323efa833ac8bfcac26e13dff91812fe89d28491af26de688a1',
+  'js/bipagem/rota-ativa-bridge.js':'6eda7298a85a1b4a89a7f5ef3de34874bd8fa304dcb35030a8086b330fd82610',
+  'js/importacao/fluxo-importacao.js':'f48b8826553a8431e320fa254c4c490c32742ebc00e3b8ac4b5bb9948121eae1',
+  'js/importacao/xlsx.js':'fdf359975e1282ed8aa28b5ae97dfbb21c1d82645355a40e5dc5f52029fb25fc'
+};
+for (const [rel, hash] of Object.entries(hashesProtegidos)) {
+  const tipo = rel.includes('/bipagem/') ? 'Bipagem sem alteração' : 'importação preservada byte a byte';
+  ok(sha(path.join(ROOT,rel)) === hash, `${tipo}: ${rel}`);
 }
 ok(/entregaOriginalPorPacote\[codigo\]\s*=\s*numeroEntregaOriginal/.test(app),'entregaOriginalPorPacote continua recebendo a numeração original do PDF');
 ok(/normalizarCodigoPacoteBr/.test(app) && /BR\\d\{12\}/.test(app),'validador de código BR permanece presente');

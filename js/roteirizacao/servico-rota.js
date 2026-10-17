@@ -575,32 +575,68 @@
 
   function extrairInstrucoes(feature) {
     const legs = feature?.properties?.legs || [];
+    const linhasGeometria = linhasDaGeometria(feature?.geometry);
+    const offsetsLeg = [];
+    let cursorGeometria = 0;
+
+    // Geoapify documenta from_index/to_index relativamente à geometria de cada leg.
+    // Quando a geometria é MultiLineString, o navegador a achata com .flat(), portanto
+    // o offset global precisa reproduzir exatamente essa mesma concatenação.
+    legs.forEach((leg, legIndex) => {
+      offsetsLeg[legIndex] = cursorGeometria;
+      if (feature?.geometry?.type === 'MultiLineString' && Array.isArray(linhasGeometria[legIndex])) {
+        cursorGeometria += linhasGeometria[legIndex].length;
+        return;
+      }
+      const passos = Array.isArray(leg?.steps) ? leg.steps : [];
+      const maiorTo = passos.reduce((m, step) => Number.isFinite(Number(step?.to_index)) ? Math.max(m, Number(step.to_index)) : m, 0);
+      // Em LineString contínua, o último ponto de uma leg é o primeiro da seguinte.
+      cursorGeometria += Math.max(0, maiorTo);
+    });
+
     const instrucoes = [];
     legs.forEach((leg, legIndex) => {
+      const offsetLeg = Number(offsetsLeg[legIndex] || 0);
       (leg?.steps || []).forEach((step, stepIndex) => {
         const detalhe = step?.instruction && typeof step.instruction === 'object' ? step.instruction : {};
         const type = String(detalhe?.type || step?.type || '');
         const modifier = String(detalhe?.modifier || detalhe?.direction || step?.modifier || step?.direction || '');
-        const streetName = String(detalhe?.street_name || step?.street_name || step?.name || '');
-        const exitNumber = detalhe?.exit_number ?? step?.exit_number ?? null;
+        const streetsRaw = detalhe?.streets ?? step?.streets ?? [];
+        const streets = Array.isArray(streetsRaw) ? streetsRaw.map(v => String(v || '')).filter(Boolean) : (streetsRaw ? [String(streetsRaw)] : []);
+        const exitRoadNameRaw = detalhe?.exitRoadName ?? detalhe?.exit_road_name ?? step?.exitRoadName ?? step?.exit_road_name ?? [];
+        const exitRoadName = Array.isArray(exitRoadNameRaw) ? exitRoadNameRaw.map(v => String(v || '')).filter(Boolean) : (exitRoadNameRaw ? [String(exitRoadNameRaw)] : []);
+        const exitTowardsRaw = detalhe?.exitTowards ?? detalhe?.exit_towards ?? step?.exitTowards ?? step?.exit_towards ?? [];
+        const exitTowards = Array.isArray(exitTowardsRaw) ? exitTowardsRaw.map(v => String(v || '')).filter(Boolean) : (exitTowardsRaw ? [String(exitTowardsRaw)] : []);
+        const streetName = String(streets[0] || detalhe?.street_name || step?.street_name || step?.name || exitRoadName[0] || '');
+        const roundaboutExit = detalhe?.roundabout_exit ?? step?.roundabout_exit ?? null;
+        const exitNumber = roundaboutExit ?? detalhe?.exitNumber ?? detalhe?.exit_number ?? step?.exitNumber ?? step?.exit_number ?? null;
         const transitionInstruction = String(detalhe?.transition_instruction || step?.transition_instruction || '');
         const preTransitionInstruction = String(detalhe?.pre_transition_instruction || step?.pre_transition_instruction || '');
-        const fromIndex = Number.isFinite(Number(step?.from_index)) ? Number(step.from_index) : null;
-        const toIndex = Number.isFinite(Number(step?.to_index)) ? Number(step.to_index) : null;
+        const postTransitionInstruction = String(detalhe?.post_transition_instruction || step?.post_transition_instruction || '');
+        const fromIndexLeg = Number.isFinite(Number(step?.from_index)) ? Number(step.from_index) : null;
+        const toIndexLeg = Number.isFinite(Number(step?.to_index)) ? Number(step.to_index) : null;
+        const globalFromIndex = fromIndexLeg == null ? null : offsetLeg + fromIndexLeg;
+        const globalToIndex = toIndexLeg == null ? null : offsetLeg + toIndexLeg;
         const distance = Number(step?.distance || 0);
         const time = Number(step?.time || 0);
         instrucoes.push({
           id: `${legIndex}:${stepIndex}`,
           legIndex, stepIndex,
-          texto: textoInstrucao(step) || transitionInstruction || preTransitionInstruction || 'Continue pela rota',
+          texto: textoInstrucao(step) || transitionInstruction || preTransitionInstruction || postTransitionInstruction || 'Continue pela rota',
           distancia: distance, tempo: time,
-          fromIndex, toIndex,
+          // Compatibilidade: índices originais continuam preservados como locais da leg.
+          fromIndex: fromIndexLeg, toIndex: toIndexLeg,
+          fromIndexLeg, toIndexLeg, globalFromIndex, globalToIndex,
           tipo: type,
           modificador: modifier,
           direcao: String(detalhe?.direction || step?.direction || ''),
           angulo: Number.isFinite(Number(detalhe?.turn_angle ?? step?.turn_angle)) ? Number(detalhe?.turn_angle ?? step?.turn_angle) : null,
           rua: streetName,
+          streets,
           exitNumber,
+          exitRoadName,
+          exitTowards,
+          roundabout_exit: roundaboutExit,
           // Preserva também os nomes do payload Geoapify para o renderer não
           // precisar reconstruir/inventar uma manobra.
           type,
@@ -609,15 +645,17 @@
           exit_number: exitNumber,
           transition_instruction: transitionInstruction,
           pre_transition_instruction: preTransitionInstruction,
+          post_transition_instruction: postTransitionInstruction,
           distance,
           time,
-          from_index: fromIndex,
-          to_index: toIndex
+          from_index: fromIndexLeg,
+          to_index: toIndexLeg
         });
       });
     });
     return instrucoes;
   }
+
 
   global.PacoteEMatoServicoRota = Object.freeze({ endpoint, healthEndpoint, verificarServico, perfilVeiculo, tipoRota, otimizar, otimizarComparando, ordenarParadas, calcularRotaPelasRuas, pontosDaRota, extrairInstrucoes, coord, geometriaValida, gruposFisicosPendentes, chaveFisicaParada, normalizarOrdemPorParadaFisica });
 })(window);
