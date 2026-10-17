@@ -2082,3 +2082,143 @@ O algoritmo em `js/roteirizacao/roteirizacao.js` não foi alterado. Mapa clean, 
 - Não houve condução em trânsito real.
 - O PDF exato `Spoke (1)(1).pdf` não estava disponível; sua aceitação foi coberta por matriz sintética, não por leitura real.
 - `91.pdf` foi testado de forma real no parser/estrutura de dados, mas não em scanner físico.
+
+
+# 37. HOTFIX FINAL 4 — NUMERAÇÃO VISUAL + ATENÇÃO + VOZ
+
+## 37.1 Escopo
+
+Este ajuste **não altera novamente a regra física**. A chave continua sendo somente:
+
+```text
+logradouro_normalizado + numero_principal
+```
+
+Apartamento, bloco, torre, loja, sala, unidade e complemento continuam apenas como dados de entrega.
+
+## 37.2 Numeração visual
+
+O índice interno da parada física continua disponível para roteirização/estrutura, mas deixou de ser usado como identidade principal na tela **Paradas & Endereços**.
+
+Exemplo testado:
+
+```text
+parada física interna 108
+entregas PDF 119 e 120
+
+VISUAL:
+ENTREGA 119        ATENÇÃO
+Rua Ancara, 105
+2 pacotes neste endereço
+Também: 120
+```
+
+E:
+
+```text
+parada física interna 109
+entregas PDF 121, 122 e 123
+
+VISUAL:
+ENTREGA 121        ATENÇÃO
+Rua Ancara, 100
+3 pacotes neste endereço
+Também: 122 · 123
+```
+
+Assim, 119/120/121/122/123 continuam visíveis e preservam sua identidade original.
+
+## 37.3 Complementos
+
+Os complementos continuam exibidos por entrega, por exemplo:
+
+```text
+119 — Bl 3 apto 903
+120 — Bloco 1 apto 501
+```
+
+Eles não participam da chave física.
+
+## 37.4 Regra de múltiplo
+
+Com códigos BR, o alerta visual é determinado por:
+
+```text
+paradaFisica.pacotes.length > 1
+```
+
+A palavra de destaque é **ATENÇÃO**. O texto `JUNTAS` deixou de ser usado como destaque na lista.
+
+## 37.5 Voz da Bipagem
+
+`processarCodigo()` **não foi alterado**. A função de fala consulta o último BR já identificado e verifica a parada física correspondente.
+
+Resultados automatizados:
+
+```text
+BR-C / entrega 121 -> "121. Atenção."
+BR-D / entrega 122 -> "122. Atenção."
+BR-E / entrega 123 -> "123. Atenção."
+pacote simples / entrega 118 -> "118"
+```
+
+A fala não lê os outros números da parada, bloco, apartamento ou quantidade.
+
+## 37.6 Bipagem protegida
+
+```text
+ARQUIVOS MODIFICADOS EM js/bipagem/: 0
+processarCodigo: inalterado em relação ao HOTFIX FINAL 3
+```
+
+A rotina continua executando apenas `pacotesBipados.add(identificado)` para o BR reconhecido; os demais BRs permanecem pendentes.
+
+## 37.7 Regressão da regra física
+
+O `91.pdf` real foi processado novamente sem mudança de agrupamento:
+
+```text
+102 pacotes
+102 entregas do PDF
+78 paradas físicas
+18 paradas múltiplas
+```
+
+A matriz Spoke de aceitação continua em:
+
+```text
+123 pacotes
+107 paradas físicas
+8 paradas múltiplas
+24 pacotes em múltiplas
+```
+
+## 37.8 Áreas preservadas
+
+Hashes idênticos ao HOTFIX FINAL 3 para:
+
+- `js/bipagem/bipagem-area.js`
+- `js/bipagem/operacoes-pacotes.js`
+- `js/bipagem/rota-ativa-bridge.js`
+- `js/mapa/config.js`
+- `js/mapa/mapa.js`
+- `js/navegacao/navegacao.js`
+- `js/roteirizacao/roteirizacao.js`
+- `js/roteirizacao/servico-rota.js`
+
+Portanto mapa, login, navigation-active, manobras, otimização e serviço de rota não receberam alteração funcional neste hotfix.
+
+## 37.9 Testes
+
+- `node --check`: **41 JS PASS**.
+- Regra definitiva de paradas: **PASS**.
+- Numeração/ATENÇÃO/voz: **PASS**.
+- HOTFIX FINAL 2 (mapa/login/manobras): **PASS**.
+- Endereços/navigation-active: **PASS**.
+- Pacotes/entregas/paradas: **PASS**.
+- Regressão geral: **PASS**.
+- Equivalência da otimização: **PASS**.
+
+## 37.10 Limitações
+
+A frase foi validada por `SpeechSynthesisUtterance` simulado/automatizado. Não é declarado teste de alto-falante físico/câmera física nesta execução.

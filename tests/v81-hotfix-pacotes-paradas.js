@@ -108,7 +108,7 @@ ok(semOriginal.length === 2, 'sem número original confirmado, registros V73 nã
 // Contrato visual/contadores no app: bipados/faltam = pacotes; paradas = mapa físico.
 ok(/const bip = pacotesBipados\.size;[\s\S]*const tot = todosPacotes\.size;[\s\S]*const paradas = Object\.keys\(mapaRotas\)\.length;/.test(app), 'contadores distinguem pacotes bipados, total de pacotes e paradas físicas');
 ok(/valFaltam'\)\.innerText = Math\.max\(0, tot - bip\)/.test(app), 'FALTAM calcula pacotes restantes, não paradas');
-ok(/const ehMultipla = dados\.quantidadeEntregas > 1 \|\| dados\.quantidadePacotes > 1/.test(app), 'Paradas Múltiplas inclui uma entrega com vários pacotes');
+ok(/dados\.quantidadePacotes > 1/.test(app), 'Paradas Múltiplas usa pacotes.length > 1 quando existem códigos BR');
 
 // Scanner/Bipagem modular continua byte a byte igual à base aprovada.
 // Hashes embutidos deixam o teste autocontido também depois de extrair o ZIP final.

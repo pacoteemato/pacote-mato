@@ -1,4 +1,4 @@
-# Pacote É Mato — V81 HOTFIX FINAL 3
+# Pacote É Mato — V81 HOTFIX FINAL 4
 
 Versão V81 com a **regra definitiva de paradas físicas** aplicada sobre o `Pacote-Em-Mato-V81-HOTFIX-FINAL-2`.
 
@@ -31,6 +31,20 @@ Se o número principal não puder ser determinado com segurança, a entrega fica
 - Agrupar pacotes na mesma parada **não** os bipa juntos. Cada BR continua independente.
 - `BIPADOS` e `FALTAM` contam pacotes; `PARADAS FÍSICAS` conta destinos físicos.
 - `js/bipagem/`: **0 arquivos modificados** nesta revisão.
+
+
+## Ajuste de numeração e alerta de múltiplos — HOTFIX FINAL 4
+
+- A regra física `logradouro normalizado + número principal` permanece **inalterada**.
+- Na tela **Paradas & Endereços**, a identidade principal passa a ser a **ENTREGA ORIGINAL DO PDF**, e não o índice interno da parada física.
+- Exemplo: a parada física interna 108 pode conter as entregas 119 e 120, mas o motorista vê **ENTREGA 119**, **ATENÇÃO** e **Também: 120**.
+- O resumo continua mostrando a quantidade real de **paradas físicas** e **pacotes**.
+- Uma parada é destacada com **ATENÇÃO** quando `pacotes.length > 1`.
+- Complementos (bloco, apartamento, torre etc.) continuam visíveis por entrega, mas não afetam o agrupamento.
+- Na voz da Bipagem, um pacote de endereço múltiplo fala somente `NUMERO_ORIGINAL. Atenção.`. Ex.: `121. Atenção.`
+- A voz não lê outros números, bloco, apartamento nem quantidade.
+- `processarCodigo` permaneceu byte a byte igual ao HOTFIX FINAL 3; cada BR continua bipado individualmente.
+- `js/bipagem/`: **0 arquivos modificados**.
 
 ## Validação desta revisão
 

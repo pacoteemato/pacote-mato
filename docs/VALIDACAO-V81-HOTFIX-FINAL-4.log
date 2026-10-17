@@ -1,0 +1,334 @@
+PACOTE É MATO — V81 HOTFIX FINAL 4
+NUMERAÇÃO VISUAL + ATENÇÃO EM MÚLTIPLOS + VOZ
+=== SYNTAX CHECK JS ===
+JS_OK=41
+=== TEST SUITES ===
+--- tests/v81-regra-definitiva-paradas.js ---
+OK  número principal 5350 não vira torre/apto 1507
+OK  número principal 451 não vira apartamento 714
+OK  complemento não altera a chave física
+OK  CEP não é interpretado como número principal
+OK  S/N não cria chave compartilhável
+OK  Spoke sintético de aceitação: 123 entregas do PDF preservadas
+OK  Spoke sintético de aceitação: nenhum BR perdido ou duplicado
+OK  Spoke: 107 paradas físicas
+OK  Spoke: 8 paradas múltiplas
+OK  Spoke: 24 pacotes nas paradas múltiplas
+OK  Spoke: Ancara 105 = 1 parada / 2 pacotes
+OK  Spoke: Ancara 100 = 1 parada / 3 pacotes
+OK  PDF 91 sintético de aceitação: 102 entregas do PDF preservadas
+OK  PDF 91 sintético de aceitação: nenhum BR perdido ou duplicado
+OK  PDF 91: 78 paradas físicas
+OK  PDF 91: 18 paradas múltiplas
+OK  PDF 91: 42 pacotes nas paradas múltiplas
+OK  PDF 91: Anhangüera 451 = 1 parada / 3 pacotes
+OK  PDF 91: Avenida Rudge 485 = 1 parada / 3 pacotes
+OK  PDF 91: Dr Sérgio Meira 230 = 1 parada / 3 pacotes
+OK  PDF 91: Martim Francisco 107 = 1 parada / 4 pacotes
+OK  Bipagem intacta: js/bipagem/bipagem-area.js
+OK  Bipagem intacta: js/bipagem/operacoes-pacotes.js
+OK  Bipagem intacta: js/bipagem/rota-ativa-bridge.js
+OK  bipar um BR marca somente o identificado
+OK  bipar um pacote não bipa os outros da parada
+
+REGRA DEFINITIVA DE PARADAS — ACEITAÇÃO CONCLUÍDA.
+--- tests/v81-numeracao-atencao.js ---
+OK  processarCodigo permanece byte a byte equivalente ao HOTFIX FINAL 3
+OK  Bipagem continua marcando somente o BR identificado
+OK  Bipagem não marca os demais BRs da parada
+OK  parada simples mostra ENTREGA 118 como identidade principal
+OK  Ancara 105 mostra 119 como principal e 120 como também neste local
+OK  Ancara 100 mostra 121 como principal e 122/123 visíveis
+OK  múltiplos mostram quantidade de pacotes no endereço
+OK  ATENÇÃO aparece nas duas paradas com pacotes.length > 1
+OK  índice físico 108/109 não aparece como identidade principal
+OK  texto JUNTAS não é mais usado como destaque
+OK  complementos continuam visíveis por entrega
+OK  resumo mantém contagem física separada dos pacotes
+Voz iniciou: 121. Atenção.
+Voz finalizou: 121. Atenção.
+OK  BR-C / entrega 121 fala exatamente "121. Atenção."
+Voz iniciou: 122. Atenção.
+Voz finalizou: 122. Atenção.
+OK  BR-D / entrega 122 fala exatamente "122. Atenção."
+Voz iniciou: 123. Atenção.
+Voz finalizou: 123. Atenção.
+OK  BR-E / entrega 123 fala exatamente "123. Atenção."
+Voz iniciou: 118
+Voz finalizou: 118
+OK  pacote normal continua falando apenas o número original
+OK  voz não lê outro número de entrega/parada
+OK  voz não monta fala com apartamento, bloco, quantidade ou outros números
+OK  ATENÇÃO é determinada por pacotes.length > 1
+
+NUMERAÇÃO + ALERTA DE MÚLTIPLOS — ACEITAÇÃO CONCLUÍDA.
+--- tests/v81-hotfix-final-2.js ---
+OK  hash protegido: js/bipagem/bipagem-area.js
+OK  hash protegido: js/bipagem/operacoes-pacotes.js
+OK  hash protegido: js/bipagem/rota-ativa-bridge.js
+OK  hash protegido: js/roteirizacao/roteirizacao.js
+OK  chave física ignora apartamento/bloco/torre e usa somente a base
+OK  complementos continuam preservados para exibição
+OK  não existe mais unidade anexada à chave física
+OK  aplicarEstiloMapaClean aplica no overview
+OK  fundo clean claro
+OK  água suave
+OK  parque desaturado
+OK  road labels legíveis e preservados
+OK  POI comercial ocultado
+OK  road shield reduzido
+OK  navigation-active usa o mesmo mapa base clean
+OK  navigation-active reforça moderadamente a via sem trocar identidade
+OK  retorno ao overview não restaura mapa colorido
+OK  multi-leg extrai três instruções
+OK  leg 0 mantém offset 0
+OK  leg 1 soma offset 100
+OK  leg 2 soma offsets 100+70
+OK  ruas continuam associadas à leg correta
+OK  tipo real StartAt -> reta
+OK  tipo real StartAtRight -> direita
+OK  tipo real StartAtLeft -> esquerda
+OK  tipo real Straight -> reta
+OK  tipo real SlightRight -> leve_direita
+OK  tipo real Right -> direita
+OK  tipo real SharpRight -> acentuada_direita
+OK  tipo real TurnAroundRight -> retorno
+OK  tipo real TurnAroundLeft -> retorno
+OK  tipo real SharpLeft -> acentuada_esquerda
+OK  tipo real Left -> esquerda
+OK  tipo real SlightLeft -> leve_esquerda
+OK  tipo real ExitRight -> direita
+OK  tipo real ExitLeft -> esquerda
+OK  tipo real StayRight -> leve_direita
+OK  tipo real StayLeft -> leve_esquerda
+OK  tipo real Merge -> reta
+OK  tipo real MergeRight -> leve_direita
+OK  tipo real MergeLeft -> leve_esquerda
+OK  tipo real DestinationReached -> chegada
+OK  tipo real DestinationReachedRight -> chegada
+OK  tipo real DestinationReachedLeft -> chegada
+OK  rotatória sem saída não inventa saída
+OK  rotatória aceita roundabout_exit array real
+OK  GPS/painel preferem índices globais
+OK  GPS bruto mantém nearest operacional separado
+OK  map matching visual usa trilha separada
+OK  map matching visual prioriza janela ao redor do progresso
+OK  fitBounds de overview possui guard contra navigation-active
+OK  Firebase Auth usa persistência LOCAL
+OK  authAccessState possui todos os estados exclusivos
+OK  mostrarRenovacao só abre no estado expired confirmado
+OK  expiração/acesso usam confirmação atual do servidor
+OK  currentUser pode recuperar vínculo por UID
+OK  onAuthStateChanged restaura sessão automaticamente
+OK  fechar/recarregar não possui signOut automático próximo de beforeunload
+
+HOTFIX FINAL 2 — testes estruturais/automatizados concluídos.
+--- tests/v81-final-enderecos-navegacao.js ---
+OK  Rua+número iguais agrupam
+OK  apartamento diferente NÃO separa parada física
+OK  bloco/apto diferentes NÃO separam parada física
+OK  casa interna diferente NÃO separa parada física
+OK  presença de complemento não muda a parada física
+OK  Av. e Avenida são equivalentes
+OK  acentos/preposições e R./Rua normalizam
+OK  Ancara 105 agrupa apesar de bloco/apto diferentes
+OK  torre diferente NÃO separa parada física
+OK  sala diferente NÃO separa parada física
+OK  loja diferente NÃO separa parada física
+OK  unidade diferente NÃO separa parada física
+OK  conjunto diferente NÃO separa parada física
+OK  andar diferente NÃO separa parada física
+OK  fundos NÃO separa parada física
+OK  número principal diferente separa
+OK  logradouro diferente separa
+OK  sem número principal seguro não cria chave física
+OK  complemento incompleto continua armazenado como dado informativo
+OK  limparPontosInteresse preserva labels de vias
+OK  limparPontosInteresse preserva place/city
+OK  POI não essencial continua reduzido
+OK  estilo ativo mantém vias em contraste total
+OK  nomes das ruas recebem contraste clean de navegação
+OK  labels de ruas ficam explicitamente visíveis no modo ativo
+OK  overview permanece no mesmo mapa base clean
+OK  overview preserva identidade clean das vias em vez de voltar ao Liberty colorido
+OK  existem estados OVERVIEW e NAVIGATION-ACTIVE
+OK  troca de estado mantém estilo clean e ativa reforço de navegação sem recarregar página
+OK  overview enquadra a rota completa
+OK  Navegar entra no modo ativo sem recalcular a rota
+OK  entrada no navigation-active não chama recálculo
+OK  source de rota não aplica simplificação geométrica adicional
+OK  SOURCE_ROUTE deriva da geometria real salva da rota
+OK  GPS bruto e posição visual permanecem separados
+OK  desvio usa nearest da posição bruta somente no modo ativo
+OK  câmera ativa usa pitch, zoom dinâmico e offset inferior
+OK  ícones cobrem curvas fortes, rotatória e chegada
+OK  segunda manobra é exibida quando existe instrução real seguinte
+OK  bottom sheet expansível preserva grabber dedicado
+OK  overview oculta painel de manobra de GPS
+OK  trecho percorrido permanece verde com baixa opacidade
+OK  câmera abre o enquadramento perto de uma curva/manobra
+OK  manobra Geoapify StartAt
+OK  manobra Geoapify StartAtRight
+OK  manobra Geoapify StartAtLeft
+OK  manobra Geoapify Straight
+OK  manobra Geoapify SlightRight
+OK  manobra Geoapify Right
+OK  manobra Geoapify SharpRight
+OK  manobra Geoapify TurnAroundRight
+OK  manobra Geoapify TurnAroundLeft
+OK  manobra Geoapify SharpLeft
+OK  manobra Geoapify Left
+OK  manobra Geoapify SlightLeft
+OK  manobra Geoapify ExitRight
+OK  manobra Geoapify ExitLeft
+OK  manobra Geoapify StayRight
+OK  manobra Geoapify StayLeft
+OK  manobra Geoapify Merge
+OK  manobra Geoapify MergeRight
+OK  manobra Geoapify MergeLeft
+OK  manobra Geoapify DestinationReached
+OK  manobra Geoapify DestinationReachedRight
+OK  manobra Geoapify DestinationReachedLeft
+OK  Roundabout sem saída real não inventa número
+OK  Roundabout usa saída real quando fornecida
+OK  manobra desconhecida usa seguir neutro
+OK  extrairInstrucoes preserva type
+OK  extrairInstrucoes preserva modifier
+OK  extrairInstrucoes preserva streets
+OK  extrairInstrucoes preserva street_name
+OK  extrairInstrucoes preserva exitNumber
+OK  extrairInstrucoes preserva exit_number
+OK  extrairInstrucoes preserva exitRoadName
+OK  extrairInstrucoes preserva exitTowards
+OK  extrairInstrucoes preserva roundabout_exit
+OK  extrairInstrucoes preserva transition_instruction
+OK  extrairInstrucoes preserva pre_transition_instruction
+OK  extrairInstrucoes preserva post_transition_instruction
+OK  extrairInstrucoes preserva distance
+OK  extrairInstrucoes preserva time
+OK  extrairInstrucoes preserva from_index
+OK  extrairInstrucoes preserva to_index
+OK  extrairInstrucoes preserva legIndex
+OK  extrairInstrucoes preserva fromIndexLeg
+OK  extrairInstrucoes preserva toIndexLeg
+OK  extrairInstrucoes preserva globalFromIndex
+OK  extrairInstrucoes preserva globalToIndex
+OK  Worker atual solicita instruction_details ao Geoapify
+OK  Worker preserva legs/steps reais do provedor
+OK  Bipagem sem alteração: js/bipagem/bipagem-area.js
+OK  Bipagem sem alteração: js/bipagem/operacoes-pacotes.js
+OK  Bipagem sem alteração: js/bipagem/rota-ativa-bridge.js
+OK  importação preservada byte a byte: js/importacao/fluxo-importacao.js
+OK  importação preservada byte a byte: js/importacao/xlsx.js
+OK  entregaOriginalPorPacote continua recebendo a numeração original do PDF
+OK  validador de código BR permanece presente
+
+V81 FINAL — testes de endereços/navegação concluídos.
+--- tests/v81-hotfix-pacotes-paradas.js ---
+OK  6 BRs foram reconstruídos em 3 entregas originais, não 6 entregas
+OK  entrega 119 mantém seus 3 pacotes juntos
+OK  entrega 120 mantém 1 pacote
+OK  entrega 121 mantém seus 2 pacotes juntos
+OK  mesma Rua X, 100 gera UMA parada mesmo com aptos 10 e 20
+OK  entregas PDF 119, 120 e 121 compartilham a mesma parada física
+OK  a parada física mantém os 6 pacotes independentes
+OK  BRs da entrega 119 continuam apontando para a entrega PDF 119
+OK  numeração original por pacote permanece correta nas demais entregas
+OK  complemento fragmentado da mesma entrega mantém os pacotes juntos
+OK  versão completa do complemento vence fragmento incompleto da mesma entrega
+OK  Ancara 105: blocos/apartamentos diferentes continuam na MESMA parada
+OK  chave física final é somente logradouro normalizado + número principal
+OK  endereço contraditório da mesma entrega é bloqueado, não fragmentado em paradas
+OK  sem número original confirmado, registros V73 não são fundidos como uma única entrega por suposição
+OK  contadores distinguem pacotes bipados, total de pacotes e paradas físicas
+OK  FALTAM calcula pacotes restantes, não paradas
+OK  Paradas Múltiplas usa pacotes.length > 1 quando existem códigos BR
+OK  Bipagem 0 alterações: js/bipagem/bipagem-area.js
+OK  Bipagem 0 alterações: js/bipagem/operacoes-pacotes.js
+OK  Bipagem 0 alterações: js/bipagem/rota-ativa-bridge.js
+OK  processarCodigo bipa somente o código identificado
+OK  processarCodigo não marca os demais pacotes da parada automaticamente
+
+V81 HOTFIX — pacotes/entregas/paradas concluído.
+--- tests/v81-regression.js ---
+OK  sem regressão byte a byte: js/bipagem/bipagem-area.js
+OK  sem regressão byte a byte: js/bipagem/operacoes-pacotes.js
+OK  sem regressão byte a byte: js/bipagem/rota-ativa-bridge.js
+OK  sem regressão byte a byte: js/importacao/xlsx.js
+OK  sem regressão byte a byte: js/importacao/fluxo-importacao.js
+OK  sem regressão byte a byte: js/mapa/geocodificacao.js
+OK  sem regressão byte a byte: cloudflare/geocodificacao-worker.js
+OK  sem regressão byte a byte: cloudflare/admin-gateway-worker.js
+OK  mensal ativa por milissegundos
+OK  trimestral ativa
+OK  teste ativo
+OK  Firestore Timestamp com toMillis
+OK  expiraEm em segundos
+OK  Timestamp serializado
+OK  data ISO
+OK  conta antiga ativo:true
+OK  vitalícia
+OK  expirada de verdade
+OK  bloqueada continua bloqueada
+OK  renovação protegida por estado único expired + confirmação real
+OK  confirmação explícita usa Firestore servidor
+OK  Firebase LOCAL restaura currentUser sem exigir novo login
+OK  restauração pode recuperar vínculo seguro pelo UID
+OK  máquina única contém offline-error e signed-out
+OK  mesmo ID e rota reaberta
+OK  ordem otimizada preservada
+OK  geometria preservada
+OK  outras entregas permanecem concluídas
+OK  somente parada escolhida volta a pendente e pacote é preservado
+OK  GPS ativo não aceita posição antiga em cache
+OK  posição bruta separada da posição visual
+OK  câmera contínua usa jumpTo sem enfileirar easeTo
+OK  interpolação visual usa requestAnimationFrame
+OK  desvio continua baseado no GPS bruto/nearest operacional real
+OK  navegação não renderiza o aplicativo inteiro a cada GPS
+OK  ícones SVG de manobra ligados às instruções
+OK  bottom sheet possui grabber vertical dedicado
+OK  finalização exige confirmação de persistência local
+
+Regressões estáticas/lógicas V81 concluídas.
+--- tests/v81-optimization-equivalence.js ---
+OK  mesma rota vencedora V80/V81 (short, 3 paradas)
+OK  mesmas métricas/critério (short, 3 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 3)
+OK  mesma rota vencedora V80/V81 (short, 7 paradas)
+OK  mesmas métricas/critério (short, 7 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 7)
+OK  mesma rota vencedora V80/V81 (short, 12 paradas)
+OK  mesmas métricas/critério (short, 12 paradas)
+OK  mesmo conjunto de candidatos avaliados (short, 12)
+OK  mesma rota vencedora V80/V81 (balanced, 3 paradas)
+OK  mesmas métricas/critério (balanced, 3 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 3)
+OK  mesma rota vencedora V80/V81 (balanced, 7 paradas)
+OK  mesmas métricas/critério (balanced, 7 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 7)
+OK  mesma rota vencedora V80/V81 (balanced, 12 paradas)
+OK  mesmas métricas/critério (balanced, 12 paradas)
+OK  mesmo conjunto de candidatos avaliados (balanced, 12)
+
+Equivalência do vencedor comprovada com respostas mock idênticas.
+=== PROTEÇÕES ===
+BIPAGEM_HASH=UNCHANGED
+MAP_LOGIN_NAV_ROUTE_PROTECTED=UNCHANGED
+PROCESSAR_CODIGO_UNCHANGED=TRUE
+PROCESSAR_CODIGO_SHA256=be9f10c3ed03de978649057c808ed8b1cfa1b3d0922421e7ab47d1fc10fda6a7
+VALIDATION_COMPLETE=PASS
+=== PDF REAL 91 — REVALIDAÇÃO FINAL 4 ===
+norm 102 BR unique 102
+RESULT 102 102 78 18
+=== ARQUIVOS DE PRODUÇÃO ALTERADOS VS FINAL 3 ===
+Files /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-3/js/app.js and /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-4/js/app.js differ
+Files /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-3/index.html and /mnt/data/Pacote-Em-Mato-V81-HOTFIX-FINAL-4/index.html differ
+PRODUCTION_CHANGED=js/app.js,index.html
+GROUPING_RULE=UNCHANGED
+PROCESSAR_CODIGO=UNCHANGED
+JS_BIPAGEM_FILES_CHANGED=0
+=== TESTE DO ARTEFATO ZIP ===
+PACKAGE_JS_SYNTAX_OK=41
+PACKAGE_TESTS=PASS
+ZIP_EXTRACTION_TEST=PASS

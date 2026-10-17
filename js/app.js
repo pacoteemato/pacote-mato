@@ -3353,83 +3353,76 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .sort((a,b) => a.numeroFisico - b.numeroFisico);
 
       let totalParadasMultiplas = 0;
-      let totalEntregasMultiplas = 0;
       const cards = [];
 
       grupos.forEach(dados => {
-        // Parada múltipla = mais de uma entrega OU mais de um pacote na mesma parada.
-        // Uma entrega com 3 BRs continua sendo 1 entrega, mas é uma parada com múltiplos pacotes.
-        const ehMultipla = dados.quantidadeEntregas > 1 || dados.quantidadePacotes > 1;
-        if (ehMultipla) {
-          totalParadasMultiplas++;
-          totalEntregasMultiplas += dados.quantidadeEntregas;
-        }
+        // HOTFIX FINAL 4 — identidade visual = ENTREGA ORIGINAL DO PDF.
+        // O índice da parada física continua interno e nunca substitui a numeração original.
+        // Com BRs, múltipla significa exatamente: pacotes.length > 1.
+        const ehMultipla = pdfSemCodigosBipagem
+          ? dados.quantidadeEntregas > 1
+          : dados.quantidadePacotes > 1;
+        if (ehMultipla) totalParadasMultiplas++;
 
         if (filtroAtualModal === 'duplos' && !ehMultipla) return;
 
-        const origemTexto = dados.entregasPdf.length
-          ? dados.entregasPdf.join(' · ')
+        const entregaPrincipal = dados.entregasPdf.length
+          ? dados.entregasPdf[0]
+          : null;
+        const outrasEntregas = dados.entregasPdf.length > 1
+          ? dados.entregasPdf.slice(1)
+          : [];
+
+        const tituloEntrega = entregaPrincipal
+          ? `ENTREGA ${entregaPrincipal}`
+          : 'ENTREGA';
+
+        const resumoQuantidade = pdfSemCodigosBipagem
+          ? `${dados.quantidadeEntregas} entrega${dados.quantidadeEntregas === 1 ? '' : 's'} neste endereço`
+          : `${Math.max(1, dados.quantidadePacotes)} pacote${dados.quantidadePacotes === 1 ? '' : 's'} neste endereço`;
+
+        const avisoMultiplo = ehMultipla
+          ? `<div class="tag-duplo-info" style="margin:0;padding:5px 9px;white-space:nowrap;">ATENÇÃO</div>`
           : '';
 
-        let badge;
-        if (ehMultipla) {
-          const detalhePacotes = !pdfSemCodigosBipagem
-            ? ` • ${dados.quantidadePacotes} pacote${dados.quantidadePacotes === 1 ? '' : 's'}`
-            : '';
-          const rotuloEntregas = `${dados.quantidadeEntregas} entrega${dados.quantidadeEntregas === 1 ? '' : 's'}`;
-          const entregasJuntas = dados.quantidadeEntregas > 1 && origemTexto
-            ? `<div style="margin-top:5px;font-size:.76rem;font-weight:900;letter-spacing:.01em;">ENTREGAS DO PDF: ${origemTexto} · JUNTAS</div>`
-            : (origemTexto
-              ? `<div style="margin-top:5px;font-size:.72rem;font-weight:800;">ENTREGA DO PDF: ${origemTexto}</div>`
-              : '');
-          badge = `<div class="tag-duplo-info">PARADA MÚLTIPLA • ${rotuloEntregas}${detalhePacotes}${entregasJuntas}</div>`;
-        } else {
-          const origemUnica = origemTexto
-            ? `<div style="margin-top:3px;font-size:.64rem;color:var(--text-muted);font-weight:800;">ENTREGA DO PDF: ${origemTexto}</div>`
-            : '';
-          badge = `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">${pdfSemCodigosBipagem ? '1 entrega' : `${Math.max(1, dados.pacotes.length)} pacote${dados.pacotes.length === 1 ? '' : 's'}`}</div>${origemUnica}`;
-        }
+        const tambemAqui = outrasEntregas.length
+          ? `<div style="margin-top:5px;font-size:.76rem;font-weight:850;color:var(--text-main);">Também: ${outrasEntregas.join(' · ')}</div>`
+          : '';
 
         const enderecoUrl = encodeURIComponent(String(dados.endereco || '')).replace(/'/g, '%27');
+        const destinoVisual = entregaPrincipal ? `Entrega ${entregaPrincipal}` : 'Endereço';
+        const destinoUrl = encodeURIComponent(destinoVisual).replace(/'/g, '%27');
 
         cards.push(`
-          <div class="parada-box-pro ${ehMultipla ? 'duplo-pro' : ''}">
-            <div class="parada-header-row" style="align-items:flex-start; gap:10px;">
-              <div style="
-                min-width:34px;height:34px;border-radius:12px;
-                display:flex;align-items:center;justify-content:center;
-                background:rgba(46,160,101,.13);font-weight:900;font-size:.9rem;
-                color:var(--primary, #2ea065);">
-                ${dados.numeroFisico}
-              </div>
+          <div class="parada-box-pro ${ehMultipla ? 'duplo-pro' : ''}" data-indice-parada-fisica="${dados.numeroFisico}">
+            <div class="parada-header-row" style="align-items:center; gap:10px;">
               <div style="flex:1;min-width:0;">
-                <div style="font-size:.72rem;font-weight:900;color:var(--text-muted);margin-bottom:5px;">
-                  PARADA ${dados.numeroFisico}
+                <div style="font-size:.86rem;font-weight:950;color:var(--text-main);letter-spacing:.01em;">
+                  ${tituloEntrega}
                 </div>
-                ${badge}
               </div>
+              ${avisoMultiplo}
             </div>
 
             <div class="endereco-texto-pro">${dados.endereco}</div>
+
+            <div style="margin-top:6px;font-size:.74rem;color:var(--text-muted);font-weight:800;">
+              ${resumoQuantidade}
+            </div>
+            ${tambemAqui}
 
             ${dados.detalhesEntregas.some(item => item.complemento) ? `
               <div style="margin-top:8px;display:grid;gap:5px;">
                 ${dados.detalhesEntregas
                   .filter(item => item.complemento)
                   .map(item => `<div style="font-size:.72rem;color:var(--text-muted);font-weight:700;line-height:1.35;">
-                    Entrega ${escaparHtmlHistorico(item.entregaPdf)}: ${escaparHtmlHistorico(item.complemento)}
+                    ${escaparHtmlHistorico(item.entregaPdf)} — ${escaparHtmlHistorico(item.complemento)}
                   </div>`).join('')}
               </div>
             ` : ''}
 
-            ${origemTexto && !ehMultipla ? `
-              <div style="margin-top:7px;font-size:.72rem;color:var(--text-muted);font-weight:700;">
-                Entrega do PDF: ${origemTexto}
-              </div>
-            ` : ''}
-
             <div class="acoes-footer-pro">
-              <button class="btn-acao-card" onclick="perguntarGps(decodeURIComponent('${enderecoUrl}'), 'P${dados.numeroFisico}')">
+              <button class="btn-acao-card" onclick="perguntarGps(decodeURIComponent('${enderecoUrl}'), decodeURIComponent('${destinoUrl}'))">
                 Waze / Maps
               </button>
             </div>
@@ -3447,15 +3440,13 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       const contagemTopo = document.getElementById('rotaModalContagem');
       if (contagemTopo) {
         contagemTopo.textContent = pdfSemCodigosBipagem
-          ? `${grupos.length} paradas • ${totalEntregas} entregas • sem códigos BR`
-          : `${grupos.length} paradas • ${totalPacotes} pacotes`;
+          ? `${grupos.length} paradas físicas • ${totalEntregas} entregas • sem códigos BR`
+          : `${grupos.length} paradas físicas • ${totalPacotes} pacotes`;
       }
 
       const resumo = document.getElementById('resumoMultiplosRota');
       if (resumo) {
-        resumo.innerText = pdfSemCodigosBipagem
-          ? `${grupos.length} paradas • ${totalEntregas} entregas • ${totalParadasMultiplas} múltiplas (${totalEntregasMultiplas} entregas)`
-          : `${grupos.length} paradas • ${totalPacotes} pacotes • ${totalParadasMultiplas} múltiplas (${totalEntregasMultiplas} entregas)`;
+        resumo.innerText = `${totalParadasMultiplas} parada${totalParadasMultiplas === 1 ? '' : 's'} múltipla${totalParadasMultiplas === 1 ? '' : 's'}`;
       }
 
       if (!cards.length) {
@@ -3467,7 +3458,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
     function perguntarGps(endereco, paradaNome) {
       enderecoSelecionadoGps = endereco;
-      document.getElementById('tituloGpsParada').innerText = `Navegar para Parada ${paradaNome}`;
+      document.getElementById('tituloGpsParada').innerText = `Navegar para ${paradaNome}`;
       document.getElementById('modalEscolhaGps').style.display = 'flex';
     }
 
@@ -6999,19 +6990,35 @@ try {
 
     function falarParada(num, ehDuplo, stopOutro) {
       if (window.PacoteEMatoBipagemArea?.vozAtiva?.() === false) return;
-      // Versão reforçada: fala diretamente, sem depender da fila antiga.
-      // Nesta versão a voz inicia ATIVA por padrão.
+      // HOTFIX FINAL 4: processarCodigo permanece intacto. A própria fala descobre
+      // se o ÚLTIMO BR bipado pertence a uma parada física com mais de um pacote.
+      // Nunca lê os demais números, bloco, apartamento ou quantidade.
       let tipo = localStorage.getItem('voz_preferida') || 'navegacao_feminina';
       if (tipo === 'mudo') return;
 
       const lang = localStorage.getItem('idioma_preferido') || 'pt';
       let frase = String(num);
+      let paradaMultipla = false;
 
-      if (ehDuplo) {
-        const outra = stopOutro ? stopOutro.replace('P','') : '';
-        if (lang === 'en') frase += ". Attention! Same address as stop " + outra + "!";
-        else if (lang === 'es') frase += ". ¡Atención! Misma dirección que la parada " + outra + "!";
-        else frase += ". Atenção! Mesmo endereço da parada " + outra + "!";
+      try {
+        const codigoAtual = String(ultimoCodigoBipado || '');
+        if (codigoAtual) {
+          for (const chave in (mapaRotas || {})) {
+            const pacotesDaParada = Array.isArray(mapaRotas[chave]) ? mapaRotas[chave] : [];
+            if (pacotesDaParada.includes(codigoAtual)) {
+              paradaMultipla = pacotesDaParada.length > 1 && !String(chave).startsWith('pacote_isolado_');
+              break;
+            }
+          }
+        }
+      } catch (_) {
+        paradaMultipla = false;
+      }
+
+      if (paradaMultipla) {
+        if (lang === 'en') frase += '. Attention.';
+        else if (lang === 'es') frase += '. Atención.';
+        else frase += '. Atenção.';
       }
 
       if (!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance) {
