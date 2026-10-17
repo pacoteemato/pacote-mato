@@ -379,8 +379,15 @@
     const entrada = clone(rota || {});
     entrada.alteradoEm = agora();
     const normalizada = normalizarRota(entrada);
+    const memoriaAnterior = rotaAtivaMemoria;
     rotaAtivaMemoria = normalizada;
-    await dbPut(STORE_ROTAS, normalizada);
+    const persistiuLocal = await dbPut(STORE_ROTAS, normalizada);
+    if (opcoes?.exigirPersistenciaLocal === true && !persistiuLocal) {
+      rotaAtivaMemoria = memoriaAnterior;
+      const erro = new Error('Não foi possível confirmar o salvamento local da rota.');
+      erro.code = 'PERSISTENCIA_LOCAL_FALHOU';
+      throw erro;
+    }
     if (opcoes?.ativa !== false) {
       await dbPut(STORE_META, { key: chaveAtivaMeta(), value: normalizada.id, updatedAt: Date.now(), usuario: usuarioAtual() });
       try { localStorage.setItem(chaveAtivaLocal(), normalizada.id); } catch (_) {}

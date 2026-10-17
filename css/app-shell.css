@@ -80,3 +80,14 @@
 .location-onboarding-status{display:block;min-height:18px;margin-top:10px;color:#68766f;font-size:.65rem;line-height:1.4}
 .location-onboarding-status[data-status="ok"]{color:#0d8f61}.location-onboarding-status[data-status="warning"]{color:#b87310}.location-onboarding-status[data-status="error"]{color:#c2413b}
 @media(max-width:620px){.settings-location-row{align-items:stretch;flex-direction:column}.settings-location-row button{width:100%;min-width:0}}
+
+/* V81 — histórico consultável e correção explícita de status */
+.history-stop-item-v81{padding:0;overflow:hidden;background:var(--surface-2)}
+.history-stop-toggle{width:100%;border:0;background:transparent;color:var(--text-main);padding:10px;text-align:left;font:inherit;cursor:pointer}
+.history-stop-toggle strong{display:block;font-size:.64rem;line-height:1.4}
+.history-stop-toggle span{display:block;margin-top:4px;color:var(--text-muted);font-size:.58rem;font-weight:800}
+.history-stop-item-v81[data-status="entregue"] .history-stop-toggle span,.history-stop-item-v81[data-status="concluida"] .history-stop-toggle span{color:#059669}
+.history-stop-item-v81[data-status="nao_entregue"] .history-stop-toggle span{color:#dc2626}
+.history-stop-expanded{padding:0 10px 10px;border-top:1px solid var(--surface-border)}
+.history-stop-expanded[hidden]{display:none}
+.history-correct-status{width:100%;margin-top:10px}

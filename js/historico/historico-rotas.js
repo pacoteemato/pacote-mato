@@ -15,6 +15,12 @@
     return `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}`;
   }
 
+  function textoStatus(p) {
+    if (p?.statusEntrega === 'nao_entregue') return 'Não entregue';
+    if (['entregue','concluida'].includes(String(p?.statusEntrega || ''))) return 'Entregue';
+    return 'Pendente';
+  }
+
   function datasDoFiltro() {
     const tipo = $('historyFilter')?.value || 'semana';
     const hoje = new Date();
@@ -45,6 +51,115 @@
     return div;
   }
 
+  function prepararRotaParaCorrecao(rotaEntrada, paradaId) {
+    const rota = global.PacoteEMatoRotaStore?.normalizarRota
+      ? global.PacoteEMatoRotaStore.normalizarRota(rotaEntrada)
+      : JSON.parse(JSON.stringify(rotaEntrada || {}));
+    const alvo = (rota.paradas || []).find(p => String(p.id) === String(paradaId));
+    if (!alvo) return null;
+    if (!['entregue','concluida','nao_entregue'].includes(String(alvo.statusEntrega || ''))) return null;
+
+    alvo.statusEntrega = 'pendente';
+    alvo.entregueEm = null;
+    alvo.naoEntregueEm = null;
+    alvo.motivoNaoEntrega = '';
+    alvo.observacaoNaoEntrega = '';
+    alvo.statusAtualizadoEm = Date.now();
+    alvo.alteradoEm = Date.now();
+
+    rota.status = 'ativa';
+    rota.concluidoEm = null;
+    rota.conclusaoPendente = false;
+    rota.paradaSelecionadaId = alvo.id;
+    rota.proximaParadaId = alvo.id;
+    rota.alteradoEm = Date.now();
+    // Intencionalmente não toca em ordem, pacotes, coordenadas, geometria, instruções
+    // nem marca precisaRecalculo. A correção histórica não reotimiza a rota.
+    return rota;
+  }
+
+  async function corrigirStatusRotaConcluida(rotaId, paradaId) {
+    const store = global.PacoteEMatoRotaStore;
+    const rota = await store?.obterRota?.(rotaId);
+    if (!rota) return false;
+    const alvo = (rota.paradas || []).find(p => String(p.id) === String(paradaId));
+    if (!alvo || !['entregue','concluida','nao_entregue'].includes(String(alvo.statusEntrega || ''))) return false;
+
+    const ativa = await store?.obterRotaAtiva?.();
+    const complemento = ativa && String(ativa.id) !== String(rota.id)
+      ? ' A rota que está aberta agora continuará salva no Histórico.'
+      : '';
+    const ok = await global.PacoteEMatoDialog?.confirmar?.({
+      titulo: 'Reabrir rota para correção?',
+      mensagem: `A parada “${alvo.enderecoOriginal || 'selecionada'}” voltará para Pendente. A mesma rota será reaberta sem mudar a ordem, os pacotes ou a otimização.${complemento}`,
+      confirmar: 'Reabrir e corrigir',
+      cancelar: 'Cancelar'
+    });
+    if (ok === false) return false;
+
+    const corrigida = prepararRotaParaCorrecao(rota, paradaId);
+    if (!corrigida) return false;
+    await store.salvarRota(corrigida, { ativa: true, exigirPersistenciaLocal: true });
+    try {
+      await global.PacoteEMatoSessao?.persistirAgora?.({
+        motivo: 'historico_corrigir_status',
+        rotaAtivaId: corrigida.id,
+        moduloAtual: 'roteirizacao',
+        paradaSelecionadaId: String(paradaId),
+        proximaParadaId: String(paradaId)
+      });
+    } catch (_) {}
+    if ($('routeHistoryDetailModal')) $('routeHistoryDetailModal').style.display = 'none';
+    await global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');
+    global.notificar?.('Rota reaberta. Somente a parada escolhida voltou para Pendente.');
+    return true;
+  }
+
+  function criarParadaDetalhe(rota, p, indice) {
+    const item = document.createElement('article');
+    item.className = 'history-stop-item history-stop-item-v81';
+    item.dataset.status = String(p.statusEntrega || 'pendente');
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'history-stop-toggle';
+    const numero = Number(p.ordemOtimizada || 0) || (indice + 1);
+    const title = document.createElement('strong');
+    title.textContent = `${numero}. ${p.enderecoOriginal || 'Endereço'}`;
+    const status = document.createElement('span');
+    status.textContent = textoStatus(p);
+    toggle.append(title, status);
+
+    const detail = document.createElement('div');
+    detail.className = 'history-stop-expanded';
+    detail.hidden = true;
+    detail.append(
+      criarLinha('Número', String(numero)),
+      criarLinha('Endereço', p.enderecoOriginal || '—'),
+      criarLinha('Status', textoStatus(p)),
+      criarLinha('Observação', String(p.observacao || p.complemento || '—'))
+    );
+    if (p.statusEntrega === 'nao_entregue') detail.appendChild(criarLinha('Motivo', String(p.motivoNaoEntrega || p.observacaoNaoEntrega || 'Não informado')));
+    if (p.observacaoEntrega) detail.appendChild(criarLinha('Nota da entrega', String(p.observacaoEntrega)));
+
+    if (['entregue','concluida','nao_entregue'].includes(String(p.statusEntrega || ''))) {
+      const corrigir = document.createElement('button');
+      corrigir.type = 'button';
+      corrigir.className = 'pemato-secondary history-correct-status';
+      corrigir.textContent = 'Corrigir status';
+      corrigir.addEventListener('click', () => corrigirStatusRotaConcluida(rota.id, p.id));
+      detail.appendChild(corrigir);
+    }
+
+    toggle.addEventListener('click', () => {
+      detail.hidden = !detail.hidden;
+      toggle.setAttribute('aria-expanded', detail.hidden ? 'false' : 'true');
+    });
+    toggle.setAttribute('aria-expanded', 'false');
+    item.append(toggle, detail);
+    return item;
+  }
+
   async function abrirDetalhes(id) {
     const rota = await global.PacoteEMatoRotaStore.obterRota(id);
     if (!rota) return;
@@ -67,20 +182,9 @@
     const stops = document.createElement('div');
     stops.className = 'history-stop-list';
     const porId = new Map((rota.paradas || []).map(p => [String(p.id), p]));
-    const ordenadas = (rota.ordem || []).map(id => porId.get(String(id))).filter(Boolean);
+    const ordenadas = (rota.ordem || []).map(idParada => porId.get(String(idParada))).filter(Boolean);
     (rota.paradas || []).forEach(p => { if (!ordenadas.includes(p)) ordenadas.push(p); });
-    ordenadas.forEach(p => {
-      const item = document.createElement('div');
-      item.className = 'history-stop-item';
-      const strong = document.createElement('strong');
-      strong.textContent = `${p.ordemOtimizada || p.ordemOriginal || ''}. ${p.enderecoOriginal || 'Endereço'}`;
-      const span = document.createElement('span');
-      span.textContent = p.statusEntrega === 'nao_entregue'
-        ? `Não entregue${p.motivoNaoEntrega ? ' · ' + p.motivoNaoEntrega : ''}`
-        : (['entregue','concluida'].includes(p.statusEntrega) ? 'Entregue' : 'Pendente');
-      item.append(strong, span);
-      stops.appendChild(item);
-    });
+    ordenadas.forEach((p, indice) => stops.appendChild(criarParadaDetalhe(rota, p, indice)));
     body.appendChild(stops);
     modal.style.display = 'flex';
   }
@@ -160,5 +264,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, { once: true });
   else bind();
 
-  global.PacoteEMatoHistorico = Object.freeze({ renderizar, abrirDetalhes, abrirNoMapa });
+  global.PacoteEMatoHistorico = Object.freeze({ renderizar, abrirDetalhes, abrirNoMapa, corrigirStatusRotaConcluida, prepararRotaParaCorrecao });
 })(window);

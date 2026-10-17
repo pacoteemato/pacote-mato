@@ -1492,8 +1492,8 @@
     if (!ids.length) return { total: 0, corrigidas: 0, confirmadas: 0, naoConfirmadas: 0, erros: 0, modo: 'rapido' };
 
     atualizarProcessamento(
-      'Checagem rápida de posições',
-      `Conferindo ${ids.length} de ${pendentes.length} posição(ões) antes de otimizar. A validação completa fica disponível no menu.`
+      'Confirmando posições',
+      `Verificando uma amostra de ${ids.length} parada(s) antes de calcular a rota.`
     );
     const resumo = await geo.validarCoordenadasImportadas(rotaAtual.paradas, {
       limiteMetros: 120,
@@ -1523,14 +1523,14 @@
     botoes.forEach(btn => { btn.disabled = true; });
 
     try {
-      mostrarProcessamento('Preparando a rota', 'Conferindo ponto de partida e coordenadas.');
+      mostrarProcessamento('Preparando sua rota', 'Validando ponto de partida e paradas…');
 
       let unresolved = rotaAtual.paradas.filter(p => !paradaLocalizada(p));
       if (unresolved.length) {
         if (!global.PacoteEMatoGeocodificacao?.endpointAtual?.()) {
           throw new Error(`${unresolved.length} parada(s) estão sem coordenadas e o serviço de localização não está disponível.`);
         }
-        atualizarProcessamento('Localizando endereços', `Buscando coordenadas para ${unresolved.length} parada(s) antes de otimizar.`);
+        atualizarProcessamento('Localizando paradas', `Confirmando a posição de ${unresolved.length} endereço(s)…`);
         const resumoGeo = await global.PacoteEMatoGeocodificacao.geocodificarParadas(rotaAtual.paradas);
         await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
         aplicarRotaNoState();
@@ -1539,7 +1539,7 @@
         if (unresolved.length) {
           throw new Error(`Não foi possível localizar ${unresolved.length} parada(s). Corrija esses endereços antes de otimizar.`);
         }
-        if (resumoGeo?.ok) atualizarProcessamento('Endereços localizados', `${resumoGeo.ok} parada(s) com coordenadas válidas. Conferindo posições importadas.`);
+        if (resumoGeo?.ok) atualizarProcessamento('Localizando paradas', `${resumoGeo.ok} parada(s) confirmada(s). Validando a sequência…`);
       }
 
       await validarCoordenadasXlsxAntesDaRota();
@@ -1549,7 +1549,7 @@
       // geometria falhar, a ordem/linha anterior continuam intactas na tela.
       const candidata = clone(rotaAtual);
       if (!candidata.preferenciaRota) candidata.preferenciaRota = 'short';
-      atualizarProcessamento('Calculando melhor sequência', 'Otimização pela rede viária. Nenhuma distância em linha reta é usada.');
+      atualizarProcessamento('Analisando a melhor sequência', 'Comparando alternativas pela malha viária…');
       const otimizada = await global.PacoteEMatoServicoRota.otimizarComparando(candidata, atualizarProcessamento);
       const orderIds = Array.isArray(otimizada.orderIds) ? otimizada.orderIds : [];
       if (!orderIds.length) throw new Error('O otimizador não retornou uma ordem de paradas.');
@@ -1557,7 +1557,7 @@
       const ordered = global.PacoteEMatoServicoRota.ordenarParadas(candidata, orderIds);
       candidata.ordem = ordered.map(p => p.id);
 
-      atualizarProcessamento('Traçando percurso pelas ruas', 'Calculando a geometria completa, distância e tempo em blocos seguros.');
+      atualizarProcessamento('Calculando o percurso', 'Traçando o caminho pelas ruas…');
       const route = otimizada.route;
       const feature = route.feature;
       candidata.geometria = feature.geometry;
@@ -1617,10 +1617,13 @@
         entregasOtimizadas: Number(otimizada.deliveryCount || pendentes)
       };
 
+      atualizarProcessamento('Finalizando sua rota', 'Consolidando distância, tempo e instruções…');
       rotaAtual = candidata;
       await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
       renderizarTudo({ fit: true });
+      atualizarProcessamento('Rota pronta', 'Confira a sequência antes de iniciar.');
       definirStatusImportacao('Rota calculada. Confira a sequência antes de iniciar.', 'success');
+      await new Promise(resolve => global.requestAnimationFrame ? global.requestAnimationFrame(() => resolve()) : resolve());
       esconderProcessamento();
       if (opcoes?.refinamento) abrirRefinoStandalone();
       else abrirRevisaoOtimizacao();
@@ -1635,7 +1638,7 @@
       const falhaPercurso = /percurso completo|trecho .* rota|geometria/i.test(String(erro?.message || ''));
       if (falhaPercurso && opcoes?.reparoAutomatico !== true && global.PacoteEMatoGeocodificacao?.validarCoordenadasImportadas) {
         try {
-          atualizarProcessamento('Corrigindo posições da rota', 'O percurso veio incompleto. Conferindo todas as coordenadas antes de tentar novamente.');
+          atualizarProcessamento('Confirmando posições', 'Algumas paradas precisam ser conferidas antes de tentar novamente.');
           const ids = (rotaAtual.paradas || [])
             .filter(p => !paradaFinalizada(p) && paradaLocalizada(p))
             .map(p => String(p.id));

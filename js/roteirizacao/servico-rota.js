@@ -457,10 +457,32 @@
     if (!coord(rota.pontoInicial) || !ativas.length || ativas.some(p => !coord(p))) throw new Error('Confira as coordenadas de todas as paradas antes de otimizar.');
     if (new Set(ativas.map(p => String(p.id))).size !== ativas.length) throw new Error('Há identificadores repetidos de paradas. Corrija a importação antes de otimizar.');
     if (rota.pontoFinal && !coord(rota.pontoFinal)) throw new Error('O destino final não tem coordenadas válidas.');
+
     const copia = () => JSON.parse(JSON.stringify(rota));
     const candidatos = [], vistos = new Set(), falhas = [];
     const objetivo = tipoRota(rota);
-    async function avaliar(ordem, tipo, origem) {
+    const tiposPlanejados = [...new Set([objetivo, 'short', 'balanced'])];
+
+    // V81: concorrência limitada apenas entre alternativas independentes. A lista de
+    // candidatos e a regra de comparação são as mesmas da V80. O ordinal conserva
+    // a preferência histórica em empates exatos mesmo que as requisições terminem
+    // em outra ordem por causa da paralelização.
+    async function mapLimit(items, limite, worker) {
+      const saida = new Array(items.length);
+      let cursor = 0;
+      async function executar() {
+        while (true) {
+          const i = cursor++;
+          if (i >= items.length) return;
+          try { saida[i] = await worker(items[i], i); }
+          catch (erro) { saida[i] = { erro }; }
+        }
+      }
+      await Promise.all(Array.from({ length: Math.min(limite, items.length) }, executar));
+      return saida;
+    }
+
+    async function avaliar(ordem, tipo, origem, ordinal) {
       const teste = copia();
       const ordemNormalizada = normalizarOrdemPorParadaFisica(teste, ordem);
       teste.ordem = ordemNormalizada;
@@ -468,29 +490,44 @@
       const chave = JSON.stringify([ordemNormalizada.map(String), tipo]);
       if (vistos.has(chave)) return null;
       vistos.add(chave);
-      progresso('Comparando percursos reais', `${origem}: distância e tempo calculados pelas ruas.`);
+      progresso('Calculando o percurso', 'Conferindo distância e tempo pelas ruas…');
       try {
         const route = await calcularRotaPelasRuas(teste);
         const d = Number(route.feature.properties.distance), t = Number(route.feature.properties.time);
         if (!Number.isFinite(d) || d < 0 || !Number.isFinite(t) || t < 0) throw new Error('Métricas de rota inválidas.');
-        const c = {ordem: ordemNormalizada, tipo, origem, route, distance:d, drivingTime:t};
-        candidatos.push(c); return c;
-      } catch (e) { falhas.push({origem, mensagem:e.message}); return null; }
+        const c = {ordem: ordemNormalizada, tipo, origem, route, distance:d, drivingTime:t, ordinal:Number(ordinal || 0)};
+        candidatos.push(c);
+        return c;
+      } catch (e) {
+        falhas.push({origem, mensagem:e.message});
+        return null;
+      }
     }
+
     const atual = ordenarParadas(copia(), rota.ordem || []).map(p => p.id);
-    await avaliar(atual, objetivo, 'Sequência atual');
-    for (const tipo of [...new Set([objetivo, 'short', 'balanced'])]) {
-      progresso('Buscando outra sequência', tipo === 'short' ? 'Priorizando menor distância.' : 'Comparando tempo e distância.');
+    await avaliar(atual, objetivo, 'Sequência atual', 0);
+
+    progresso('Analisando a melhor sequência', 'Comparando alternativas pela malha viária…');
+    await mapLimit(tiposPlanejados, 2, async (tipo, indice) => {
       try {
-        const teste = copia(); teste.preferenciaRota = tipo;
+        const teste = copia();
+        teste.preferenciaRota = tipo;
         const plano = await otimizar(teste);
         const ordem = ordenarParadas(teste, plano.orderIds).map(p => p.id);
-        await avaliar(ordem, tipo, `Planejamento ${tipo}`);
-      } catch(e) { falhas.push({origem:tipo, mensagem:e.message}); }
-    }
-    const comparar = (a,b) => objetivo === 'short'
-      ? a.distance - b.distance || a.drivingTime - b.drivingTime
-      : a.drivingTime - b.drivingTime || a.distance - b.distance;
+        return await avaliar(ordem, tipo, `Planejamento ${tipo}`, indice + 1);
+      } catch (e) {
+        falhas.push({origem:tipo, mensagem:e.message});
+        return null;
+      }
+    });
+
+    const comparar = (a,b) => {
+      const principal = objetivo === 'short'
+        ? a.distance - b.distance || a.drivingTime - b.drivingTime
+        : a.drivingTime - b.drivingTime || a.distance - b.distance;
+      return principal || Number(a.ordinal || 0) - Number(b.ordinal || 0);
+    };
+
     if (!candidatos.length) {
       const mensagens = [...new Set(falhas.map(f => String(f?.mensagem || '')).filter(Boolean))];
       const rede = mensagens.find(m => /Worker de rotas|ALLOWED_ORIGINS|acessar o Worker/i.test(m));
@@ -499,9 +536,8 @@
       erro.detail = { falhas };
       throw erro;
     }
+
     candidatos.sort(comparar);
-    // Refinamento limitado: deslocar uma parada perto de um trecho caro.
-    // Recalcula o percurso inteiro, pois A→B pode ser diferente de B→A.
     const base = candidatos[0];
     const pendentes = base.ordem.filter(id => !(rota.paradas || []).some(p => String(p.id) === String(id) && ['entregue','concluida','nao_entregue'].includes(p.statusEntrega)));
     if (pendentes.length >= 3 && pendentes.length <= 60 && gruposFisicosPendentes(rota).length === pendentes.length) {
@@ -509,13 +545,17 @@
       let pior = 0;
       for(let i=1;i<Math.min(legs.length,pendentes.length);i++) if(Number(legs[i].distance)>Number(legs[pior]?.distance||0)) pior=i;
       const finalizadas = base.ordem.filter(id => !pendentes.includes(id));
-      for (const deslocamento of [-1,1]) {
+      const refinamentos = [-1, 1].map((deslocamento, indice) => ({ deslocamento, ordinal: tiposPlanejados.length + 1 + indice }));
+      await mapLimit(refinamentos, 2, async ({deslocamento, ordinal}) => {
         const destino = pior + deslocamento;
-        if(destino < 0 || destino >= pendentes.length) continue;
-        const ordem = pendentes.slice(); const [id] = ordem.splice(pior,1); ordem.splice(destino,0,id);
-        await avaliar([...finalizadas,...ordem], base.tipo, 'Refinamento de trecho');
-      }
+        if(destino < 0 || destino >= pendentes.length) return null;
+        const ordem = pendentes.slice();
+        const [id] = ordem.splice(pior,1);
+        ordem.splice(destino,0,id);
+        return avaliar([...finalizadas,...ordem], base.tipo, 'Refinamento de trecho', ordinal);
+      });
     }
+
     candidatos.sort(comparar);
     const melhor = candidatos[0];
     const totalFisicas = gruposFisicosPendentes(rota).length;
@@ -547,8 +587,11 @@
           fromIndex: Number.isFinite(Number(step?.from_index)) ? Number(step.from_index) : null,
           toIndex: Number.isFinite(Number(step?.to_index)) ? Number(step.to_index) : null,
           tipo: String(detalhe?.type || step?.type || ''),
+          modificador: String(detalhe?.modifier || detalhe?.direction || step?.modifier || step?.direction || ''),
+          direcao: String(detalhe?.direction || step?.direction || ''),
+          angulo: Number.isFinite(Number(detalhe?.turn_angle ?? step?.turn_angle)) ? Number(detalhe?.turn_angle ?? step?.turn_angle) : null,
           rua: String(detalhe?.street_name || step?.name || ''),
-          exitNumber: detalhe?.exit_number ?? null
+          exitNumber: detalhe?.exit_number ?? step?.exit_number ?? null
         });
       });
     });

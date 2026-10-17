@@ -1343,7 +1343,13 @@ function tocarIntroPs2Audio() {
 
       try {
         const ref = db.collection('usuarios').doc(zap);
-        const doc = await ref.get();
+        let doc;
+        try {
+          doc = await ref.get({ source: 'server' });
+        } catch (erroConsulta) {
+          mostrarMensagemAuth('erro', 'Não foi possível confirmar sua conta agora. Verifique sua conexão e tente novamente.');
+          return;
+        }
         if (!doc.exists) {
           mostrarMensagemAuth('erro', 'Número não localizado. Use “Criar conta” para fazer seu cadastro.');
           return;
@@ -1381,13 +1387,14 @@ function tocarIntroPs2Audio() {
         await ref.update({ deviceId: MEU_DEVICE_ID, ultimoLoginEm: Date.now() });
 
         if (!contaTemAcessoAtivo(data, agora)) {
-          mostrarRenovacao(zap);
+          definirEstadoAcesso('expirado', { confirmado: true, motivo: 'login_servidor' });
+          mostrarRenovacao(zap, true);
           mostrarMensagemAuth('erro', 'Acesso expirado. Selecione um plano abaixo para renovar.');
           return;
         }
 
         mostrarMensagemAuth('sucesso', 'Bem-vindo de volta!');
-        iniciarMonitoramentoSessao(zap);
+        iniciarMonitoramentoSessao(zap, data);
       } catch (e) {
         registrarTentativaLoginFalha(dict);
         mostrarMensagemAuth('erro', traduzirErroAuthFirebase(e));
@@ -1407,13 +1414,70 @@ function tocarIntroPs2Audio() {
     }
 
     let timerExpiracaoSessao = null;
-    function mostrarRenovacao(zap) {
+    let estadoAcessoAtual = 'verificando';
+    let acessoConfirmadoEm = 0;
+    let ultimoAcessoConfirmado = null;
+    let checagemServidorSessao = null;
+
+    function definirEstadoAcesso(estado, detalhe = {}) {
+      estadoAcessoAtual = estado;
+      document.body.dataset.pematoAccessState = estado;
+      if (estado === 'ativo') {
+        acessoConfirmadoEm = Date.now();
+        if (detalhe?.dados) ultimoAcessoConfirmado = detalhe.dados;
+      }
+      return estado;
+    }
+
+    function mostrarVerificandoAcesso(mensagem = 'Verificando seu acesso…') {
+      definirEstadoAcesso('verificando');
+      limparAvisoRenovacao();
+      const erro = document.getElementById('msgErro');
+      const sucesso = document.getElementById('msgSucessoAuth');
+      if (erro) erro.style.display = 'none';
+      if (sucesso) {
+        sucesso.textContent = mensagem;
+        sucesso.style.display = 'block';
+      }
+      document.getElementById('telaBloqueio').style.display = 'flex';
+      setTimeout(atualizarCamadasSistemaConfig, 0);
+    }
+
+    function mostrarErroTemporarioAcesso(mensagem = 'Não foi possível confirmar seu acesso agora. Verifique sua conexão e tente novamente.') {
+      definirEstadoAcesso('erro_conexao');
+      const jaEstavaLiberado = acessoConfirmadoEm > 0;
+      if (jaEstavaLiberado) {
+        const dias = document.getElementById('diasRestantes');
+        if (dias && ultimoAcessoConfirmado) {
+          const expira = adminExpiry(ultimoAcessoConfirmado);
+          if (adminVitalicio(ultimoAcessoConfirmado, Date.now())) dias.innerText = 'Vitalício';
+          else if (expira > Date.now()) dias.innerText = `Ativo (${Math.max(1, Math.ceil((expira-Date.now())/ADMIN_DAY))}d rest.)`;
+        }
+        globalThis.notificar?.('Conexão instável. Seu acesso não foi marcado como expirado.');
+        return;
+      }
+      limparAvisoRenovacao();
+      const erro = document.getElementById('msgErro');
+      const sucesso = document.getElementById('msgSucessoAuth');
+      if (erro) erro.style.display = 'none';
+      if (sucesso) {
+        sucesso.textContent = mensagem;
+        sucesso.style.display = 'block';
+      }
+      document.getElementById('telaBloqueio').style.display = 'flex';
+      setTimeout(atualizarCamadasSistemaConfig, 0);
+    }
+
+    function mostrarRenovacao(zap, expiracaoConfirmada = false) {
+      // V81: renovação só pode aparecer após uma leitura válida confirmar expiração.
+      if (!expiracaoConfirmada && estadoAcessoAtual !== 'expirado') return false;
       document.getElementById('inputTel').value = zap;
       document.getElementById('avisoRenovacao').style.display = 'block';
       document.getElementById('btnTesteGratis').style.display = 'none';
       document.getElementById('telaBloqueio').style.display = 'flex';
       setTimeout(atualizarCamadasSistemaConfig, 0);
       document.getElementById('areaPlanosRenovacao').querySelector('h3').textContent = 'Renove seu acesso';
+      return true;
     }
     function limparAvisoRenovacao() {
       document.getElementById('avisoRenovacao').style.display = 'none';
@@ -1424,59 +1488,129 @@ function tocarIntroPs2Audio() {
       throw new Error("A liberação de assinatura agora é processada somente pelo servidor.");
     }
 
-    function iniciarMonitoramentoSessao(zap) {
+    function agendarChecagemExpiracao(zap, data) {
+      clearTimeout(timerExpiracaoSessao);
+      const agora = Date.now();
+      const expiraSessao = adminExpiry(data);
+      if (adminVitalicio(data, agora) || !(expiraSessao > 0)) return;
+      const restante = expiraSessao - agora;
+      if (restante <= 0) {
+        confirmarEstadoSessaoNoServidor(zap, 'prazo_local_esgotado');
+        return;
+      }
+      timerExpiracaoSessao = setTimeout(() => {
+        // Não transforma um relógio local em expiração definitiva. Confirma no servidor,
+        // porque o cliente pode ter renovado enquanto o snapshot estava atrasado.
+        confirmarEstadoSessaoNoServidor(zap, 'prazo_local_esgotado');
+      }, Math.min(restante, 60000));
+    }
+
+    function aplicarAcessoAtivo(zap, data) {
+      const agora = Date.now();
+      definirEstadoAcesso('ativo', { dados: data, motivo: 'conta_confirmada' });
+      usuarioAtualZap = zap;
+      localStorage.setItem('usuario_zap_salvo', zap);
+      limparAvisoRenovacao();
+      agendarChecagemExpiracao(zap, data);
+
+      const expiraSessao = adminExpiry(data);
+      if (adminVitalicio(data, agora)) {
+        document.getElementById('diasRestantes').innerText = 'Vitalício';
+      } else if (expiraSessao > 0) {
+        const dias = Math.max(1, Math.ceil((expiraSessao - agora) / ADMIN_DAY));
+        document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
+      } else {
+        document.getElementById('diasRestantes').innerText = 'Acesso Ativo';
+      }
+      const sucesso = document.getElementById('msgSucessoAuth');
+      if (sucesso && sucesso.textContent === 'Verificando seu acesso…') sucesso.style.display = 'none';
+      document.getElementById('telaBloqueio').style.display = 'none';
+      setTimeout(atualizarCamadasSistemaConfig, 0);
+    }
+
+    function avaliarDocumentoSessao(zap, doc, opcoes = {}) {
+      const veioDoCache = doc?.metadata?.fromCache === true;
+      if (!doc?.exists) {
+        if (veioDoCache || opcoes.confirmadoServidor !== true) {
+          mostrarErroTemporarioAcesso('Ainda estamos confirmando sua conta. Verifique sua conexão.');
+          if (opcoes.confirmadoServidor !== true) confirmarEstadoSessaoNoServidor(zap, 'documento_ausente_cache');
+          return false;
+        }
+        desconectarForcado('Conta não encontrada.');
+        return false;
+      }
+
+      const data = doc.data();
+      const agora = Date.now();
+      const user = auth.currentUser;
+
+      if (data.authUid && (!user || data.authUid !== user.uid)) {
+        desconectarForcado('A sessão autenticada não corresponde a esta conta.');
+        return false;
+      }
+      if (data.bloqueado) {
+        desconectarForcado('Seu acesso foi bloqueado pelo administrador.');
+        return false;
+      }
+      if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
+        desconectarForcado('Esta conta foi conectada em outro aparelho!');
+        return false;
+      }
+
+      if (!contaTemAcessoAtivo(data, agora)) {
+        // Um snapshot antigo em cache jamais pode abrir renovação. Confirma no servidor.
+        if (veioDoCache && opcoes.confirmadoServidor !== true) {
+          mostrarVerificandoAcesso('Confirmando sua assinatura…');
+          confirmarEstadoSessaoNoServidor(zap, 'expiracao_em_cache');
+          return false;
+        }
+        definirEstadoAcesso('expirado', { confirmado: true, dados: data, motivo: opcoes.motivo || 'snapshot_servidor' });
+        desconectarForcado('Assinatura expirada.', zap);
+        return false;
+      }
+
+      aplicarAcessoAtivo(zap, data);
+      return true;
+    }
+
+    async function confirmarEstadoSessaoNoServidor(zap, motivo = 'confirmacao') {
+      if (checagemServidorSessao) return checagemServidorSessao;
+      checagemServidorSessao = (async () => {
+        try {
+          const doc = await db.collection('usuarios').doc(zap).get({ source: 'server' });
+          return avaliarDocumentoSessao(zap, doc, { confirmadoServidor: true, motivo });
+        } catch (erro) {
+          console.warn('Pacote É Mato: confirmação de acesso temporariamente indisponível.', erro?.message || erro);
+          mostrarErroTemporarioAcesso('Não foi possível confirmar seu acesso agora. Verifique sua conexão.');
+          return false;
+        } finally {
+          checagemServidorSessao = null;
+        }
+      })();
+      return checagemServidorSessao;
+    }
+
+    function iniciarMonitoramentoSessao(zap, dadosConfirmados = null) {
       if (listenerSessaoRealtime) listenerSessaoRealtime();
       clearTimeout(timerExpiracaoSessao);
 
-      listenerSessaoRealtime = db.collection("usuarios").doc(zap).onSnapshot((doc) => {
-        if (!doc.exists) {
-          desconectarForcado("Conta não encontrada.");
-          return;
+      const user = auth.currentUser;
+      if (!user || !zap) {
+        mostrarVerificandoAcesso();
+        return;
+      }
+
+      if (dadosConfirmados) aplicarAcessoAtivo(zap, dadosConfirmados);
+      else mostrarVerificandoAcesso();
+
+      listenerSessaoRealtime = db.collection('usuarios').doc(zap).onSnapshot(
+        { includeMetadataChanges: true },
+        (doc) => avaliarDocumentoSessao(zap, doc, { confirmadoServidor: doc?.metadata?.fromCache !== true, motivo: 'monitoramento' }),
+        (erro) => {
+          console.warn('Pacote É Mato: monitoramento de sessão temporariamente indisponível.', erro?.message || erro);
+          mostrarErroTemporarioAcesso('Não foi possível atualizar sua assinatura agora. Verifique sua conexão.');
         }
-
-        let data = doc.data();
-        let agora = Date.now();
-        clearTimeout(timerExpiracaoSessao);
-
-        if (data.bloqueado) {
-          desconectarForcado(" Seu acesso foi bloqueado pelo administrador.");
-          return;
-        }
-
-        if (!contaTemAcessoAtivo(data, agora)) {
-          desconectarForcado("Assinatura expirada.", zap);
-          return;
-        }
-
-        if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
-          desconectarForcado(" Esta conta foi conectada em outro aparelho!");
-          return;
-        }
-
-        const expiraSessao = adminExpiry(data);
-        if (!adminVitalicio(data, agora) && expiraSessao > 0) {
-          const checarPrazo = () => {
-            const restante = adminExpiry(data) - Date.now();
-            if (restante <= 0) desconectarForcado('Assinatura expirada.', zap);
-            else timerExpiracaoSessao = setTimeout(checarPrazo, Math.min(restante, 60000));
-          };
-          checarPrazo();
-        }
-
-        limparAvisoRenovacao();
-
-        if (adminVitalicio(data, agora)) {
-          document.getElementById('diasRestantes').innerText = "Vitalício";
-        } else if (expiraSessao > 0) {
-          const dias = Math.max(1, Math.ceil((expiraSessao - agora) / (1000 * 60 * 60 * 24)));
-          document.getElementById('diasRestantes').innerText = `Ativo (${dias}d rest.)`;
-        } else {
-          document.getElementById('diasRestantes').innerText = "Acesso Ativo";
-        }
-        document.getElementById('telaBloqueio').style.display = 'none';
-        setTimeout(atualizarCamadasSistemaConfig, 0);
-
-      });
+      );
     }
 
     function desconectarForcado(motivo, zapRenovacao = null) {
@@ -1485,7 +1619,7 @@ function tocarIntroPs2Audio() {
         listenerSessaoRealtime();
         listenerSessaoRealtime = null;
       }
-      
+
       let sb = document.getElementById('sidebar');
       if (sb) sb.classList.remove('active');
       let ov = document.getElementById('overlay');
@@ -1493,11 +1627,11 @@ function tocarIntroPs2Audio() {
 
       finalizarCameraHardware();
 
-      if (zapRenovacao) {
+      if (zapRenovacao && estadoAcessoAtual === 'expirado') {
         localStorage.setItem('usuario_zap_salvo', zapRenovacao);
-        mostrarRenovacao(zapRenovacao);
+        mostrarRenovacao(zapRenovacao, true);
       } else {
-        localStorage.removeItem('usuario_zap_salvo');
+        if (!zapRenovacao) localStorage.removeItem('usuario_zap_salvo');
         limparAvisoRenovacao();
       }
       let msgErro = document.getElementById('msgErro');
@@ -1509,6 +1643,9 @@ function tocarIntroPs2Audio() {
 
     function sairDoApp() {
       clearTimeout(timerExpiracaoSessao);
+      definirEstadoAcesso('verificando');
+      acessoConfirmadoEm = 0;
+      ultimoAcessoConfirmado = null;
       limparAvisoRenovacao();
       if (listenerSessaoRealtime) {
         listenerSessaoRealtime();
@@ -1525,29 +1662,31 @@ function tocarIntroPs2Audio() {
       localStorage.removeItem('usuario_zap_salvo');
       usuarioAtualZap = '';
       try { auth.signOut(); } catch(e) {}
-      document.getElementById('inputTel').value = "";
-      document.getElementById('inputSenha').value = "";
+      document.getElementById('inputTel').value = '';
+      document.getElementById('inputSenha').value = '';
       document.getElementById('areaExecucao').style.display = 'none';
-      
+
       document.getElementById('telaBloqueio').style.display = 'flex';
       setTimeout(atualizarCamadasSistemaConfig, 0);
-      notificar(" Você foi desconectado.");
+      notificar('Você foi desconectado.');
     }
 
     document.getElementById('inputTel').addEventListener('input', limparAvisoRenovacao);
 
     auth.onAuthStateChanged(async (user) => {
-      const zapSalvoInicial = localStorage.getItem('usuario_zap_salvo');
+      const zapSalvoInicial = normalizarTelefone(localStorage.getItem('usuario_zap_salvo') || '');
       if (user && zapSalvoInicial) {
-        try {
-          const doc = await db.collection('usuarios').doc(zapSalvoInicial).get();
-          if (doc.exists && (!doc.data().authUid || doc.data().authUid === user.uid)) {
-            usuarioAtualZap = zapSalvoInicial;
-            iniciarMonitoramentoSessao(zapSalvoInicial);
-            return;
-          }
-        } catch(e) {}
+        usuarioAtualZap = zapSalvoInicial;
+        // A sessão do Firebase é restaurada primeiro. A assinatura é confirmada pelo
+        // listener; enquanto isso, "verificando" nunca é tratado como "expirado".
+        iniciarMonitoramentoSessao(zapSalvoInicial);
+        return;
       }
+
+      definirEstadoAcesso('verificando');
+      limparAvisoRenovacao();
+      const sucesso = document.getElementById('msgSucessoAuth');
+      if (sucesso) sucesso.style.display = 'none';
       document.getElementById('telaBloqueio').style.display = 'flex';
       setTimeout(atualizarCamadasSistemaConfig, 0);
     });

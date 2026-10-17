@@ -27,6 +27,15 @@
   const falasFeitas = new Set();
   let assinaturaParadasV11 = '';
   let persistenciaCartaoTimer = null;
+  let ultimaPosicaoBruta = null;
+  let posicaoVisual = null;
+  let alvoVisual = null;
+  let headingVisual = null;
+  let ultimoTimestampGps = 0;
+  let ultimoFrameVisual = 0;
+  let rafVisual = null;
+  let ultimaAtualizacaoCameraFrame = 0;
+  let velocidadeVisualMs = 0;
 
   const SOURCE_ROUTE = 'pemato-nav-route';
   const SOURCE_ROUTE_STATUS = 'pemato-nav-route-status';
@@ -277,10 +286,9 @@
     if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({ id:LAYER_ROUTE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#3f9d72','line-width':['interpolate',['linear'],['zoom'],10,1.9,13,3,16,4.8,18,5.5],'line-opacity':.64,'line-blur':0}}, before);
     if (!mapa.getLayer(LAYER_ROUTE_STATUS_CASE)) mapa.addLayer({ id:LAYER_ROUTE_STATUS_CASE,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':['interpolate',['linear'],['zoom'],10,4.4,13,5.9,16,8.5,18,9.5],'line-opacity':.86}}, before);
     if (!mapa.getLayer(LAYER_ROUTE_STATUS)) mapa.addLayer({ id:LAYER_ROUTE_STATUS,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','status'],'passado','#9ca3af','proxima','#047857','#047857'],'line-width':['interpolate',['linear'],['zoom'],10,2.5,13,3.8,16,5.9,18,6.7],'line-opacity':['match',['get','status'],'passado',0.84,'proxima',1,0.9]}}, before);
-    // V28: o trecho efetivamente percorrido fica por cima em cinza. Assim,
-    // conforme o motorista avança, o caminho atrás dele deixa de competir
-    // visualmente com o próximo trecho destacado.
-    if (!mapa.getLayer(LAYER_PROGRESS)) mapa.addLayer({ id:LAYER_PROGRESS,type:'line',source:SOURCE_PROGRESS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#7d8794','line-width':['interpolate',['linear'],['zoom'],10,2.6,13,3.9,16,6,18,6.8],'line-opacity':.9,'line-blur':0}}, before);
+    // V81: o trecho percorrido mantém a identidade verde, mas fica apagado.
+    // A geometria não muda; apenas a apresentação do caminho já percorrido.
+    if (!mapa.getLayer(LAYER_PROGRESS)) mapa.addLayer({ id:LAYER_PROGRESS,type:'line',source:SOURCE_PROGRESS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#3f9d72','line-width':['interpolate',['linear'],['zoom'],10,2.4,13,3.6,16,5.5,18,6.2],'line-opacity':.36,'line-blur':0}}, before);
     if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':12,'circle-color':'rgba(5,150,105,.16)','circle-stroke-color':'rgba(5,150,105,.35)','circle-stroke-width':1} });
     if (!mapa.getLayer(LAYER_DRIVER_DOT)) mapa.addLayer({ id:LAYER_DRIVER_DOT,type:'circle',source:SOURCE_DRIVER,filter:['==',['get','mode'],'external'],paint:{'circle-radius':7,'circle-color':'#059669','circle-stroke-color':'#ffffff','circle-stroke-width':3} });
     if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id:LAYER_DRIVER,type:'symbol',source:SOURCE_DRIVER,filter:['==',['get','mode'],'internal'],layout:{'icon-image':'pemato-driver-arrow','icon-size':1,'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','heading'],0]} });
@@ -487,10 +495,21 @@
     setSource(SOURCE_ROUTE_STATUS, fc(segmentosStatus));
   }
 
+  function atualizarFonteMotoristaVisual() {
+    if (!mapa || !mapReady) return;
+    const pos = posicaoVisual || ultimaPosicao;
+    const valido = pos && coordenadaValida(pos.lat, pos.lon);
+    setSource(SOURCE_DRIVER, fc(valido ? [{
+      type:'Feature',
+      properties:{heading:Number.isFinite(Number(headingVisual)) ? Number(headingVisual) : direcaoCamera(),mode:navegacaoInternaAtiva()?'internal':'external'},
+      geometry:{type:'Point',coordinates:[Number(pos.lon),Number(pos.lat)]}
+    }] : []));
+  }
+
   function atualizarFontesPontos() {
     if (!mapa || !mapReady) return;
     const p = proxima();
-    setSource(SOURCE_DRIVER, fc(ultimaPosicao && coordenadaValida(ultimaPosicao.lat,ultimaPosicao.lon) ? [{type:'Feature',properties:{heading:direcaoCamera(),mode:navegacaoInternaAtiva()?'internal':'external'},geometry:{type:'Point',coordinates:[Number(ultimaPosicao.lon),Number(ultimaPosicao.lat)]}}] : []));
+    atualizarFonteMotoristaVisual();
     const ordenadas = paradasPorOrdem();
     const grupos = new Map();
     ordenadas.forEach((stop, i) => {
@@ -594,12 +613,40 @@
     }catch(_){ }
   }
 
+  function tipoVisualManobra(inst) {
+    const texto = `${inst?.tipo || ''} ${inst?.modificador || ''} ${inst?.direcao || ''} ${inst?.texto || ''}`.toLocaleLowerCase('pt-BR');
+    if (/u[- ]?turn|retorno|retorne|meia volta/.test(texto)) return 'retorno';
+    if (/roundabout|rotat[oó]ria|rotatoria/.test(texto)) return Number(inst?.exitNumber) > 0 ? 'rotatoria_saida' : 'rotatoria';
+    if (/slight.+left|leve.+esquer|esquer.+leve/.test(texto)) return 'leve_esquerda';
+    if (/slight.+right|leve.+direit|direit.+leve/.test(texto)) return 'leve_direita';
+    if (/left|esquerda/.test(texto)) return 'esquerda';
+    if (/right|direita/.test(texto)) return 'direita';
+    return 'reta';
+  }
+
+  function svgManobra(tipo) {
+    const base='viewBox="0 0 48 48" focusable="false" aria-hidden="true"';
+    const comum='fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"';
+    const paths={
+      reta:'<path d="M24 40V9M15 18l9-9 9 9"/>',
+      esquerda:'<path d="M34 40V27c0-6-4-10-10-10H10M18 9l-8 8 8 8"/>',
+      direita:'<path d="M14 40V27c0-6 4-10 10-10h14M30 9l8 8-8 8"/>',
+      leve_esquerda:'<path d="M32 40V30c0-5-2-8-6-11L13 10M14 21l-1-11 11 1"/>',
+      leve_direita:'<path d="M16 40V30c0-5 2-8 6-11L35 10M34 21l1-11-11 1"/>',
+      retorno:'<path d="M34 40V23c0-7-4-11-10-11S14 16 14 22v4M7 20l7 7 7-7"/>',
+      rotatoria:'<path d="M14 18a12 12 0 1 1-1 13M8 20l6-2 1 6"/><path d="M24 8V3"/>',
+      rotatoria_saida:'<path d="M14 18a12 12 0 1 1 7 17M8 20l6-2 1 6"/><path d="M30 26l11-11M33 14h8v8"/>'
+    };
+    return `<svg ${base} ${comum}>${paths[tipo] || paths.reta}</svg>`;
+  }
+
   function atualizarInstrucao(nearest) {
     const coords=geometriaPontos(rota?.geometria), inst=instrucaoAtual(nearest);
     const dist=inst&&nearest&&Number.isFinite(Number(inst.toIndex))?distanciaAoLongo(coords,nearest.index,Number(inst.toIndex),nearest.point):Number(inst?.distancia||NaN);
     if($('navManeuverText')) $('navManeuverText').textContent=inst?.texto||'Siga a rota destacada';
     if($('navManeuverStreet')) $('navManeuverStreet').textContent=inst?.rua||'Acompanhe o mapa e a próxima parada';
     if($('navManeuverDistance')) $('navManeuverDistance').textContent=Number.isFinite(dist)?formatarDistancia(dist):'—';
+    if($('navManeuverIcon')) $('navManeuverIcon').innerHTML=svgManobra(tipoVisualManobra(inst));
     if(inst&&Number.isFinite(dist)){
       const id=inst.id||`${inst.legIndex}:${inst.stepIndex}`;
       if(dist<=35) falar(inst.texto,`${id}:35`);
@@ -620,7 +667,21 @@
   function explorarMapa(event) {
     if(event?.originalEvent) definirAcompanhamento(false);
   }
+  function normalizarAngulo(valor) {
+    const n = Number(valor);
+    return Number.isFinite(n) ? ((n % 360) + 360) % 360 : null;
+  }
+
+  function interpolarAnguloCircular(atual, alvo, alpha) {
+    const a = normalizarAngulo(atual), b = normalizarAngulo(alvo);
+    if (b == null) return a ?? 0;
+    if (a == null) return b;
+    const delta = ((b - a + 540) % 360) - 180;
+    return normalizarAngulo(a + delta * Math.max(0, Math.min(1, alpha)));
+  }
+
   function direcaoCamera() {
+    if (Number.isFinite(Number(headingVisual))) return Number(headingVisual);
     const h = ultimaPosicao?.heading;
     if(h != null && Number.isFinite(Number(h))) return Number(h);
     const pos = ultimaPosicao || {lon:centroDaRota()[0],lat:centroDaRota()[1]};
@@ -631,23 +692,61 @@
     }
     return mapa?.getBearing?.() || 0;
   }
-  function acompanharCamera(duracao=500) {
-    if(!seguirPosicao || !mapa || !mapReady) return;
-    const interna=navegacaoInternaAtiva(), container=$('mapaNavegacao');
+
+  function zoomNavegacaoInterna() {
+    const kmh = Math.max(0, Number(velocidadeVisualMs || 0) * 3.6);
+    if (kmh < 12) return 18.65;
+    if (kmh < 28) return 18.45;
+    if (kmh < 50) return 18.2;
+    if (kmh < 75) return 17.95;
+    return 17.7;
+  }
+
+  function offsetCameraInterna() {
+    const container=$('mapaNavegacao');
     const area=container?.getBoundingClientRect();
-    let offset=[0,0];
-    if(area?.height && interna){
-      const painel=$('navigationPanel')?.getBoundingClientRect();
-      const manobra=container.parentElement?.querySelector('.nav-maneuver-card')?.getBoundingClientRect();
-      const topo=Math.max(0,(manobra?.bottom || area.top)-area.top)+16;
-      const sobrepoe=painel && painel.left<area.right && painel.right>area.left && painel.top<area.bottom;
-      const fundo=sobrepoe ? Math.max(topo, painel.top-area.top-24) : area.height-24;
-      offset=[0,topo+(fundo-topo)*0.72-area.height/2];
-    }
-    const recente=ultimaPosicao && Date.now()-ultimaPosicao.at<30000;
-    mapa.easeTo({center:recente?[ultimaPosicao.lon,ultimaPosicao.lat]:centroDaRota(),
-      zoom:interna?17.5:16, pitch:interna?58:0, bearing:interna?direcaoCamera():0,
-      offset, duration:duracao});
+    if(!area?.height) return [0,0];
+    const painel=$('navigationPanel')?.getBoundingClientRect();
+    const manobra=container.parentElement?.querySelector('.nav-maneuver-card')?.getBoundingClientRect();
+    const topo=Math.max(0,(manobra?.bottom || area.top)-area.top)+18;
+    const sobrepoe=painel && painel.left<area.right && painel.right>area.left && painel.top<area.bottom;
+    const fundo=sobrepoe ? Math.max(topo+120, painel.top-area.top-18) : area.height-18;
+    const yDesejado=topo+(fundo-topo)*0.70;
+    return [0,yDesejado-area.height/2];
+  }
+
+  function deslocarPontoVisual(pos, bearing, metros) {
+    if(!pos || !Number.isFinite(Number(bearing)) || !(metros > 0)) return [Number(pos?.lon),Number(pos?.lat)];
+    const R=6378137, br=Number(bearing)*Math.PI/180, lat1=Number(pos.lat)*Math.PI/180, lon1=Number(pos.lon)*Math.PI/180, d=metros/R;
+    const lat2=Math.asin(Math.sin(lat1)*Math.cos(d)+Math.cos(lat1)*Math.sin(d)*Math.cos(br));
+    const lon2=lon1+Math.atan2(Math.sin(br)*Math.sin(d)*Math.cos(lat1),Math.cos(d)-Math.sin(lat1)*Math.sin(lat2));
+    return [lon2*180/Math.PI,lat2*180/Math.PI];
+  }
+
+  function acompanharCamera(duracao=0) {
+    if(!seguirPosicao || !mapa || !mapReady) return;
+    const interna=navegacaoInternaAtiva();
+    const visual=posicaoVisual || ultimaPosicao;
+    const recente=visual && Date.now()-Number(visual.at || ultimaPosicao?.at || 0)<30000;
+    const bearing=interna?direcaoCamera():0;
+    const kmh=Math.max(0,Number(velocidadeVisualMs||0)*3.6);
+    const frente=kmh<15?42:kmh<45?58:kmh<75?72:88;
+    const center=recente?(interna?deslocarPontoVisual(visual,bearing,frente):[Number(visual.lon),Number(visual.lat)]):centroDaRota();
+    const opcoes={
+      center,
+      zoom:interna?zoomNavegacaoInterna():16,
+      pitch:interna?60:0,
+      bearing,
+      offset:duracao>0&&interna?offsetCameraInterna():[0,0]
+    };
+    try {
+      if (duracao > 0) {
+        mapa.stop?.();
+        mapa.easeTo({...opcoes,duration:duracao,easing:t=>1-Math.pow(1-t,3)});
+      } else {
+        mapa.jumpTo(opcoes);
+      }
+    } catch (_) {}
   }
 
   function atualizarBotaoVoz(){ const b=$('navVoiceBtn'); if(b){const interna=navegacaoInternaAtiva();b.style.display=interna?'':'none';b.classList.toggle('active',vozAtiva&&interna);b.textContent=vozAtiva?'Voz ativa':'Voz muda';if(!interna)try{global.speechSynthesis?.cancel?.();}catch(_){}} }
@@ -815,22 +914,82 @@
     return Number.isFinite(deg)?deg:null;
   }
 
-  function processarPosicao(pos) {
-    const nova={lat:Number(pos.coords.latitude),lon:Number(pos.coords.longitude),accuracy:Number(pos.coords.accuracy||0),heading:pos.coords.heading!=null&&Number.isFinite(Number(pos.coords.heading))&&Number(pos.coords.heading)>=0?Number(pos.coords.heading):null,at:Date.now()};
-    if(nova.heading==null && posicaoAnterior && coordenadaValida(posicaoAnterior.lat,posicaoAnterior.lon)) {
-      const mov=haversine([posicaoAnterior.lon,posicaoAnterior.lat],[nova.lon,nova.lat]);
-      if(Number.isFinite(mov)&&mov>=Math.max(8, nova.accuracy || 0)) nova.heading=bearingEntre(posicaoAnterior,nova);
+  function alvoVisualDaPosicao(raw, nearest) {
+    if (!raw) return null;
+    const accuracy = Math.max(0, Number(raw.accuracy || 0));
+    const limiteMatch = Math.max(16, Math.min(45, accuracy * 1.35 + 6));
+    let lon = Number(raw.lon), lat = Number(raw.lat), matched = false;
+    if (navegacaoInternaAtiva() && nearest?.point && Number(nearest.distance) <= limiteMatch) {
+      lon = Number(nearest.point[0]);
+      lat = Number(nearest.point[1]);
+      matched = true;
     }
-    ultimaPosicao=nova;
-    if(!coordenadaValida(ultimaPosicao.lat,ultimaPosicao.lon)) return;
-    if(global.appState?.navegacao){global.appState.navegacao.ultimaPosicao=ultimaPosicao;global.appState.navegacao.ultimaAtualizacaoEm=Date.now();}
-    atualizarFontesPontos();
+    let heading = normalizarAngulo(raw.heading);
+    if (matched && (heading == null || Number(velocidadeVisualMs || 0) < 4)) {
+      const pontos=geometriaPontos(rota?.geometria);
+      const a=pontos[nearest.index], b=pontos[nearest.index+1];
+      if(a&&b) heading=bearingEntre({lon:a[0],lat:a[1]},{lon:b[0],lat:b[1]}) ?? heading;
+    }
+    return {lat,lon,heading,at:raw.at,matched};
+  }
+
+  function iniciarInterpolacaoVisual() {
+    if (rafVisual != null) return;
+    ultimoFrameVisual = 0;
+    const frame = (agoraFrame) => {
+      rafVisual = null;
+      if (!alvoVisual) return;
+      if (!ultimoFrameVisual) ultimoFrameVisual = agoraFrame;
+      const dt=Math.max(8,Math.min(120,agoraFrame-ultimoFrameVisual));
+      ultimoFrameVisual=agoraFrame;
+      if(!posicaoVisual) posicaoVisual={...alvoVisual};
+      const alphaPos=1-Math.exp(-dt/170);
+      posicaoVisual.lat += (Number(alvoVisual.lat)-Number(posicaoVisual.lat))*alphaPos;
+      posicaoVisual.lon += (Number(alvoVisual.lon)-Number(posicaoVisual.lon))*alphaPos;
+      posicaoVisual.at=alvoVisual.at;
+      headingVisual=interpolarAnguloCircular(headingVisual, alvoVisual.heading, 1-Math.exp(-dt/230));
+      atualizarFonteMotoristaVisual();
+      if(seguirPosicao&&navegacaoInternaAtiva()&&mapa&&mapReady&&agoraFrame-ultimaAtualizacaoCameraFrame>=70){
+        ultimaAtualizacaoCameraFrame=agoraFrame;
+        acompanharCamera(0);
+      }
+      const falta=Math.hypot(Number(alvoVisual.lat)-Number(posicaoVisual.lat),Number(alvoVisual.lon)-Number(posicaoVisual.lon));
+      const headingFalta=alvoVisual.heading==null?0:Math.abs((((Number(alvoVisual.heading)-Number(headingVisual||0))+540)%360)-180);
+      if(falta>0.0000012 || headingFalta>0.8) rafVisual=requestAnimationFrame(frame);
+    };
+    rafVisual=requestAnimationFrame(frame);
+  }
+
+  function processarPosicao(pos) {
+    const timestamp = Number(pos?.timestamp || Date.now());
+    if (timestamp <= ultimoTimestampGps) return;
+    const nova={lat:Number(pos.coords.latitude),lon:Number(pos.coords.longitude),accuracy:Number(pos.coords.accuracy||0),heading:pos.coords.heading!=null&&Number.isFinite(Number(pos.coords.heading))&&Number(pos.coords.heading)>=0?Number(pos.coords.heading):null,at:timestamp};
+    if(!coordenadaValida(nova.lat,nova.lon)) return;
+
+    const dtSeg = ultimaPosicaoBruta ? Math.max(.001,(nova.at-ultimaPosicaoBruta.at)/1000) : 0;
+    const mov = ultimaPosicaoBruta ? haversine([ultimaPosicaoBruta.lon,ultimaPosicaoBruta.lat],[nova.lon,nova.lat]) : 0;
+    if(nova.heading==null && ultimaPosicaoBruta && Number.isFinite(mov)&&mov>=Math.max(5, Math.min(15,nova.accuracy||0))) nova.heading=bearingEntre(ultimaPosicaoBruta,nova);
+    const velocidadeGps=Number(pos.coords.speed);
+    velocidadeVisualMs=Number.isFinite(velocidadeGps)&&velocidadeGps>=0?velocidadeGps:(dtSeg>0&&Number.isFinite(mov)?Math.min(60,mov/dtSeg):velocidadeVisualMs);
+
+    ultimoTimestampGps=timestamp;
+    ultimaPosicaoBruta={...nova};
+    ultimaPosicao=nova; // posição bruta: decisões operacionais, desvio e recálculo.
+    if(global.appState?.navegacao){global.appState.navegacao.ultimaPosicao=ultimaPosicao;global.appState.navegacao.ultimaAtualizacaoEm=timestamp;}
+
     if (posicaoAnterior && coordenadaValida(posicaoAnterior.lat,posicaoAnterior.lon)) {
       const trecho = haversine([posicaoAnterior.lon,posicaoAnterior.lat],[ultimaPosicao.lon,ultimaPosicao.lat]);
       if (Number.isFinite(trecho) && trecho >= 1 && trecho < 1000) rota.distanciaPercorridaMetros = Number(rota.distanciaPercorridaMetros || 0) + trecho;
     }
     posicaoAnterior = { ...ultimaPosicao };
-    const nearest=nearestOnRoute(ultimaPosicao); atualizarProgressoVisual(nearest); atualizarInstrucao(nearest);
+
+    const nearest=nearestOnRoute(ultimaPosicao);
+    alvoVisual=alvoVisualDaPosicao(ultimaPosicao,nearest);
+    if(!posicaoVisual&&alvoVisual){posicaoVisual={...alvoVisual};headingVisual=normalizarAngulo(alvoVisual.heading) ?? direcaoCamera();}
+    iniciarInterpolacaoVisual();
+    atualizarProgressoVisual(nearest);
+    atualizarInstrucao(nearest);
+
     const p=proxima(); if(p&&coordenadaValida(p.latitude,p.longitude)){
       const d=haversine([ultimaPosicao.lon,ultimaPosicao.lat],[Number(p.longitude),Number(p.latitude)]);
       if(d<=120) falar(`Aproximando-se da próxima parada: ${p.enderecoOriginal||'destino'}`,`stop:${p.id}:near`);
@@ -841,19 +1000,16 @@
     if(global.appState?.navegacao) global.appState.navegacao.foraDaRota=eventosForaRota>=3;
     if($('navGpsStatus')) $('navGpsStatus').textContent=eventosForaRota>=3?'Fora da rota planejada':`GPS ativo${ultimaPosicao.accuracy?` · precisão ${Math.round(ultimaPosicao.accuracy)} m`:''}`;
     if(eventosForaRota>=3&&Date.now()-ultimoRecalculo>60000&&global.PacoteEMatoServicoRota?.endpoint?.('route')) recalcular('desvio');
-    if(seguirPosicao&&mapa&&mapReady&&Date.now()-ultimaCentralizacao>1200){
-      ultimaCentralizacao=Date.now();
-      try{
-        acompanharCamera();
-      }catch(_){}
-    }
   }
 
   function iniciarGPS() {
     if(!navigator.geolocation||watchId!=null){if(!navigator.geolocation&&$('navGpsStatus'))$('navGpsStatus').textContent='GPS indisponível neste navegador';return;}
-    watchId=navigator.geolocation.watchPosition(processarPosicao,erro=>{if($('navGpsStatus'))$('navGpsStatus').textContent=erro?.code===1?'Permissão de localização negada':'Sinal de GPS indisponível';},{enableHighAccuracy:true,maximumAge:3000,timeout:15000});
+    watchId=navigator.geolocation.watchPosition(processarPosicao,erro=>{if($('navGpsStatus'))$('navGpsStatus').textContent=erro?.code===1?'Permissão de localização negada':'Sinal de GPS indisponível';},{enableHighAccuracy:true,maximumAge:0,timeout:12000});
   }
-  function pararGPS(){if(watchId!=null){try{navigator.geolocation.clearWatch(watchId);}catch(_){}watchId=null;}}
+  function pararGPS(){
+    if(watchId!=null){try{navigator.geolocation.clearWatch(watchId);}catch(_){}watchId=null;}
+    if(rafVisual!=null){try{cancelAnimationFrame(rafVisual);}catch(_){}rafVisual=null;}
+  }
 
   async function persistirSelecao(extra){
     if(!rota)return;
@@ -966,7 +1122,26 @@
     mostrarConclusao();
   }
 
-  async function finalizarRota(){if(!rota)return;rota.status='concluida';rota.concluidoEm=Date.now();rota.conclusaoPendente=false;await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});pararGPS();try{global.speechSynthesis?.cancel?.();}catch(_){};if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';await global.PacoteEMatoRotaStore.limparRotaAtiva();global.PacoteEMatoAppShell?.abrirModulo?.('historico');}
+  async function finalizarRota(){
+    if(!rota)return;
+    const anterior={status:rota.status,concluidoEm:rota.concluidoEm,conclusaoPendente:rota.conclusaoPendente};
+    try{
+      rota.status='concluida';rota.concluidoEm=Date.now();rota.conclusaoPendente=false;
+      await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true,exigirPersistenciaLocal:true});
+      const persistida=await global.PacoteEMatoRotaStore.obterRota(rota.id);
+      if(!persistida||persistida.status!=='concluida'||Number(persistida.paradas?.length||0)!==Number(rota.paradas?.length||0)) throw new Error('A cópia concluída ainda não foi confirmada no histórico local.');
+      pararGPS();
+      try{global.speechSynthesis?.cancel?.();}catch(_){}
+      if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';
+      await global.PacoteEMatoRotaStore.limparRotaAtiva();
+      global.PacoteEMatoAppShell?.abrirModulo?.('historico');
+    }catch(erro){
+      rota.status=anterior.status;rota.concluidoEm=anterior.concluidoEm;rota.conclusaoPendente=anterior.conclusaoPendente;
+      try{await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true,firestore:false});}catch(_){}
+      console.warn('Pacote É Mato: finalização preservada porque o histórico não foi confirmado.',erro);
+      global.notificar?.('Não foi possível confirmar o salvamento da rota. Ela continua aberta para evitar perda de dados.');
+    }
+  }
   function revisarResultados(){if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');}
 
   async function navegarPreferido(){
@@ -977,7 +1152,8 @@
     definirAcompanhamento(true);
     if(watchId==null)iniciarGPS();
     if($('navGpsStatus'))$('navGpsStatus').textContent=emDestinoFinal()?'Navegando até o ponto final':'Navegação Pacote É Mato ativa';
-    acompanharCamera(350);
+    definirPainelNav('collapsed');
+    acompanharCamera(180);
   }
 
   async function iniciar(rotaEntrada){
@@ -985,8 +1161,9 @@
     if(rota?.precisaRecalculo){global.notificar?.('A rota foi alterada. Recalcule o trajeto antes de iniciar a navegação.');return;}
     if(!rota||!geometriaValida(rota.geometria)){global.notificar?.('Calcule uma rota válida antes de iniciar a navegação.');return;}
     global.PacoteEMatoMarcadores?.capturarBaseVisualStatus?.(rota, false);
-    atualizarPendentes();let idExterno=null;try{idExterno=sessionStorage.getItem('pemato_parada_externa');sessionStorage.removeItem('pemato_parada_externa');}catch(_){}cartaoSelecionadoId=idExterno||rota.paradaSelecionadaId||global.appState?.navegacao?.paradaExibidaId||proxima()?.id||null;posicaoAnterior=null; const pref=global.PacoteEMatoConfiguracoes?.obter?.().navegacao||'pacote_emato';
+    atualizarPendentes();let idExterno=null;try{idExterno=sessionStorage.getItem('pemato_parada_externa');sessionStorage.removeItem('pemato_parada_externa');}catch(_){}cartaoSelecionadoId=idExterno||rota.paradaSelecionadaId||global.appState?.navegacao?.paradaExibidaId||proxima()?.id||null;posicaoAnterior=null;ultimaPosicaoBruta=null;posicaoVisual=null;alvoVisual=null;headingVisual=null;ultimoTimestampGps=0; const pref=global.PacoteEMatoConfiguracoes?.obter?.().navegacao||'pacote_emato';
     if(global.appState?.navegacao){global.appState.navegacao.ativa=true;global.appState.navegacao.provider=pref;global.appState.navegacao.iniciadaEm=global.appState.navegacao.iniciadaEm||Date.now();global.appState.navegacao.paradaExibidaId=cartaoSelecionadoId;rota.iniciadoEm=rota.iniciadoEm||global.appState.navegacao.iniciadaEm;vozAtiva=pref==='pacote_emato' && global.appState.navegacao.vozAtiva!==false;seguirPosicao=rota.navegacaoSeguirPosicao!==false;global.appState.navegacao.seguirPosicao=seguirPosicao;}
+    definirPainelNav(pref==='pacote_emato'?'collapsed':'expanded');
     garantirMapa(); acompanharCamera(0); desenharRota(); atualizarPainel(); atualizarBotaoFollow(); atualizarBotaoVoz();
     iniciarGPS();
     if(pref!=='pacote_emato'&&$('navGpsStatus'))$('navGpsStatus').textContent=`GPS ativo · navegação preferida: ${pref==='waze'?'Waze':'Google Maps'}`;
@@ -1041,6 +1218,10 @@
     panel.classList.remove('is-expanded','is-intermediate','is-collapsed');
     panel.classList.add(`is-${estadoPainelNav}`);
     panel.dataset.state=estadoPainelNav;
+    panel.dataset.internal=navegacaoInternaAtiva()?'true':'false';
+    document.body.dataset.pematoNavPanelState=estadoPainelNav;
+    const grabber=$('navPanelGrabber');
+    if(grabber){grabber.hidden=!navegacaoInternaAtiva();grabber.setAttribute('aria-expanded',estadoPainelNav==='expanded'?'true':'false');grabber.setAttribute('aria-label',estadoPainelNav==='expanded'?'Minimizar painel da entrega':'Expandir painel da entrega');}
   }
 
   function atualizarStatusCard(p){
@@ -1083,6 +1264,11 @@
 
   function bind(){
     definirPainelNav('collapsed');
+    const grabber=$('navPanelGrabber');
+    let dragPainel=null;
+    grabber?.addEventListener('pointerdown',e=>{dragPainel={y:e.clientY,movimento:0};try{grabber.setPointerCapture(e.pointerId);}catch(_){};});
+    grabber?.addEventListener('pointermove',e=>{if(!dragPainel)return;dragPainel.movimento=e.clientY-dragPainel.y;});
+    grabber?.addEventListener('pointerup',e=>{if(!dragPainel)return;const dy=dragPainel.movimento;dragPainel=null;try{grabber.releasePointerCapture(e.pointerId);}catch(_){};if(Math.abs(dy)<18)definirPainelNav(estadoPainelNav==='expanded'?'collapsed':'expanded');else definirPainelNav(dy<0?'expanded':'collapsed');});
     const swipe=$('navStopCard');let startX=0,startY=0;
     swipe?.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;},{passive:true});
     swipe?.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5)selecionarCartao(dx<0?1:-1);},{passive:true});
@@ -1114,7 +1300,7 @@
     $('navRecalculateBtn')?.addEventListener('click',()=>recalcular('manual')); $('navEndBtn')?.addEventListener('click',encerrar);
     $('navFollowBtn')?.addEventListener('click',()=>{
       definirAcompanhamento(true);
-      acompanharCamera(350);
+      acompanharCamera(180);
       iniciarGPS();
     });
     $('navVoiceBtn')?.addEventListener('click',()=>{if(!navegacaoInternaAtiva())return;vozAtiva=!vozAtiva;if(global.appState?.navegacao)global.appState.navegacao.vozAtiva=vozAtiva;if(!vozAtiva)try{global.speechSynthesis?.cancel?.();}catch(_){};atualizarBotaoVoz();});
