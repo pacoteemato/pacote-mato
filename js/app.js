@@ -1328,6 +1328,7 @@ function tocarIntroPs2Audio() {
     let tentativasLoginFalhas = 0;
     let loginBloqueadoAte = 0;
 
+    let autenticacaoManualEmAndamento = false;
     async function autenticarUsuarioFirebase() {
       const lang = localStorage.getItem('idioma_preferido') || 'pt';
       const dict = traducoes[lang] || traducoes.pt;
@@ -1375,6 +1376,7 @@ function tocarIntroPs2Audio() {
         }
 
         await authPersistenceReady;
+        autenticacaoManualEmAndamento = true;
         const cred = await auth.signInWithEmailAndPassword(data.email, senha);
         if (cred.user.uid !== data.authUid) {
           await auth.signOut();
@@ -1390,6 +1392,9 @@ function tocarIntroPs2Audio() {
 
         usuarioAtualZap = zap;
         localStorage.setItem('usuario_zap_salvo', zap);
+        // O vínculo UID -> WhatsApp deve ser persistido ANTES da atualização remota.
+        // Assim, uma queda de rede após signIn não faz a próxima abertura pedir senha.
+        salvarVinculoSessaoLocal(cred.user.uid, zap);
         await ref.update({ deviceId: MEU_DEVICE_ID, ultimoLoginEm: Date.now() });
 
         if (!contaTemAcessoAtivo(data, agora)) {
@@ -1405,6 +1410,7 @@ function tocarIntroPs2Audio() {
         registrarTentativaLoginFalha(dict);
         mostrarMensagemAuth('erro', traduzirErroAuthFirebase(e));
       } finally {
+        autenticacaoManualEmAndamento = false;
         btn.innerText = 'Entrar no Sistema →';
         btn.disabled = false;
       }
@@ -1419,6 +1425,7 @@ function tocarIntroPs2Audio() {
       }
     }
 
+    globalThis.PEMATO_SESSAO_HOTFIX = 'V81-TESTE22-RECONCILIACAO-4';
     let timerExpiracaoSessao = null;
     const AUTH_ACCESS_STATES = Object.freeze({
       BOOTING:'booting', CHECKING:'checking', ACTIVE:'active', EXPIRED:'expired',
@@ -1428,12 +1435,40 @@ function tocarIntroPs2Audio() {
     let acessoConfirmadoEm = 0;
     let ultimoAcessoConfirmado = null;
     let checagemServidorSessao = null;
+    // V81 TESTE22 — hotfix 4: contas com sessão ativa não podem ficar presas
+    // permanentemente em um aviso antigo de expiração após cold start.
+    let timerRechecagemExpiracao = null;
+    let tentativasRechecagemExpiracao = 0;
+
+    function agendarRechecagemExpiracao(zap) {
+      if (timerRechecagemExpiracao || !zap || !auth.currentUser) return;
+      // Uma segunda leitura em 4 s; se o servidor continuar indicando
+      // vencimento verdadeiro, monitorar alterações uma vez por minuto.
+      const esperaMs = tentativasRechecagemExpiracao === 0 ? 4000 : 60000;
+      timerRechecagemExpiracao = setTimeout(async () => {
+        timerRechecagemExpiracao = null;
+        if (authAccessState !== AUTH_ACCESS_STATES.EXPIRED ||
+            !auth.currentUser || usuarioAtualZap !== zap) return;
+        tentativasRechecagemExpiracao++;
+        await confirmarEstadoSessaoNoServidor(zap, 'rechecagem_expiracao_coldstart');
+        if (authAccessState === AUTH_ACCESS_STATES.EXPIRED &&
+            auth.currentUser && usuarioAtualZap === zap) {
+          agendarRechecagemExpiracao(zap);
+        }
+      }, esperaMs);
+    }
 
     function definirEstadoAcesso(estado, detalhe = {}) {
       const validos = new Set(Object.values(AUTH_ACCESS_STATES));
       authAccessState = validos.has(estado) ? estado : AUTH_ACCESS_STATES.CHECKING;
       globalThis.authAccessState = authAccessState;
       document.body.dataset.pematoAccessState = authAccessState;
+      try { queueMicrotask(() => globalThis.dispatchEvent(new CustomEvent('pemato:acesso:estado', { detail: { estado: authAccessState } }))); } catch (_) {}
+      if (authAccessState !== AUTH_ACCESS_STATES.EXPIRED) {
+        if (timerRechecagemExpiracao) clearTimeout(timerRechecagemExpiracao);
+        timerRechecagemExpiracao = null;
+        tentativasRechecagemExpiracao = 0;
+      }
       if (authAccessState === AUTH_ACCESS_STATES.ACTIVE) {
         acessoConfirmadoEm = Date.now();
         if (detalhe?.dados) ultimoAcessoConfirmado = detalhe.dados;
@@ -1577,15 +1612,26 @@ function tocarIntroPs2Audio() {
         return false;
       }
       if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
+        // Ao entrar, o Firestore pode entregar primeiro o snapshot LOCAL anterior
+        // à atualização do deviceId. Só bloqueia após confirmar em servidor.
+        if (veioDoCache || opcoes.confirmadoServidor !== true) {
+          mostrarVerificandoAcesso('Confirmando o dispositivo no servidor…');
+          confirmarEstadoSessaoNoServidor(zap, 'dispositivo_pendente_confirmacao');
+          return false;
+        }
         desconectarForcado('Esta conta foi conectada em outro aparelho!', { estado:AUTH_ACCESS_STATES.SIGNED_OUT, encerrarAuth:true });
         return false;
       }
 
       if (!contaTemAcessoAtivo(data, agora)) {
-        // Um snapshot antigo em cache jamais pode abrir renovação. Confirma no servidor.
-        if (veioDoCache && opcoes.confirmadoServidor !== true) {
-          mostrarVerificandoAcesso('Confirmando sua assinatura…');
-          confirmarEstadoSessaoNoServidor(zap, 'expiracao_em_cache');
+        // HOTFIX V81: cold start. O primeiro snapshot do monitor realtime nao e
+        // prova suficiente de expiracao, ainda que diga fromCache=false.
+        // Confirmar com get({source:'server'}) antes de exibir renovacao.
+        // O resultado da leitura pontual entra com motivo != 'monitoramento',
+        // evitando recursao e mantendo bloqueios reais por vencimento.
+        if (opcoes.confirmadoServidor !== true || opcoes.motivo === 'monitoramento') {
+          mostrarVerificandoAcesso('Confirmando sua assinatura no servidor…');
+          confirmarEstadoSessaoNoServidor(zap, 'expiracao_pendente_confirmacao');
           return false;
         }
         definirEstadoAcesso(AUTH_ACCESS_STATES.EXPIRED, { confirmado: true, dados: data, motivo: opcoes.motivo || 'snapshot_servidor' });
@@ -1593,6 +1639,11 @@ function tocarIntroPs2Audio() {
         return false;
       }
 
+      if (authAccessState === AUTH_ACCESS_STATES.EXPIRED && veioDoCache) {
+        mostrarVerificandoAcesso('Revalidando sua assinatura no servidor…');
+        confirmarEstadoSessaoNoServidor(zap, 'cache_ativo_apos_expiracao');
+        return false;
+      }
       aplicarAcessoAtivo(zap, data);
       return true;
     }
@@ -1639,7 +1690,12 @@ function tocarIntroPs2Audio() {
 
     function desconectarForcado(motivo, opcoes = {}) {
       clearTimeout(timerExpiracaoSessao);
-      if (listenerSessaoRealtime) {
+      const estado = opcoes.estado || AUTH_ACCESS_STATES.SIGNED_OUT;
+      // Correção do defeito: a UI de expiração interrompia o listener realtime.
+      // Isso impedia a restauração mesmo quando o Firestore já indicava ATIVO.
+      // Continuar observando o MESMO documento (UID confirmado) somente quando
+      // o estado é EXPIRED. Usuários bloqueados/desconectados seguem fechados.
+      if (estado !== AUTH_ACCESS_STATES.EXPIRED && listenerSessaoRealtime) {
         listenerSessaoRealtime();
         listenerSessaoRealtime = null;
       }
@@ -1650,7 +1706,6 @@ function tocarIntroPs2Audio() {
       if (ov) ov.style.display = 'none';
       finalizarCameraHardware();
 
-      const estado = opcoes.estado || AUTH_ACCESS_STATES.SIGNED_OUT;
       const zapRenovacao = opcoes.zapRenovacao || null;
       definirEstadoAcesso(estado);
 
@@ -1658,6 +1713,9 @@ function tocarIntroPs2Audio() {
         usuarioAtualZap = zapRenovacao;
         localStorage.setItem('usuario_zap_salvo', zapRenovacao);
         mostrarRenovacao(zapRenovacao, true);
+        // A restauração depende exclusivamente de uma nova leitura autenticada
+        // e da função original contaTemAcessoAtivo. Nunca libera por cache/localStorage.
+        agendarRechecagemExpiracao(zapRenovacao);
       } else {
         limparAvisoRenovacao();
       }
@@ -1740,6 +1798,18 @@ function tocarIntroPs2Audio() {
       if (!user?.uid) return '';
       const local = zapVinculadoLocal(user);
       if (local) return local;
+      // A consulta where() requer list, que está bloqueado pelas regras do Firestore.
+      // Confirmar diretamente o número salvo é compatível com allow get e exige UID igual.
+      const numeroSalvo = normalizarTelefone(localStorage.getItem('usuario_zap_salvo') || '');
+      if (validarNumeroWhatsApp(numeroSalvo)) {
+        try {
+          const docDireto = await db.collection('usuarios').doc(numeroSalvo).get({ source:'server' });
+          if (docDireto.exists && docDireto.data()?.authUid === user.uid) {
+            salvarVinculoSessaoLocal(user.uid, numeroSalvo);
+            return numeroSalvo;
+          }
+        } catch (erro) { console.warn('Vínculo aguardando conexão.', erro?.message || erro); }
+      }
       try {
         const snap = await db.collection('usuarios').where('authUid', '==', user.uid).limit(2).get({ source:'server' });
         if (snap.size !== 1) return '';
@@ -1790,7 +1860,13 @@ function tocarIntroPs2Audio() {
     }
 
     function iniciarRestauracaoAuth() {
-      auth.onAuthStateChanged(user => { restaurarSessaoFirebase(user); });
+      auth.onAuthStateChanged(user => {
+        // signIn dispara onAuthStateChanged antes de gravar deviceId e vínculo.
+        // Nesse curto intervalo não iniciar um monitor concorrente que poderia
+        // interpretar o deviceId antigo como sessão inválida.
+        if (autenticacaoManualEmAndamento) return;
+        restaurarSessaoFirebase(user);
+      });
     }
     authPersistenceReady.then(iniciarRestauracaoAuth, iniciarRestauracaoAuth);
 
@@ -3179,6 +3255,7 @@ function tocarIntroPs2Audio() {
 
     function salvarEstadoCompletoRota(nomeArquivo) {
       let dados = {
+        usuarioZap: usuarioAtualZap || localStorage.getItem('usuario_zap_salvo') || '',
         nomeArquivo: nomeArquivo || (chaveStorageAtual ? chaveStorageAtual.replace('bipados_', '') : 'Rota Salva'),
         chaveStorage: chaveStorageAtual,
         mapaRotas: mapaRotas,
@@ -3837,6 +3914,53 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       return [...encontrados];
     }
 
+    // V109 - Circuit (Notes em duas linhas): BR + 8 digitos na primeira
+    // linha, 4 digitos + verificador na segunda. Exemplo:
+    // BR26973763 + 7885K; => BR269737637885K.
+    // A montagem exige a MESMA coluna Notes e o final logo abaixo. Nunca
+    // usa numero de parada, ETA ou texto da entrega seguinte como sufixo.
+    function extrairCodigosCircuitNotasFragmentadasV109(itensOriginais, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').toUpperCase().trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(i => i.str);
+
+      const largura = Number(larguraPagina || 600);
+      const minXNotas = largura * 0.65;
+      const prefixos = itens.filter(i => /^BR\d{8}$/.test(i.str) && i.x >= minXNotas);
+      const finais = itens.filter(i => /^\d{4}[A-Z0-9]\s*;?$/.test(i.str) && i.x >= minXNotas);
+      const usados = new Set();
+      const saida = [];
+
+      for (const prefixo of prefixos) {
+        const candidato = finais
+          .filter(f => !usados.has(f.indice) && f.indice !== prefixo.indice)
+          .map(f => ({
+            item: f,
+            dx: Math.abs(f.x - prefixo.x),
+            dy: prefixo.y - f.y
+          }))
+          .filter(f => f.dx <= 12 && f.dy >= 2 && f.dy <= 18)
+          .sort((a, b) => (a.dy + 2 * a.dx) - (b.dy + 2 * b.dx))[0];
+
+        if (!candidato) continue;
+        const codigo = normalizarCodigoPacoteBr(prefixo.str + candidato.item.str.replace(/;$/, '').trim());
+        if (!codigo) continue;
+        usados.add(candidato.item.indice);
+        saida.push({
+          codigo,
+          x: prefixo.x,
+          y: (prefixo.y + candidato.item.y) / 2,
+          origem: 'circuit-notes-fragmentadas-v109'
+        });
+      }
+      return saida;
+    }
+
 
     // ============================================================
     // V71 - LEITOR ESTRUTURAL DE PDF PARA BIPAGEM
@@ -3900,6 +4024,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
       // Remove identificadores de lote/rota e códigos de pacote sem tocar no endereço.
       t = t
+        // Circuit pode usar "Rua:" e "Av:"; o dois-pontos nao faz parte da via.
+        .replace(/\b(Rua|R|Av|Avenida|Travessa|Tv)\s*:\s*/gi, '$1 ')
         .replace(/\bAT[A-Z0-9]{8,30}\s*;?/gi, ' ')
         .replace(/B[\s._-]*R[\s._-]*(?:\d[\s._-]*){12}[A-Z0-9]\s*;?/gi, ' ')
         .replace(/B[\s._-]*R[\s._-]*(?:\d[\s._-]*){12}(?![A-Z0-9])\s*;?/gi, ' ')
@@ -4597,6 +4723,12 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           registrar(codigo, (pfx.item.y + cand.item.y) / 2, pfx.item.x, 'quebrado');
           break;
         }
+      });
+
+      // V109: terceiro formato de Notes do Circuit. O sufixo aqui tem
+      // CINCO caracteres (4 digitos + verificador), e nao apenas um.
+      extrairCodigosCircuitNotasFragmentadasV109(itens, larguraPagina).forEach(a => {
+        registrar(a.codigo, a.y, a.x, a.origem);
       });
 
       // Agrupa codigos que pertencem visualmente a mesma linha/entrega.
@@ -5337,6 +5469,9 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           // A numeracao da coluna # deixa de ser requisito para aceitar a rota.
           const registrosBrutosV73 = [];
           const diagnosticoPaginasV73 = [];
+          // V109: controla TODAS as ocorrencias de BR+8 digitos do Circuit.
+          // Se um sufixo nao puder ser lido, nenhuma rota parcial e liberada.
+          let prefixosNotasFragmentadasV109 = 0;
 
           // V71B legado, mantido apenas para compatibilidade interna.
           const registrosCodigoV71Pdf = [];
@@ -5372,6 +5507,15 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             // fragmentada nunca mais faz o app descartar as entregas ancoradas por BR.
             const v71Pagina = extrairRegistrosPdfV71(itens, pagina, width);
             const porCodigoV73 = extrairRegistrosPdfV73PorCodigo(itens, pagina, width);
+
+            // Faz a contagem original do Circuit com BR+8 (na coluna Notes),
+            // independentemente de o par ser reconstruido. Nunca presume
+            // que 131/132 codigos seja uma rota completa.
+            const prefixosPaginaV109 = itens.filter(i =>
+              /^BR\d{8}$/i.test(i.str) && i.x >= width * 0.65
+            ).length;
+            prefixosNotasFragmentadasV109 += prefixosPaginaV109;
+
             const porHorarioV73 = porCodigoV73.length
               ? []
               : extrairRegistrosPdfV73PorHorario(itens, pagina, width);
@@ -5726,6 +5870,18 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           );
 
           const registrosDeterministicosV73 = normalizarRegistrosPdfV73(registrosBrutosV73);
+          // Valida o total de prefixos efetivamente presente no PDF de Notes
+          // divididas, sem aceitar entregue/pacote perdido silenciosamente.
+          if (prefixosNotasFragmentadasV109 > 0) {
+            const codigosReconstruidosV109 = new Set(
+              registrosBrutosV73
+                .filter(r => r.origemLeitura === 'codigo-v73')
+                .flatMap(r => r.codigos || [])
+            );
+            if (codigosReconstruidosV109.size !== prefixosNotasFragmentadasV109) {
+              throw new Error(`CONTAGEM_PDF_INCOMPLETA|${codigosReconstruidosV109.size}|${prefixosNotasFragmentadasV109}`);
+            }
+          }
           const codigosFonteV73 = new Set();
           registrosDeterministicosV73.forEach(r => (r.codigos || []).forEach(c => codigosFonteV73.add(c)));
 
