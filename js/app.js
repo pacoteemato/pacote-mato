@@ -3076,7 +3076,7 @@ function tocarIntroPs2Audio() {
     // Ao detectar troca de build, limpa apenas caches/Service Workers de interface;
     // os dados operacionais do usuário permanecem intactos.
     try {
-      const buildAtual = String(window.PEMATO_BUILD || '').trim() || '80';
+      const buildAtual = `${String(window.PEMATO_BUILD || '').trim() || '80'}-PDF-CIRCUIT-V110`;
       const buildAnterior = String(localStorage.getItem('pemato_build_carregado') || '').trim();
       localStorage.setItem('pemato_build_carregado', buildAtual);
       if (buildAnterior !== buildAtual) {
@@ -3961,6 +3961,54 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       return saida;
     }
 
+    // V110 - Circuit atual: Notes divide o codigo em BR + 11 digitos
+    // na primeira linha e 2 caracteres (digito + verificador) na segunda.
+    // Exemplo: BR26995226227 + 88; => BR2699522622788.
+    // A reconstrução exige a mesma coluna Notes e proximidade vertical curta.
+    // Não altera as regras de bipagem: apenas entrega o código completo ao leitor.
+    function extrairCodigosCircuitNotasPrefixo11V110(itensOriginais, larguraPagina) {
+      const itens = (Array.isArray(itensOriginais) ? itensOriginais : [])
+        .map((item, indice) => ({
+          str: String(item?.str || '').toUpperCase().trim(),
+          x: Number(item?.x || 0),
+          y: Number(item?.y || 0),
+          indice
+        }))
+        .filter(i => i.str);
+
+      const largura = Number(larguraPagina || 600);
+      const minXNotas = largura * 0.65;
+      const prefixos = itens.filter(i => /^BR\d{11}$/.test(i.str) && i.x >= minXNotas);
+      const finais = itens.filter(i => /^\d[A-Z0-9]\s*[;:,.]?$/.test(i.str) && i.x >= minXNotas);
+      const usados = new Set();
+      const saida = [];
+
+      for (const prefixo of prefixos) {
+        const candidato = finais
+          .filter(f => !usados.has(f.indice) && f.indice !== prefixo.indice)
+          .map(f => ({
+            item: f,
+            dx: Math.abs(f.x - prefixo.x),
+            dy: prefixo.y - f.y
+          }))
+          .filter(f => f.dx <= 12 && f.dy >= 2 && f.dy <= 18)
+          .sort((a, b) => (a.dy + 2 * a.dx) - (b.dy + 2 * b.dx))[0];
+
+        if (!candidato) continue;
+        const sufixo = candidato.item.str.replace(/[;:,.]\s*$/, '').trim();
+        const codigo = normalizarCodigoPacoteBr(prefixo.str + sufixo);
+        if (!codigo) continue;
+        usados.add(candidato.item.indice);
+        saida.push({
+          codigo,
+          x: prefixo.x,
+          y: (prefixo.y + candidato.item.y) / 2,
+          origem: 'circuit-notes-fragmentadas-v110'
+        });
+      }
+      return saida;
+    }
+
 
     // ============================================================
     // V71 - LEITOR ESTRUTURAL DE PDF PARA BIPAGEM
@@ -4731,6 +4779,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         registrar(a.codigo, a.y, a.x, a.origem);
       });
 
+      // V110: formato Circuit com prefixo BR+11 digitos e sufixo de 2 caracteres.
+      extrairCodigosCircuitNotasPrefixo11V110(itens, larguraPagina).forEach(a => {
+        registrar(a.codigo, a.y, a.x, a.origem);
+      });
+
       // Agrupa codigos que pertencem visualmente a mesma linha/entrega.
       const ancoras = [...porCodigo.values()].sort((a,b) => b.y - a.y);
       const grupos = [];
@@ -5472,6 +5525,8 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           // V109: controla TODAS as ocorrencias de BR+8 digitos do Circuit.
           // Se um sufixo nao puder ser lido, nenhuma rota parcial e liberada.
           let prefixosNotasFragmentadasV109 = 0;
+          // V110: Circuit com BR+11 digitos e sufixo de 2 caracteres em Notes.
+          let prefixosNotasCircuit11V110 = 0;
 
           // V71B legado, mantido apenas para compatibilidade interna.
           const registrosCodigoV71Pdf = [];
@@ -5515,6 +5570,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               /^BR\d{8}$/i.test(i.str) && i.x >= width * 0.65
             ).length;
             prefixosNotasFragmentadasV109 += prefixosPaginaV109;
+
+            const prefixosPaginaV110 = itens.filter(i =>
+              /^BR\d{11}$/i.test(i.str) && i.x >= width * 0.65
+            ).length;
+            prefixosNotasCircuit11V110 += prefixosPaginaV110;
 
             const porHorarioV73 = porCodigoV73.length
               ? []
@@ -5880,6 +5940,18 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             );
             if (codigosReconstruidosV109.size !== prefixosNotasFragmentadasV109) {
               throw new Error(`CONTAGEM_PDF_INCOMPLETA|${codigosReconstruidosV109.size}|${prefixosNotasFragmentadasV109}`);
+            }
+          }
+          // Não permite importar parcialmente PDFs Circuit no formato V110:
+          // a quantidade de códigos completos deve bater com todos os prefixos BR+11.
+          if (prefixosNotasCircuit11V110 > 0) {
+            const codigosReconstruidosV110 = new Set(
+              registrosBrutosV73
+                .filter(r => r.origemLeitura === 'codigo-v73')
+                .flatMap(r => r.codigos || [])
+            );
+            if (codigosReconstruidosV110.size !== prefixosNotasCircuit11V110) {
+              throw new Error(`CONTAGEM_PDF_CIRCUIT_V110_INCOMPLETA|${codigosReconstruidosV110.size}|${prefixosNotasCircuit11V110}`);
             }
           }
           const codigosFonteV73 = new Set();
