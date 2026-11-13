@@ -556,6 +556,62 @@
       });
     }
 
+    // Refino 2-opt: reverte segmentos que aparentam exigir grandes retornos.
+    // A distância geográfica serve SOMENTE para escolher as alternativas a testar.
+    // A rota vencedora é sempre medida pelo provedor sobre as ruas reais.
+    const porId = new Map((rota.paradas || []).map(p => [String(p.id),p]));
+    const gruposPendentes = gruposFisicosPendentes(rota);
+    const gruposPorChave = new Map(gruposPendentes.map(g => [g.chave,g]));
+    const vistosFisicos = new Set(), fisicosOrdenados = [];
+    pendentes.forEach(id => {
+      const parada=porId.get(String(id));
+      if (!parada) return;
+      const chave=chaveFisicaParada(parada);
+      if (vistosFisicos.has(chave)) return;
+      vistosFisicos.add(chave);
+      const grupo=gruposPorChave.get(chave);
+      if (grupo) fisicosOrdenados.push(grupo);
+    });
+    if (fisicosOrdenados.length >= 4 && fisicosOrdenados.length <= 60) {
+      const pontos=fisicosOrdenados.map(g => coord(g.representante));
+      const inicio=coord(rota.pontoInicial);
+      const fim=rota.retornarAoInicio===true?inicio:(rota.pontoFinal?coord(rota.pontoFinal):null);
+      const d=(a,b)=>{
+        if(!a||!b)return 0;
+        const rad=Math.PI/180,R=6371000;
+        const x=Math.sin((b.lat-a.lat)*rad/2)**2
+          +Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin((b.lon-a.lon)*rad/2)**2;
+        return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
+      };
+      const opcoes=[];
+      for(let i=0;i<pontos.length-1;i++){
+        for(let j=i+1;j<pontos.length;j++){
+          const anterior=i?pontos[i-1]:inicio;
+          const posterior=j+1<pontos.length?pontos[j+1]:fim;
+          const antes=d(anterior,pontos[i])+d(pontos[j],posterior);
+          const depois=d(anterior,pontos[j])+d(pontos[i],posterior);
+          const ganho=antes-depois;
+          if(ganho>20)opcoes.push({i,j,ganho});
+        }
+      }
+      opcoes.sort((a,b)=>b.ganho-a.ganho||a.i-b.i||a.j-b.j);
+      const escolhidas=[],indicesUsados=new Set();
+      for(const opcao of opcoes){
+        const key=opcao.i+':'+opcao.j;
+        if(indicesUsados.has(key))continue;
+        indicesUsados.add(key);
+        escolhidas.push(opcao);
+        if(escolhidas.length===4)break;
+      }
+      const finalizadas=base.ordem.filter(id => !pendentes.includes(id));
+      await mapLimit(escolhidas,2,async ({i,j},indice)=>{
+        const nova=fisicosOrdenados.slice();
+        nova.splice(i,j-i+1,...nova.slice(i,j+1).reverse());
+        const ids=nova.flatMap(g=>g.paradas.map(p=>String(p.id)));
+        return avaliar([...finalizadas,...ids],base.tipo,'Refino 2-opt ruas',tiposPlanejados.length+3+indice);
+      });
+    }
+
     candidatos.sort(comparar);
     const melhor = candidatos[0];
     const totalFisicas = gruposFisicosPendentes(rota).length;
