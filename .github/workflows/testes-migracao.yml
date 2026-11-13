@@ -1,0 +1,25 @@
+name: Testes de regressao da migracao
+on:
+  pull_request:
+    paths:
+      - 'js/**'
+      - 'css/**'
+      - 'index.html'
+      - 'tests/**'
+      - '.github/workflows/testes-migracao.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Testar arquivos, sintaxe e integracao de interface
+        run: node tests/migracao-smoke.test.cjs
+      - name: Testar partilha e preservacao de rotas
+        run: node tests/partilhar-paradas.test.cjs
