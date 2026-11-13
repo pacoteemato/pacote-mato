@@ -3086,15 +3086,8 @@ function tocarIntroPs2Audio() {
     // ==========================================
     // CONTROLE PWA E HARDWARE
     // ==========================================
-    if ('serviceWorker' in navigator) {
-      const swCode = `
-        self.addEventListener('install', e => self.skipWaiting());
-        self.addEventListener('activate', e => clients.claim());
-        self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
-      `;
-      const blob = new Blob([swCode], { type: 'text/javascript' });
-      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
-    }
+    // Não registrar SW via blob: navegadores atuais recusam essa origem.
+    // O aplicativo usa recursos com versão explícita; não guardar HTML/JS antigo.
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -3107,13 +3100,19 @@ function tocarIntroPs2Audio() {
       const buildAnterior = String(localStorage.getItem('pemato_build_carregado') || '').trim();
       localStorage.setItem('pemato_build_carregado', buildAtual);
       if (buildAnterior !== buildAtual) {
+        // Escopo rigoroso: nunca apagar caches ou SWs de outros apps no mesmo host.
         if ('caches' in window) {
-          caches.keys().then(chaves => Promise.all(chaves.map(chave => caches.delete(chave)))).catch(() => {});
+          caches.keys().then(chaves => Promise.all(chaves
+            .filter(chave => /^pemato-(app|assets|static|runtime)-/i.test(chave))
+            .map(chave => caches.delete(chave)))).catch(() => {});
         }
         if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
-          navigator.serviceWorker.getRegistrations().then(regs =>
-            Promise.all(regs.map(reg => reg.unregister()))
-          ).catch(() => {});
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            const caminhoApp = new URL('.', window.location.href).pathname;
+            return Promise.all(regs.filter(reg => {
+              try { return new URL(reg.scope).pathname === caminhoApp; } catch (_) { return false; }
+            }).map(reg => reg.unregister()));
+          }).catch(() => {});
         }
       }
     } catch (_) {}
