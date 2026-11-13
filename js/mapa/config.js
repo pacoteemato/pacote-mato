@@ -509,6 +509,9 @@
     // Evitar duas camadas de setas sobre a mesma via. Se não for possível
     // criar a nossa camada, as setas originais seguem disponíveis.
     const setasNacionais = garantirSetasRuasBrasil(mapa);
+    // Em navegação, somente a conversão real da rota ganha uma seta;
+    // as setas genéricas de mão única seguem disponíveis no mapa geral.
+    if (setasNacionais) setLayoutSeguro(mapa, {id: CAMADA_SETAS_BRASIL}, 'visibility', navegacaoAtiva ? 'none' : 'visible');
     if (setasNacionais) {
       layers.forEach(layer => {
         if (layer.type !== 'symbol' || /^pemato-/i.test(layer.id || '')) return;
