@@ -29,7 +29,9 @@
   const inicial = HOLY_FROG_BASE_URL;
 
   const cfg = global.PEMATO_MAP_CONFIG = Object.assign({
-    mapStyleUrl: 'https://tiles.openfreemap.org/styles/liberty',
+    // Cartografia de ruas detalhada, clara e legível no celular, com base
+    // aberta (o aplicativo não incorpora mapas nem recursos proprietários).
+    mapStyleUrl: 'https://tiles.openfreemap.org/styles/bright',
     fallbackMapStyle: {
       version: 8,
       glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
@@ -103,7 +105,14 @@
   function categoriaVia(txt) {
     // HOTFIX FINAL 6: hierarquia visual explícita. A classificação continua
     // baseada em id + source-layer e não depende de um único ID do Liberty.
-    if (/(motorway|trunk|freeway)/i.test(txt)) return 'rodovia';
+    // Não engrossar caminhos de pedestres/ciclovias/ferrovias como se fossem ruas.
+    if (/(footway|pedestrian|sidewalk|cycleway|bicycle|path|steps|railway|rail|tram|subway|ferry)/i.test(txt)) return '';
+    // Só o eixo principal de rodovias/expressas recebe laranja.
+    // Alças e acessos (motorway_link/trunk_link) ficam neutros.
+    if (/(motorway|trunk|freeway)/i.test(txt)) {
+      if (/(motorway[-_ ]?link|trunk[-_ ]?link|ramp|slip)/i.test(txt)) return 'secondary';
+      return 'rodovia';
+    }
     if (/(primary)/i.test(txt)) return 'primary';
     if (/(secondary)/i.test(txt)) return 'secondary';
     if (/(tertiary)/i.test(txt)) return 'tertiary';
@@ -115,14 +124,14 @@
     const extra = navegacaoAtiva ? 0.28 : 0;
     const tabela = {
       // HOTFIX FINAL 7: malha mais definida sem transformar o mapa em desenho pesado.
-      rodovia:   [10,1.75,13,3.35,16,5.95,19,9.20],
-      primary:   [10,1.48,13,2.88,16,5.15,19,8.05],
-      secondary: [10,1.18,13,2.38,16,4.30,19,6.80],
-      tertiary:  [10,0.98,13,1.98,16,3.58,19,5.58],
-      local:     [10,0.82,13,1.62,16,3.02,19,4.68]
+      rodovia:   [10,1.7,13,3.3,16,6.6,19,11.0],
+      primary:   [10,1.8,13,3.7,16,7.4,19,13.0],
+      secondary: [10,1.5,13,3.2,16,6.8,19,12.0],
+      tertiary:  [10,1.3,13,2.9,16,6.2,19,11.0],
+      local:     [10,1.1,13,2.6,16,5.8,19,10.0]
     };
     const valores = tabela[categoria] || tabela.local;
-    const casingExtra = casing ? ({rodovia:2.35,primary:2.08,secondary:1.76,tertiary:1.56,local:1.38}[categoria] || 1.38) : 0;
+    const casingExtra = casing ? ({rodovia:2.2,primary:1.9,secondary:1.7,tertiary:1.5,local:1.2}[categoria] || 1.2) : 0;
     const expr = ['interpolate', ['linear'], ['zoom']];
     for (let i = 0; i < valores.length; i += 2) expr.push(valores[i], valores[i + 1] + extra + casingExtra);
     return expr;
@@ -130,14 +139,178 @@
 
   function coresViaClean(categoria, casing) {
     const cores = {
-      rodovia:   {base:'#efd39a', borda:'#cbae6d'},
-      primary:   {base:'#f4e2ba', borda:'#d2bb87'},
-      secondary: {base:'#f7ead2', borda:'#d9caa8'},
-      tertiary:  {base:'#fcf8ed', borda:'#d7d7cf'},
-      local:     {base:'#ffffff', borda:'#cfd6d9'}
+      rodovia:   {base:'#f2d2a8', borda:'#e5bb8e'},
+      primary:   {base:'#dce1e6', borda:'#cdd4db'},
+      secondary: {base:'#dfe3e8', borda:'#d1d7dd'},
+      tertiary:  {base:'#e3e7eb', borda:'#d5dbe0'},
+      local:     {base:'#e6e9ed', borda:'#d8dee4'}
     };
     const c = cores[categoria] || cores.local;
     return casing ? c.borda : c.base;
+  }
+
+  // Desenho único das ruas: usa a classe geográfica da fonte vetorial,
+  // e não os nomes heterogêneos das camadas do tema Bright.
+  const CLASSES_RUAS = [
+    'motorway', 'trunk', 'primary', 'secondary', 'tertiary',
+    'minor', 'residential', 'living_street', 'street', 'service',
+    'unclassified', 'road'
+  ];
+  const FILTRO_RUAS = ['match', ['get', 'class'], CLASSES_RUAS, true, false];
+  const PINTURA_RUA = '#d2dfed';
+  const PINTURA_BORDA_RUA = '#bbcbdc';
+  const CAMADA_RUA_BORDA = 'pemato-streets-casing';
+  const CAMADA_RUA_PREENCHIMENTO = 'pemato-streets-solid';
+
+  function larguraRuasPorClasse(navegacaoAtiva) {
+    const extra = navegacaoAtiva ? 1.08 : 1;
+    const porClasse = (principal, secundaria, local) => [
+      'match', ['get', 'class'],
+      ['motorway', 'trunk'], principal * extra,
+      ['primary', 'secondary'], secundaria * extra,
+      ['tertiary'], (secundaria * .92) * extra,
+      local * extra
+    ];
+    return ['interpolate', ['linear'], ['zoom'],
+      10, porClasse(2.3, 1.8, 1.0),
+      13, porClasse(5.0, 4.0, 2.5),
+      16, porClasse(9.5, 7.9, 5.7),
+      18, porClasse(15.0, 12.1, 9.4),
+      20, porClasse(23.0, 17.5, 13.8)
+    ];
+  }
+
+  function garantirRuasAzuisUniformes(mapa, navegacaoAtiva) {
+    if (!mapa?.getStyle || !mapa?.addLayer) return false;
+    const layers = mapa.getStyle()?.layers || [];
+    const transporte = layers.find(l =>
+      l.type === 'line' && l['source-layer'] === 'transportation' &&
+      l.source && (!mapa.getSource || mapa.getSource(l.source))
+    );
+    if (!transporte) return false; // Raster de emergência não tem essa fonte.
+
+    const antesDosRotulos = layers.find(l => l.type === 'symbol' && !/^pemato-/i.test(l.id || ''))?.id;
+    const largura = larguraRuasPorClasse(navegacaoAtiva);
+    const comum = {
+      type: 'line',
+      source: transporte.source,
+      'source-layer': 'transportation',
+      filter: FILTRO_RUAS,
+      layout: { 'line-cap': 'round', 'line-join': 'round' }
+    };
+
+    try {
+      if (!mapa.getLayer?.(CAMADA_RUA_BORDA)) {
+        mapa.addLayer({
+          ...comum, id: CAMADA_RUA_BORDA,
+          paint: {
+            'line-color': PINTURA_BORDA_RUA,
+            'line-width': ['+', largura, 1.8],
+            'line-opacity': .70
+          }
+        }, antesDosRotulos);
+      } else {
+        mapa.setPaintProperty(CAMADA_RUA_BORDA, 'line-width', ['+', largura, 1.8]);
+      }
+      if (!mapa.getLayer?.(CAMADA_RUA_PREENCHIMENTO)) {
+        mapa.addLayer({
+          ...comum, id: CAMADA_RUA_PREENCHIMENTO,
+          paint: {
+            'line-color': PINTURA_RUA,
+            'line-width': largura,
+            'line-opacity': 1
+          }
+        }, antesDosRotulos);
+      } else {
+        mapa.setPaintProperty(CAMADA_RUA_PREENCHIMENTO, 'line-width', largura);
+      }
+      return true;
+    } catch (error) {
+      // Um tema vetorial incompatível não pode derrubar a navegação.
+      try { console.warn('Pacote É Mato: camada visual de ruas indisponível', error); } catch (_) {}
+      return false;
+    }
+  }
+
+  // Setas geográficas: camada vetorial independente da cidade visualizada.
+  // Sem coordenadas fixas ou recortes por estado. Apenas vias cuja base
+  // disponibiliza explicitamente o atributo oneway recebem a seta.
+  const CAMADA_SETAS_BRASIL = 'pemato-oneway-brasil';
+  const IMAGEM_SETA_BRASIL = 'pemato-oneway-chevron';
+
+  function garantirImagemSetaRua(mapa) {
+    if (mapa.hasImage?.(IMAGEM_SETA_BRASIL)) return true;
+    if (!mapa.addImage || typeof document === 'undefined') return false;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 36;
+      canvas.height = 36;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return false;
+      // Seta de uma via, não seta de manobra: discreta e legível.
+      ctx.fillStyle = '#566e81';
+      ctx.strokeStyle = '#f7fafc';
+      ctx.lineWidth = 2.3;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(7, 13); ctx.lineTo(19, 13);
+      ctx.lineTo(19, 8); ctx.lineTo(29, 18);
+      ctx.lineTo(19, 28); ctx.lineTo(19, 23);
+      ctx.lineTo(7, 23); ctx.closePath();
+      ctx.stroke(); ctx.fill();
+      mapa.addImage(IMAGEM_SETA_BRASIL, ctx.getImageData(0, 0, 36, 36), { pixelRatio: 2 });
+      return true;
+    } catch (_) { return false; }
+  }
+
+  function garantirSetasRuasBrasil(mapa) {
+    if (!mapa?.getStyle || !mapa?.addLayer) return false;
+    const layers = mapa.getStyle()?.layers || [];
+    const transporte = layers.find(l =>
+      l.type === 'line' && l['source-layer'] === 'transportation' &&
+      l.source && (!mapa.getSource || mapa.getSource(l.source))
+    );
+    if (!transporte || !garantirImagemSetaRua(mapa)) return false;
+    // OpenMapTiles: valores "1"/"yes"/"true" e "-1" quando disponíveis.
+    // Nunca exibe indicações para vias de mão dupla ou sem dado.
+    const normalizado = ['to-string', ['get', 'oneway']];
+    const validado = ['match', normalizado,
+      ['1', 'yes', 'true', '-1'], true, false];
+    const filtro = ['all',
+      ['match', ['get', 'class'], CLASSES_RUAS, true, false],
+      validado
+    ];
+    const antes = layers.find(l => l.type === 'symbol' && !/^pemato-/i.test(l.id || ''))?.id;
+    try {
+      if (!mapa.getLayer?.(CAMADA_SETAS_BRASIL)) {
+        mapa.addLayer({
+          id: CAMADA_SETAS_BRASIL,
+          type: 'symbol',
+          source: transporte.source,
+          'source-layer': 'transportation',
+          filter: filtro,
+          minzoom: 15,
+          layout: {
+            'symbol-placement': 'line',
+            'symbol-spacing': 310,
+            'icon-image': IMAGEM_SETA_BRASIL,
+            'icon-size': 0.9,
+            'icon-rotation-alignment': 'map',
+            'icon-keep-upright': false,
+            'icon-allow-overlap': false,
+            'icon-ignore-placement': false,
+            'icon-rotate': ['case', ['==', normalizado, '-1'], 180, 0]
+          },
+          paint: { 'icon-opacity': 0.75 }
+        }, antes);
+      } else {
+        mapa.setLayoutProperty?.(CAMADA_SETAS_BRASIL, 'visibility', 'visible');
+      }
+      return true;
+    } catch (error) {
+      try { console.warn('Pacote É Mato: setas de mão única indisponíveis nesta base', error); } catch (_) {}
+      return false;
+    }
   }
 
   // HOTFIX FINAL 2: identidade base única para OVERVIEW e NAVIGATION-ACTIVE.
@@ -152,25 +325,27 @@
       const txt = textoLayer(layer);
 
       if (layer.type === 'background') {
-        setPaintSeguro(mapa, layer, 'background-color', '#f7f8f7');
+        setPaintSeguro(mapa, layer, 'background-color', '#f8f8f9');
         setPaintSeguro(mapa, layer, 'background-opacity', 1);
         return;
       }
 
       if (layer.type === 'fill') {
         if (/(water|ocean|lake|river|waterway)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#e5f2f7');
+          setPaintSeguro(mapa, layer, 'fill-color', '#dceaf6');
           setPaintSeguro(mapa, layer, 'fill-opacity', 0.94);
         } else if (/(park|grass|wood|forest|green|nature|landcover)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#edf5ed');
-          setPaintSeguro(mapa, layer, 'fill-opacity', 0.78);
+          // Parques permanecem identificáveis, mas sem dominar a malha urbana.
+          setPaintSeguro(mapa, layer, 'fill-color', '#e8f2e2');
+          setPaintSeguro(mapa, layer, 'fill-opacity', 0.88);
         } else if (/(building)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#e9ecee');
-          setPaintSeguro(mapa, layer, 'fill-opacity', 0.42);
-          setPaintSeguro(mapa, layer, 'fill-outline-color', '#dfe3e5');
+          // Casas visíveis sem preenchimento pesado: contorno cinza suave.
+          setPaintSeguro(mapa, layer, 'fill-color', '#f1f2f4');
+          setPaintSeguro(mapa, layer, 'fill-opacity', ['interpolate', ['linear'], ['zoom'], 13, 0.45, 15, 0.76, 17, 0.94, 19, 1]);
+          setPaintSeguro(mapa, layer, 'fill-outline-color', '#cdd5de');
         } else if (/(landuse|industrial|commercial|retail|residential-area)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#f4f5f3');
-          setPaintSeguro(mapa, layer, 'fill-opacity', 0.32);
+          setPaintSeguro(mapa, layer, 'fill-color', '#f4f5f7');
+          setPaintSeguro(mapa, layer, 'fill-opacity', 0.22);
         }
         return;
       }
@@ -181,13 +356,63 @@
       }
 
       if (layer.type === 'line') {
+        // Ferrovias e trilhos eram as linhas finas pretas sobre o mapa.
+        // Ocultar apenas a cartografia ferroviária, sem tocar nas rotas calculadas.
+        if (/(railway|railroad|rail[-_ ]?track|train[-_ ]?track|subway[-_ ]?track|tram[-_ ]?track)/i.test(txt)) {
+          setLayoutSeguro(mapa, layer, 'visibility', 'none');
+          return;
+        }
+        if (/(building|building_outline)/i.test(txt)) {
+          setPaintSeguro(mapa, layer, 'line-color', '#cdd5de');
+          setPaintSeguro(mapa, layer, 'line-opacity', 0.45);
+          setPaintSeguro(mapa, layer, 'line-width', 0.55);
+          return;
+        }
+        // A base Bright tem trilhas, passagens e caminhos de pedestres
+        // com tracejado marrom. Antes, a classificação os ignorava,
+        // deixando-os muito evidentes após a simplificação das bordas de rua.
+        // Mantém a informação cartográfica, mas em traço fino e neutro.
+        const camadaPedestre = /(?:^|[-_ ])(footway|footpath|pedestrian|sidewalk|cycleway|bicycle|path|walkway|trail|steps|bridleway)(?:$|[-_ ])/i.test(txt);
+        const caminhoTracejado = layer.paint?.['line-dasharray'] != null
+          && /(?:^|[-_ ])(walkway|pedestrian|footway|footpath|path|cycleway|trail|track|sidewalk)(?:$|[-_ ])/i.test(String(layer.id || ''));
+        // Algumas trilhas/ciclovias do Bright usam IDs genéricos
+        // (ex.: transportation) e só aparecem no filtro da camada.
+        const filtro = JSON.stringify(layer.filter || []);
+        const trilhaFiltrada = /(footway|footpath|pedestrian|cycleway|bicycle|sidewalk|walkway|bridleway|steps|path)/i.test(filtro)
+          && !/(motorway|trunk|primary|secondary|tertiary|residential)/i.test(filtro);
+        // Não deixar sobrar nenhum tracejado decorativo da base nas ruas.
+        const tracejadoDecorativo = layer.paint?.['line-dasharray'] != null
+          && /transportation/i.test(String(layer['source-layer'] || ''))
+          && !/(motorway|trunk|primary|secondary|tertiary)/i.test(String(layer.id || ''));
+        // Não classificar vias comuns como trilhas só por pertencerem à
+        // source-layer "transportation". Ruas também podem ter dash no estilo.
+        if (camadaPedestre || caminhoTracejado || trilhaFiltrada || tracejadoDecorativo) {
+          // Passagens internas do Bright apareciam como traços azul-claros
+          // pontilhados no meio das quadras. Removê-las do estilo visual
+          // não altera vias, rotas calculadas nem setas de mão única.
+          setLayoutSeguro(mapa, layer, 'visibility', 'none');
+          return;
+        }
         const via = categoriaVia(txt);
         if (via) {
-          const casing = /(casing|outline|border)/i.test(txt);
-          const cor = coresViaClean(via, casing);
+          // A base Bright separa o corpo da via e linhas decorativas de borda.
+          // Ao ampliar todas indiscriminadamente, as bordas tracejadas viravam
+          // blocos retangulares repetidos dos dois lados das ruas.
+          const id = String(layer.id || '').toLowerCase();
+          const camadaDeBorda = /(?:^|[-_])(casing|outline|border|edge|kerb|curb)(?:$|[-_])/.test(id);
+          if (camadaDeBorda) {
+            setLayoutSeguro(mapa, layer, 'visibility', 'none');
+            return;
+          }
+
+          const cor = coresViaClean(via, false);
           setPaintSeguro(mapa, layer, 'line-color', cor);
-          setPaintSeguro(mapa, layer, 'line-opacity', casing ? 0.98 : 1);
-          setPaintSeguro(mapa, layer, 'line-width', larguraViaClean(via, casing, navegacaoAtiva));
+          setPaintSeguro(mapa, layer, 'line-opacity', 1);
+          // É preciso usar os valores concretos aceitos pelo MapLibre.
+          // 'null' não assegurava que o tracejado e a largura do vão sumissem.
+          setPaintSeguro(mapa, layer, 'line-dasharray', [1, 0]);
+          setPaintSeguro(mapa, layer, 'line-gap-width', 0);
+          setPaintSeguro(mapa, layer, 'line-width', larguraViaClean(via, false, navegacaoAtiva));
           setPaintSeguro(mapa, layer, 'line-blur', 0);
           return;
         }
@@ -196,13 +421,41 @@
           setPaintSeguro(mapa, layer, 'line-opacity', 0.45);
         }
         if (/(waterway|river|stream)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'line-color', '#bcdfea');
-          setPaintSeguro(mapa, layer, 'line-opacity', 0.82);
+          setPaintSeguro(mapa, layer, 'line-color', '#d1dce1');
+          setPaintSeguro(mapa, layer, 'line-opacity', 0.45);
         }
         return;
       }
 
       if (layer.type !== 'symbol') return;
+
+      // Setas de sentido: somente símbolos de mão única vinculados ao
+      // traçado das ruas. Símbolos de direção genéricos/pontos soltos são
+      // ocultados; as manobras da navegação (pemato-*) não são afetadas.
+      if (/(oneway|one-way|direction|arrow)/i.test(txt)) {
+        const id = String(layer.id || '').toLowerCase();
+        const origem = String(layer['source-layer'] || '').toLowerCase();
+        const setaDeRua = /(oneway|one-way|one_way)/i.test(id) &&
+          /^(transportation|transportation_name|road|roads)$/i.test(origem);
+        if (!setaDeRua) {
+          setLayoutSeguro(mapa, layer, 'visibility', 'none');
+          return;
+        }
+        setLayoutSeguro(mapa, layer, 'visibility', 'visible');
+        // As setas acompanham o centro das ruas, em vez de aparecerem
+        // perdidas dentro das quadras; poucas setas por trecho.
+        setLayoutSeguro(mapa, layer, 'symbol-placement', 'line');
+        setLayoutSeguro(mapa, layer, 'symbol-spacing', 420);
+        setLayoutSeguro(mapa, layer, 'icon-allow-overlap', false);
+        setLayoutSeguro(mapa, layer, 'icon-ignore-placement', false);
+        setLayoutSeguro(mapa, layer, 'text-allow-overlap', false);
+        setLayoutSeguro(mapa, layer, 'text-ignore-placement', false);
+        setLayoutSeguro(mapa, layer, 'icon-size', 0.72);
+        setPaintSeguro(mapa, layer, 'icon-opacity', 0.66);
+        setPaintSeguro(mapa, layer, 'text-opacity', 0.66);
+        try { mapa.setLayerZoomRange?.(layer.id, 15.5, 24); } catch (_) {}
+        return;
+      }
 
       const ehRoadLabel = /(road|street|transportation_name|highway|motorway|trunk|primary|secondary|tertiary|residential)/i.test(txt)
         && !/(shield|route.?number|road.?number|highway.?ref|motorway.?ref)/i.test(txt);
@@ -213,18 +466,18 @@
       if (ehRoadLabel) {
         setLayoutSeguro(mapa, layer, 'visibility', 'visible');
         setLayoutSeguro(mapa, layer, 'text-size', ['interpolate', ['linear'], ['zoom'], 11, 11.0, 14, 12.9, 16, navegacaoAtiva ? 15.2 : 14.5, 19, navegacaoAtiva ? 17.3 : 16.5]);
-        setPaintSeguro(mapa, layer, 'text-color', '#2f3438');
-        setPaintSeguro(mapa, layer, 'text-halo-color', '#fffefa');
+        setPaintSeguro(mapa, layer, 'text-color', '#526070');
+        setPaintSeguro(mapa, layer, 'text-halo-color', '#ffffff');
         setPaintSeguro(mapa, layer, 'text-halo-width', navegacaoAtiva ? 2.05 : 1.75);
         setPaintSeguro(mapa, layer, 'text-halo-blur', 0.12);
         setPaintSeguro(mapa, layer, 'text-opacity', 1);
-        setPaintSeguro(mapa, layer, 'icon-opacity', 0.38);
+        setPaintSeguro(mapa, layer, 'icon-opacity', 0);
         return;
       }
 
       if (ehPlaceLabel) {
         setLayoutSeguro(mapa, layer, 'visibility', 'visible');
-        setPaintSeguro(mapa, layer, 'text-color', '#687177');
+        setPaintSeguro(mapa, layer, 'text-color', '#65717a');
         setPaintSeguro(mapa, layer, 'text-halo-color', '#f6f7f7');
         setPaintSeguro(mapa, layer, 'text-halo-width', 1.25);
         setPaintSeguro(mapa, layer, 'text-opacity', /neigh|suburb/i.test(txt) ? 0.72 : 0.62);
@@ -244,6 +497,23 @@
       }
     });
 
+    // A camada de ruas azuis uniformes foi desativada: o mapa agora usa
+    // a hierarquia cinza/laranja suave, como na referência enviada.
+    // As rotas e os pinos pemato-* continuam preservados.
+    // Evitar duas camadas de setas sobre a mesma via. Se não for possível
+    // criar a nossa camada, as setas originais seguem disponíveis.
+    const setasNacionais = garantirSetasRuasBrasil(mapa);
+    if (setasNacionais) {
+      layers.forEach(layer => {
+        if (layer.type !== 'symbol' || /^pemato-/i.test(layer.id || '')) return;
+        const id = String(layer.id || '').toLowerCase();
+        const origem = String(layer['source-layer'] || '').toLowerCase();
+        if (/(oneway|one-way|one_way)/.test(id) &&
+            /^(transportation|transportation_name|road|roads)$/.test(origem)) {
+          setLayoutSeguro(mapa, layer, 'visibility', 'none');
+        }
+      });
+    }
     estiloCleanAplicado.add(mapa);
     return true;
   }
@@ -274,24 +544,15 @@
   derivarEndpoints();
 
   function exibirConstrucoes2D(mapa) {
-    const camadas = mapa?.getStyle?.()?.layers || [];
-    const bases = camadas.filter(l => l['source-layer'] &&
-      /building/i.test(l['source-layer']) && ['fill','fill-extrusion'].includes(l.type));
-    const fontes = new Map();
-    bases.forEach(l => fontes.set(`${l.source}:${l['source-layer']}`, l));
-    let indice = 0;
-    fontes.forEach(base => {
-      const id = `pemato-construcoes-2d-${indice++}`;
-      if (mapa.getLayer(id)) return;
-      const antes = camadas.find(l => l.source === base.source && l['source-layer'] === base['source-layer'])?.id;
-      mapa.addLayer({
-        id, type:'fill', source:base.source, 'source-layer':base['source-layer'], minzoom:14,
-        layout:{visibility:'visible'},
-        paint:{'fill-color':'#f0efed', 'fill-outline-color':'#b5b9bd',
-          'fill-opacity':['interpolate',['linear'],['zoom'],14,0.45,16,0.85]}
-      }, antes);
-      bases.filter(l => l.source === base.source && l['source-layer'] === base['source-layer'])
-        .forEach(l => mapa.setLayoutProperty(l.id, 'visibility', 'none'));
+    // O mapa-base já contém os polígonos dos prédios. Criar outra camada 2D
+    // duplicava os contornos e tornava o desenho das casas excessivamente técnico.
+    (mapa?.getStyle?.()?.layers || []).slice().forEach(layer => {
+      if (/^pemato-construcoes-2d-/i.test(layer.id || '')) {
+        try { if (mapa.getLayer?.(layer.id)) mapa.removeLayer(layer.id); } catch (_) {}
+      }
+      if (layer.type === 'fill-extrusion' && /building/i.test(textoLayer(layer))) {
+        setLayoutSeguro(mapa, layer, 'visibility', 'none');
+      }
     });
   }
 
