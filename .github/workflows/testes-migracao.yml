@@ -31,6 +31,8 @@ jobs:
         run: node tests/regressao-visual-v83.test.cjs
       - name: Testar regras de finalização, histórico e setas V84
         run: node tests/rotas-finalizacao-v84.test.cjs
+      - name: Testar execução da função finalizarRota e falhas de gravação
+        run: node tests/finalizar-execucao-v84.test.cjs
 
   visual-android:
     runs-on: ubuntu-24.04
