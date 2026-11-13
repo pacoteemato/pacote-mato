@@ -791,6 +791,7 @@ function tocarIntroPs2Audio() {
       mostrarMensagemAuth('sucesso', 'Informe seu e-mail. Ao criar a conta, seu acesso antigo será vinculado sem apagar o vencimento do plano.');
     }
 
+    let cadastroFirebaseEmAndamento = false;
     async function criarContaFirebase() {
       const zap = normalizarTelefone(document.getElementById('cadastroTel').value);
       const email = (document.getElementById('cadastroEmail').value || '').trim().toLowerCase();
@@ -805,6 +806,7 @@ function tocarIntroPs2Audio() {
 
       btn.disabled = true;
       btn.textContent = 'Criando conta...';
+      cadastroFirebaseEmAndamento = true;
       let cred = null;
       let senhaAntigaLegada = '';
       try {
@@ -895,7 +897,11 @@ function tocarIntroPs2Audio() {
           mostrarMensagemAuth('sucesso', 'Conta antiga vinculada ao e-mail com sucesso. Seu plano e vencimento foram preservados.');
           iniciarMonitoramentoSessao(zap);
         } else {
-          mostrarMensagemAuth('sucesso', antigo ? 'Conta antiga vinculada. Agora escolha um plano ou use o teste grátis, se disponível.' : 'Conta criada. Agora ative os 10 dias grátis ou escolha um plano abaixo.');
+          definirEstadoAcesso(AUTH_ACCESS_STATES.REGISTERED);
+          limparAvisoRenovacao();
+          atualizarVisibilidadeTesteGratis();
+          document.getElementById('telaBloqueio').style.display = 'flex';
+          mostrarMensagemAuth('sucesso', antigo ? 'Conta vinculada. Ative os 10 dias grátis, se disponíveis, ou escolha um plano.' : 'Conta criada com sucesso! Toque em TESTE GRÁTIS — 10 DIAS para começar, ou escolha um plano.');
         }
         return true;
       } catch (e) {
@@ -913,6 +919,7 @@ function tocarIntroPs2Audio() {
         }
         return false;
       } finally {
+        cadastroFirebaseEmAndamento = false;
         btn.disabled = false;
         btn.textContent = 'Criar minha conta';
       }
@@ -1288,7 +1295,8 @@ function tocarIntroPs2Audio() {
         }
 
         const diasTeste = 10;
-        const expiraEm = Date.now() + (diasTeste * 24 * 60 * 60 * 1000);
+        const ativadoEm = Date.now();
+        const expiraEm = ativadoEm + (diasTeste * 24 * 60 * 60 * 1000);
         await ref.set({
           whatsapp: zap,
           email: user.email || conta.email || '',
@@ -1302,7 +1310,7 @@ function tocarIntroPs2Audio() {
           plano: 'Teste Grátis (10 Dias)',
           duracaoDias: diasTeste,
           indicadoPor: cupomIndicador || '',
-          ativadoEm: Date.now()
+          ativadoEm
         }, { merge: true });
 
         await db.collection('dispositivos_bloqueados').doc(MEU_DEVICE_ID).set({
@@ -1397,6 +1405,13 @@ function tocarIntroPs2Audio() {
         salvarVinculoSessaoLocal(cred.user.uid, zap);
         await ref.update({ deviceId: MEU_DEVICE_ID, ultimoLoginEm: Date.now() });
 
+        if (!contaTemAcessoAtivo(data, agora) && data.ativo === false && data.jaUsouTeste === false && data.tipo === 'cadastro') {
+          definirEstadoAcesso(AUTH_ACCESS_STATES.REGISTERED);
+          limparAvisoRenovacao();
+          atualizarVisibilidadeTesteGratis();
+          mostrarMensagemAuth('sucesso', 'Conta criada. Ative os 10 dias grátis ou escolha um plano.');
+          return;
+        }
         if (!contaTemAcessoAtivo(data, agora)) {
           definirEstadoAcesso(AUTH_ACCESS_STATES.EXPIRED, { confirmado: true, motivo: 'login_servidor' });
           mostrarRenovacao(zap, true);
@@ -1428,7 +1443,7 @@ function tocarIntroPs2Audio() {
     globalThis.PEMATO_SESSAO_HOTFIX = 'V81-TESTE22-RECONCILIACAO-4';
     let timerExpiracaoSessao = null;
     const AUTH_ACCESS_STATES = Object.freeze({
-      BOOTING:'booting', CHECKING:'checking', ACTIVE:'active', EXPIRED:'expired',
+      BOOTING:'booting', CHECKING:'checking', REGISTERED:'registered', ACTIVE:'active', EXPIRED:'expired',
       BLOCKED:'blocked', OFFLINE:'offline-error', SIGNED_OUT:'signed-out'
     });
     let authAccessState = AUTH_ACCESS_STATES.BOOTING;
@@ -1620,6 +1635,17 @@ function tocarIntroPs2Audio() {
           return false;
         }
         desconectarForcado('Esta conta foi conectada em outro aparelho!', { estado:AUTH_ACCESS_STATES.SIGNED_OUT, encerrarAuth:true });
+        return false;
+      }
+
+      if (!contaTemAcessoAtivo(data, agora) && data.ativo === false && data.jaUsouTeste === false && data.tipo === 'cadastro') {
+        // Cadastro não ativado: mostrar teste grátis em vez de assinatura expirada.
+        definirEstadoAcesso(AUTH_ACCESS_STATES.REGISTERED);
+        usuarioAtualZap = zap;
+        limparAvisoRenovacao();
+        atualizarVisibilidadeTesteGratis();
+        document.getElementById('telaBloqueio').style.display = 'flex';
+        mostrarMensagemAuth('sucesso', 'Cadastro realizado. Ative os 10 dias grátis ou escolha um plano para começar.');
         return false;
       }
 
@@ -1861,6 +1887,7 @@ function tocarIntroPs2Audio() {
 
     function iniciarRestauracaoAuth() {
       auth.onAuthStateChanged(user => {
+        if (cadastroFirebaseEmAndamento) return;
         // signIn dispara onAuthStateChanged antes de gravar deviceId e vínculo.
         // Nesse curto intervalo não iniciar um monitor concorrente que poderia
         // interpretar o deviceId antigo como sessão inválida.
@@ -3930,7 +3957,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .filter(i => i.str);
 
       const largura = Number(larguraPagina || 600);
-      const minXNotas = largura * 0.65;
+      const minXNotas = largura * 0.22; // Aceita colunas Notes deslocadas; o BR completo continua obrigatório.
       const prefixos = itens.filter(i => /^BR\d{8}$/.test(i.str) && i.x >= minXNotas);
       const finais = itens.filter(i => /^\d{4}[A-Z0-9]\s*;?$/.test(i.str) && i.x >= minXNotas);
       const usados = new Set();
@@ -3944,7 +3971,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             dx: Math.abs(f.x - prefixo.x),
             dy: prefixo.y - f.y
           }))
-          .filter(f => f.dx <= 12 && f.dy >= 2 && f.dy <= 18)
+          .filter(f => f.dx <= 20 && f.dy >= 2 && f.dy <= 27)
           .sort((a, b) => (a.dy + 2 * a.dx) - (b.dy + 2 * b.dx))[0];
 
         if (!candidato) continue;
@@ -3977,7 +4004,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
         .filter(i => i.str);
 
       const largura = Number(larguraPagina || 600);
-      const minXNotas = largura * 0.65;
+      const minXNotas = largura * 0.22; // Aceita colunas Notes deslocadas; o BR completo continua obrigatório.
       const prefixos = itens.filter(i => /^BR\d{11}$/.test(i.str) && i.x >= minXNotas);
       const finais = itens.filter(i => /^\d[A-Z0-9]\s*[;:,.]?$/.test(i.str) && i.x >= minXNotas);
       const usados = new Set();
@@ -3991,7 +4018,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
             dx: Math.abs(f.x - prefixo.x),
             dy: prefixo.y - f.y
           }))
-          .filter(f => f.dx <= 12 && f.dy >= 2 && f.dy <= 18)
+          .filter(f => f.dx <= 20 && f.dy >= 2 && f.dy <= 27)
           .sort((a, b) => (a.dy + 2 * a.dx) - (b.dy + 2 * b.dx))[0];
 
         if (!candidato) continue;

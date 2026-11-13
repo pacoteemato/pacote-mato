@@ -15,6 +15,7 @@
   const LAYER_ROUTE_STATUS_CASE = 'pemato-route-status-case';
   const LAYER_ROUTE_STATUS = 'pemato-route-status-layer';
   const SOURCE_STOPS = 'pemato-stops';
+  const SOURCE_STOPS_SELECTED = 'pemato-stops-selected';
   const LAYER_STOPS_GROUP_RING = 'pemato-stops-group-ring';
   const LAYER_STOPS = 'pemato-stops-simple';
   const LAYER_STOPS_MULTI = 'pemato-stops-multi';
@@ -119,7 +120,8 @@
 
     const ocupacaoVisual = new Map();
     const features = [];
-    const numerada = state()?.rotaOtimizada === true && state()?.precisaRecalculo !== true;
+    // Mesmo antes da otimização, o entregador vê cada parada pelo seu número.
+    // A otimização só altera a ordem; não controla a visibilidade do pino.
     grupos.forEach(grupo => {
       grupo.sort((a,b) => ordem(a) - ordem(b));
       const ativos = grupo.filter(item => !['entregue','concluida','nao_entregue'].includes(String(item.statusEntrega || '')));
@@ -129,7 +131,7 @@
       // troca o rótulo 81 -> 82 sem inventar outra coordenada.
       const pSelecionada = grupo.find(item => String(item.id) === String(selectedId));
       const p = pSelecionada || grupoVisual[0];
-      const totalPacotes = grupoVisual.reduce((total, item) => total + quantidadePacotesDaParada(item), 0);
+      const totalPacotes = global.PacoteEMatoMarcadores?.quantidadePacotesRegistradosDoGrupo?.(grupo) ?? 0;
       const lat = Number(p.latitude), lon = Number(p.longitude);
       // Agrupa visualmente pontos muito próximos para que os balões sejam
       // deslocados em vez de ficarem um em cima do outro.
@@ -144,8 +146,8 @@
         properties: {
           id: String(p.id),
           ids: ids.join(','),
-          order: numerada ? ordem(p) : 0,
-          numbered: numerada ? 1 : 0,
+          order: ordem(p),
+          numbered: 1,
           status: statusEntrega(p),
           selected: ids.includes(String(selectedId)) ? 1 : 0,
           groupSelected: grupoVisual.some(item => idsSelecaoDesenho.has(String(item.id)) || idsGruposDesenho.has(String(item.id))) ? 1 : 0,
@@ -240,10 +242,14 @@
   }
 
   function adicionarSourceParadas() {
-    if (!mapa || mapa.getSource(SOURCE_STOPS)) return;
-    mapa.addSource(SOURCE_STOPS, {
-      type: 'geojson',
-      data: featureCollection([])
+    if (!mapa) return;
+    // Cada endereço permanece um marcador numerado em qualquer nível de zoom.
+    // Agrupar por proximidade criava círculos enormes com contadores no zoom distante.
+    if (!mapa.getSource(SOURCE_STOPS)) mapa.addSource(SOURCE_STOPS, {
+      type: 'geojson', data: featureCollection([])
+    });
+    if (!mapa.getSource(SOURCE_STOPS_SELECTED)) mapa.addSource(SOURCE_STOPS_SELECTED, {
+      type: 'geojson', data: featureCollection([])
     });
   }
 
@@ -265,7 +271,7 @@
     if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({
       id: LAYER_ROUTE, type: 'line', source: SOURCE_ROUTE,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': '#3f9d72', 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.9, 12, 2.7, 14, 3.6, 16, 5], 'line-opacity': .68, 'line-blur': 0 }
+      paint: { 'line-color': '#2876e6', 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 2.2, 12, 3.2, 14, 4.2, 16, 5.7], 'line-opacity': .94, 'line-blur': 0 }
     }, before);
     if (!mapa.getLayer(LAYER_ROUTE_STATUS_CASE)) mapa.addLayer({
       id: LAYER_ROUTE_STATUS_CASE, type: 'line', source: SOURCE_ROUTE_STATUS,
@@ -276,7 +282,7 @@
       id: LAYER_ROUTE_STATUS, type: 'line', source: SOURCE_ROUTE_STATUS,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': ['match', ['get', 'status'], 'passado', '#3f9d72', 'proxima', '#047857', '#047857'],
+        'line-color': ['match', ['get', 'status'], 'passado', '#a4adb9', 'proxima', '#1761d1', '#2876e6'],
         'line-width': ['interpolate', ['linear'], ['zoom'], 9, 2.4, 12, 3.4, 14, 4.7, 16, 6.4],
         'line-opacity': ['match', ['get', 'status'], 'passado', 0.36, 'proxima', 1, 0.9]
       }
@@ -284,16 +290,16 @@
     if (!mapa.getLayer(LAYER_STOPS_GROUP_RING)) mapa.addLayer({
       id: LAYER_STOPS_GROUP_RING, type: 'circle', source: SOURCE_STOPS,
       filter: ['==', ['get', 'groupSelected'], 1],
-      paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 15, 17, 19], 'circle-color': 'rgba(16,185,129,.12)', 'circle-stroke-color': '#10b981', 'circle-stroke-width': 2 }
+      paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 19, 17, 24], 'circle-color': 'rgba(49,121,239,.12)', 'circle-stroke-color': '#3179ef', 'circle-stroke-width': 2 }
     });
     const layoutMarcadorV12 = {
       'icon-image': ['get', 'iconV12'],
-      'icon-anchor': 'center',
-      'icon-size': ['interpolate', ['linear'], ['zoom'], 9, .62, 12, .72, 14, .86, 16, 1, 18, 1.04],
+      'icon-anchor': 'bottom',
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 8, .62, 11, .76, 14, .94, 17, 1.06],
       'icon-offset': ['get','markerOffset'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
-      'icon-padding': 1,
+      'icon-padding': 3,
       'symbol-sort-key': ['get', 'order']
     };
     if (!mapa.getLayer(LAYER_STOPS)) mapa.addLayer({
@@ -307,12 +313,12 @@
       layout: { ...layoutMarcadorV12 }
     });
     if (!mapa.getLayer(LAYER_STOPS_ACTIVE)) mapa.addLayer({
-      id: LAYER_STOPS_ACTIVE, type: 'symbol', source: SOURCE_STOPS,
+      id: LAYER_STOPS_ACTIVE, type: 'symbol', source: SOURCE_STOPS_SELECTED,
       filter: ['all', ['<=', ['get','multi'], 1], ['==', ['get','selected'], 1]],
       layout: { ...layoutMarcadorV12, 'icon-allow-overlap': true, 'icon-ignore-placement': true }
     });
     if (!mapa.getLayer(LAYER_STOPS_MULTI_ACTIVE)) mapa.addLayer({
-      id: LAYER_STOPS_MULTI_ACTIVE, type: 'symbol', source: SOURCE_STOPS,
+      id: LAYER_STOPS_MULTI_ACTIVE, type: 'symbol', source: SOURCE_STOPS_SELECTED,
       filter: ['all', ['>', ['get','multi'], 1], ['==', ['get','selected'], 1]],
       layout: { ...layoutMarcadorV12, 'icon-allow-overlap': true, 'icon-ignore-placement': true }
     });
@@ -321,26 +327,50 @@
     // Em estilo raster puro não há servidor de glyphs. O círculo de partida continua visível
     // e evita que uma camada de texto impeça a montagem das demais camadas do mapa.
     if (mapa.getStyle()?.glyphs && !mapa.getLayer(LAYER_START_TEXT)) mapa.addLayer({ id: LAYER_START_TEXT, type: 'symbol', source: SOURCE_START, layout: { 'text-field': 'P', 'text-size': 10, 'text-allow-overlap': true }, paint: { 'text-color': '#ffffff' } });
-    if (!mapa.getLayer(LAYER_END)) mapa.addLayer({ id: LAYER_END, type: 'circle', source: SOURCE_END, paint: { 'circle-radius': 11, 'circle-color': '#111827', 'circle-stroke-color': '#34a66f', 'circle-stroke-width': 4 } });
+    if (!mapa.getLayer(LAYER_END)) mapa.addLayer({ id: LAYER_END, type: 'circle', source: SOURCE_END, paint: { 'circle-radius': 11, 'circle-color': '#24313b', 'circle-stroke-color': '#25B782', 'circle-stroke-width': 4 } });
     if (mapa.getStyle()?.glyphs && !mapa.getLayer(LAYER_END_TEXT)) mapa.addLayer({ id: LAYER_END_TEXT, type: 'symbol', source: SOURCE_END, layout: { 'text-field': 'F', 'text-size': 10, 'text-allow-overlap': true }, paint: { 'text-color': '#ffffff' } });
-    if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id: LAYER_DRIVER_RING, type: 'circle', source: SOURCE_DRIVER, paint: { 'circle-radius': 12, 'circle-color': 'rgba(5,150,105,.16)', 'circle-stroke-color':'rgba(5,150,105,.35)', 'circle-stroke-width':1 } });
-    if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id: LAYER_DRIVER, type: 'circle', source: SOURCE_DRIVER, paint: { 'circle-radius': 6, 'circle-color': '#059669', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2 } });
+    if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id: LAYER_DRIVER_RING, type: 'circle', source: SOURCE_DRIVER, paint: { 'circle-radius': 12, 'circle-color': 'rgba(22,139,97,.14)', 'circle-stroke-color':'rgba(22,139,97,.34)', 'circle-stroke-width':1 } });
+    if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id: LAYER_DRIVER, type: 'circle', source: SOURCE_DRIVER, paint: { 'circle-radius': 6, 'circle-color': '#168B61', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2 } });
   }
 
   function bindEventosMapa() {
     if (!mapa || mapa.__pematoBound) return;
     mapa.__pematoBound = true;
-    const selecionar = event => {
-      const id = event?.features?.[0]?.properties?.id;
-      if (!id) return;
-      if (selecaoDesenhoAtiva) {
-        alternarIdSelecao(String(id));
-        return;
+    let ultimoToque = { id: '', at: 0 };
+    let ultimaAbertura = { id: '', at: 0 };
+    const pinoId = event => String(event?.features?.[0]?.properties?.id || '');
+    const selecionar = id => global.PacoteEMatoRoteirizacao?.selecionarParada?.(String(id), 'mapa');
+    const detalhes = event => {
+      const feature = event?.features?.[0];
+      if (!feature) return false;
+      return global.PacoteEMatoMarcadores?.abrirDetalhesPacotes?.(
+        mapa, feature, paradas(), escolhido => selecionar(escolhido)
+      ) === true;
+    };
+    const aoClicar = event => {
+      const id = pinoId(event); if (!id) return;
+      if (selecaoDesenhoAtiva) { alternarIdSelecao(id); return; }
+      const agora = Date.now();
+      const duplo = ultimoToque.id === id && agora - ultimoToque.at < 440;
+      ultimoToque = { id, at: agora };
+      if (duplo) {
+        if (detalhes(event)) ultimaAbertura = { id, at: agora };
+      } else {
+        // Primeiro toque SEMPRE seleciona a parada, inclusive nos pinos múltiplos.
+        selecionar(id);
       }
-      global.PacoteEMatoRoteirizacao?.selecionarParada?.(String(id), 'mapa');
+    };
+    const aoDuplo = event => {
+      if (selecaoDesenhoAtiva) return;
+      event?.preventDefault?.();
+      const id = pinoId(event); if (!id) return;
+      const agora = Date.now();
+      if (ultimaAbertura.id === id && agora - ultimaAbertura.at < 500) return;
+      if (detalhes(event)) ultimaAbertura = { id, at: agora };
     };
     [LAYER_STOPS, LAYER_STOPS_MULTI, LAYER_STOPS_ACTIVE, LAYER_STOPS_MULTI_ACTIVE].forEach(layerId => {
-      mapa.on('click', layerId, selecionar);
+      mapa.on('click', layerId, aoClicar);
+      mapa.on('dblclick', layerId, aoDuplo);
       mapa.on('mouseenter', layerId, () => { try { mapa.getCanvas().style.cursor = 'pointer'; } catch (_) {} });
       mapa.on('mouseleave', layerId, () => { try { mapa.getCanvas().style.cursor = ''; } catch (_) {} });
     });
@@ -357,9 +387,9 @@
     try {
       mapa = new global.maplibregl.Map({
         container, style: cfg().mapStyleUrl, center: cfg().initialCenter || [-46.6333, -23.5505], zoom: Number(cfg().initialZoom || 10),
-        pitch: 0, bearing: 0, maxPitch: 0, dragRotate: false, touchPitch: false, attributionControl: true, fadeDuration: 120
+        pitch: 0, bearing: 0, maxPitch: 0, dragRotate: true, touchPitch: false, attributionControl: true, fadeDuration: 120
       });
-      mapa.touchZoomRotate?.disableRotation?.();
+      mapa.touchZoomRotate?.enableRotation?.();
       const mapaPronto = () => {
         pronto = true; clearTimeout(loadTimer); if (state()) state().mapaDisponivel = true; ocultarFallback(); removerCamadas3D(); global.PacoteEMatoMapaConfig?.limparPontosInteresse?.(mapa); global.PacoteEMatoMapaConfig?.aplicarEstiloMapaClean?.(mapa, { navegacaoAtiva:false });
         garantirCamadas(); bindEventosMapa(); try { mapa.resize(); } catch (_) {} renderizar({ fit: !fitFeito });
@@ -456,7 +486,8 @@
   function renderizarMarcadores() {
     const data = stopsGeoJSON();
     prepararIconesParadasV12(data.features);
-    atualizarSource(SOURCE_STOPS, data);
+    atualizarSource(SOURCE_STOPS, featureCollection(data.features.filter(f => f.properties?.selected !== 1)));
+    atualizarSource(SOURCE_STOPS_SELECTED, featureCollection(data.features.filter(f => f.properties?.selected === 1)));
   }
   function renderizarPartida() { atualizarSource(SOURCE_START, pointGeoJSON(state()?.pontoInicial, { type: 'start' })); }
   function renderizarDestinoFinal() { atualizarSource(SOURCE_END, pointGeoJSON(state()?.pontoFinal, { type: 'end' })); }

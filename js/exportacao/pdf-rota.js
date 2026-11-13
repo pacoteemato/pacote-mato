@@ -27,19 +27,9 @@
       return { metodo: 'android' };
     }
 
+    // Exportação é sempre um DOWNLOAD. Não disparar navigator.share:
+    // no Chrome Android ele abre a folha de compartilhamento em vez de salvar.
     const blob = doc.output('blob');
-    try {
-      if (navigator.share && typeof File === 'function') {
-        const arquivo = new File([blob], nome, { type: 'application/pdf' });
-        if (!navigator.canShare || navigator.canShare({ files: [arquivo] })) {
-          await navigator.share({ files: [arquivo], title: nome });
-          return { metodo: 'share' };
-        }
-      }
-    } catch (erro) {
-      if (erro?.name === 'AbortError') return { metodo: 'cancelado' };
-    }
-
     const url = URL.createObjectURL(blob);
     try {
       const link = document.createElement('a');
@@ -94,7 +84,7 @@
       if (chave) return String(chave);
     } catch (_) {}
     const lat = Number(p?.latitude), lon = Number(p?.longitude);
-    if (Number.isFinite(lat) && Number.isFinite(lon)) return `coord:${lat.toFixed(5)}|${lon.toFixed(5)}`;
+    if (p?.latitude != null && p?.longitude != null && String(p.latitude).trim() && String(p.longitude).trim() && Number.isFinite(lat) && Number.isFinite(lon)) return `coord:${lat.toFixed(5)}|${lon.toFixed(5)}`;
     return `id:${String(p?.id || index)}`;
   }
 
@@ -181,144 +171,127 @@
     return partes.join(' · ');
   }
 
+
+  // Exportação no estilo da tabela de rota do exemplo enviado: uma linha por
+  // pacote registrado (BR duplicado permanece, não representa o mesmo volume).
+  function linhasDaRota(ordenadas, etas) {
+    const linhas = [];
+    (ordenadas || []).forEach(parada => {
+      const key = chaveFisica(parada, linhas.length);
+      const eta = etas.has(key) ? hora(etas.get(key)) : '—';
+      const endereco = enderecoCompleto(parada);
+      const obs = observacao(parada);
+      const codigosRegistrados = Array.isArray(parada?.pacotes) ? parada.pacotes : [];
+      const quantidadeInformada = Math.max(0, Math.round(Number(parada?.quantidadePacotes) || 0));
+      const total = Math.max(1, codigosRegistrados.length, quantidadeInformada);
+      for (let i = 0; i < total; i++) {
+        const raw = codigosRegistrados[i];
+        const codigo = (typeof raw === 'string' || typeof raw === 'number')
+          ? String(raw).trim()
+          : String(raw?.codigoRastreio || raw?.codigoBarras || raw?.codigo || raw?.br || '').trim();
+        linhas.push({ parada, endereco, eta, codigo, obs });
+      }
+    });
+    return linhas;
+  }
+
   async function exportar(rota) {
     if (!global.jspdf?.jsPDF) throw new Error('Biblioteca de PDF não carregada.');
     if (!rota) throw new Error('Nenhuma rota disponível para exportar.');
 
     const doc = new global.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-    const pageW = 210, pageH = 297, margin = 10;
+    doc.setProperties({ title: APP_NAME + ' - ' + String(rota.nome || 'Rota'),
+      subject: 'Route export: Address, Estimated Arrival Time, Notes',
+      author: APP_NAME, creator: APP_NAME });
+    // Mesma estrutura tabular da referência: A4, margens estreitas,
+    // cabeçalho em inglês, observações no endereço e código na coluna Notes.
+    const pageW = 210, pageH = 297, margin = 4.233;
+    const cols = { numero: 10.3, endereco: 143, eta: 26.3, notas: pageW - margin * 2 - 179.6 };
     const contentW = pageW - margin * 2;
-    const cols = { n: 12, endereco: 94, eta: 27, spx: 57 };
-    const ordenadas = ordenar(rota);
-    const gruposFisicos = agruparParadasFisicas(ordenadas);
-    const etas = construirEtas(rota, gruposFisicos);
+    const BLUE = [30, 112, 249], STRIPE = [229, 239, 255], BORDER = [89, 145, 255];
+    const ordenadas = ordenar(rota), grupos = agruparParadasFisicas(ordenadas);
+    const linhas = linhasDaRota(ordenadas, construirEtas(rota, grupos));
     let y = 0;
-    let pagina = 0;
 
-    function cabecalhoPagina() {
-      pagina++;
-      y = 0;
-      doc.setFillColor(...GREEN_DARK);
-      doc.rect(0, 0, pageW, 22, 'F');
-      doc.setTextColor(255,255,255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text(APP_NAME.toUpperCase(), margin, 9);
-      doc.setFontSize(8.5);
+    function medirLinha(item) {
       doc.setFont('helvetica', 'normal');
-      doc.text(String(rota.nome || 'Rota otimizada'), margin, 15);
-      doc.text(`Página ${pagina}`, pageW - margin, 15, { align: 'right' });
-
-      y = 28;
-      doc.setTextColor(...TEXT);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.text(`Data: ${dataBr(rota.data)}`, margin, y);
-      doc.text(`Distância: ${formatarDistancia(rota.distanciaTotalMetros)}`, margin + 60, y);
-      doc.text(`Duração: ${formatarTempo(rota.duracaoTotalSegundos)}`, margin + 125, y);
-      y += 5;
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...MUTED);
-      doc.text(`Sequência exportada conforme a ordem atual da rota${rota.rotaOtimizada ? ' otimizada' : ''}.`, margin, y);
-      y += 6;
-      cabecalhoTabela();
+      doc.setFontSize(8.25);
+      const endereco = [item.endereco, item.obs].filter(Boolean).join(', ');
+      const enderecoLinhas = doc.splitTextToSize(endereco || '—', cols.endereco - 4.8);
+      const codigo = String(item.codigo || '').trim();
+      // A referência usa BR + oito dígitos e o restante na linha abaixo.
+      // O ponto e vírgula termina o código; nenhum caractere é removido.
+      const notas = /^BR\d{12}[A-Z0-9]$/i.test(codigo)
+        ? [codigo.slice(0, 10), codigo.slice(10) + ';']
+        : codigo ? doc.splitTextToSize(codigo + ';', cols.notas - 4.8) : [];
+      const altura = Math.max(11.377, Math.max(enderecoLinhas.length, notas.length, 1) * 3.44 + 3);
+      return { enderecoLinhas, notas, altura };
     }
 
     function cabecalhoTabela() {
-      doc.setFillColor(...GREEN);
-      doc.rect(margin, y, contentW, 9, 'F');
+      const altura = 11.377;
+      doc.setFillColor(...BLUE);
+      doc.rect(margin, y, contentW, altura, 'F');
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8.25);
       doc.setTextColor(255,255,255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.6);
+      doc.text('#', margin + cols.numero / 2, y + 6.8, {align:'center'});
+      doc.text('Address', margin + cols.numero + cols.endereco / 2, y + 6.8, {align:'center'});
+      const chegada = margin + cols.numero + cols.endereco + cols.eta / 2;
+      doc.text('Estimated', chegada, y + 4.95, {align:'center'});
+      doc.text('Arrival Time', chegada, y + 8.39, {align:'center'});
+      doc.text('Notes', pageW - margin - cols.notas / 2, y + 6.8, {align:'center'});
+      grade(y, altura);
+      y += altura;
+    }
+
+    function grade(topo, altura) {
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(.15);
+      doc.rect(margin, topo, contentW, altura);
       let x = margin;
-      doc.text('#', x + cols.n/2, y + 5.8, { align: 'center' }); x += cols.n;
-      doc.text('ENDEREÇO', x + 2, y + 5.8); x += cols.endereco;
-      doc.text('CHEGADA', x + cols.eta/2, y + 5.8, { align: 'center' }); x += cols.eta;
-      doc.text('SPX TN', x + 2, y + 5.8);
-      y += 9;
+      [cols.numero, cols.endereco, cols.eta].forEach(w => {
+        x += w; doc.line(x, topo, x, topo + altura);
+      });
     }
 
-    function novaPaginaSePreciso(altura) {
-      if (y + altura <= pageH - 12) return;
-      doc.addPage();
-      cabecalhoPagina();
-    }
-
-    function linhaTabela(numero, endereco, eta, spx, nota, indice) {
-      doc.setFontSize(7.4);
-      const enderecoLinhas = doc.splitTextToSize(String(endereco || ''), cols.endereco - 4);
-      const spxLinhas = doc.splitTextToSize(String(spx || ''), cols.spx - 4);
-      const notaLinhas = nota ? doc.splitTextToSize(String(nota), cols.endereco - 4) : [];
-      const linhas = Math.max(enderecoLinhas.length + notaLinhas.length, spxLinhas.length, 1);
-      const h = Math.max(10, 4.1 * linhas + 4);
-      novaPaginaSePreciso(h);
-
-      if (indice % 2 === 1) {
-        doc.setFillColor(...GREEN_LIGHT);
-        doc.rect(margin, y, contentW, h, 'F');
-      }
-      doc.setDrawColor(...LINE);
-      doc.setLineWidth(.25);
-      doc.rect(margin, y, contentW, h);
-      let x = margin;
-      [cols.n, cols.endereco, cols.eta].forEach(w => { x += w; doc.line(x, y, x, y + h); });
-
-      doc.setTextColor(...TEXT);
-      doc.setFont('helvetica', 'bold');
-      doc.text(String(numero), margin + cols.n/2, y + 6, { align: 'center' });
-
-      x = margin + cols.n;
-      doc.setFont('helvetica', 'normal');
-      doc.text(enderecoLinhas, x + 2, y + 5.2);
-      if (notaLinhas.length) {
-        const notaY = y + 5.2 + enderecoLinhas.length * 3.6;
-        doc.setTextColor(...MUTED);
-        doc.setFontSize(6.7);
-        doc.text(notaLinhas, x + 2, notaY);
-        doc.setFontSize(7.4);
-      }
-
-      x += cols.endereco;
-      doc.setTextColor(...TEXT);
-      doc.setFont('helvetica', 'normal');
-      doc.text(String(eta || '—'), x + cols.eta/2, y + 6, { align: 'center' });
-
-      x += cols.eta;
-      doc.setFontSize(6.9);
-      doc.text(spxLinhas.length ? spxLinhas : ['—'], x + 2, y + 5.2);
-      doc.setFontSize(7.4);
-      y += h;
-    }
-
-    cabecalhoPagina();
-    gruposFisicos.forEach((grupo, index) => {
-      const eta = etas.has(grupo.key) ? hora(etas.get(grupo.key)) : '—';
-      linhaTabela(index + 1, enderecoCompleto(grupo.parada), eta, grupo.pacotes.join('\n'), observacaoGrupo(grupo), index);
-    });
-
-    if (rota.pontoFinal && Number.isFinite(Number(rota.pontoFinal.lat)) && Number.isFinite(Number(rota.pontoFinal.lon))) {
-      linhaTabela('F', rota.pontoFinal.descricao || 'Ponto final', etas.has('__FINAL__') ? hora(etas.get('__FINAL__')) : '—', '', 'Destino final após a última entrega (casa/base).', gruposFisicos.length);
-    } else if (rota.retornarAoInicio === true && rota.pontoInicial) {
-      linhaTabela('F', rota.pontoInicial.descricao || 'Ponto de partida', '—', '', 'Retorno ao ponto de partida após a última entrega.', gruposFisicos.length);
-    }
-
-    const totalPacotes = ordenadas.reduce((n,p) => n + (p.pacotes?.length || 0), 0);
-    novaPaginaSePreciso(18);
-    y += 5;
-    doc.setDrawColor(...GREEN);
-    doc.setLineWidth(.6);
-    doc.line(margin, y, pageW-margin, y);
-    y += 5;
-    doc.setTextColor(...TEXT);
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(8);
-    doc.text(`${gruposFisicos.length} paradas físicas · ${ordenadas.length} entregas · ${totalPacotes} pacotes`, margin, y);
+    // Título e totais só na primeira página; as seguintes repetem a tabela.
     doc.setFont('helvetica','normal');
-    doc.setTextColor(...MUTED);
-    doc.text(`Gerado pelo ${APP_NAME}`, pageW-margin, y, {align:'right'});
+    doc.setTextColor(0,0,0);
+    doc.setFontSize(15);
+    const titulo = dataBr(rota.data).replaceAll('/', '-') + ' ' + String(rota.nome || 'Rota') + ' - ' + APP_NAME;
+    const tituloLinhas = doc.splitTextToSize(titulo, contentW);
+    doc.text(tituloLinhas, margin, 9.25);
+    const totalY = 9.25 + tituloLinhas.length * 6.35 + 3.2;
+    doc.setFontSize(12);
+    doc.text('Tempo total: ' + formatarTempo(rota.duracaoTotalSegundos) +
+      ' Distância total: ' + formatarDistancia(rota.distanciaTotalMetros), margin, totalY);
+    y = Math.max(30.4, totalY + 9.5);
+    cabecalhoTabela();
 
-    const nomeRota = limparNome(rota.nome || 'Rota');
-    return salvarDocumento(doc, `${APP_NAME} - ${nomeRota}.pdf`);
+    linhas.forEach((item, indice) => {
+      const { enderecoLinhas, notas, altura } = medirLinha(item);
+      if (y + altura > pageH - .5) {
+        doc.addPage(); y = 0; cabecalhoTabela();
+      }
+      if (indice % 2 === 1) {
+        doc.setFillColor(...STRIPE); doc.rect(margin, y, contentW, altura, 'F');
+      }
+      grade(y, altura);
+      doc.setTextColor(0,0,0);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.25);
+      const centro = y + altura / 2 + 1;
+      doc.text(String(indice + 1), margin + 2.4, centro);
+      const enderecoY = y + (altura - (enderecoLinhas.length - 1) * 3.44) / 2 + 1;
+      doc.text(enderecoLinhas, margin + cols.numero + 2.4, enderecoY, {lineHeightFactor: 1.182});
+      doc.text(String(item.eta || '—'), margin + cols.numero + cols.endereco + 2.4, centro);
+      if (notas.length) {
+        const notasY = y + (altura - (notas.length - 1) * 3.44) / 2 + 1;
+        doc.text(notas, pageW - margin - cols.notas + 2.4, notasY, {lineHeightFactor: 1.182});
+      }
+      y += altura;
+    });
+    return salvarDocumento(doc, APP_NAME + ' - ' + limparNome(rota.nome || 'Rota') + '.pdf');
   }
 
   global.PacoteEMatoPDF = Object.freeze({ exportar });

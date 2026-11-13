@@ -17,12 +17,13 @@
   }
 
   function paleta(status, selecionado) {
-    // V27: o status precisa continuar evidente mesmo quando a parada está selecionada.
-    if (status === 'nao_entregue') return { fundo: selecionado ? '#b91c1c' : '#dc2626', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
-    if (status === 'concluida') return { fundo: selecionado ? '#15803d' : '#166534', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
-    if (status === 'parcial') return { fundo: selecionado ? '#059669' : '#f0fdf4', borda: selecionado ? '#ffffff' : '#059669', numero: selecionado ? '#ffffff' : '#111111', multi: selecionado ? '#ffffff' : '#047857', simbolo: selecionado ? '#ffffff' : '#047857' };
-    if (selecionado) return { fundo: '#059669', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
-    return { fundo: '#ffffff', borda: '#059669', numero: '#111111', multi: '#047857', simbolo: '#047857' };
+    // Marcadores compactos de navegação: verde para paradas e cores operacionais
+    // apenas para os estados reais de entrega.
+    if (status === 'nao_entregue') return { fundo: selecionado ? '#b81408' : '#E71506', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
+    if (status === 'concluida') return { fundo: selecionado ? '#15803d' : '#16a34a', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
+    if (status === 'parcial') return { fundo: selecionado ? '#b45309' : '#e59b24', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
+    if (selecionado) return { fundo: '#006D32', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
+    return { fundo: '#018D3E', borda: '#ffffff', numero: '#ffffff', multi: '#ffffff', simbolo: '#ffffff' };
   }
 
   function simboloStatus(status) {
@@ -46,11 +47,42 @@
     return Number.isFinite(n) && n > 0 ? Math.max(1, Math.round(n)) : 1;
   }
 
+
+  // Cada ocorrência cadastrada é um pacote: BR repetido em outra parada
+  // continua sendo outro registro. Nunca deduplicar pelo texto do BR.
+  function pacotesRegistradosDoGrupo(grupo) {
+    const resultado = [];
+    (Array.isArray(grupo) ? grupo : []).forEach(parada => {
+      const pacotes = Array.isArray(parada?.pacotes) ? parada.pacotes : [];
+      pacotes.forEach(valor => {
+        const codigo = typeof valor === 'string' || typeof valor === 'number'
+          ? String(valor).trim()
+          : String(valor?.codigoRastreio || valor?.codigoBarras ||
+            valor?.codigo || valor?.br || '').trim();
+        resultado.push({ parada, codigo });
+      });
+      // Registros legados podem informar somente a quantidade de pacotes.
+      // Eles continuam visíveis, mas sem inventar códigos BR inexistentes.
+      const informada = Math.max(0, Math.round(Number(parada?.quantidadePacotes) || 0));
+      for (let i = pacotes.length; i < informada; i++) {
+        resultado.push({ parada, codigo: '' });
+      }
+    });
+    return resultado;
+  }
+
+  function quantidadePacotesRegistradosDoGrupo(grupo) {
+    return pacotesRegistradosDoGrupo(grupo).length;
+  }
+
   function chaveFisicaMarcador(parada) {
     const chave = chaveMultiplo(parada);
-    if (chave) return `end:${chave}`;
+    if (chave) {
+      const local = [parada?.cidade, parada?.estado].map(v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()).join('|');
+      return `end:${chave}|${local}`;
+    }
     const lat = Number(parada?.latitude), lon = Number(parada?.longitude);
-    if (Number.isFinite(lat) && Number.isFinite(lon)) return `coord:${lat.toFixed(5)}|${lon.toFixed(5)}`;
+    if (parada?.latitude != null && parada?.longitude != null && String(parada.latitude).trim() && String(parada.longitude).trim() && Number.isFinite(lat) && Number.isFinite(lon)) return `coord:${lat.toFixed(5)}|${lon.toFixed(5)}`;
     return `id:${String(parada?.id || '')}`;
   }
 
@@ -135,7 +167,7 @@
     // V28: em vez de pintar um trecho diferente para CADA entrega concluída,
     // localizamos as paradas na geometria uma única vez e produzimos só dois
     // estados operacionais: caminho já percorrido (cinza) e próximo trecho
-    // ativo (verde destacado). Os ✓/× continuam sendo responsabilidade dos
+    // ativo (azul destacado). Os ✓/× continuam sendo responsabilidade dos
     // marcadores, evitando o "mapa arco-íris" que deixava a rota confusa.
     const ancoras = [];
     let cursor = entradas[0];
@@ -241,9 +273,54 @@
     ctx.closePath();
   }
 
+  // A ponta do balão aponta para a coordenada real da entrega. Por isso as
+  // camadas MapLibre usam icon-anchor=bottom para as duas formas de marcador.
+  function desenharBalao(ctx, x, y, largura, altura, raio, ponta) {
+    const centro = x + largura / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + raio, y);
+    ctx.lineTo(x + largura - raio, y);
+    ctx.quadraticCurveTo(x + largura, y, x + largura, y + raio);
+    ctx.lineTo(x + largura, y + altura - raio);
+    ctx.quadraticCurveTo(x + largura, y + altura, x + largura - raio, y + altura);
+    ctx.lineTo(centro + 7, y + altura);
+    ctx.lineTo(centro, y + altura + ponta);
+    ctx.lineTo(centro - 7, y + altura);
+    ctx.lineTo(x + raio, y + altura);
+    ctx.quadraticCurveTo(x, y + altura, x, y + altura - raio);
+    ctx.lineTo(x, y + raio);
+    ctx.quadraticCurveTo(x, y, x + raio, y);
+    ctx.closePath();
+  }
+
+
+
+  // Bandeirola premium: plaqueta facetada sem haste, com pequeno vértice
+  // alinhado ao ponto geográfico (MapLibre icon-anchor=bottom).
+  function desenharBandeirola(ctx, x, y, w, h, centro) {
+    const r = 4;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - 8);
+    // Recorte sutil de bandeirola à direita, sem ondulação infantil.
+    ctx.lineTo(x + w - 4, y + h - 11);
+    ctx.lineTo(x + w - 8, y + h - 8);
+    ctx.lineTo(centro + 5, y + h - 8);
+    ctx.lineTo(centro, y + h);
+    ctx.lineTo(centro - 5, y + h - 8);
+    ctx.lineTo(x + 4, y + h - 8);
+    ctx.quadraticCurveTo(x, y + h - 8, x, y + h - 12);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+
   function criarIcone(mapa, opcoes) {
     if (!mapa || !global.document) return '';
-    const prefixo = String(opcoes?.prefixo || 'pemato-stop-v12');
+    const prefixo = String(opcoes?.prefixo || 'pemato-stop-v13') + '-bandeirola-premium-v3-multi';
     const mostrarNumero = opcoes?.mostrarNumero !== false;
     const ordem = mostrarNumero ? Math.max(1, Math.round(numeroSeguro(opcoes?.ordem, 1))) : 0;
     const quantidade = Math.max(1, Math.round(numeroSeguro(opcoes?.quantidade, 1)));
@@ -252,59 +329,13 @@
     const nome = nomeIcone(prefixo, ordem, quantidade, selecionado, status, mostrarNumero);
     if (mapa.hasImage?.(nome)) return nome;
 
+    const multiplo = mostrarNumero && quantidade > 1;
     const ratio = Math.max(2, Math.min(3, Number(global.devicePixelRatio || 2)));
+    // A bandeirola mantém SEMPRE 34 px de largura. Apenas a área
+    // transparente do sprite cresce para caber a etiqueta de pacotes.
+    const larguraCss = mostrarNumero ? (multiplo ? 49 : 34) : 26;
+    const alturaCss = mostrarNumero ? 34 : 24;
     const canvas = global.document.createElement('canvas');
-    const ctx = contexto2d(canvas);
-    if (!ctx) return '';
-
-    if (!mostrarNumero) {
-      const tamanhoCss = 16;
-      canvas.width = Math.round(tamanhoCss * ratio);
-      canvas.height = Math.round(tamanhoCss * ratio);
-      const c = contexto2d(canvas);
-      if (!c) return '';
-      c.scale(ratio, ratio);
-      c.clearRect(0, 0, tamanhoCss, tamanhoCss);
-      const cores = paleta(status, selecionado);
-      c.beginPath();
-      c.arc(tamanhoCss / 2, tamanhoCss / 2, 6, 0, Math.PI * 2);
-      c.fillStyle = selecionado ? '#059669' : '#ffffff';
-      c.fill();
-      c.lineWidth = 2;
-      c.strokeStyle = selecionado ? '#ffffff' : '#059669';
-      c.stroke();
-      c.beginPath();
-      c.arc(tamanhoCss / 2, tamanhoCss / 2, 2.1, 0, Math.PI * 2);
-      c.fillStyle = selecionado ? '#ffffff' : '#059669';
-      c.fill();
-      try {
-        mapa.addImage(nome, c.getImageData(0, 0, canvas.width, canvas.height), { pixelRatio: ratio });
-        let nomes = REGISTRY.get(mapa);
-        if (!nomes) { nomes = new Set(); REGISTRY.set(mapa, nomes); }
-        nomes.add(nome);
-      } catch (_) {}
-      return nome;
-    }
-
-    const numero = String(ordem);
-    const badge = quantidade > 1 ? `${quantidade}x` : '';
-    const simbolo = simboloStatus(status);
-    const alturaCss = 24;
-
-    ctx.font = '800 12px Arial, sans-serif';
-    const numeroW = Math.ceil(ctx.measureText(numero).width);
-    ctx.font = '700 8.5px Arial, sans-serif';
-    const badgeW = badge ? Math.ceil(ctx.measureText(badge).width) : 0;
-    ctx.font = '900 10px Arial, sans-serif';
-    const simboloW = simbolo ? Math.ceil(ctx.measureText(simbolo).width) : 0;
-    const divisor = badge ? 1 : 0;
-    const gap = badge ? 7 : 0;
-    const statusGap = simbolo ? 5 : 0;
-    const conteudoW = simboloW + statusGap + numeroW + badgeW + gap + divisor;
-    const larguraMin = badge ? (simbolo ? 50 : 42) : (simbolo ? 36 : 28);
-    const larguraMax = badge ? (simbolo ? 66 : 56) : (simbolo ? 50 : 40);
-    const larguraCss = Math.max(larguraMin, Math.min(larguraMax, conteudoW + (badge ? 16 : 14)));
-
     canvas.width = Math.round(larguraCss * ratio);
     canvas.height = Math.round(alturaCss * ratio);
     const c = contexto2d(canvas);
@@ -313,66 +344,55 @@
     c.clearRect(0, 0, larguraCss, alturaCss);
 
     const cores = paleta(status, selecionado);
-    const borda = 2;
-    const x = borda / 2 + 0.5;
-    const y = borda / 2 + 0.5;
-    const w = larguraCss - borda - 1;
-    const h = alturaCss - borda - 1;
-    const r = Math.min(h / 2, 13);
-
+    const centro = larguraCss / 2;
+    const bandeiraLargura = mostrarNumero ? 34 : 26;
+    const bandeiraAltura = mostrarNumero ? 26 : 21;
+    const topo = mostrarNumero ? 7 : 2;
     c.save();
-    c.shadowColor = 'rgba(15,23,42,0.08)';
-    c.shadowBlur = 1.5;
-    c.shadowOffsetY = .5;
+    c.shadowColor = 'rgba(9, 43, 31, .17)';
+    c.shadowBlur = selecionado ? 5 : 3;
+    c.shadowOffsetY = 1.5;
+    desenharBandeirola(c, centro - bandeiraLargura / 2 + 2, topo,
+      bandeiraLargura - 4, bandeiraAltura, centro);
     c.fillStyle = cores.fundo;
-    c.strokeStyle = cores.borda;
-    c.lineWidth = borda;
-    desenharCapsula(c, x, y, w, h, r);
     c.fill();
     c.shadowColor = 'transparent';
+    c.strokeStyle = selecionado ? '#c9f2df' : '#ffffff';
+    c.lineWidth = selecionado ? 2 : 1.4;
+    c.lineJoin = 'round';
     c.stroke();
     c.restore();
 
-    const cy = alturaCss / 2 + 0.2;
-    c.textBaseline = 'middle';
-    c.textAlign = 'left';
-    c.font = '800 12px Arial, sans-serif';
-    const nw = c.measureText(numero).width;
-    c.font = '700 9.5px Arial, sans-serif';
-    const bw = badge ? c.measureText(badge).width : 0;
-    c.font = '900 10px Arial, sans-serif';
-    const sw = simbolo ? c.measureText(simbolo).width : 0;
-    const divisorGap = badge ? 6 : 0;
-    const statusGapTexto = simbolo ? 5 : 0;
-    const total = sw + statusGapTexto + nw + (badge ? divisorGap + 1 + divisorGap + bw : 0);
-    let px = (larguraCss - total) / 2;
-
-    if (simbolo) {
-      c.fillStyle = cores.simbolo || cores.numero;
-      c.font = '900 10px Arial, sans-serif';
-      c.fillText(simbolo, px, cy + 0.1);
-      px += sw + statusGapTexto;
+    if (mostrarNumero) {
+      const numero = String(ordem);
+      c.fillStyle = cores.numero;
+      c.font = '800 ' + (numero.length >= 4 ? 8.5 : numero.length === 3 ? 10.5 : 14) + 'px Arial, sans-serif';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      // Número principal fica independente do contador de pacotes.
+      c.fillText(numero, centro, 18);
+    } else {
+      c.fillStyle = '#ffffff';
+      desenharCapsula(c, centro - 2, 11, 4, 4, 1);
+      c.fill();
     }
 
-    c.fillStyle = cores.numero;
-    c.font = '800 12px Arial, sans-serif';
-    c.fillText(numero, px, cy);
-    px += nw;
-
-    if (badge) {
-      px += divisorGap;
-      c.strokeStyle = 'rgba(255,255,255,0.35)';
-      if (status !== 'concluida' && status !== 'nao_entregue' && !selecionado) c.strokeStyle = 'rgba(5,150,105,0.28)';
+    if (multiplo) {
+      // O "×2" não parece outra parada: etiqueta própria acima e ao lado,
+      // nunca cobrindo o número da bandeirola.
+      const texto = quantidade > 99 ? '99+' : '×' + quantidade;
+      const bx = larguraCss - 17, by = 1;
+      c.fillStyle = '#ffffff';
+      c.strokeStyle = '#b8d7c6';
       c.lineWidth = 1;
-      c.beginPath();
-      c.moveTo(px + 0.5, 7);
-      c.lineTo(px + 0.5, alturaCss - 7);
+      desenharCapsula(c, bx, by, 16, 12, 3);
+      c.fill();
       c.stroke();
-      px += 1 + divisorGap;
-
-      c.fillStyle = cores.multi;
-      c.font = '700 8.5px Arial, sans-serif';
-      c.fillText(badge, px, cy + 0.2);
+      c.fillStyle = '#116744';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.font = '800 ' + (texto.length >= 3 ? 7 : 8.5) + 'px Arial, sans-serif';
+      c.fillText(texto, bx + 8, by + 6);
     }
 
     try {
@@ -382,6 +402,128 @@
       nomes.add(nome);
     } catch (_) {}
     return nome;
+  }
+
+  // Um toque num endereço com vários pacotes abre as paradas e seus códigos
+  // sem inventar pinos deslocados nem esconder entregas na mesma coordenada.
+  let popupPacotesAtual = null;
+  function abrirDetalhesPacotes(mapa, feature, paradas, selecionarParada) {
+    const props = feature?.properties || {};
+    const ids = new Set(String(props.ids || props.id || '').split(',').filter(Boolean));
+    const grupo = (Array.isArray(paradas) ? paradas : []).filter(p => ids.has(String(p?.id)));
+    if (!grupo.length) return false;
+    const total = quantidadePacotesRegistradosDoGrupo(grupo);
+    if (total <= 1 && grupo.length <= 1) return false;
+    if (!mapa || !global.document || typeof global.maplibregl?.Popup !== 'function') return false;
+    try {
+      if (popupPacotesAtual) popupPacotesAtual.remove();
+      const doc = global.document;
+      const painel = doc.createElement('div');
+      painel.className = 'pemato-multi-popup';
+
+      const pacotes = pacotesRegistradosDoGrupo(grupo);
+      const semPacotes = pacotes.length === 0;
+      const entradas = semPacotes
+        ? grupo.map(parada => ({ parada, codigo: '' }))
+        : pacotes;
+      const titulo = doc.createElement('strong');
+      titulo.className = 'pemato-multi-popup-title';
+      titulo.textContent = semPacotes
+        ? 'Nenhum pacote cadastrado neste ponto'
+        : total + (total === 1 ? ' pacote neste ponto' : ' pacotes neste ponto');
+      const subtitulo = doc.createElement('span');
+      subtitulo.className = 'pemato-multi-popup-subtitle';
+      subtitulo.textContent = grupo.length +
+        (grupo.length === 1 ? ' parada cadastrada' : ' paradas cadastradas') +
+        (semPacotes ? ' · escolha uma parada' : ' · cada pacote aparece separadamente');
+      const lista = doc.createElement('div');
+      lista.className = 'pemato-multi-popup-lista';
+      const itens = [];
+      entradas.forEach((item, indice) => {
+        const p = item.parada;
+        const botao = doc.createElement('button');
+        botao.type = 'button';
+        botao.className = 'pemato-multi-popup-stop';
+        const rotulo = doc.createElement('strong');
+        const ordem = Number(p?.ordemOtimizada || p?.ordemOriginal || 0);
+        // Mostrar o BR original de cada ocorrência, mesmo que igual ao anterior.
+        rotulo.textContent = item.codigo || (semPacotes
+          ? (ordem > 0 ? 'Parada ' + ordem : 'Ver parada')
+          : 'Código BR não informado');
+        const endereco = doc.createElement('span');
+        endereco.className = 'pemato-multi-popup-endereco';
+        const nomeEndereco = String(p?.enderecoFonte || p?.enderecoOriginal ||
+          [p?.logradouro, p?.numero].filter(Boolean).join(', ') || 'Endereço não informado');
+        endereco.textContent = (ordem > 0 ? 'Parada ' + ordem + ' · ' : '') + nomeEndereco;
+        botao.append(rotulo, endereco);
+        botao.addEventListener('click', () => {
+          popupPacotesAtual?.remove();
+          popupPacotesAtual = null;
+          if (typeof selecionarParada === 'function') selecionarParada(String(p.id));
+        });
+        itens.push(botao);
+        lista.append(botao);
+      });
+      painel.append(titulo, subtitulo, lista);
+      // Muitos pacotes ficam numa lista interna com rolagem, sem cobrir o mapa.
+      if (itens.length > 4) {
+        const verMais = doc.createElement('button');
+        verMais.type = 'button';
+        verMais.className = 'pemato-multi-popup-mais';
+        let expandido = false;
+        const atualizarLista = () => {
+          itens.forEach((item, indice) => {
+            item.hidden = !expandido && indice >= 4;
+          });
+          verMais.textContent = expandido ? 'Mostrar menos'
+            : semPacotes ? 'Ver todas as ' + itens.length + ' paradas'
+            : 'Ver todos os ' + itens.length + ' pacotes';
+          verMais.setAttribute('aria-expanded', String(expandido));
+          if (!expandido) lista.scrollTop = 0;
+        };
+        verMais.addEventListener('click', () => {
+          expandido = !expandido;
+          atualizarLista();
+        });
+        painel.append(verMais);
+        atualizarLista();
+      }
+      const centro = feature?.geometry?.coordinates;
+      if (!Array.isArray(centro) || centro.length < 2) return false;
+      // A janela não deve variar de posição conforme o entregador se move
+      // ou conforme o pino escolhido fica mais alto/baixo na tela.
+      // Fixá-la no topo do MAPA, sem alterar o centro ou o zoom.
+      const containerMapa = mapa.getContainer?.();
+      if (containerMapa && typeof containerMapa.appendChild === 'function') {
+        const flutuante = doc.createElement('section');
+        flutuante.className = 'pemato-packages-top-panel';
+        flutuante.setAttribute('role', 'region');
+        flutuante.setAttribute('aria-label', 'Pacotes neste ponto do mapa');
+        const fechar = doc.createElement('button');
+        fechar.type = 'button';
+        fechar.className = 'pemato-packages-top-close';
+        fechar.setAttribute('aria-label', 'Fechar detalhes dos pacotes');
+        fechar.textContent = '×';
+        fechar.addEventListener('click', () => {
+          popupPacotesAtual?.remove();
+          popupPacotesAtual = null;
+        });
+        flutuante.addEventListener('click', event => event.stopPropagation());
+        flutuante.append(fechar, painel);
+        containerMapa.appendChild(flutuante);
+        popupPacotesAtual = { remove() { flutuante.remove(); } };
+        return true;
+      }
+      // Compatibilidade com mapas que não fornecem container DOM.
+      popupPacotesAtual = new global.maplibregl.Popup({
+        closeButton: true, closeOnClick: true, anchor: 'bottom',
+        maxWidth: '288px', offset: 18, className: 'pemato-packages-popup'
+      }).setLngLat(centro).setDOMContent(painel).addTo(mapa);
+      return true;
+    } catch (erro) {
+      try { console.warn('Pacote É Mato: detalhes de pacotes indisponíveis', erro); } catch (_) {}
+      return false;
+    }
   }
 
   function prepararFeatures(mapa, features, opcoes) {
@@ -417,11 +559,14 @@
 
   global.PacoteEMatoMarcadores = Object.freeze({
     criarIcone,
+    abrirDetalhesPacotes,
     prepararFeatures,
     assinatura,
     nomeIcone,
     chaveMultiplo,
     quantidadePacotesDaParada,
+    quantidadePacotesRegistradosDoGrupo,
+    pacotesRegistradosDoGrupo,
     chaveFisicaMarcador,
     capturarBaseVisualStatus,
     segmentosStatusDaRota

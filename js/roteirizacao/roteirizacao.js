@@ -1141,18 +1141,8 @@
     if (!file) throw new Error('Arquivo não informado.');
     if (!global.PacoteEMatoImportacaoXLSX) throw new Error('Módulo de importação não carregado.');
     const inspecao = await global.PacoteEMatoImportacaoXLSX.inspecionarArquivo(file);
-    try {
-      return await global.PacoteEMatoImportacaoXLSX.lerArquivo(file, { inspecao });
-    } catch (erroAuto) {
-      if (erroAuto?.code !== 'MAPEAMENTO_NECESSARIO') throw erroAuto;
-      const mapeamento = await abrirMapeamentoImportacao(inspecao);
-      if (!mapeamento) {
-        const erro = new Error('Seleção da planilha cancelada.');
-        erro.code = 'IMPORTACAO_CANCELADA';
-        throw erro;
-      }
-      return global.PacoteEMatoImportacaoXLSX.lerArquivo(file, Object.assign({ inspecao }, mapeamento));
-    }
+    // A detecção automática mantém os campos de localização sem exibir a etapa SPX/latitude/longitude.
+    return global.PacoteEMatoImportacaoXLSX.lerArquivo(file, { inspecao });
   }
 
   function escolherModoImportacao() {
@@ -1203,15 +1193,8 @@
       const modo = await escolherModoImportacao();
       if (!modo) { fluxo?.fechar?.(); definirStatusImportacao('Importação cancelada. Nenhuma parada foi alterada.', 'warning'); return; }
       modoImportacaoAtual = modo;
-      let opcoes = { inspecao };
-      fluxo?.atualizarEtapa?.('Confira AT ID, Sequence, Stop, SPX TN, endereço, bairro, cidade, CEP, latitude e longitude.');
-      const mapeamento = await abrirMapeamentoImportacao(inspecao);
-      if (!mapeamento) {
-        fluxo?.fechar?.();
-        definirStatusImportacao('Importação cancelada. Nenhuma parada foi alterada.', 'warning');
-        return;
-      }
-      opcoes = Object.assign(opcoes, mapeamento);
+      const opcoes = { inspecao };
+      fluxo?.atualizarEtapa?.('Reconhecendo endereços, pacotes e localização automaticamente.');
 
       fluxo?.atualizarEtapa?.('Convertendo as linhas em paradas e preservando pacotes e observações.');
       const resultado = await global.PacoteEMatoImportacaoXLSX.lerArquivo(file, opcoes);
