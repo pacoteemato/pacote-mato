@@ -29,6 +29,8 @@ jobs:
         run: node tests/manobras-visuais.test.cjs
       - name: Testar CSS, manobra única, voz e cache V83
         run: node tests/regressao-visual-v83.test.cjs
+      - name: Testar regras de finalização, histórico e setas V84
+        run: node tests/rotas-finalizacao-v84.test.cjs
 
   visual-android:
     runs-on: ubuntu-24.04
@@ -46,10 +48,14 @@ jobs:
         run: node tests/render-painel-v83.cjs
       - name: Testar cartografia real MapLibre em 2D e 3D
         run: node tests/render-mapa-v83.cjs
+      - name: Testar persistência do histórico em IndexedDB e Desfazer
+        run: node tests/rotas-persistencia-v84.cjs
+      - name: Testar botões Entregue e Não entregue na tela Android
+        run: node tests/render-botoes-v84.cjs
       - name: Guardar capturas de renderização do painel
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: capturas-css-e-cartografia-v83
+          name: capturas-navegacao-e-botoes-v84
           path: artifacts/*.png
           if-no-files-found: ignore
