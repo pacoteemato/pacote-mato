@@ -44,10 +44,12 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Conferir painel Android em Chromium e capturar renderização
         run: node tests/render-painel-v83.cjs
+      - name: Testar cartografia real MapLibre em 2D e 3D
+        run: node tests/render-mapa-v83.cjs
       - name: Guardar capturas de renderização do painel
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: capturas-painel-navegacao-v83
-          path: artifacts/painel-v83-*.png
+          name: capturas-css-e-cartografia-v83
+          path: artifacts/*.png
           if-no-files-found: ignore
