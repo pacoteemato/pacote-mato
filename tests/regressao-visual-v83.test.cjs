@@ -24,7 +24,7 @@ assert.match(nav,/tentarNovamenteVoz/);
 assert.doesNotMatch(app,/serviceWorker\.register\(URL\.createObjectURL\(blob\)\)/);
 assert.match(app,/pemato-\(app\|assets\|static\|runtime\)/);
 assert.match(html,/84-STATUS-HISTORICO-MANOBRAS/);
-assert.match(html,/css\/navegacao\.css\?v=20261113-v84-fluxo-rota-1/);
+assert.match(html,/css\/navegacao\.css\?v=20261113-v84-fluxo-rota-2/);
 assert.match(html,/js\/navegacao\/navegacao\.js\?v=20261113-v84-fluxo-rota-1/);
 assert.match(html,/20261113-v83-tts-estados-1/);
 assert.match(html,/20261113-v83-vias-contraste-1/);
