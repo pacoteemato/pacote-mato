@@ -31,7 +31,10 @@ const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p
    // A cor da fonte é inspecionada separadamente: a propriedade redText acima contém o rótulo.
    const textColor=await page.evaluate(()=>getComputedStyle(document.getElementById('navNotDeliveredBtn')).color);
    assert.equal(textColor,'rgb(255, 255, 255)','Não entregue invisível em '+width);
-   assert.ok(state.redWidth>100&&state.greenWidth>100,'Botões pequenos em '+width);
+   assert.ok(state.redWidth>width*.40&&state.greenWidth>width*.40,'Botões não ocupam duas metades da tela em '+width);
+   assert.ok(Math.abs(state.redWidth-state.greenWidth)<3,'Botões com larguras diferentes em '+width);
+   const layout=await page.evaluate(()=>getComputedStyle(document.querySelector('.nav-delivery-actions')).gridTemplateColumns.split(' ').length);
+   assert.equal(layout,2,'Tema antigo ainda força três colunas');
    await page.screenshot({path:path.join(root,'artifacts','botoes-v84-'+width+'px.png')});
    const finished=await page.evaluate(()=>{
     document.body.dataset.pematoRouteFinished='true';
