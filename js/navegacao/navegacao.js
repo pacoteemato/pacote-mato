@@ -35,6 +35,7 @@
   let ultimaAtualizacaoCameraFrame = 0;
   let velocidadeVisualMs = 0;
   let modoMapaNavegacao = 'overview';
+  let perspectivaNavegacao = (function(){try{return localStorage.getItem('pemato_nav_perspectiva')==='2d'?'2d':'3d';}catch(_){return '3d';}})();
   let ultimaAssinaturaGeometriaDiagnostico = '';
   let distanciaProximaManobra = Infinity;
   let ultimoIndiceVisualRota = null;
@@ -45,11 +46,15 @@
   const SOURCE_PROGRESS = 'pemato-nav-progress';
   const SOURCE_DRIVER = 'pemato-nav-driver';
   const SOURCE_MANEUVER = 'pemato-nav-maneuver-overlay';
+  const SOURCE_DIRECTION = 'pemato-nav-route-directions';
   const SOURCE_STOPS = 'pemato-nav-all-stops';
+  const SOURCE_STOPS_SELECTED = 'pemato-nav-selected-stops';
   const LAYER_STOPS = 'pemato-nav-stops-simple';
   const LAYER_STOPS_MULTI = 'pemato-nav-stops-multi';
   const LAYER_STOPS_ACTIVE = 'pemato-nav-stops-active';
   const LAYER_STOPS_MULTI_ACTIVE = 'pemato-nav-stops-multi-active';
+  const LAYER_NEXT_HALO = 'pemato-nav-next-stop-halo';
+  const LAYER_NEXT_LABEL = 'pemato-nav-next-stop-label';
   let cartaoSelecionadoId = null;
   const LAYER_ROUTE_CASE = 'pemato-nav-route-case';
   const LAYER_ROUTE = 'pemato-nav-route-layer';
@@ -57,6 +62,7 @@
   const LAYER_ROUTE_STATUS = 'pemato-nav-route-status-layer';
   const LAYER_PROGRESS = 'pemato-nav-progress-layer';
   const LAYER_MANEUVER_ARROW = 'pemato-nav-maneuver-arrow';
+  const LAYER_DIRECTION = 'pemato-nav-route-direction-arrows';
   const LAYER_MANEUVER_LABEL = 'pemato-nav-maneuver-label';
   const LAYER_DRIVER_RING = 'pemato-nav-driver-ring';
   const LAYER_DRIVER = 'pemato-nav-driver';
@@ -180,15 +186,32 @@
     const ativa = paradasPorOrdem().find(p => String(p.id) === String(rota.proximaParadaId || '') && !paradaFinalizada(p));
     return ativa || ordemPendente[0] || null;
   }
-  function proximaPendenteDepois(idAtual) {
-    const ordenadas = paradasPorOrdem();
-    const indice = ordenadas.findIndex(p => String(p.id) === String(idAtual || ''));
+  // A próxima entrega é o cursor permanente da sequência, NÃO o cartão
+  // temporariamente aberto para consulta. Ao tratar uma parada fora de ordem,
+  // o cursor continua na entrega pendente que já estava ativa.
+  function proximaFixaAposTratar(ordenadas, idAtivoAntes, idTratado) {
+    const lista = Array.isArray(ordenadas) ? ordenadas : [];
+    const idAtual = String(idAtivoAntes || '');
+    const indiceAtivo = lista.findIndex(p => String(p.id) === idAtual);
+    const indiceTratado = lista.findIndex(p => String(p.id) === String(idTratado || ''));
+    const aindaAtiva = lista.find(p => String(p.id) === idAtual && !paradaFinalizada(p));
+    // Se o entregador pulou a 4 e concluiu a 5 (logo depois do cursor),
+    // a sequência prossegue para a 6, sem exigir concluir a 4.
+    if (aindaAtiva && indiceAtivo >= 0 && indiceTratado === indiceAtivo + 1) {
+      const seguinte = lista.slice(indiceTratado + 1).find(p => !paradaFinalizada(p));
+      if (seguinte) return seguinte;
+    }
+    // Consultar ou concluir uma parada distante (ex.: 8) não rouba a
+    // marcação da próxima ativa (6).
+    if (aindaAtiva) return aindaAtiva;
+    const indice = lista.findIndex(p => String(p.id) === String(idAtivoAntes || idTratado || ''));
     if (indice >= 0) {
-      for (let i = indice + 1; i < ordenadas.length; i++) {
-        if (!['entregue','concluida','nao_entregue'].includes(String(ordenadas[i].statusEntrega || ''))) return ordenadas[i];
+      for (let i = indice + 1; i < lista.length; i++) {
+        if (!paradaFinalizada(lista[i])) return lista[i];
       }
     }
-    return ordemPendente[0] || null;
+    // Depois da última entrega, as pendências puladas continuam disponíveis.
+    return lista.find(p => !paradaFinalizada(p)) || null;
   }
 
   function destinoFinalDaRota() {
@@ -245,13 +268,13 @@
           c.clearRect(0,0,72,72);
           c.save();
           c.shadowColor='rgba(15,23,42,.28)'; c.shadowBlur=9; c.shadowOffsetY=3;
-          c.fillStyle='#047857'; c.fill(corpo);
+          c.fillStyle='#168B61'; c.fill(corpo);
           c.restore();
           c.lineJoin='round'; c.lineCap='round';
           c.strokeStyle='#ffffff'; c.lineWidth=3.5; c.stroke(corpo);
           c.fillStyle='rgba(255,255,255,.16)'; c.fill(interno);
-          c.beginPath(); c.arc(36,35,4.4,0,Math.PI*2); c.fillStyle='#ecfdf5'; c.fill();
-          c.beginPath(); c.arc(36,35,2.1,0,Math.PI*2); c.fillStyle='#047857'; c.fill();
+          c.beginPath(); c.arc(36,35,4.4,0,Math.PI*2); c.fillStyle='#eff6ff'; c.fill();
+          c.beginPath(); c.arc(36,35,2.1,0,Math.PI*2); c.fillStyle='#168B61'; c.fill();
           mapa.addImage('pemato-driver-arrow', c.getImageData(0,0,72,72));
         }
       }
@@ -298,6 +321,49 @@
     });
   }
 
+  // Setas discretas de SENTIDO: seguem somente a geometria retornada pelo roteador.
+  // Não representam uma conversão que não tenha sido fornecida pelas instruções.
+  function garantirIconeSentido() {
+    if (!mapa || mapa.hasImage?.('pemato-nav-direction-chevron')) return;
+    const canvas=document.createElement('canvas'); canvas.width=48; canvas.height=48;
+    const ctx=canvas.getContext('2d'); if(!ctx)return;
+    ctx.clearRect(0,0,48,48);
+    ctx.fillStyle='rgba(21,94,194,.93)';
+    ctx.beginPath();ctx.arc(24,24,18,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#ffffff';ctx.lineWidth=5.5;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(14,28);ctx.lineTo(24,17);ctx.lineTo(34,28);ctx.stroke();
+    mapa.addImage('pemato-nav-direction-chevron',ctx.getImageData(0,0,48,48));
+  }
+
+  function atualizarSetasSentidoRota() {
+    if (!mapa || !mapReady || !navegacaoInternaAtiva() || !geometriaValida(rota?.geometria)) {
+      setSource(SOURCE_DIRECTION,fc([]));return;
+    }
+    const geo=rota.geometria;
+    const linhas=geo.type==='LineString'?[geo.coordinates]:geo.coordinates;
+    const distTotal=linhas.reduce((total,linha)=>total+linha.slice(1).reduce((s,p,i)=>s+haversine(linha[i],p),0),0);
+    const passo=Math.max(120,distTotal/90), features=[];
+    let percorrido=0,proxima=passo*.5;
+    for(const linha of linhas){
+      if(!Array.isArray(linha)||linha.length<2)continue;
+      for(let i=1;i<linha.length;i++){
+        const a=linha[i-1],b=linha[i];
+        if(!Array.isArray(a)||!Array.isArray(b)||!coordenadaValida(a[1],a[0])||!coordenadaValida(b[1],b[0]))continue;
+        const metros=haversine(a,b);
+        if(!Number.isFinite(metros)||metros<.5)continue;
+        while(proxima<=percorrido+metros && features.length<100){
+          const t=(proxima-percorrido)/metros;
+          const longitude=a[0]+(b[0]-a[0])*t,latitude=a[1]+(b[1]-a[1])*t;
+          const azimute=bearingEntre({lon:a[0],lat:a[1]},{lon:b[0],lat:b[1]});
+          if(Number.isFinite(azimute))features.push({type:'Feature',geometry:{type:'Point',coordinates:[longitude,latitude]},properties:{bearing:azimute}});
+          proxima+=passo;
+        }
+        percorrido+=metros;
+      }
+    }
+    setSource(SOURCE_DIRECTION,fc(features));
+  }
+
   function prepararIconesParadasV12(features) {
     return global.PacoteEMatoMarcadores?.prepararFeatures?.(mapa, features, {
       prefixo: 'pemato-nav-v12',
@@ -307,18 +373,20 @@
   }
 
   function adicionarSourceParadas() {
-    if (!mapa || mapa.getSource(SOURCE_STOPS)) return;
-    mapa.addSource(SOURCE_STOPS, {
-      type:'geojson',
-      data:fc([])
+    if (!mapa) return;
+    if (!mapa.getSource(SOURCE_STOPS)) mapa.addSource(SOURCE_STOPS, {
+      type:'geojson', data:fc([])
+    });
+    if (!mapa.getSource(SOURCE_STOPS_SELECTED)) mapa.addSource(SOURCE_STOPS_SELECTED, {
+      type:'geojson', data:fc([])
     });
   }
 
   function selecionarMarcadorNav(event) {
-    const props=event?.features?.[0]?.properties||{};
-    const ids=String(props.ids||props.id||'').split(',').map(v=>v.trim()).filter(Boolean);
-    const id=ids[0];
+    const feature = event?.features?.[0];
+    const id = String(feature?.properties?.id || '');
     if(!id)return;
+    // 1 toque: seleciona a parada no cartão; PRÓXIMA permanece independente.
     cartaoSelecionadoId=id;
     definirAcompanhamento(false);
     animarCardParada('pulse');
@@ -327,11 +395,45 @@
     persistirSelecao({motivo:'selecionar_marcador_mapa'});
   }
 
+  function abrirDetalhesMarcadorNav(event) {
+    const feature=event?.features?.[0];if(!feature)return false;
+    return global.PacoteEMatoMarcadores?.abrirDetalhesPacotes?.(
+      mapa, feature, paradasPorOrdem(), escolhido=>{
+        cartaoSelecionadoId=String(escolhido);
+        definirAcompanhamento(false);
+        animarCardParada('pulse');
+        atualizarPainel();
+        atualizarFontesPontos();
+        persistirSelecao({motivo:'selecionar_pacote_multiplo'});
+      }
+    ) === true;
+  }
+
   function bindEventosMarcadoresNav() {
     if(!mapa||mapa.__pematoNavMarkersBound)return;
     mapa.__pematoNavMarkersBound=true;
+    let ultimoToque={id:'',at:0}, ultimaAbertura={id:'',at:0};
+    const clique=event=>{
+      const id=String(event?.features?.[0]?.properties?.id||'');
+      if(!id)return;
+      const agora=Date.now();
+      const duplo=ultimoToque.id===id && agora-ultimoToque.at<440;
+      ultimoToque={id,at:agora};
+      if(duplo){
+        if(abrirDetalhesMarcadorNav(event))ultimaAbertura={id,at:agora};
+      }else selecionarMarcadorNav(event);
+    };
+    const duplo=event=>{
+      event?.preventDefault?.();
+      const id=String(event?.features?.[0]?.properties?.id||'');
+      if(!id)return;
+      const agora=Date.now();
+      if(ultimaAbertura.id===id && agora-ultimaAbertura.at<500)return;
+      if(abrirDetalhesMarcadorNav(event))ultimaAbertura={id,at:agora};
+    };
     [LAYER_STOPS,LAYER_STOPS_MULTI,LAYER_STOPS_ACTIVE,LAYER_STOPS_MULTI_ACTIVE].forEach(layerId=>{
-      mapa.on('click',layerId,selecionarMarcadorNav);
+      mapa.on('click',layerId,clique);
+      mapa.on('dblclick',layerId,duplo);
       mapa.on('mouseenter',layerId,()=>{try{mapa.getCanvas().style.cursor='pointer';}catch(_){}});
       mapa.on('mouseleave',layerId,()=>{try{mapa.getCanvas().style.cursor='';}catch(_){}});
     });
@@ -339,31 +441,50 @@
 
   function garantirCamadas() {
     if (!mapa || !mapReady) return;
-    adicionarSource(SOURCE_ROUTE, fc([])); adicionarSource(SOURCE_ROUTE_STATUS, fc([])); adicionarSource(SOURCE_PROGRESS, fc([])); adicionarSource(SOURCE_DRIVER, fc([])); adicionarSource(SOURCE_MANEUVER, fc([])); adicionarSourceParadas();
+    adicionarSource(SOURCE_ROUTE, fc([])); adicionarSource(SOURCE_ROUTE_STATUS, fc([])); adicionarSource(SOURCE_PROGRESS, fc([])); adicionarSource(SOURCE_DRIVER, fc([])); adicionarSource(SOURCE_MANEUVER, fc([])); adicionarSource(SOURCE_DIRECTION, fc([])); adicionarSourceParadas();
     garantirImagemBalao();
     garantirImagensManobraMapa();
+    garantirIconeSentido();
     const before = antesRotulos();
     if (!mapa.getLayer(LAYER_ROUTE_CASE)) mapa.addLayer({ id:LAYER_ROUTE_CASE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':['interpolate',['linear'],['zoom'],10,3.8,13,5.2,16,7.6,18,8.6],'line-opacity':.72,'line-blur':0}}, before);
-    if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({ id:LAYER_ROUTE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#047857','line-width':['interpolate',['linear'],['zoom'],10,2.2,13,3.4,16,5.3,18,6.2],'line-opacity':.92,'line-blur':0}}, before);
+    if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({ id:LAYER_ROUTE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#2876e6','line-width':['interpolate',['linear'],['zoom'],10,2.2,13,3.4,16,5.3,18,6.2],'line-opacity':.94,'line-blur':0}}, before);
     if (!mapa.getLayer(LAYER_ROUTE_STATUS_CASE)) mapa.addLayer({ id:LAYER_ROUTE_STATUS_CASE,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':['interpolate',['linear'],['zoom'],10,4.4,13,5.9,16,8.5,18,9.5],'line-opacity':['match',['get','status'],'passado',0.06,'proxima',0.72,0.56]}}, before);
-    if (!mapa.getLayer(LAYER_ROUTE_STATUS)) mapa.addLayer({ id:LAYER_ROUTE_STATUS,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','status'],'passado','#96a69f','proxima','#047857','#047857'],'line-width':['interpolate',['linear'],['zoom'],10,2.4,13,3.7,16,5.8,18,6.6],'line-opacity':['match',['get','status'],'passado',0.07,'proxima',0.92,0.82]}}, before);
+    if (!mapa.getLayer(LAYER_ROUTE_STATUS)) mapa.addLayer({ id:LAYER_ROUTE_STATUS,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','status'],'passado','#a4adb9','proxima','#1761d1','#2876e6'],'line-width':['interpolate',['linear'],['zoom'],10,2.4,13,3.7,16,5.8,18,6.6],'line-opacity':['match',['get','status'],'passado',0.07,'proxima',0.92,0.82]}}, before);
     // HOTFIX FINAL 7: a rota atrás vira histórico visual apagado. O source é
     // o mesmo snapping da geometria real; nenhuma coordenada operacional muda.
     if (!mapa.getLayer(LAYER_PROGRESS)) mapa.addLayer({ id:LAYER_PROGRESS,type:'line',source:SOURCE_PROGRESS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#96a69f','line-width':['interpolate',['linear'],['zoom'],10,2.2,13,3.4,16,5.2,18,5.9],'line-opacity':.20,'line-blur':0}}, before);
+    if (!mapa.getLayer(LAYER_DIRECTION)) mapa.addLayer({id:LAYER_DIRECTION,type:'symbol',source:SOURCE_DIRECTION,minzoom:13,layout:{'icon-image':'pemato-nav-direction-chevron','icon-size':['interpolate',['linear'],['zoom'],13,.36,17,.55,20,.64],'icon-rotate':['get','bearing'],'icon-rotation-alignment':'map','icon-allow-overlap':false,'icon-ignore-placement':false,'symbol-sort-key':100}});
     if (!mapa.getLayer(LAYER_MANEUVER_ARROW)) mapa.addLayer({id:LAYER_MANEUVER_ARROW,type:'symbol',source:SOURCE_MANEUVER,layout:{'icon-image':['get','icon'],'icon-size':['interpolate',['linear'],['zoom'],14,.58,16,.70,18,.82,20,.90],'icon-anchor':'center','icon-allow-overlap':true,'icon-ignore-placement':true,'icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','bearing'],0],'symbol-sort-key':9998}});
     if (!mapa.getLayer(LAYER_MANEUVER_LABEL)) mapa.addLayer({id:LAYER_MANEUVER_LABEL,type:'symbol',source:SOURCE_MANEUVER,filter:['has','street'],layout:{'text-field':['get','street'],'text-size':['interpolate',['linear'],['zoom'],15,10.5,18,12.5,20,13.5],'text-offset':[0,3.15],'text-anchor':'top','text-allow-overlap':false,'text-optional':true,'symbol-sort-key':9997},paint:{'text-color':'#1f2937','text-halo-color':'rgba(255,255,255,.96)','text-halo-width':2.2,'text-halo-blur':.3}});
-    if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':['case',['==',['get','mode'],'internal'],14,11],'circle-color':['case',['==',['get','mode'],'internal'],'rgba(4,120,87,.10)','rgba(5,150,105,.16)'],'circle-stroke-color':['case',['==',['get','mode'],'internal'],'rgba(255,255,255,.95)','rgba(5,150,105,.35)'],'circle-stroke-width':['case',['==',['get','mode'],'internal'],1.4,1]} });
-    if (!mapa.getLayer(LAYER_DRIVER_DOT)) mapa.addLayer({ id:LAYER_DRIVER_DOT,type:'circle',source:SOURCE_DRIVER,filter:['==',['get','mode'],'external'],paint:{'circle-radius':7,'circle-color':'#059669','circle-stroke-color':'#ffffff','circle-stroke-width':3} });
+    if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':['case',['==',['get','mode'],'internal'],14,11],'circle-color':['case',['==',['get','mode'],'internal'],'rgba(22,139,97,.10)','rgba(22,139,97,.16)'],'circle-stroke-color':['case',['==',['get','mode'],'internal'],'rgba(255,255,255,.95)','rgba(22,139,97,.35)'],'circle-stroke-width':['case',['==',['get','mode'],'internal'],1.4,1]} });
+    if (!mapa.getLayer(LAYER_DRIVER_DOT)) mapa.addLayer({ id:LAYER_DRIVER_DOT,type:'circle',source:SOURCE_DRIVER,filter:['==',['get','mode'],'external'],paint:{'circle-radius':7,'circle-color':'#168B61','circle-stroke-color':'#ffffff','circle-stroke-width':3} });
     if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id:LAYER_DRIVER,type:'symbol',source:SOURCE_DRIVER,filter:['==',['get','mode'],'internal'],layout:{'icon-image':'pemato-driver-arrow','icon-size':['interpolate',['linear'],['zoom'],12,0.52,15,0.58,18,0.64,20,0.68],'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-anchor':'center','icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','heading'],0]} });
+    // A próxima entrega é uma camada independente da parada consultada:
+    // seu halo permanece no mapa ao abrir qualquer outro cartão.
+    if (!mapa.getLayer(LAYER_NEXT_HALO)) mapa.addLayer({
+      id:LAYER_NEXT_HALO,
+      type:'circle',
+      source:SOURCE_STOPS_SELECTED,
+      filter:['==',['get','current'],true],
+      paint:{
+        'circle-radius':['interpolate',['linear'],['zoom'],8,13,12,18,16,23,19,26],
+        'circle-color':'rgba(1,141,62,.12)',
+        'circle-stroke-color':'#018D3E',
+        'circle-stroke-opacity':.9,
+        'circle-stroke-width':['interpolate',['linear'],['zoom'],8,1.8,15,2.8,19,3.2]
+      }
+    });
     const layoutMarcadorV12 = {
       'icon-image':['get','iconV12'],
-      'icon-anchor':'center',
-      'icon-size':['interpolate',['linear'],['zoom'],9,.62,12,.72,14,.86,16,1,18,1.04],
+      'icon-anchor':'bottom',
+      'icon-size':['interpolate',['linear'],['zoom'],8,.62,11,.76,14,.94,17,1.06],
       'icon-offset': ['get','markerOffset'],
       'icon-allow-overlap':true,
       'icon-ignore-placement':true,
-      'icon-padding':1,
-      'symbol-sort-key':['get','order']
+      'icon-padding':3,
+      // A próxima parada é sempre desenhada acima das paradas consultadas.
+      'symbol-sort-key':['case',['==',['get','current'],true],1000000,
+        ['==',['get','selected'],true],900000,['get','order']]
     };
     if(!mapa.getLayer(LAYER_STOPS)) mapa.addLayer({id:LAYER_STOPS,type:'symbol',source:SOURCE_STOPS,
       filter:['all',['<=',['get','multi'],1],['!=',['get','highlighted'],true]],
@@ -371,12 +492,23 @@
     if(!mapa.getLayer(LAYER_STOPS_MULTI)) mapa.addLayer({id:LAYER_STOPS_MULTI,type:'symbol',source:SOURCE_STOPS,
       filter:['all',['>',['get','multi'],1],['!=',['get','highlighted'],true]],
       layout:{...layoutMarcadorV12}});
-    if(!mapa.getLayer(LAYER_STOPS_ACTIVE)) mapa.addLayer({id:LAYER_STOPS_ACTIVE,type:'symbol',source:SOURCE_STOPS,
+    if(!mapa.getLayer(LAYER_STOPS_ACTIVE)) mapa.addLayer({id:LAYER_STOPS_ACTIVE,type:'symbol',source:SOURCE_STOPS_SELECTED,
       filter:['all',['<=',['get','multi'],1],['==',['get','highlighted'],true]],
       layout:{...layoutMarcadorV12,'icon-allow-overlap':true,'icon-ignore-placement':true}});
-    if(!mapa.getLayer(LAYER_STOPS_MULTI_ACTIVE)) mapa.addLayer({id:LAYER_STOPS_MULTI_ACTIVE,type:'symbol',source:SOURCE_STOPS,
+    if(!mapa.getLayer(LAYER_STOPS_MULTI_ACTIVE)) mapa.addLayer({id:LAYER_STOPS_MULTI_ACTIVE,type:'symbol',source:SOURCE_STOPS_SELECTED,
       filter:['all',['>',['get','multi'],1],['==',['get','highlighted'],true]],
       layout:{...layoutMarcadorV12,'icon-allow-overlap':true,'icon-ignore-placement':true}});
+    // Identificação curta e exclusiva do próximo endereço, sem marcar como
+    // "próxima" a parada que foi aberta apenas para consulta.
+    if (mapa.getStyle()?.glyphs && !mapa.getLayer(LAYER_NEXT_LABEL)) mapa.addLayer({
+      id:LAYER_NEXT_LABEL,type:'symbol',source:SOURCE_STOPS_SELECTED,
+      filter:['==',['get','current'],true],
+      minzoom:12,
+      layout:{'text-field':'PRÓXIMA','text-size':10.5,'text-anchor':'bottom',
+        'text-offset':[0,-3.2],'text-allow-overlap':true,
+        'text-ignore-placement':true,'symbol-sort-key':1000001},
+      paint:{'text-color':'#006D32','text-halo-color':'#FFFFFF','text-halo-width':2.3}
+    });
 
   }
 
@@ -457,6 +589,7 @@
       const nearestInicial=nearestOnRoute(ultimaPosicao,{visual:true});
       atualizarInstrucao(nearestInicial);
       if(nearestInicial) atualizarProgressoVisual(nearestInicial);
+      atualizarSetasSentidoRota();
       acompanharCamera(Number(opcoes.duracao || 0));
     } else {
       definirAcompanhamento(false);
@@ -464,12 +597,15 @@
       ultimoProgressoVisual = null;
       setSource(SOURCE_PROGRESS, fc([]));
       setSource(SOURCE_MANEUVER, fc([]));
+      setSource(SOURCE_DIRECTION, fc([]));
       if (modoAnterior === 'navigation-active') moduloVozNavegacao()?.limparEstado?.({cancelar:true});
       desenharRota(); // restaura a geometria completa no overview
       enquadrarOverview(Number(opcoes.duracao || 0));
     }
     atualizarBotaoVoz();
     atualizarBotaoFollow();
+    const btnPerspectiva=$('navPerspectiveBtn');
+    if(btnPerspectiva){btnPerspectiva.hidden=!navegacaoInternaAtiva();btnPerspectiva.textContent=perspectivaNavegacao==='3d'?'3D':'2D';}
     atualizarFontesPontos();
   }
 
@@ -694,6 +830,7 @@
       if (!navegacaoInternaAtiva()) setSource(SOURCE_PROGRESS, fc([]));
     }
 
+    atualizarSetasSentidoRota();
     try {
       const pontos = g?.type === 'LineString' ? g.coordinates.length : (g?.coordinates || []).reduce((n,l)=>n+(l?.length||0),0);
       const assinatura = `${g?.type||'none'}:${pontos}:${segmentosStatus.length}:${navegacaoInternaAtiva()?'active':'overview'}`;
@@ -719,6 +856,15 @@
       properties:{heading:Number.isFinite(Number(headingVisual)) ? Number(headingVisual) : direcaoCamera(),mode:navegacaoInternaAtiva()?'internal':'external'},
       geometry:{type:'Point',coordinates:[Number(pos.lon),Number(pos.lat)]}
     }] : []));
+  }
+
+  // A consulta e a próxima entrega são estados independentes:
+  // navegar pelos cartões nunca remove a marcação da parada ativa.
+  function destaquesNoMapa(ids, idAtivo, idConsultado) {
+    const presentes = (Array.isArray(ids) ? ids : []).map(String);
+    const current = idAtivo != null && String(idAtivo) !== '' && presentes.includes(String(idAtivo));
+    const selected = idConsultado != null && String(idConsultado) !== '' && presentes.includes(String(idConsultado));
+    return {current, selected, highlighted: current || selected};
   }
 
   function atualizarFontesPontos() {
@@ -749,17 +895,15 @@
       const ativa = grupo.find(item => String(item.stop?.id) === idAtivo);
       const principal = consultada || ativa || grupoVisual[0];
       const stop = principal.stop;
-      const multi = grupoVisual.reduce((total,item) => total + quantidadePacotesDaParada(item.stop), 0);
+      const multi = global.PacoteEMatoMarcadores?.quantidadePacotesRegistradosDoGrupo?.(grupo.map(item => item.stop)) ?? 0;
       const lat = Number(stop.latitude), lon = Number(stop.longitude);
       // V40: sem deslocamento dinâmico. O balão fica ancorado na coordenada
       // real da parada e não muda de posição ao selecionar, entregar ou recalcular.
       const stackIndex = 0;
       const ids = grupo.map(item => String(item.stop.id));
-      const current = ids.includes(idAtivo);
-      const selected = ids.includes(idConsultado) && idConsultado !== '';
-      // V47: dois verdes independentes. A parada ativa da corrida permanece verde
-      // e a parada consultada pelo motorista também fica verde sem substituir a ativa.
-      features.push({type:'Feature',properties:{id:String(stop.id),ids:ids.join(','),order:principal.order,multi,stackIndex,markerOffset:[0,0],status:stop.statusEntrega||'pendente',current,selected,highlighted:(current||selected)},geometry:{type:'Point',coordinates:[lon,lat]}});
+      const {current,selected,highlighted} = destaquesNoMapa(ids, idAtivo, idConsultado);
+      // A próxima entrega e a consulta aparecem ao mesmo tempo quando são diferentes.
+      features.push({type:'Feature',properties:{id:String(stop.id),ids:ids.join(','),order:principal.order,multi,stackIndex,markerOffset:[0,0],status:stop.statusEntrega||'pendente',current,selected,highlighted},geometry:{type:'Point',coordinates:[lon,lat]}});
     });
     let featuresVisiveis = features;
     if (navegacaoInternaAtiva()) {
@@ -777,7 +921,8 @@
     }).join('|');
     if (assinatura !== assinaturaParadasV11) {
       assinaturaParadasV11 = assinatura;
-      setSource(SOURCE_STOPS, fc(featuresVisiveis));
+      setSource(SOURCE_STOPS, fc(featuresVisiveis.filter(f => f.properties?.highlighted !== true)));
+      setSource(SOURCE_STOPS_SELECTED, fc(featuresVisiveis.filter(f => f.properties?.highlighted === true)));
     }
   }
 
@@ -1107,7 +1252,7 @@
     if(toIndex==null||!coords[toIndex]){setSource(SOURCE_MANEUVER,fc([]));return;}
     const distanciaAtual=nearest?distanciaAoLongo(coords,nearest.index,toIndex,nearest.point):Number(inst?.distance??inst?.distancia??Infinity);
     // Só mostra a seta quando ela é útil ao motorista, evitando vários overlays.
-    if(Number.isFinite(distanciaAtual)&&distanciaAtual>520){setSource(SOURCE_MANEUVER,fc([]));return;}
+    if(Number.isFinite(distanciaAtual)&&distanciaAtual>1200){setSource(SOURCE_MANEUVER,fc([]));return;}
     const alvo=pontoAntesDaManobra(coords,toIndex,tipo.startsWith('rotatoria')?12:18);
     if(!alvo?.point){setSource(SOURCE_MANEUVER,fc([]));return;}
     const rua=nomeRuaInstrucao(inst);
@@ -1233,8 +1378,8 @@
     else if (kmh < 75) zoom = 18.30;
     else zoom = 18.20;
     // Próximo à manobra abre só o necessário para manter veículo + cruzamento.
-    if (distanciaProximaManobra < 120) zoom = Math.min(zoom, 18.32);
-    if (distanciaProximaManobra < 55) zoom = Math.min(zoom, 18.22);
+    if (distanciaProximaManobra < 180 && kmh < 45) zoom = Math.max(zoom,18.6);
+    if (distanciaProximaManobra < 75 && kmh < 35) zoom = Math.max(zoom,18.75);
     return zoom;
   }
 
@@ -1259,6 +1404,17 @@
     return [lon2*180/Math.PI,lat2*180/Math.PI];
   }
 
+  function alternarPerspectivaNavegacao() {
+    perspectivaNavegacao=perspectivaNavegacao==='3d'?'2d':'3d';
+    try{localStorage.setItem('pemato_nav_perspectiva',perspectivaNavegacao);}catch(_){}
+    const btn=$('navPerspectiveBtn');
+    if(btn){btn.textContent=perspectivaNavegacao==='3d'?'3D':'2D';btn.setAttribute('aria-label',perspectivaNavegacao==='3d'?'Alternar para mapa 2D':'Alternar para perspectiva 3D');btn.setAttribute('aria-pressed',perspectivaNavegacao==='3d'?'true':'false');}
+    if(navegacaoInternaAtiva()){
+      if(seguirPosicao) acompanharCamera(250);
+      else if(mapa){try{mapa.easeTo({pitch:perspectivaNavegacao==='3d'?56:0,duration:250});}catch(_){}}
+    }
+  }
+
   function acompanharCamera(duracao=0) {
     if(!seguirPosicao || !mapa || !mapReady) return;
     const interna=navegacaoInternaAtiva();
@@ -1271,7 +1427,7 @@
     const opcoes={
       center,
       zoom:interna?zoomNavegacaoInterna():16,
-      pitch:interna?56:0,
+      pitch:interna?(perspectivaNavegacao==='3d'?56:0):0,
       bearing,
       offset:interna?offsetCameraInterna():[0,0]
     };
@@ -1644,6 +1800,9 @@
 
   async function salvarStatusParadaAtual(status,motivo,observacao){
     if(processandoStatus) return; const atual=paradasPorOrdem().find(s=>String(s.id)===String(cartaoSelecionadoId))||proxima(); if(!rota||!atual)return; const parada=rota.paradas.find(p=>String(p.id)===String(atual.id)); if(!parada||['entregue','concluida','nao_entregue'].includes(parada.statusEntrega))return;
+    // Capturar ANTES de tratar a entrega. A atualização dos pendentes pode
+    // encontrar a 4 ainda pendente, mas a continuidade real era a 5/6.
+    const idAtivoAntes = proxima()?.id || null;
     processandoStatus=true; try{
       if(!['entregue','nao_entregue'].includes(status)) return;
       const motivoFinal=status==='nao_entregue'?String(motivo||'').trim():'';
@@ -1653,14 +1812,14 @@
       parada.alteradoEm=timestamp;
       const idTratado=parada.id;
       atualizarPendentes();
-      const proximaDepois=proximaPendenteDepois(idTratado) || proxima();
+      const proximaDepois=proximaFixaAposTratar(paradasPorOrdem(), idAtivoAntes, idTratado);
       cartaoSelecionadoId=proximaDepois?.id || idTratado;
       rota.paradaSelecionadaId=cartaoSelecionadoId;
       rota.proximaParadaId=proximaDepois?.id||null;
       rota.duracaoParadasSegundos=ordemPendente.length*Number(rota.tempoParadaSegundos||0);
       if(Number.isFinite(Number(rota.duracaoDirecaoSegundos))){rota.duracaoTotalSegundos=Number(rota.duracaoDirecaoSegundos||0)+Number(rota.duracaoParadasSegundos||0);rota.horarioTerminoEstimado=Date.now()+rota.duracaoTotalSegundos*1000;}
       await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});
-      await global.PacoteEMatoSessao?.persistirAgora?.({motivo:status==='entregue'?'parada_entregue':'parada_nao_entregue',paradaSelecionadaId:cartaoSelecionadoId,proximaParadaId:cartaoSelecionadoId,navegacaoAtiva:true});
+      await global.PacoteEMatoSessao?.persistirAgora?.({motivo:status==='entregue'?'parada_entregue':'parada_nao_entregue',paradaSelecionadaId:cartaoSelecionadoId,proximaParadaId:rota.proximaParadaId,navegacaoAtiva:true});
       if($('navDeliveryNote'))$('navDeliveryNote').value=''; if($('navExtrasPanel'))$('navExtrasPanel').style.display='none'; ultimoIdNota='';
       animarCardParada('left');
       atualizarPainel(); desenharRota(); global.PacoteEMatoHistorico?.renderizar?.(); global.PacoteEMatoAppShell?.atualizarInicio?.();
@@ -1863,7 +2022,7 @@
     $('navActionImport')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>$('routingXlsxInput')?.click?.(),140);});
     $('navActionNewRoute')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.criarNovaRotaVazia?.(),140);});
     $('navActionAddStop')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.abrirEditor?.(null),140);});
-    $('navActionPackages')?.addEventListener('click', async ()=>{fecharAcoesRota();await mostrarTutorialPacotesSeNecessario();if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='flex';registrarRetornoInterno('nav_pacotes');});
+    $('navActionPackages')?.addEventListener('click', async ()=>{fecharAcoesRota();if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='flex';registrarRetornoInterno('nav_pacotes');});
     $('navPackagesChooserClose')?.addEventListener('click',()=>{if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='none';});
     $('navPackagesChooserBackdrop')?.addEventListener('click',e=>{if(e.target===$('navPackagesChooserBackdrop'))e.currentTarget.style.display='none';});
     $('navAddPackagesBtn')?.addEventListener('click',()=>{if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='none';global.PacoteEMatoOperacoesPacotes?.iniciar?.('adicionar');});
@@ -1872,7 +2031,7 @@
     $('navActionOptimize')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.otimizarRota?.(),140);});
     $('navActionRefine')?.addEventListener('click',abrirRefinoDaNavegacao);
     $('navActionBipagem')?.addEventListener('click',abrirBipagemDaNavegacao);
-    $('navActionExportPdf')?.addEventListener('click',exportarPdfNavegacao);
+    $('navActionExportPdf')?.addEventListener('click',()=>exportarPdfNavegacao());
     $('navActionSettings')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes');});
     $('navActionRecalculate')?.addEventListener('click',()=>{fecharAcoesRota();recalcular('manual');});
     $('navActionClearRoutes')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.removerTodasRotas?.(),140);});
@@ -1884,6 +2043,12 @@
       acompanharCamera(180);
       iniciarGPS();
     });
+    const campoVolume=$('navVoiceVolume');
+    if(campoVolume){
+      campoVolume.value=String(Math.round((moduloVozNavegacao()?.obterVolume?.() ?? 1)*100));
+      campoVolume.addEventListener('input',()=>moduloVozNavegacao()?.definirVolume?.(Number(campoVolume.value)/100));
+    }
+    $('navPerspectiveBtn')?.addEventListener('click',alternarPerspectivaNavegacao);
     $('navVoiceBtn')?.addEventListener('click',()=>{
       if(!navegacaoInternaAtiva())return;
       vozAtiva=!vozAtiva;
