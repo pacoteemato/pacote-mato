@@ -303,6 +303,9 @@
     }
     const carregada=await global.PacoteEMatoRotaStore?.ativarRotaExistente?.(rota.id);
     if(!carregada)return;
+    // Se o usuário já estiver na roteirização, abrirModulo retorna cedo.
+    // Atualizar explicitamente os cartões e o mapa com a rota SELECIONADA.
+    await global.PacoteEMatoRoteirizacao?.carregarRotaAtiva?.();
     await global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');
   }
 
@@ -338,7 +341,10 @@
     const container = $('historyRoutesList');
     if (!container || !global.PacoteEMatoRotaStore) return;
     const { inicio, fim } = datasDoFiltro();
-    const rotas = await global.PacoteEMatoRotaStore.listarRotas({ dataInicio: inicio, dataFim: fim });
+    const todas = await global.PacoteEMatoRotaStore.listarRotas({ dataInicio: inicio, dataFim: fim });
+    // Histórico principal consulta somente execuções concluídas.
+    // Rotas disponíveis ficam na lista da roteirização.
+    const rotas=todas.filter(r=>['concluida','arquivada'].includes(r.status));
     container.replaceChildren();
     renderizarDisponiveis().catch(erro=>console.warn('Lista de rotas disponíveis:',erro));
     if (!rotas.length) {
