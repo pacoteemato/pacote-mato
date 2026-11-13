@@ -1813,7 +1813,9 @@
     // Capturar ANTES de tratar a entrega. A atualização dos pendentes pode
     // encontrar a 4 ainda pendente, mas a continuidade real era a 5/6.
     const idAtivoAntes = proxima()?.id || null;
-    processandoStatus=true; try{
+    processandoStatus=true;
+    const anteriorStatus=JSON.parse(JSON.stringify(parada));
+    try{
       if(!['entregue','nao_entregue'].includes(status)) return;
       const motivoFinal=status==='nao_entregue'?String(motivo||'').trim():'';
       const timestamp=Date.now(); parada.statusEntrega=status; parada.statusAtualizadoEm=timestamp; parada.observacaoEntrega=String($('navDeliveryNote')?.value||'').trim();
@@ -1828,7 +1830,7 @@
       rota.proximaParadaId=proximaDepois?.id||null;
       rota.duracaoParadasSegundos=ordemPendente.length*Number(rota.tempoParadaSegundos||0);
       if(Number.isFinite(Number(rota.duracaoDirecaoSegundos))){rota.duracaoTotalSegundos=Number(rota.duracaoDirecaoSegundos||0)+Number(rota.duracaoParadasSegundos||0);rota.horarioTerminoEstimado=Date.now()+rota.duracaoTotalSegundos*1000;}
-      await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});
+      await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true,exigirPersistenciaLocal:true});
       await global.PacoteEMatoSessao?.persistirAgora?.({motivo:status==='entregue'?'parada_entregue':'parada_nao_entregue',paradaSelecionadaId:cartaoSelecionadoId,proximaParadaId:rota.proximaParadaId,navegacaoAtiva:true});
       if($('navDeliveryNote'))$('navDeliveryNote').value=''; if($('navExtrasPanel'))$('navExtrasPanel').style.display='none'; ultimoIdNota='';
       animarCardParada('left');
@@ -1843,7 +1845,17 @@
         global.notificar?.('Entregas concluídas. Agora siga até o ponto final da rota.');
         falar('Entregas concluídas. Siga até o ponto final da rota.','route:final-destination');
       }
-      else{rota.status='aguardando_finalizacao';rota.conclusaoPendente=true;await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true});mostrarConclusao();}
+      else{rota.status='aguardando_finalizacao';rota.conclusaoPendente=true;await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true,exigirPersistenciaLocal:true});mostrarConclusao();}
+    }catch(erro){
+      // Falha na persistência: não informar que entregou quando não foi possível salvar.
+      // O histórico já escrito não é alterado, e os dados originais do pacote permanecem.
+      if(String(erro?.code||'')==='PERSISTENCIA_LOCAL_FALHOU'){
+        Object.assign(parada,anteriorStatus);
+        atualizarPendentes();
+        atualizarPainel();
+        global.notificar?.('Não foi possível salvar o status da entrega. Tente novamente.');
+      }
+      console.warn('Falha ao atualizar status da parada',erro);
     }finally{processandoStatus=false;}
   }
 
