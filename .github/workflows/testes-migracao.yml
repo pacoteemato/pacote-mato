@@ -33,6 +33,8 @@ jobs:
         run: node tests/rotas-finalizacao-v84.test.cjs
       - name: Testar execução da função finalizarRota e falhas de gravação
         run: node tests/finalizar-execucao-v84.test.cjs
+      - name: Testar GPS no mapa livre após conclusão
+        run: node tests/gps-mapa-livre-v842.test.cjs
 
   visual-android:
     runs-on: ubuntu-24.04
