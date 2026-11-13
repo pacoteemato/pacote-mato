@@ -116,7 +116,11 @@
     if (!retornoConfiguracoesParaRota) await global.PacoteEMatoConfiguracoes?.aguardarAplicacao?.();
     if (nome === 'navegacao') {
       const rotaParaNavegar = await global.PacoteEMatoRotaStore?.obterRotaAtiva?.();
-      if (rotaParaNavegar?.precisaRecalculo) {
+      // Ao reabrir o app depois de finalizar, não restaurar o módulo de
+      // navegação sem rota. O mapa normal da roteirização continua disponível.
+      if (!rotaParaNavegar || ['concluida','arquivada'].includes(rotaParaNavegar.status)) {
+        nome = 'roteirizacao';
+      } else if (rotaParaNavegar.precisaRecalculo) {
         global.notificar?.('A rota foi alterada. Recalcule o trajeto antes de abrir a navegação.');
         nome = 'roteirizacao';
       }

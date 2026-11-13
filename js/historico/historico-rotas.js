@@ -115,6 +115,78 @@
     return true;
   }
 
+
+  // Reexecução deliberada: mantém o mesmo ID e guarda um retrato imutável dos
+  // resultados anteriores no próprio registro, antes de zerar os status.
+  function prepararRotaParaRepeticao(rotaOriginal) {
+    const store=global.PacoteEMatoRotaStore;
+    const rota=store?.normalizarRota ? store.normalizarRota(rotaOriginal)
+      : JSON.parse(JSON.stringify(rotaOriginal||{}));
+    if (rota.status !== 'concluida') return null;
+    const concluidaEm=rota.concluidoEm || Date.now();
+    const snapshot={
+      concluidoEm:concluidaEm,
+      iniciadoEm:rota.iniciadoEm||null,
+      status:'concluida',
+      ordem:[...(rota.ordem||[])],
+      paradas:(rota.paradas||[]).map(p=>({
+        id:p.id,enderecoOriginal:p.enderecoOriginal,
+        statusEntrega:p.statusEntrega,entregueEm:p.entregueEm||null,
+        naoEntregueEm:p.naoEntregueEm||null,motivoNaoEntrega:p.motivoNaoEntrega||'',
+        observacaoNaoEntrega:p.observacaoNaoEntrega||'',observacaoEntrega:p.observacaoEntrega||''
+      }))
+    };
+    rota.historicoExecucoes=[...(rota.historicoExecucoes||[]),snapshot];
+    rota.historicoReaberturas=[...(rota.historicoReaberturas||[]),{em:Date.now(),conclusaoAnteriorEm:concluidaEm}];
+    rota.paradas=(rota.paradas||[]).map(p=>({
+      ...p,statusEntrega:'pendente',entregueEm:null,naoEntregueEm:null,
+      motivoNaoEntrega:'',observacaoNaoEntrega:'',observacaoEntrega:'',
+      statusAtualizadoEm:Date.now()
+    }));
+    rota.status='planejamento';
+    rota.iniciadoEm=null;
+    rota.concluidoEm=null;
+    rota.conclusaoPendente=false;
+    rota.pontoFinalConcluidoEm=null;
+    rota.distanciaPercorridaMetros=0;
+    rota.paradaSelecionadaId=rota.ordem?.[0]||rota.paradas?.[0]?.id||null;
+    rota.proximaParadaId=rota.paradaSelecionadaId;
+    rota.alteradoEm=Date.now();
+    return rota;
+  }
+
+  let desfazendoConclusao=false;
+  async function desfazerConclusaoRota(id) {
+    if (desfazendoConclusao) return false;
+    const store=global.PacoteEMatoRotaStore;
+    const atual=await store?.obterRota?.(id);
+    if (!atual||atual.status!=='concluida') return false;
+    const ok=await global.PacoteEMatoDialog?.confirmar?.({
+      titulo:'DESEJA DESFAZER A CONCLUSÃO DESTA ROTA?',
+      mensagem:'Essa rota voltará a ficar disponível para ser realizada novamente.',
+      confirmar:'Confirmar desfazer',cancelar:'Cancelar'
+    });
+    if (ok!==true) return false;
+    desfazendoConclusao=true;
+    try {
+      // Releitura após confirmação evita reaplicar em uma rota já reaberta.
+      const confirmada=await store.obterRota(id);
+      const disponivel=confirmada&&prepararRotaParaRepeticao(confirmada);
+      if (!disponivel) return false;
+      await store.salvarRota(disponivel,{ativa:false,exigirPersistenciaLocal:true});
+      const salva=await store.obterRota(id);
+      if(!salva||salva.status==='concluida'||salva.paradas.some(p=>p.statusEntrega!=='pendente')) throw new Error('Reabertura não confirmada no armazenamento');
+      if($('routeHistoryDetailModal'))$('routeHistoryDetailModal').style.display='none';
+      await renderizar();
+      global.notificar?.('Rota disponível novamente. Inicie-a manualmente quando quiser.');
+      return true;
+    } catch(erro) {
+      console.warn('Pacote É Mato: falha ao desfazer conclusão',erro);
+      global.notificar?.('Não foi possível confirmar a reabertura. A rota deve ser revisada no Histórico.');
+      return false;
+    } finally { desfazendoConclusao=false; }
+  }
+
   function criarParadaDetalhe(rota, p, indice) {
     const item = document.createElement('article');
     item.className = 'history-stop-item history-stop-item-v81';
@@ -123,11 +195,13 @@
     const toggle = document.createElement('button');
     toggle.type = 'button';
     toggle.className = 'history-stop-toggle';
-    const numero = Number(p.ordemOtimizada || 0) || (indice + 1);
+    const numero = indice + 1; // Exibir sequência de rota. Não confiar em número antigo de otimização.
     const title = document.createElement('strong');
     title.textContent = `${numero}. ${p.enderecoOriginal || 'Endereço'}`;
     const status = document.createElement('span');
     status.textContent = textoStatus(p);
+    status.className = 'history-stop-status';
+    status.dataset.status = String(p.statusEntrega || 'pendente');
     toggle.append(title, status);
 
     const detail = document.createElement('div');
@@ -139,17 +213,13 @@
       criarLinha('Status', textoStatus(p)),
       criarLinha('Observação', String(p.observacao || p.complemento || '—'))
     );
-    if (p.statusEntrega === 'nao_entregue') detail.appendChild(criarLinha('Motivo', String(p.motivoNaoEntrega || p.observacaoNaoEntrega || 'Não informado')));
+    if (p.statusEntrega === 'nao_entregue') {
+      detail.appendChild(criarLinha('Motivo', String(p.motivoNaoEntrega || p.observacaoNaoEntrega || 'Não informado')));
+      if(p.naoEntregueEm) detail.appendChild(criarLinha('Não entregue em', new Date(p.naoEntregueEm).toLocaleString('pt-BR')));
+    }
+    if(['entregue','concluida'].includes(p.statusEntrega) && p.entregueEm) detail.appendChild(criarLinha('Entregue em',new Date(p.entregueEm).toLocaleString('pt-BR')));
     if (p.observacaoEntrega) detail.appendChild(criarLinha('Nota da entrega', String(p.observacaoEntrega)));
 
-    if (['entregue','concluida','nao_entregue'].includes(String(p.statusEntrega || ''))) {
-      const corrigir = document.createElement('button');
-      corrigir.type = 'button';
-      corrigir.className = 'pemato-secondary history-correct-status';
-      corrigir.textContent = 'Corrigir status';
-      corrigir.addEventListener('click', () => corrigirStatusRotaConcluida(rota.id, p.id));
-      detail.appendChild(corrigir);
-    }
 
     toggle.addEventListener('click', () => {
       detail.hidden = !detail.hidden;
@@ -172,6 +242,8 @@
     body.append(
       title,
       criarLinha('Data', rota.data || '—'),
+      criarLinha('Situação', rota.status==='concluida'?'Concluída':(rota.status==='planejamento'?'Disponível':rota.status)),
+      criarLinha('Conclusão', rota.concluidoEm?new Date(rota.concluidoEm).toLocaleString('pt-BR'):'—'),
       criarLinha('Paradas', String(rota.paradas.length)),
       criarLinha('Distância', formatarDistancia(rota.distanciaTotalMetros)),
       criarLinha('Direção', formatarTempo(rota.duracaoDirecaoSegundos)),
@@ -186,21 +258,80 @@
     (rota.paradas || []).forEach(p => { if (!ordenadas.includes(p)) ordenadas.push(p); });
     ordenadas.forEach((p, indice) => stops.appendChild(criarParadaDetalhe(rota, p, indice)));
     body.appendChild(stops);
+    const execucoes=Array.isArray(rota.historicoExecucoes)?rota.historicoExecucoes:[];
+    if(execucoes.length){
+      const historicoTitulo=document.createElement('h4');
+      historicoTitulo.textContent='Execuções anteriores (auditoria)';
+      body.appendChild(historicoTitulo);
+      execucoes.forEach((execucao,i)=>{
+        const bloco=document.createElement('details');
+        const titulo=document.createElement('summary');
+        titulo.textContent=`Execução ${i+1} — ${new Date(execucao.concluidoEm||Date.now()).toLocaleString('pt-BR')}`;
+        bloco.appendChild(titulo);
+        const lista=document.createElement('div');lista.className='history-stop-list';
+        const porIdAnterior=new Map((execucao.paradas||[]).map(p=>[String(p.id),p]));
+        const anteriores=(execucao.ordem||[]).map(id=>porIdAnterior.get(String(id))).filter(Boolean);
+        (execucao.paradas||[]).forEach(p=>{if(!anteriores.includes(p))anteriores.push(p);});
+        anteriores.forEach((p,k)=>lista.appendChild(criarParadaDetalhe(rota,p,k)));
+        bloco.appendChild(lista);body.appendChild(bloco);
+      });
+    }
+    if(rota.status==='concluida'){
+      const desfazer=document.createElement('button');
+      desfazer.type='button';desfazer.className='pemato-danger history-undo-conclusion';
+      desfazer.textContent='DESFAZER';
+      desfazer.addEventListener('click',()=>desfazerConclusaoRota(rota.id));
+      body.appendChild(desfazer);
+    }
     modal.style.display = 'flex';
   }
 
   async function abrirNoMapa(id) {
-    const rota = await global.PacoteEMatoRotaStore?.obterRota?.(id);
-    if (!rota) return;
-    const ativa = await global.PacoteEMatoRotaStore?.obterRotaAtiva?.();
-    if (ativa && String(ativa.id) !== String(rota.id)) {
-      const ok = await global.PacoteEMatoDialog.confirmar({titulo:'Abrir rota no mapa?',mensagem:`A rota “${rota.nome || 'esta rota'}” será aberta agora. A rota atual continuará salva no Histórico.`,confirmar:'Abrir rota',cancelar:'Cancelar'});
-      if (!ok) return;
+    const rota=await global.PacoteEMatoRotaStore?.obterRota?.(id);
+    if(!rota) return;
+    if(rota.status==='concluida'||rota.status==='arquivada') {
+      // Consultar concluída nunca muda a rota ativa.
+      await abrirDetalhes(id);return;
     }
-    const carregada = await global.PacoteEMatoRotaStore?.ativarRotaExistente?.(rota.id);
-    if (!carregada) return;
-    try { await global.PacoteEMatoSessao?.persistirAgora?.({ motivo: 'historico_mapa', rotaAtivaId: carregada.id, moduloAtual: 'roteirizacao', paradaSelecionadaId: carregada.paradaSelecionadaId || carregada.ordem?.[0] || null }); } catch (_) {}
+    const ativa=await global.PacoteEMatoRotaStore?.obterRotaAtiva?.();
+    if(ativa&&String(ativa.id)!==String(rota.id)){
+      const ok=await global.PacoteEMatoDialog?.confirmar?.({
+        titulo:'Abrir rota disponível?',mensagem:'A rota atual continuará salva. Deseja abrir a rota selecionada para iniciá-la quando quiser?',
+        confirmar:'Abrir rota',cancelar:'Cancelar'
+      });
+      if(ok!==true)return;
+    }
+    const carregada=await global.PacoteEMatoRotaStore?.ativarRotaExistente?.(rota.id);
+    if(!carregada)return;
     await global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');
+  }
+
+  async function renderizarDisponiveis(){
+    const container=$('routingAvailableRoutes'),store=global.PacoteEMatoRotaStore;
+    if(!container||!store)return;
+    const todas=await store.listarRotas();
+    const disponiveis=todas.filter(r=>!['concluida','arquivada'].includes(r.status)&&(r.paradas||[]).length);
+    container.replaceChildren();
+    if(!disponiveis.length){container.style.display='none';return;}
+    container.style.display='';
+    const title=document.createElement('strong');
+    title.textContent='ROTAS DISPONÍVEIS';
+    title.className='routing-available-title';
+    container.appendChild(title);
+    const lista=document.createElement('div');lista.className='routing-available-list';
+    disponiveis.forEach(r=>{
+      const row=document.createElement('div');row.className='routing-available-item';
+      const info=document.createElement('div');info.className='routing-available-info';
+      const nome=document.createElement('strong');nome.textContent=r.nome||'Rota';
+      const meta=document.createElement('small');
+      meta.textContent=`${r.paradas.length} paradas · ${r.status==='planejamento'?'Disponível':'Em andamento'}`;
+      info.append(nome,meta);
+      const btn=document.createElement('button');btn.type='button';btn.className='pemato-secondary';
+      btn.textContent='Abrir rota';
+      btn.addEventListener('click',()=>abrirNoMapa(r.id));
+      row.append(info,btn);lista.appendChild(row);
+    });
+    container.appendChild(lista);
   }
 
   async function renderizar() {
@@ -209,6 +340,7 @@
     const { inicio, fim } = datasDoFiltro();
     const rotas = await global.PacoteEMatoRotaStore.listarRotas({ dataInicio: inicio, dataFim: fim });
     container.replaceChildren();
+    renderizarDisponiveis().catch(erro=>console.warn('Lista de rotas disponíveis:',erro));
     if (!rotas.length) {
       const empty = document.createElement('div');
       empty.className = 'history-empty';
@@ -222,7 +354,7 @@
       const open = document.createElement('button');
       open.type = 'button';
       open.className = 'history-route-open';
-      open.addEventListener('click', () => abrirNoMapa(rota.id));
+      open.addEventListener('click', () => abrirDetalhes(rota.id));
       const top = document.createElement('div');
       top.className = 'history-route-top';
       const name = document.createElement('strong');
@@ -234,13 +366,13 @@
       meta.className = 'history-route-meta';
       const delivered = rota.paradas.filter(p => ['entregue','concluida'].includes(p.statusEntrega)).length;
       const failed = rota.paradas.filter(p => p.statusEntrega === 'nao_entregue').length;
-      meta.textContent = `${rota.paradas.length} paradas · ${formatarDistancia(rota.distanciaTotalMetros)} · ${formatarTempo(rota.duracaoTotalSegundos)} · ${delivered} entregues · ${failed} não entregues`;
+      meta.textContent = `${rota.status==='concluida'?'Concluída':rota.status==='planejamento'?'Disponível':'Em andamento'} · ${rota.paradas.length} paradas · ${formatarDistancia(rota.distanciaTotalMetros)} · ${delivered} entregues · ${failed} não entregues`;
       open.append(top, meta);
       const actions = document.createElement('div');
       actions.className = 'history-route-actions';
       const mapBtn = document.createElement('button');
-      mapBtn.type = 'button'; mapBtn.className = 'pemato-primary'; mapBtn.textContent = 'Abrir no mapa';
-      mapBtn.addEventListener('click', () => abrirNoMapa(rota.id));
+      mapBtn.type = 'button'; mapBtn.className = 'pemato-primary'; mapBtn.textContent = rota.status==='concluida'?'Consultar conclusão':'Abrir rota disponível';
+      mapBtn.addEventListener('click', () => rota.status==='concluida'?abrirDetalhes(rota.id):abrirNoMapa(rota.id));
       const detailBtn = document.createElement('button');
       detailBtn.type = 'button'; detailBtn.className = 'pemato-secondary'; detailBtn.textContent = 'Ver detalhes';
       detailBtn.addEventListener('click', () => abrirDetalhes(rota.id));
@@ -258,11 +390,12 @@
     });
     $('routeHistoryDetailClose')?.addEventListener('click', () => { if ($('routeHistoryDetailModal')) $('routeHistoryDetailModal').style.display = 'none'; });
     global.addEventListener('pemato:rota:salva', renderizar);
+    global.addEventListener('pemato:rota:ativa-limpa', renderizar);
     renderizar();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, { once: true });
   else bind();
 
-  global.PacoteEMatoHistorico = Object.freeze({ renderizar, abrirDetalhes, abrirNoMapa, corrigirStatusRotaConcluida, prepararRotaParaCorrecao });
+  global.PacoteEMatoHistorico = Object.freeze({ renderizar, renderizarDisponiveis, abrirDetalhes, abrirNoMapa, desfazerConclusaoRota, prepararRotaParaRepeticao });
 })(window);

@@ -91,3 +91,21 @@
 .history-stop-expanded{padding:0 10px 10px;border-top:1px solid var(--surface-border)}
 .history-stop-expanded[hidden]{display:none}
 .history-correct-status{width:100%;margin-top:10px}
+
+/* V84 — histórico consultivo, auditoria e rotas disponíveis. */
+.history-stop-item-v81[data-status="entregue"] .history-stop-status,
+.history-stop-item-v81[data-status="concluida"] .history-stop-status{color:#047857!important;font-weight:900}
+.history-stop-item-v81[data-status="nao_entregue"] .history-stop-status{color:#dc2626!important;font-weight:900}
+.history-undo-conclusion{width:100%;min-height:48px;padding:12px;border-radius:12px;background:#dc2626!important;color:#fff!important;font-weight:900;letter-spacing:.02em;margin-top:14px}
+.history-stop-list{display:grid;gap:7px}
+#routeHistoryDetailBody details{margin-top:10px;padding:9px 11px;border:1px solid #dbe7e1;border-radius:12px}
+#routeHistoryDetailBody details>summary{cursor:pointer;font-weight:800}
+.routing-available-routes{margin:12px 12px 4px;padding:12px;border:1px solid #d0e6da;border-radius:15px;background:#f4fbf7;display:grid;gap:9px}
+.routing-available-title{font-size:.72rem;color:#047857;font-weight:900;letter-spacing:.04em}
+.routing-available-list{display:grid;gap:7px;max-height:190px;overflow-y:auto}
+.routing-available-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;background:#fff;border:1px solid #dce8e1;border-radius:10px}
+.routing-available-info{min-width:0;display:grid;gap:3px}
+.routing-available-info strong{font-size:.74rem;overflow-wrap:anywhere}
+.routing-available-info small{font-size:.63rem;color:#52645b}
+.routing-available-item button{flex:0 0 auto;min-height:37px;font-weight:800}
+@media(max-width:500px){.routing-available-routes{margin:8px 8px 4px;padding:9px}.routing-available-item{gap:6px;padding:8px}.routing-available-info strong{font-size:.68rem}.routing-available-item button{font-size:.68rem;padding:8px}}

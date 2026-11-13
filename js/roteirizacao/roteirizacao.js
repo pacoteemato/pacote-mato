@@ -1044,7 +1044,8 @@
 
   async function carregarRotaAtiva() {
     const rota = await global.PacoteEMatoRotaStore.obterRotaAtiva();
-    if (rota) rotaAtual = rota;
+    // Não reutilizar na tela a rota recém-finalizada quando não há rota ativa.
+    rotaAtual = rota || null;
     if (!rotaAtual) {
       const cfg = global.PacoteEMatoConfiguracoes?.obter?.() || {};
       rotaAtual = global.PacoteEMatoRotaStore.criarRota({
@@ -1057,6 +1058,7 @@
       await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true, firestore: false });
     }
     renderizarTudo({ fit: true });
+    global.PacoteEMatoHistorico?.renderizarDisponiveis?.();
     atualizarBotoesRefino();
     global.PacoteEMatoLocalizacaoAtual?.iniciarAutomaticamente?.().then(() => global.PacoteEMatoMapa?.renderizar?.()).catch(() => {});
     return rotaAtual;
@@ -2322,6 +2324,7 @@
 
   async function abrirNavegacao() {
     if (await garantirConfiguracoesObrigatorias('iniciar a rota') === false) return;
+    if (['concluida','arquivada'].includes(rotaAtual?.status)) return notificar('Rota concluída. Abra o Histórico e toque em DESFAZER para refazê-la.');
     if (rotaAtual?.precisaRecalculo) return notificar('A rota foi alterada. Recalcule o trajeto antes de iniciar a navegação.');
     if (!rotaAtual?.geometria) return notificar('Calcule a rota pelas ruas antes de iniciar a operação.');
     rotaAtual.status = rotaAtual.status === 'concluida' ? 'concluida' : 'ativa';

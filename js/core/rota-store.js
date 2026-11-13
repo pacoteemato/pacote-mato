@@ -183,6 +183,8 @@
     r.duracaoPlanejadorSegundos = Number.isFinite(Number(r.duracaoPlanejadorSegundos)) ? Number(r.duracaoPlanejadorSegundos) : null;
     r.precisaRecalculo = r.precisaRecalculo === true;
     r.historicoOperacoesPacotes = Array.isArray(r.historicoOperacoesPacotes) ? r.historicoOperacoesPacotes.slice(-100) : [];
+    r.historicoExecucoes = Array.isArray(r.historicoExecucoes) ? r.historicoExecucoes : [];
+    r.historicoReaberturas = Array.isArray(r.historicoReaberturas) ? r.historicoReaberturas : [];
     return r;
   }
 
@@ -391,7 +393,8 @@
     entrada.alteradoEm = agora();
     const normalizada = normalizarRota(entrada);
     const memoriaAnterior = rotaAtivaMemoria;
-    rotaAtivaMemoria = normalizada;
+    // Uma rota concluída jamais pode ser promovida automaticamente a ativa.
+    if (normalizada.status !== 'concluida' && normalizada.status !== 'arquivada' && opcoes?.ativa !== false) rotaAtivaMemoria = normalizada;
     const persistiuLocal = await dbPut(STORE_ROTAS, normalizada);
     if (opcoes?.exigirPersistenciaLocal === true && !persistiuLocal) {
       rotaAtivaMemoria = memoriaAnterior;
@@ -399,14 +402,14 @@
       erro.code = 'PERSISTENCIA_LOCAL_FALHOU';
       throw erro;
     }
-    if (opcoes?.ativa !== false) {
+    if (opcoes?.ativa !== false && normalizada.status !== 'concluida' && normalizada.status !== 'arquivada') {
       await dbPut(STORE_META, { key: chaveAtivaMeta(), value: normalizada.id, updatedAt: Date.now(), usuario: usuarioAtual() });
       try { localStorage.setItem(chaveAtivaLocal(), normalizada.id); } catch (_) {}
       salvarSnapshotAtivoLocal(normalizada);
       sincronizarComAppState(normalizada);
     }
     if (opcoes?.firestore !== false) espelharFirestore(normalizada);
-    emitir('pemato:rota:salva', { rota: clone(normalizada), ativa: opcoes?.ativa !== false });
+    emitir('pemato:rota:salva', { rota: clone(normalizada), ativa: opcoes?.ativa !== false && normalizada.status !== 'concluida' && normalizada.status !== 'arquivada' });
     return clone(normalizada);
   }
 
@@ -426,7 +429,7 @@
 
   async function obterRotaAtiva() {
     const usuario = usuarioAtual();
-    if (rotaAtivaMemoria && String(rotaAtivaMemoria.usuario || 'local') === usuario) return clone(rotaAtivaMemoria);
+    if (rotaAtivaMemoria && String(rotaAtivaMemoria.usuario || 'local') === usuario && !['concluida','arquivada'].includes(rotaAtivaMemoria.status)) return clone(rotaAtivaMemoria);
     rotaAtivaMemoria = null;
 
     let id = '';
@@ -454,6 +457,11 @@
     if (!id) return null;
     const rota = await obterRota(id);
     if (!rota || String(rota.usuario || 'local') !== usuario) return null;
+    if (['concluida','arquivada'].includes(rota.status)) {
+      // Evita reativação por referências legadas de sessão após reiniciar o app.
+      await limparRotaAtiva();
+      return null;
+    }
     rotaAtivaMemoria = rota;
     sincronizarComAppState(rota);
     return clone(rota);
@@ -477,7 +485,7 @@
 
   async function ativarRotaExistente(id) {
     const rota = await obterRota(id);
-    if (!rota || String(rota.usuario || 'local') !== usuarioAtual()) return null;
+    if (!rota || String(rota.usuario || 'local') !== usuarioAtual() || ['concluida','arquivada'].includes(rota.status)) return null;
     rotaAtivaMemoria = rota;
     await dbPut(STORE_META, { key: chaveAtivaMeta(), value: rota.id, updatedAt: Date.now(), usuario: usuarioAtual() });
     try { localStorage.setItem(chaveAtivaLocal(), rota.id); } catch (_) {}
@@ -490,7 +498,8 @@
   async function definirRotaAtiva(rotaOuId) {
     const rota = typeof rotaOuId === 'string' ? await obterRota(rotaOuId) : normalizarRota(rotaOuId);
     if (!rota) return null;
-    rota.status = rota.status === 'concluida' ? 'concluida' : 'ativa';
+    if (['concluida','arquivada'].includes(rota.status)) return null;
+    rota.status = 'ativa';
     return salvarRota(rota, { ativa: true });
   }
 
@@ -536,7 +545,7 @@
     if (!rota) return null;
     rota.status = 'concluida';
     rota.concluidoEm = Date.now();
-    return salvarRota(rota, { ativa: true });
+    return salvarRota(rota, { ativa: false, exigirPersistenciaLocal: true });
   }
 
   function criarRota(dados) {

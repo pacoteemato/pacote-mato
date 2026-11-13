@@ -384,3 +384,43 @@ body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap .nav-maneuve
   body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverText {font-size:.9rem!important}
   body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverStreet {font-size:.83rem!important}
 }
+
+/* V84 — ações críticas legíveis, mesmo em painéis pequenos no Android. */
+body[data-pemato-nav-mode="navigation-active"] .nav-delivery-actions {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
+}
+body[data-pemato-nav-mode="navigation-active"] #navNavigateBtn{display:none!important}
+#navNotDeliveredBtn {
+  background:#dc2626!important;
+  color:#fff!important;
+  border:1px solid #b91c1c!important;
+  font-weight:850!important;
+  font-size:clamp(.85rem,3vw,1.04rem)!important;
+  line-height:1.25!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  min-height:52px;
+  min-width:0;
+  padding:10px 7px!important;
+}
+#navDeliveredBtn {
+  background:#059669!important;
+  color:#fff!important;
+  border:1px solid #047857!important;
+  font-weight:850!important;
+  font-size:clamp(.85rem,3vw,1.04rem)!important;
+  min-height:52px;
+  min-width:0;
+}
+/* Rota concluída: fica o mapa com GPS, sem painel de execução ou ETA antiga. */
+body[data-pemato-route-finished="true"] .navigation-panel,
+body[data-pemato-route-finished="true"] .nav-route-eta,
+body[data-pemato-route-finished="true"] .nav-maneuver-card {display:none!important}
+body[data-pemato-route-finished="true"] .nav-map-controls {top:max(18px,env(safe-area-inset-top))!important}
+body[data-pemato-route-finished="true"] #navFollowBtn {display:inline-flex!important}
+
+body[data-pemato-route-finished="true"] .navigation-shell {grid-template-columns:minmax(0,1fr)}
+body[data-pemato-route-finished="true"] .nav-gps-status {bottom:max(18px,env(safe-area-inset-bottom))!important}
