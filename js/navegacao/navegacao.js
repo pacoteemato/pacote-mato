@@ -1698,11 +1698,21 @@
     ultimaPosicao=nova; // posição bruta: decisões operacionais, desvio e recálculo.
     if(global.appState?.navegacao){global.appState.navegacao.ultimaPosicao=ultimaPosicao;global.appState.navegacao.ultimaAtualizacaoEm=timestamp;}
 
-    if (posicaoAnterior && coordenadaValida(posicaoAnterior.lat,posicaoAnterior.lon)) {
+    if (rota && posicaoAnterior && coordenadaValida(posicaoAnterior.lat,posicaoAnterior.lon)) {
       const trecho = haversine([posicaoAnterior.lon,posicaoAnterior.lat],[ultimaPosicao.lon,ultimaPosicao.lat]);
       if (Number.isFinite(trecho) && trecho >= 1 && trecho < 1000) rota.distanciaPercorridaMetros = Number(rota.distanciaPercorridaMetros || 0) + trecho;
     }
     posicaoAnterior = { ...ultimaPosicao };
+
+    // Depois da conclusão o GPS continua, mas sem map matching nem atualização de rota.
+    if (!rota) {
+      alvoVisual={lat:nova.lat,lon:nova.lon,heading:nova.heading,at:nova.at,matched:false};
+      posicaoVisual={...alvoVisual};
+      atualizarFonteMotoristaVisual();
+      if (seguirPosicao) acompanharCamera(0);
+      if($('navGpsStatus')) $('navGpsStatus').textContent=`Mapa livre · GPS ativo${nova.accuracy?` · precisão ${Math.round(nova.accuracy)} m`:''}`;
+      return;
+    }
 
     const nearestOperacional=nearestOnRoute(ultimaPosicao,{visual:false});
     const nearestVisual=nearestOnRoute(ultimaPosicao,{visual:true}) || nearestOperacional;
@@ -1916,13 +1926,16 @@
       global.appState.navegacao.proximaParadaId=null;
     }
     rota=null;ordemPendente=[];cartaoSelecionadoId=null;
+    posicaoAnterior=null;alvoVisual=null;posicaoVisual=ultimaPosicao?{...ultimaPosicao}:null;
+    if(ultimaPosicao) ultimoTimestampGps=0; // novo watch pode repetir a posição após reiniciar
+    ultimoIdNota='';
     ultimoProgressoVisual=null;ultimoIndiceVisualRota=null;assinaturaParadasV11='';
     document.body.dataset.pematoRouteFinished='true';
     definirModoMapa('overview',{duracao:0,acompanhar:false});
     [SOURCE_ROUTE,SOURCE_ROUTE_STATUS,SOURCE_PROGRESS,SOURCE_MANEUVER,SOURCE_MANEUVER_PATH,SOURCE_STOPS,SOURCE_STOPS_SELECTED]
       .forEach(source=>setSource(source,fc([])));
     atualizarFonteMotoristaVisual();
-    if($('navGpsStatus'))$('navGpsStatus').textContent='Rota concluída e salva · mapa livre';
+    if($('navGpsStatus'))$('navGpsStatus').textContent='Rota concluída · mapa livre com GPS';
     iniciarGPS(); // localização e recentralização permanecem utilizáveis
     global.PacoteEMatoHistorico?.renderizar?.();
     global.PacoteEMatoAppShell?.atualizarInicio?.();

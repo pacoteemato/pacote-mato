@@ -30,7 +30,7 @@ function criarCenario({falha=false,pendente=false}={}){
  const doc={body:{dataset:{}}},mapa=new Map();
  const before=[
   "let rota=JSON.parse(JSON.stringify(original)),ordemPendente=[],cartaoSelecionadoId='entrega2';",
-  "let ultimoProgressoVisual=1,ultimoIndiceVisualRota=2,assinaturaParadasV11='x';",
+  "let ultimoProgressoVisual=1,ultimoIndiceVisualRota=2,assinaturaParadasV11='x',posicaoAnterior=null,alvoVisual=null,posicaoVisual=null,ultimaPosicao=null,ultimoTimestampGps=0,ultimoIdNota='';",
   "const $=id=>({style:{display:'flex'},textContent:''});",
   "function atualizarPendentes(){ordemPendente=(rota?.paradas||[]).filter(p=>!['entregue','concluida','nao_entregue'].includes(p.statusEntrega));}",
   "function destinoFinalDaRota(){return null;}",

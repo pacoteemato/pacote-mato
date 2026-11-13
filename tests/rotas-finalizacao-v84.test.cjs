@@ -33,6 +33,6 @@ assert.match(hist,/renderizarDisponiveis/);
 assert.match(route,/rotaAtual = rota \|\| null/,'Não reter cópia velha da rota concluída');
 assert.match(css,/#navNotDeliveredBtn \{[\s\S]*?color:#fff!important/);
 assert.match(css,/data-pemato-route-finished="true"/);
-assert.match(html,/84-STATUS-HISTORICO-MANOBRAS/);
+assert.match(html,/84\.2-GPS-MAPA-LIVRE-HISTORICO/);
 for(const id of ['navNotDeliveredBtn','navDeliveredBtn','historyRoutesList','routingAvailableRoutes'])assert.ok(html.includes('id="'+id+'"'));
 console.log('PASSOU: setas menores, não entregue legível, finalização sem histórico, mapa limpo, proteção contra reativação e desfazer auditável.');
