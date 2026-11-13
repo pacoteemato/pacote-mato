@@ -2,6 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'pemato_nav_voice_enabled_v81';
+  const STORAGE_VOLUME = 'pemato_nav_voice_volume';
   const MAX_RETRY = 3;
   const WATCHDOG_MS = 1000;
   const RETRY_DELAY_MS = 260;
@@ -10,6 +11,8 @@
   const falasFalhadas = new Set();
 
   let ativa = true;
+  let volumeFala = 1;
+  try {const valor=global.localStorage?.getItem(STORAGE_VOLUME);if(valor!==null&&valor!==undefined&&valor!==''){const salvo=Number(valor);if(Number.isFinite(salvo)&&salvo>=0&&salvo<=1)volumeFala=salvo;}}catch(_){}
   let desbloqueada = false;
   let contextoProvider = null;
   let instructionIdAtual = '';
@@ -27,9 +30,13 @@
   let watchdogAtual = null;
   let background = false;
   let voicesListenerRegistrado = false;
+  let ultimaFalaNativaGpsEm = 0;
 
+  function vozNativaDisponivel() {
+    return typeof global.Android?.falar === 'function';
+  }
   function disponivel() {
-    return !!(global.speechSynthesis && global.SpeechSynthesisUtterance);
+    return vozNativaDisponivel() || !!(global.speechSynthesis && global.SpeechSynthesisUtterance);
   }
 
   function detectarRuntime() {
@@ -56,8 +63,18 @@
     try { global.localStorage?.setItem(STORAGE_KEY, ativa ? '1' : '0'); } catch (_) {}
   }
 
+  function definirVolume(valor) {
+    const n=Number(valor);
+    if(!Number.isFinite(n))return volumeFala;
+    volumeFala=Math.max(0,Math.min(1,n));
+    try{global.localStorage?.setItem(STORAGE_VOLUME,String(volumeFala));}catch(_){}
+    atualizarDiagnostico({volumeConfigurado:volumeFala,volumeNativoControladoPeloSistema:vozNativaDisponivel()});
+    return volumeFala;
+  }
+  function obterVolume(){return volumeFala;}
+
   function escolherVoz() {
-    if (!disponivel()) return null;
+    if (vozNativaDisponivel() || !global.speechSynthesis) return null;
     const vozes = global.speechSynthesis.getVoices?.() || [];
     vozPreferida = vozes.find(v => String(v.lang || '').toLowerCase() === 'pt-br')
       || vozes.find(v => String(v.lang || '').toLowerCase().startsWith('pt-br'))
@@ -109,8 +126,10 @@
       vozNavegacaoAtiva: ativa && c.vozNavegacaoAtiva,
       podeFalar: podeFalarNavegacao({ exigirInstrucao:false }),
       speechSynthesisDisponivel: !!global.speechSynthesis,
+      androidBridgeDisponivel: vozNativaDisponivel(),
+      provedorVoz: vozNativaDisponivel() ? 'android-native-tts' : 'browser-speech-synthesis',
       utteranceDisponivel: !!global.SpeechSynthesisUtterance,
-      voicesCount: disponivel() ? Number(global.speechSynthesis.getVoices?.()?.length || 0) : 0,
+      voicesCount: global.speechSynthesis ? Number(global.speechSynthesis.getVoices?.()?.length || 0) : 0,
       selectedVoice: vozPreferida ? { name:String(vozPreferida.name || ''), lang:String(vozPreferida.lang || '') } : null,
       ttsState: ultimoStatus,
       lastInstructionId: instructionIdAtual || null,
@@ -138,7 +157,7 @@
   }
 
   function registrarVoicesChanged() {
-    if (!disponivel() || voicesListenerRegistrado) return;
+    if (vozNativaDisponivel() || !disponivel() || voicesListenerRegistrado) return;
     voicesListenerRegistrado = true;
     try {
       global.speechSynthesis.addEventListener?.('voiceschanged', () => {
@@ -166,11 +185,16 @@
 
   function cancelarSomenteGps() {
     limparWatchdog();
-    const haviaFalaGps = !!utteranceAtual || falasPendentes.size > 0 || ['initializing','speaking','retrying'].includes(ultimoStatus);
+    const haviaFalaGps = !!utteranceAtual || falasPendentes.size > 0 || ['initializing','speaking','retrying'].includes(ultimoStatus) || (ultimaFalaNativaGpsEm > 0 && Date.now() - ultimaFalaNativaGpsEm < 15000);
     if (haviaFalaGps) {
-      try { global.speechSynthesis?.cancel?.(); } catch (_) {}
+      if (vozNativaDisponivel()) {
+        try { global.Android.pararVoz(); } catch (_) {}
+      } else {
+        try { global.speechSynthesis?.cancel?.(); } catch (_) {}
+      }
     }
     utteranceAtual = null;
+    ultimaFalaNativaGpsEm = 0;
     falasPendentes.clear();
   }
 
@@ -221,6 +245,38 @@
     if (agora - ultimaFalaEm < Number(minIntervaloMs || 0)) return false;
 
     try {
+      // A WebView instalada não garante speechSynthesis funcional.
+      // No Android, encaminha manobras reais para TextToSpeech nativo.
+      // A confirmação abaixo significa "enviado à ponte", não prova de áudio ouvido.
+      if (vozNativaDisponivel()) {
+        falasPendentes.add(chave);
+        ultimoTexto = frase;
+        ultimaFase = faseNorm;
+        ultimaChave = chave;
+        ultimoErro = '';
+        ultimoStatus = 'native-dispatching';
+        try {
+          global.Android.falar(frase);
+          falasPendentes.delete(chave);
+          falasExecutadas.add(chave);
+          desbloqueada = true;
+          ultimaFalaEm = Date.now();
+          ultimaFalaNativaGpsEm = ultimaFalaEm;
+          ultimoStart = ultimaFalaEm;
+          ultimoStatus = 'native-dispatched';
+          atualizarDiagnostico();
+          try { onStarted?.(); } catch (_) {}
+          return true;
+        } catch (erroNativo) {
+          falasPendentes.delete(chave);
+          ultimoErro = String(erroNativo?.message || erroNativo || 'TTS_ANDROID_ERROR');
+          ultimoStatus = 'error';
+          atualizarDiagnostico();
+          try { onError?.(ultimoErro); } catch (_) {}
+          return false;
+        }
+      }
+
       if (global.speechSynthesis.speaking) {
         if (!urgente) return false;
         if (ultimaChave && ultimaChave !== chave && utteranceAtual) cancelarSomenteGps();
@@ -239,7 +295,7 @@
       u.lang = 'pt-BR';
       u.rate = 1.02;
       u.pitch = 1.0;
-      u.volume = 1.0;
+      u.volume = volumeFala;
       const v = escolherVoz(); if (v) u.voice = v;
       utteranceAtual = u;
 
@@ -335,6 +391,13 @@
       atualizarDiagnostico({ unlockBlocked:true });
       return false;
     }
+    if (vozNativaDisponivel()) {
+      // Não pronuncia "Voz ativada" nem utiliza Web Speech em WebView.
+      desbloqueada = true;
+      ultimoStatus = 'native-ready';
+      atualizarDiagnostico();
+      return true;
+    }
     if (confirmar) {
       return tentativaFala({
         instructionId:'system:voice-enabled', fase:'confirmacao', texto:'Voz de navegação ativada.',
@@ -363,7 +426,9 @@
 
   function retomarDoBackground() {
     background = false;
-    try { global.speechSynthesis?.resume?.(); } catch (_) {}
+    if (!vozNativaDisponivel()) {
+      try { global.speechSynthesis?.resume?.(); } catch (_) {}
+    }
     ultimoStatus = ativa && disponivel() ? 'idle' : (ativa ? 'unavailable' : 'muted');
     atualizarDiagnostico();
     return podeFalarNavegacao({ exigirInstrucao:false });
@@ -409,6 +474,8 @@
     disponivel,
     estaAtiva,
     definirAtiva,
+    definirVolume,
+    obterVolume,
     definirInstrucaoAtual,
     podeFalarNavegacao,
     falarInstrucaoNavegacao,
