@@ -139,11 +139,11 @@
 
   function coresViaClean(categoria, casing, navegacaoAtiva = false) {
     const cores = navegacaoAtiva ? {
-      rodovia:   {base:'#f1c999', borda:'#d8a675'},
-      primary:   {base:'#c9d2db', borda:'#afbac6'},
-      secondary: {base:'#cfd7df', borda:'#b6c1ca'},
-      tertiary:  {base:'#d5dce3', borda:'#bdc7d0'},
-      local:     {base:'#dce2e7', borda:'#c3ccd5'}
+      rodovia:   {base:'#eec491', borda:'#d3a16d'},
+      primary:   {base:'#c4cfd9', borda:'#9faebb'},
+      secondary: {base:'#cbd5de', borda:'#abb9c6'},
+      tertiary:  {base:'#d0d9e1', borda:'#b1bdca'},
+      local:     {base:'#d4dde5', borda:'#b4c1ce'}
     } : {
       rodovia:   {base:'#f2d2a8', borda:'#e5bb8e'},
       primary:   {base:'#dce1e6', borda:'#cdd4db'},
@@ -347,7 +347,7 @@
         } else if (/(building)/i.test(txt)) {
           // Casas visíveis sem preenchimento pesado: contorno cinza suave.
           setPaintSeguro(mapa, layer, 'fill-color', navegacaoAtiva ? '#e1e6eb' : '#f1f2f4');
-          setPaintSeguro(mapa, layer, 'fill-opacity', ['interpolate', ['linear'], ['zoom'], 13, 0.45, 15, 0.76, 17, 0.94, 19, 1]);
+          setPaintSeguro(mapa, layer, 'fill-opacity', ['interpolate', ['linear'], ['zoom'], 13, 0.55, 15, 0.77, 17, 0.87, 19, 0.94]);
           setPaintSeguro(mapa, layer, 'fill-outline-color', navegacaoAtiva ? '#b8c2cd' : '#cdd5de');
         } else if (/(landuse|industrial|commercial|retail|residential-area)/i.test(txt)) {
           setPaintSeguro(mapa, layer, 'fill-color', navegacaoAtiva ? '#e9edf0' : '#f4f5f7');
@@ -399,7 +399,17 @@
           setLayoutSeguro(mapa, layer, 'visibility', 'none');
           return;
         }
-        const via = categoriaVia(txt);
+    // Camadas com IDs genéricos como 'transportation' precisam do filtro
+    // para distinguir ruas, avenidas e vias expressas quando possível.
+    const idCamada=String(layer.id||'').toLowerCase();
+    const filtroTexto=JSON.stringify(layer.filter||[]).toLowerCase();
+    const identificadaPorId=/(motorway|trunk|primary|secondary|tertiary|residential|living_street)/.test(idCamada);
+    let via = categoriaVia(txt);
+    if(!identificadaPorId && /^transportation(?:[-_ ]?(?:road|line|casing|fill))?$/.test(idCamada)){
+      const tipos=['motorway','trunk','primary','secondary','tertiary','residential','service'];
+      const encontrados=tipos.filter(t=>new RegExp('["\\\\s]'+t+'["\\\\s]').test(filtroTexto));
+      if(encontrados.length===1)via=categoriaVia(encontrados[0]);
+    }
         if (via) {
           // A base Bright separa o corpo da via e linhas decorativas de borda.
           // Ao ampliar todas indiscriminadamente, as bordas tracejadas viravam
@@ -407,7 +417,17 @@
           const id = String(layer.id || '').toLowerCase();
           const camadaDeBorda = /(?:^|[-_])(casing|outline|border|edge|kerb|curb)(?:$|[-_])/.test(id);
           if (camadaDeBorda) {
-            setLayoutSeguro(mapa, layer, 'visibility', 'none');
+            // Contorno original da própria via, sem deslocar geometrias.
+            // Não reativar tracejados ou camadas identificadas como trilhas.
+            setLayoutSeguro(mapa, layer, 'visibility', navegacaoAtiva ? 'visible' : 'none');
+            if(navegacaoAtiva) {
+              setPaintSeguro(mapa, layer, 'line-color', coresViaClean(via, true, true));
+              setPaintSeguro(mapa, layer, 'line-opacity', .95);
+              setPaintSeguro(mapa, layer, 'line-gap-width', 0);
+              setPaintSeguro(mapa, layer, 'line-dasharray', [1,0]);
+              setPaintSeguro(mapa, layer, 'line-width', larguraViaClean(via, true, true));
+              setPaintSeguro(mapa, layer, 'line-blur', 0);
+            }
             return;
           }
 
