@@ -121,7 +121,7 @@
   }
 
   function larguraViaClean(categoria, casing, navegacaoAtiva) {
-    const extra = navegacaoAtiva ? 0.28 : 0;
+    const extra = navegacaoAtiva ? 0.85 : 0;
     const tabela = {
       // HOTFIX FINAL 7: malha mais definida sem transformar o mapa em desenho pesado.
       rodovia:   [10,1.7,13,3.3,16,6.6,19,11.0],
@@ -137,8 +137,14 @@
     return expr;
   }
 
-  function coresViaClean(categoria, casing) {
-    const cores = {
+  function coresViaClean(categoria, casing, navegacaoAtiva = false) {
+    const cores = navegacaoAtiva ? {
+      rodovia:   {base:'#f1c999', borda:'#d8a675'},
+      primary:   {base:'#c9d2db', borda:'#afbac6'},
+      secondary: {base:'#cfd7df', borda:'#b6c1ca'},
+      tertiary:  {base:'#d5dce3', borda:'#bdc7d0'},
+      local:     {base:'#dce2e7', borda:'#c3ccd5'}
+    } : {
       rodovia:   {base:'#f2d2a8', borda:'#e5bb8e'},
       primary:   {base:'#dce1e6', borda:'#cdd4db'},
       secondary: {base:'#dfe3e8', borda:'#d1d7dd'},
@@ -325,27 +331,27 @@
       const txt = textoLayer(layer);
 
       if (layer.type === 'background') {
-        setPaintSeguro(mapa, layer, 'background-color', '#f8f8f9');
+        setPaintSeguro(mapa, layer, 'background-color', navegacaoAtiva ? '#f1f3f5' : '#f8f8f9');
         setPaintSeguro(mapa, layer, 'background-opacity', 1);
         return;
       }
 
       if (layer.type === 'fill') {
         if (/(water|ocean|lake|river|waterway)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#dceaf6');
+          setPaintSeguro(mapa, layer, 'fill-color', navegacaoAtiva ? '#cfe4f5' : '#dceaf6');
           setPaintSeguro(mapa, layer, 'fill-opacity', 0.94);
         } else if (/(park|grass|wood|forest|green|nature|landcover)/i.test(txt)) {
           // Parques permanecem identificáveis, mas sem dominar a malha urbana.
-          setPaintSeguro(mapa, layer, 'fill-color', '#e8f2e2');
+          setPaintSeguro(mapa, layer, 'fill-color', navegacaoAtiva ? '#dcebd7' : '#e8f2e2');
           setPaintSeguro(mapa, layer, 'fill-opacity', 0.88);
         } else if (/(building)/i.test(txt)) {
           // Casas visíveis sem preenchimento pesado: contorno cinza suave.
-          setPaintSeguro(mapa, layer, 'fill-color', '#f1f2f4');
+          setPaintSeguro(mapa, layer, 'fill-color', navegacaoAtiva ? '#e1e6eb' : '#f1f2f4');
           setPaintSeguro(mapa, layer, 'fill-opacity', ['interpolate', ['linear'], ['zoom'], 13, 0.45, 15, 0.76, 17, 0.94, 19, 1]);
-          setPaintSeguro(mapa, layer, 'fill-outline-color', '#cdd5de');
+          setPaintSeguro(mapa, layer, 'fill-outline-color', navegacaoAtiva ? '#b8c2cd' : '#cdd5de');
         } else if (/(landuse|industrial|commercial|retail|residential-area)/i.test(txt)) {
-          setPaintSeguro(mapa, layer, 'fill-color', '#f4f5f7');
-          setPaintSeguro(mapa, layer, 'fill-opacity', 0.22);
+          setPaintSeguro(mapa, layer, 'fill-color', navegacaoAtiva ? '#e9edf0' : '#f4f5f7');
+          setPaintSeguro(mapa, layer, 'fill-opacity', navegacaoAtiva ? 0.38 : 0.22);
         }
         return;
       }
@@ -405,7 +411,7 @@
             return;
           }
 
-          const cor = coresViaClean(via, false);
+          const cor = coresViaClean(via, false, navegacaoAtiva);
           setPaintSeguro(mapa, layer, 'line-color', cor);
           setPaintSeguro(mapa, layer, 'line-opacity', 1);
           // É preciso usar os valores concretos aceitos pelo MapLibre.
@@ -466,7 +472,7 @@
       if (ehRoadLabel) {
         setLayoutSeguro(mapa, layer, 'visibility', 'visible');
         setLayoutSeguro(mapa, layer, 'text-size', ['interpolate', ['linear'], ['zoom'], 11, 11.0, 14, 12.9, 16, navegacaoAtiva ? 15.2 : 14.5, 19, navegacaoAtiva ? 17.3 : 16.5]);
-        setPaintSeguro(mapa, layer, 'text-color', '#526070');
+        setPaintSeguro(mapa, layer, 'text-color', navegacaoAtiva ? '#34485d' : '#526070');
         setPaintSeguro(mapa, layer, 'text-halo-color', '#ffffff');
         setPaintSeguro(mapa, layer, 'text-halo-width', navegacaoAtiva ? 2.05 : 1.75);
         setPaintSeguro(mapa, layer, 'text-halo-blur', 0.12);
