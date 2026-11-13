@@ -420,14 +420,14 @@
     if (!mapa.getLayer(LAYER_MANEUVER_PATH_CASE)) mapa.addLayer({
       id:LAYER_MANEUVER_PATH_CASE,type:'line',source:SOURCE_MANEUVER_PATH,
       layout:{'line-cap':'round','line-join':'round'},
-      paint:{'line-color':'#123c69','line-width':['interpolate',['linear'],['zoom'],13,8,16,15,19,23],'line-opacity':.96}
+      paint:{'line-color':'#26394e','line-width':['interpolate',['linear'],['zoom'],13,3.8,16,6.4,19,8.2],'line-opacity':.94}
     });
     if (!mapa.getLayer(LAYER_MANEUVER_PATH)) mapa.addLayer({
       id:LAYER_MANEUVER_PATH,type:'line',source:SOURCE_MANEUVER_PATH,
       layout:{'line-cap':'round','line-join':'round'},
-      paint:{'line-color':'#ffcc50','line-width':['interpolate',['linear'],['zoom'],13,4,16,9,19,14],'line-opacity':1}
+      paint:{'line-color':'#fff','line-width':['interpolate',['linear'],['zoom'],13,2.2,16,3.8,19,5.2],'line-opacity':1}
     });
-    if (!mapa.getLayer(LAYER_MANEUVER_ARROW)) mapa.addLayer({id:LAYER_MANEUVER_ARROW,type:'symbol',source:SOURCE_MANEUVER,layout:{'icon-image':['get','icon'],'icon-size':['interpolate',['linear'],['zoom'],13,.68,16,.90,18,1.08,20,1.16],'icon-anchor':'center','icon-allow-overlap':true,'icon-ignore-placement':true,'icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','bearing'],0],'symbol-sort-key':9998}});
+    if (!mapa.getLayer(LAYER_MANEUVER_ARROW)) mapa.addLayer({id:LAYER_MANEUVER_ARROW,type:'symbol',source:SOURCE_MANEUVER,layout:{'icon-image':['get','icon'],'icon-size':['interpolate',['linear'],['zoom'],13,.26,16,.34,18,.45,20,.52],'icon-anchor':'center','icon-allow-overlap':true,'icon-ignore-placement':true,'icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','bearing'],0],'symbol-sort-key':9998}});
     if (!mapa.getLayer(LAYER_MANEUVER_LABEL)) mapa.addLayer({id:LAYER_MANEUVER_LABEL,type:'symbol',source:SOURCE_MANEUVER,filter:['has','street'],layout:{'text-field':['get','street'],'text-size':['interpolate',['linear'],['zoom'],15,10.5,18,12.5,20,13.5],'text-offset':[0,3.15],'text-anchor':'top','text-allow-overlap':false,'text-optional':true,'symbol-sort-key':9997},paint:{'text-color':'#1f2937','text-halo-color':'rgba(255,255,255,.96)','text-halo-width':2.2,'text-halo-blur':.3}});
     if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':['case',['==',['get','mode'],'internal'],14,11],'circle-color':['case',['==',['get','mode'],'internal'],'rgba(22,139,97,.10)','rgba(22,139,97,.16)'],'circle-stroke-color':['case',['==',['get','mode'],'internal'],'rgba(255,255,255,.95)','rgba(22,139,97,.35)'],'circle-stroke-width':['case',['==',['get','mode'],'internal'],1.4,1]} });
     if (!mapa.getLayer(LAYER_DRIVER_DOT)) mapa.addLayer({ id:LAYER_DRIVER_DOT,type:'circle',source:SOURCE_DRIVER,filter:['==',['get','mode'],'external'],paint:{'circle-radius':7,'circle-color':'#168B61','circle-stroke-color':'#ffffff','circle-stroke-width':3} });
@@ -506,7 +506,9 @@
     if (!mapa || !mapReady || navegacaoInternaAtiva()) return;
     const coords = geometriaPontos(rota?.geometria).filter(c => Array.isArray(c) && coordenadaValida(c[1], c[0]));
     if (!coords.length) {
-      try { mapa.jumpTo({center:centroDaRota(),zoom:15,pitch:0,bearing:0,offset:[0,0]}); } catch (_) {}
+      const gps=posicaoVisual||ultimaPosicao;
+      const center=!rota&&gps&&coordenadaValida(gps.lat,gps.lon)?[Number(gps.lon),Number(gps.lat)]:centroDaRota();
+      try { mapa.jumpTo({center,zoom:!rota?16:15,pitch:0,bearing:0,offset:[0,0]}); } catch (_) {}
       return;
     }
     let minLon=Infinity,minLat=Infinity,maxLon=-Infinity,maxLat=-Infinity;
@@ -1209,8 +1211,8 @@
     const comprimento=Math.hypot(dx,dy);
     if(!(comprimento>1))return null;
     const x=dx/comprimento,y=dy/comprimento;
-    const metros=Math.min(8,Math.max(3,comprimento*.6));
-    const abrir=metros*.53;
+    const metros=Math.min(4.4,Math.max(2.4,comprimento*.42));
+    const abrir=metros*.52;
     const esquerda=[fim[0]+(-x*metros-y*abrir)/escalaX,fim[1]+(-y*metros+x*abrir)/escalaY];
     const direita=[fim[0]+(-x*metros+y*abrir)/escalaX,fim[1]+(-y*metros-x*abrir)/escalaY];
     return {type:'LineString',coordinates:[esquerda,fim,direita]};
@@ -1854,25 +1856,66 @@
     mostrarConclusao();
   }
 
+  let finalizandoRota=false;
   async function finalizarRota(){
-    if(!rota)return;
-    const anterior={status:rota.status,concluidoEm:rota.concluidoEm,conclusaoPendente:rota.conclusaoPendente};
-    try{
-      rota.status='concluida';rota.concluidoEm=Date.now();rota.conclusaoPendente=false;
-      await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true,exigirPersistenciaLocal:true});
-      const persistida=await global.PacoteEMatoRotaStore.obterRota(rota.id);
-      if(!persistida||persistida.status!=='concluida'||Number(persistida.paradas?.length||0)!==Number(rota.paradas?.length||0)) throw new Error('A cópia concluída ainda não foi confirmada no histórico local.');
-      pararGPS();
-      moduloVozNavegacao()?.limparEstado?.({cancelar:true});
-      if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';
-      await global.PacoteEMatoRotaStore.limparRotaAtiva();
-      global.PacoteEMatoAppShell?.abrirModulo?.('historico');
-    }catch(erro){
-      rota.status=anterior.status;rota.concluidoEm=anterior.concluidoEm;rota.conclusaoPendente=anterior.conclusaoPendente;
-      try{await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:true,firestore:false});}catch(_){}
-      console.warn('Pacote É Mato: finalização preservada porque o histórico não foi confirmado.',erro);
-      global.notificar?.('Não foi possível confirmar o salvamento da rota. Ela continua aberta para evitar perda de dados.');
+    if(!rota||finalizandoRota||rota.status==='concluida')return;
+    atualizarPendentes();
+    if(ordemPendente.length||destinoFinalDaRota()){
+      global.notificar?.('Ainda existem entregas ou um destino final pendentes.');
+      return;
     }
+    finalizandoRota=true;
+    const id=String(rota.id);
+    const anterior={status:rota.status,concluidoEm:rota.concluidoEm,conclusaoPendente:rota.conclusaoPendente};
+    let confirmada=false;
+    try {
+      rota.status='concluida';
+      rota.concluidoEm=Date.now();
+      rota.conclusaoPendente=false;
+      await global.PacoteEMatoRotaStore.salvarRota(rota,{ativa:false,exigirPersistenciaLocal:true});
+      const salva=await global.PacoteEMatoRotaStore.obterRota(id);
+      if(!salva||salva.status!=='concluida'||salva.paradas?.length!==rota.paradas?.length||
+        salva.paradas.some((p,i)=>p.id!==rota.paradas[i].id||p.statusEntrega!==rota.paradas[i].statusEntrega)) {
+        throw new Error('A conclusão e os status individuais não foram confirmados no armazenamento.');
+      }
+      confirmada=true;
+    }catch(erro){
+      rota.status=anterior.status;
+      rota.concluidoEm=anterior.concluidoEm;
+      rota.conclusaoPendente=anterior.conclusaoPendente;
+      console.warn('Pacote É Mato: falha ao confirmar finalização',erro);
+      global.notificar?.('Não foi possível confirmar os resultados. A rota continua visível para conferência.');
+    }
+    if(!confirmada){finalizandoRota=false;return;}
+    // Após confirmação: nenhuma alteração no histórico é necessária, ele já
+    // guarda a mesma rota por ID. Não trocar de módulo nem abrir o Histórico.
+    try{await global.PacoteEMatoRotaStore.limparRotaAtiva();}catch(erro){
+      console.warn('Rota concluída e salva. Falha na limpeza da seleção ativa:',erro);
+    }
+    pararGPS();
+    moduloVozNavegacao()?.limparEstado?.({cancelar:true});
+    if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';
+    if(global.appState?.navegacao){
+      global.appState.navegacao.ativa=false;
+      global.appState.navegacao.modo='overview';
+      global.appState.navegacao.conclusaoPendente=false;
+      global.appState.navegacao.paradaExibidaId=null;
+      global.appState.navegacao.paradaAtualId=null;
+      global.appState.navegacao.proximaParadaId=null;
+    }
+    rota=null;ordemPendente=[];cartaoSelecionadoId=null;
+    ultimoProgressoVisual=null;ultimoIndiceVisualRota=null;assinaturaParadasV11='';
+    document.body.dataset.pematoRouteFinished='true';
+    definirModoMapa('overview',{duracao:0,acompanhar:false});
+    [SOURCE_ROUTE,SOURCE_ROUTE_STATUS,SOURCE_PROGRESS,SOURCE_MANEUVER,SOURCE_MANEUVER_PATH,SOURCE_STOPS,SOURCE_STOPS_SELECTED]
+      .forEach(source=>setSource(source,fc([])));
+    atualizarFonteMotoristaVisual();
+    if($('navGpsStatus'))$('navGpsStatus').textContent='Rota concluída e salva · mapa livre';
+    iniciarGPS(); // localização e recentralização permanecem utilizáveis
+    global.PacoteEMatoHistorico?.renderizar?.();
+    global.PacoteEMatoAppShell?.atualizarInicio?.();
+    global.notificar?.('Rota concluída. Resultados salvos no Histórico.');
+    finalizandoRota=false;
   }
   function revisarResultados(){if($('navCompletionBackdrop'))$('navCompletionBackdrop').style.display='none';global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');}
 
@@ -1894,7 +1937,9 @@
   }
 
   async function iniciar(rotaEntrada){
+    delete document.body.dataset.pematoRouteFinished;
     rota=rotaEntrada?global.PacoteEMatoRotaStore.normalizarRota(rotaEntrada):await global.PacoteEMatoRotaStore.obterRotaAtiva();
+    if(rota?.status==='concluida'||rota?.status==='arquivada'){global.notificar?.('Rota já concluída. Consulte o Histórico e utilize Desfazer para refazê-la.');return;}
     if(rota?.precisaRecalculo){global.notificar?.('A rota foi alterada. Recalcule o trajeto antes de iniciar a navegação.');return;}
     if(!rota||!geometriaValida(rota.geometria)){global.notificar?.('Calcule uma rota válida antes de iniciar a navegação.');return;}
     global.PacoteEMatoMarcadores?.capturarBaseVisualStatus?.(rota, false);
@@ -2046,7 +2091,10 @@
     $('navActionExit')?.addEventListener('click',()=>{fecharAcoesRota();encerrar();});
     $('navRecalculateBtn')?.addEventListener('click',()=>recalcular('manual')); $('navEndBtn')?.addEventListener('click',encerrar);
     $('navFollowBtn')?.addEventListener('click',()=>{
-      if(!navegacaoInternaAtiva()){enquadrarOverview(180);return;}
+      if(!navegacaoInternaAtiva()){
+        if(!rota){definirAcompanhamento(true);acompanharCamera(180);iniciarGPS();return;}
+        enquadrarOverview(180);return;
+      }
       definirAcompanhamento(true);
       acompanharCamera(180);
       iniciarGPS();
