@@ -25,3 +25,5 @@ jobs:
         run: node tests/partilhar-paradas.test.cjs
       - name: Testar pinos individuais e refinamento da rota
         run: node tests/pinos-otimizacao.test.cjs
+      - name: Testar setas da curva, mapa e navegação
+        run: node tests/manobras-visuais.test.cjs
