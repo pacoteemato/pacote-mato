@@ -24,6 +24,7 @@ assert.match(nav,/function atualizarInstrucao/);
 assert.match(nav,/function definirAcompanhamento/);
 assert.match(map,/coresViaClean\(via, false, navegacaoAtiva\)/);
 assert.match(map,/navegacaoAtiva \? '#f1f3f5'/);
+assert.match(map,/CAMADA_SETAS_BRASIL\}, 'visibility', navegacaoAtiva \? 'none' : 'visible'/);
 const start=nav.indexOf('  function trechoRealDaManobra('),end=nav.indexOf('  function atualizarOverlayManobraMapa(',start);
 assert.ok(start>0&&end>start);
 const haver=(a,b)=>{
