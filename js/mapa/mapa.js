@@ -99,62 +99,35 @@
   function deslocamentoMarcador(indice) {
     if (!indice) return [0,0];
     const anel = Math.ceil(indice / 8), angulo = ((indice - 1) % 8) * Math.PI / 4;
-    return [Math.round(Math.cos(angulo)*44*anel), Math.round(Math.sin(angulo)*44*anel)];
+    return [Math.round(Math.cos(angulo)*1.25*anel*100)/100, Math.round(Math.sin(angulo)*1.25*anel*100)/100];
   }
   function chaveFisicaMarcador(p) {
     return global.PacoteEMatoMarcadores?.chaveFisicaMarcador?.(p) || `id:${String(p?.id || '')}`;
   }
 
   function stopsGeoJSON() {
-    const selectedId = state()?.paradaSelecionadaId || '';
-    const lista = paradas().filter(coordenadaValida);
-    const grupos = new Map();
-
-    // V46: paradas no mesmo endereço físico voltam a compartilhar um balão
-    // com a quantidade ao lado. O número exibido acompanha a parada consultada.
-    lista.forEach(p => {
-      const key = chaveFisicaMarcador(p);
-      if (!grupos.has(key)) grupos.set(key, []);
-      grupos.get(key).push(p);
-    });
-
-    const ocupacaoVisual = new Map();
-    const features = [];
-    // Mesmo antes da otimização, o entregador vê cada parada pelo seu número.
-    // A otimização só altera a ordem; não controla a visibilidade do pino.
-    grupos.forEach(grupo => {
-      grupo.sort((a,b) => ordem(a) - ordem(b));
-      const ativos = grupo.filter(item => !['entregue','concluida','nao_entregue'].includes(String(item.statusEntrega || '')));
-      const grupoVisual = ativos.length ? ativos : grupo;
-      // V26: em um endereço com várias paradas/pacotes, o marcador representa
-      // a parada que o motorista selecionou na lista. Assim, selecionar 82
-      // troca o rótulo 81 -> 82 sem inventar outra coordenada.
-      const pSelecionada = grupo.find(item => String(item.id) === String(selectedId));
-      const p = pSelecionada || grupoVisual[0];
-      const totalPacotes = global.PacoteEMatoMarcadores?.quantidadePacotesRegistradosDoGrupo?.(grupo) ?? 0;
+    const selectedId = String(state()?.paradaSelecionadaId || '');
+    const lista = paradas().filter(coordenadaValida).slice()
+      .sort((a,b) => ordem(a)-ordem(b) || String(a.id).localeCompare(String(b.id)));
+    // Um pino por ENTREGA: paradas no mesmo imóvel compartilham coordenadas
+    // reais, mas recebem posições visuais diferentes na tela (sem mover o GPS).
+    const ocupacao = new Map();
+    const features = lista.map(p => {
       const lat = Number(p.latitude), lon = Number(p.longitude);
-      // Agrupa visualmente pontos muito próximos para que os balões sejam
-      // deslocados em vez de ficarem um em cima do outro.
-      // V40: os balões permanecem ancorados na coordenada real. A seleção ou
-      // alteração de status não desloca visualmente os marcadores.
-      const stackIndex = 0;
-      const ids = grupo.map(item => String(item.id));
-      features.push({
-        type: 'Feature',
-        id: String(p.id),
-        geometry: { type: 'Point', coordinates: [lon, lat] },
-        properties: {
-          id: String(p.id),
-          ids: ids.join(','),
-          order: ordem(p),
-          numbered: 1,
-          status: statusEntrega(p),
-          selected: ids.includes(String(selectedId)) ? 1 : 0,
-          groupSelected: grupoVisual.some(item => idsSelecaoDesenho.has(String(item.id)) || idsGruposDesenho.has(String(item.id))) ? 1 : 0,
-          multi: totalPacotes,
-          stackIndex, markerOffset: [0,0]
+      const chave = lat.toFixed(5) + ':' + lon.toFixed(5);
+      const indice = ocupacao.get(chave) || 0;
+      ocupacao.set(chave, indice + 1);
+      return {
+        type:'Feature', id:String(p.id),
+        geometry:{type:'Point', coordinates:[lon,lat]},
+        properties:{
+          id:String(p.id), ids:String(p.id), order:ordem(p), numbered:1,
+          status:statusEntrega(p), selected:String(p.id)===selectedId?1:0,
+          groupSelected:(idsSelecaoDesenho.has(String(p.id))||idsGruposDesenho.has(String(p.id)))?1:0,
+          multi:quantidadePacotesDaParada(p),
+          stackIndex:indice, markerOffset:deslocamentoMarcador(indice)
         }
-      });
+      };
     });
     return featureCollection(features);
   }

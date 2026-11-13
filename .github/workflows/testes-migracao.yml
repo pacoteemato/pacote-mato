@@ -23,3 +23,5 @@ jobs:
         run: node tests/migracao-smoke.test.cjs
       - name: Testar partilha e preservacao de rotas
         run: node tests/partilhar-paradas.test.cjs
+      - name: Testar pinos individuais e refinamento da rota
+        run: node tests/pinos-otimizacao.test.cjs
