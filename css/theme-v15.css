@@ -44,8 +44,8 @@ input,select,textarea,.pemato-field{background:#fff!important;color:#111!importa
 
 /* Navegação limpa */
 .navigation-panel,.nav-next-card,.nav-route-actions-card,.nav-completion-card{background:#fff!important;color:#111!important}
-.nav-maneuver-card{background:rgba(255,255,255,.97)!important;color:#111!important;border:1px solid #dbe7e1!important;box-shadow:0 8px 22px rgba(15,23,42,.12)!important;backdrop-filter:none!important}
-.nav-maneuver-distance{color:#047857!important}.nav-maneuver-copy span{color:#5f6b65!important}
+/* Navegação: painel escuro é controlado por css/navegacao.css, sem override global branco. */
+/* Legibilidade das manobras não herda as cores claras do tema geral. */
 .nav-gps-status{color:#111!important;border:1px solid #dbe7e1}
 .nav-card-top-actions{position:absolute;right:9px;top:9px;display:flex;gap:6px;z-index:3}
 .nav-back-btn,.nav-more-btn{position:static!important;width:34px;height:34px;border:1px solid #dbe7e1;border-radius:50%;background:#fff;color:#111;font-size:1.05rem;font-weight:900}
@@ -215,8 +215,8 @@ body::before,body::after{filter:none!important}
 .nav-customer-observation{background:#fff!important;border-color:#bfe3d3!important;box-shadow:none!important}
 
 /* Mantém o mapa em sua cartografia original; overlays seguem branco/verde. */
-.nav-maneuver-card,.nav-route-eta,.nav-gps-status{background:rgba(255,255,255,.97)!important;color:var(--pemato-ink)!important;border-color:var(--pemato-line)!important}
-.nav-maneuver-distance,.nav-route-eta strong,.module-kicker,.routing-action-group-title,.nav-action-group-title{color:var(--pemato-green-dark)!important}
+.nav-route-eta,.nav-gps-status{background:rgba(255,255,255,.97)!important;color:var(--pemato-ink)!important;border-color:var(--pemato-line)!important}
+.nav-route-eta strong,.module-kicker,.routing-action-group-title,.nav-action-group-title{color:var(--pemato-green-dark)!important}
 
 /* Admin também adota a identidade clara. */
 #modalAdmin .modal-card{background:#fff!important;color:var(--pemato-ink)!important;border-color:var(--pemato-line)!important;box-shadow:var(--pemato-shadow)!important}

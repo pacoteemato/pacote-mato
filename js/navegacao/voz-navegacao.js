@@ -4,7 +4,7 @@
   const STORAGE_KEY = 'pemato_nav_voice_enabled_v81';
   const STORAGE_VOLUME = 'pemato_nav_voice_volume';
   const MAX_RETRY = 3;
-  const WATCHDOG_MS = 1000;
+  const WATCHDOG_MS = 4500;
   const RETRY_DELAY_MS = 260;
   const falasExecutadas = new Set();
   const falasPendentes = new Set();
@@ -408,7 +408,8 @@
     // Gesto do usuário: acorda/resume o engine sem afirmar que a voz está READY.
     // O estado READY só será confirmado quando uma utterance real disparar onstart.
     try { global.speechSynthesis.resume?.(); } catch (_) {}
-    ultimoStatus = 'initializing';
+    // Resume não é início de áudio: não permanecer em 'Inicializando' sem uma fala.
+    ultimoStatus = 'idle';
     atualizarDiagnostico();
     return true;
   }

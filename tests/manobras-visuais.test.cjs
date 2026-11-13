@@ -9,6 +9,7 @@ assert.match(nav,/LAYER_MANEUVER_PATH_CASE/);
 assert.match(nav,/LAYER_MANEUVER_PATH/);
 assert.match(nav,/SOURCE_MANEUVER_PATH/);
 assert.match(nav,/atualizarOverlayManobraMapa\(inst, nearest\)/);
+assert.match(nav,/setSource\(SOURCE_MANEUVER,fc\(geometria\?\[\]:\[feature\]\)\);/);
 assert.match(nav,/setSource\(SOURCE_MANEUVER_PATH,fc\(geometria\?/);
 assert.match(nav,/if\(!manobraImportanteNoMapa\(tipo\)\)\{limpar\(\);return;\}/);
 assert.match(nav,/desenharIconeManobraMapa\(tipo\)/);

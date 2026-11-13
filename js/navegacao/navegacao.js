@@ -1199,6 +1199,23 @@
     return coordenadas.length>=3?{type:'LineString',coordinates:coordenadas}:null;
   }
 
+  function cabecaGeometricaDaCurva(geometria) {
+    const pts=geometria?.coordinates;
+    if(!Array.isArray(pts)||pts.length<2)return null;
+    const fim=pts[pts.length-1],anterior=pts[pts.length-2];
+    const latRad=fim[1]*Math.PI/180;
+    const escalaX=111320*Math.max(.15,Math.cos(latRad)),escalaY=110540;
+    const dx=(fim[0]-anterior[0])*escalaX,dy=(fim[1]-anterior[1])*escalaY;
+    const comprimento=Math.hypot(dx,dy);
+    if(!(comprimento>1))return null;
+    const x=dx/comprimento,y=dy/comprimento;
+    const metros=Math.min(8,Math.max(3,comprimento*.6));
+    const abrir=metros*.53;
+    const esquerda=[fim[0]+(-x*metros-y*abrir)/escalaX,fim[1]+(-y*metros+x*abrir)/escalaY];
+    const direita=[fim[0]+(-x*metros+y*abrir)/escalaX,fim[1]+(-y*metros-x*abrir)/escalaY];
+    return {type:'LineString',coordinates:[esquerda,fim,direita]};
+  }
+
   function atualizarOverlayManobraMapa(inst, nearest) {
     const limpar=()=>{setSource(SOURCE_MANEUVER,fc([]));setSource(SOURCE_MANEUVER_PATH,fc([]));};
     if(!mapa||!mapReady||!navegacaoInternaAtiva()||!inst){limpar();return;}
@@ -1212,10 +1229,16 @@
     if(!alvo?.point){limpar();return;}
     const geometria=trechoRealDaManobra(coords,toIndex,tipo.startsWith('rotatoria')?25:36,tipo.startsWith('rotatoria')?50:44);
     const rua=nomeRuaInstrucao(inst);
-    const feature={type:'Feature',properties:{icon:`pemato-map-maneuver-${tipo}`,bearing:Number(alvo.bearing)||0,street:rua||'',tipo,distancia:Number.isFinite(distanciaAtual)?Math.max(0,distanciaAtual):null},geometry:{type:'Point',coordinates:alvo.point}};
-    setSource(SOURCE_MANEUVER,fc([feature]));
-    setSource(SOURCE_MANEUVER_PATH,fc(geometria?[{type:'Feature',properties:{tipo},geometry:geometria}]:[]));
-    global.diagnosticoOverlayManobraV81={tipo,rua,distancia:feature.properties.distancia,bearing:feature.properties.bearing,coordinates:alvo.point,toIndex,nearestIndex:nearest?.index??null,trechoReal:geometria?.coordinates?.length||0};
+    const feature={type:'Feature',properties:{icon:`pemato-map-maneuver-${tipo}`,bearing:Number(alvo.bearing)||0,street:rua||'',tipo,distancia:Number.isFinite(distanciaAtual)?Math.max(0,distanciaAtual):null},geometry:{type:'Point',coordinates:coords[toIndex]}};
+    const setaIntegrada=geometria?cabecaGeometricaDaCurva(geometria):null;
+    // Uma indicação por decisão: curva + cabeça da seta na geometria.
+    // Somente se não houver trecho suficiente, um ícone em coords[toIndex].
+    setSource(SOURCE_MANEUVER,fc(geometria?[]:[feature]));
+    setSource(SOURCE_MANEUVER_PATH,fc(geometria?[
+      {type:'Feature',properties:{tipo,parte:'curva'},geometry:geometria},
+      ...(setaIntegrada?[{type:'Feature',properties:{tipo,parte:'ponta'},geometry:setaIntegrada}]:[])
+    ]:[]));
+    global.diagnosticoOverlayManobraV81={tipo,rua,distancia:feature.properties.distancia,bearing:feature.properties.bearing,coordinates:coords[toIndex],toIndex,nearestIndex:nearest?.index??null,trechoReal:geometria?.coordinates?.length||0,modo:geometria?'curva-real':'icone-fallback'};
   }
   function atualizarInstrucao(nearest) {
     const lista=Array.isArray(rota?.instrucoes)?rota.instrucoes:[];
@@ -1407,6 +1430,18 @@
     } catch (_) {}
   }
 
+  function tentarNovamenteVoz() {
+    const modulo=moduloVozNavegacao();
+    if(!modulo?.disponivel?.()) { atualizarBotaoVoz();return false; }
+    modulo?.limparEstado?.({cancelar:true});
+    modulo?.definirAtiva?.(true);
+    vozAtiva=true;
+    if(global.appState?.navegacao)global.appState.navegacao.vozAtiva=true;
+    const sucesso=modulo?.desbloquear?.({confirmar:true})===true;
+    atualizarBotaoVoz();
+    return sucesso;
+  }
+
   function atualizarBotaoVoz(){
     const b=$('navVoiceBtn'); if(!b)return;
     const interna=navegacaoInternaAtiva();
@@ -1414,9 +1449,16 @@
     const diag=modulo?.diagnostico?.()||{};
     b.style.display=interna?'':'none';
     b.classList.toggle('active',vozAtiva&&interna);
-    if(!modulo?.disponivel?.()) b.textContent='Voz indisponível';
-    else if(vozAtiva&&['initializing','retrying'].includes(String(diag.ttsState||''))) b.textContent='Inicializando voz...';
-    else b.textContent=vozAtiva?'Voz ativa':'Voz muda';
+    const tts=String(diag.ttsState||'');
+    const falha=tts==='error'||tts==='timeout'||tts==='unavailable';
+    const pronta=['ready','speaking','native-ready','native-dispatched'].includes(tts);
+    if(!vozAtiva) b.textContent='Voz muda';
+    else if(!modulo?.disponivel?.()) b.textContent='Voz indisponível · tentar';
+    else if(falha) b.textContent='Falha na voz · tentar';
+    else if(tts==='initializing'||tts==='retrying') b.textContent='Preparando voz…';
+    else b.textContent=pronta?'Voz ativa':'Voz ligada · testar';
+    b.dataset.voiceError=falha||(!modulo?.disponivel?.())?'true':'false';
+    b.title=falha?('Toque para tentar novamente: '+String(diag.lastError||tts)):'Controlar orientações faladas';
     b.setAttribute('aria-pressed',vozAtiva?'true':'false');
   }
 
@@ -2015,8 +2057,14 @@
       campoVolume.addEventListener('input',()=>moduloVozNavegacao()?.definirVolume?.(Number(campoVolume.value)/100));
     }
     $('navPerspectiveBtn')?.addEventListener('click',alternarPerspectivaNavegacao);
+    global.setInterval?.(()=>{if(document.body?.dataset?.pematoModule==='navegacao'&&navegacaoInternaAtiva())atualizarBotaoVoz();},2500);
     $('navVoiceBtn')?.addEventListener('click',()=>{
       if(!navegacaoInternaAtiva())return;
+      const diag=moduloVozNavegacao()?.diagnostico?.()||{};
+      if(vozAtiva && (['error','timeout','unavailable'].includes(String(diag.ttsState||'')) || !moduloVozNavegacao()?.disponivel?.())) {
+        tentarNovamenteVoz();
+        return;
+      }
       vozAtiva=!vozAtiva;
       const modulo=moduloVozNavegacao();
       modulo?.definirAtiva?.(vozAtiva);

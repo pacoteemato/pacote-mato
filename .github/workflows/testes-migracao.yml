@@ -27,3 +27,29 @@ jobs:
         run: node tests/pinos-otimizacao.test.cjs
       - name: Testar setas da curva, mapa e navegação
         run: node tests/manobras-visuais.test.cjs
+      - name: Testar CSS, manobra única, voz e cache V83
+        run: node tests/regressao-visual-v83.test.cjs
+
+  visual-android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Chromium para testes reais de renderização CSS
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Conferir painel Android em Chromium e capturar renderização
+        run: node tests/render-painel-v83.cjs
+      - name: Testar cartografia real MapLibre em 2D e 3D
+        run: node tests/render-mapa-v83.cjs
+      - name: Guardar capturas de renderização do painel
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-css-e-cartografia-v83
+          path: artifacts/*.png
+          if-no-files-found: ignore

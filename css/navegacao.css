@@ -303,3 +303,84 @@ body[data-pemato-nav-mode="navigation-active"] .nav-maneuver-distance {
   body[data-pemato-nav-mode="navigation-active"] .nav-maneuver-copy>span{font-size:.82rem!important}
   body[data-pemato-nav-mode="navigation-active"] .nav-maneuver-distance{font-size:1.03rem!important}
 }
+
+
+/* V83 — Painel de manobra, escopo estrito. O tema global não pode clareá-lo. */
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap .nav-maneuver-card {
+  background:#0d1b2a!important;
+  color:#fff!important;
+  border:1px solid rgba(176,210,234,.42)!important;
+  box-shadow:0 10px 28px rgba(7,21,39,.28)!important;
+  backdrop-filter:none!important;
+  display:grid!important;
+  align-items:center;
+  grid-template-columns:58px 84px minmax(0,1fr);
+  gap:10px;
+  padding:12px 14px;
+  min-height:94px;
+  max-width:calc(100% - 20px);
+}
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverIcon,
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverIcon svg {
+  color:#fff!important;
+  stroke:#fff!important;
+}
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverDistance {
+  color:#fff!important;
+  font-weight:900!important;
+  font-size:1.22rem!important;
+  line-height:1.15!important;
+  white-space:normal!important;
+  overflow:visible!important;
+}
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap .nav-maneuver-copy {
+  overflow:visible;
+  min-width:0;
+  gap:4px;
+}
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverText {
+  color:#fff!important;
+  font-weight:800!important;
+  font-size:1.03rem!important;
+  line-height:1.22!important;
+  white-space:normal!important;
+  display:block!important;
+  overflow-wrap:break-word;
+  overflow:visible!important;
+  -webkit-line-clamp:unset!important;
+  text-overflow:clip!important;
+}
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverStreet {
+  color:#9fdcff!important;
+  font-weight:800!important;
+  font-size:.96rem!important;
+  line-height:1.23!important;
+  white-space:normal!important;
+  display:block!important;
+  overflow-wrap:break-word;
+  overflow:visible!important;
+  -webkit-line-clamp:unset!important;
+  text-overflow:clip!important;
+}
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverStreet[data-road-known="false"] {
+  color:#c3d4e3!important;
+  font-weight:500!important;
+}
+body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap .nav-maneuver-after {
+  border-top-color:rgba(255,255,255,.2)!important;
+  color:#e6eef7!important;
+}
+@media(max-width:540px){
+  body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap .nav-maneuver-card{
+    grid-template-columns:48px 66px minmax(0,1fr);
+    gap:7px;
+    padding:10px 9px;
+    min-height:88px;
+    max-width:calc(100% - 12px);
+  }
+  body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverIcon,
+  body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverIcon svg {width:46px!important;height:46px!important}
+  body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverDistance {font-size:1.01rem!important}
+  body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverText {font-size:.9rem!important}
+  body[data-pemato-nav-mode="navigation-active"] .navigation-map-wrap #navManeuverStreet {font-size:.83rem!important}
+}
