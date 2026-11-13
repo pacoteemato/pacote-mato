@@ -42,4 +42,14 @@ for(const [nome,coords] of [['direita',direita],['esquerda',esquerda]]){
  assert.deepEqual(g.coordinates[1],coords[1],'curva deve coincidir com a rua real: '+nome);
 }
 assert.equal(recortar(direita,0),null,'índice inválido não inventa curva');
+
+assert.match(nav,/const ruaAtual=nomeRuaInstrucao\(inst\);/);
+assert.match(nav,/const fraseVisual=fraseManobra\(inst,\{comRua:false,pontuar:false\}\);/);
+assert.match(nav,/const fraseTTS=fraseManobra\(inst,\{comRua:true,pontuar:true\}\);/);
+assert.match(nav,/Via não identificada/);
+assert.match(nav,/dataset\.roadKnown=ruaAtual\?'true':'false'/);
+const css=read('css/navegacao.css');
+assert.match(css,/#navManeuverStreet\[data-road-known="false"\]/);
+assert.match(css,/font-variant-numeric:tabular-nums/);
+
 console.log('PASSOU: sem setas retas, curva real à direita/esquerda, retornos e rotatória, sincronia com painel, mapa com contraste, controles preservados.');

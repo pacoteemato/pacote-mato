@@ -1229,12 +1229,22 @@
     distanciaProximaManobra = Number.isFinite(dist) ? Math.max(0, dist) : Infinity;
 
     const tipoVisual=tipoVisualManobra(inst);
-    const ruaAtual=nomeRuaInstrucao(inst,{fallbackTexto:true});
-    const fraseVisual=fraseManobra(inst,{comRua:true,pontuar:false});
+    // O nome exibido como rua deve vir de um campo cartográfico real,
+    // nunca do fallback textual da instrução (que repetia frases extensas).
+    const ruaAtual=nomeRuaInstrucao(inst);
+    const fraseVisual=fraseManobra(inst,{comRua:false,pontuar:false});
     const fraseTTS=fraseManobra(inst,{comRua:true,pontuar:true});
+    const nomeRuaVisivel=ruaAtual || 'Via não identificada';
 
-    if($('navManeuverText')) $('navManeuverText').textContent=ruaAtual||'Próxima manobra';
-    if($('navManeuverStreet')) $('navManeuverStreet').textContent=fraseVisual;
+    if($('navManeuverText')) {
+      $('navManeuverText').textContent=fraseVisual||'Siga a rota';
+      $('navManeuverText').title=fraseVisual||'Siga a rota';
+    }
+    if($('navManeuverStreet')) {
+      $('navManeuverStreet').textContent=nomeRuaVisivel;
+      $('navManeuverStreet').title=nomeRuaVisivel;
+      $('navManeuverStreet').dataset.roadKnown=ruaAtual?'true':'false';
+    }
     if($('navManeuverDistance')) $('navManeuverDistance').textContent=Number.isFinite(dist)?formatarDistancia(dist):'—';
     if($('navManeuverIcon')) $('navManeuverIcon').innerHTML=svgManobra(tipoVisual);
     atualizarOverlayManobraMapa(inst, nearest);
