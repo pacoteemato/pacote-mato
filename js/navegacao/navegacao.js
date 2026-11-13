@@ -123,7 +123,7 @@
   function deslocamentoMarcador(indice) {
     if (!indice) return [0,0];
     const anel = Math.ceil(indice / 8), angulo = ((indice - 1) % 8) * Math.PI / 4;
-    return [Math.round(Math.cos(angulo)*44*anel), Math.round(Math.sin(angulo)*44*anel)];
+    return [Math.round(Math.cos(angulo)*1.25*anel*100)/100, Math.round(Math.sin(angulo)*1.25*anel*100)/100];
   }
 
   function haversine(a, b) {
@@ -459,21 +459,8 @@
     if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':['case',['==',['get','mode'],'internal'],14,11],'circle-color':['case',['==',['get','mode'],'internal'],'rgba(22,139,97,.10)','rgba(22,139,97,.16)'],'circle-stroke-color':['case',['==',['get','mode'],'internal'],'rgba(255,255,255,.95)','rgba(22,139,97,.35)'],'circle-stroke-width':['case',['==',['get','mode'],'internal'],1.4,1]} });
     if (!mapa.getLayer(LAYER_DRIVER_DOT)) mapa.addLayer({ id:LAYER_DRIVER_DOT,type:'circle',source:SOURCE_DRIVER,filter:['==',['get','mode'],'external'],paint:{'circle-radius':7,'circle-color':'#168B61','circle-stroke-color':'#ffffff','circle-stroke-width':3} });
     if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id:LAYER_DRIVER,type:'symbol',source:SOURCE_DRIVER,filter:['==',['get','mode'],'internal'],layout:{'icon-image':'pemato-driver-arrow','icon-size':['interpolate',['linear'],['zoom'],12,0.52,15,0.58,18,0.64,20,0.68],'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-anchor':'center','icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','heading'],0]} });
-    // A próxima entrega é uma camada independente da parada consultada:
-    // seu halo permanece no mapa ao abrir qualquer outro cartão.
-    if (!mapa.getLayer(LAYER_NEXT_HALO)) mapa.addLayer({
-      id:LAYER_NEXT_HALO,
-      type:'circle',
-      source:SOURCE_STOPS_SELECTED,
-      filter:['==',['get','current'],true],
-      paint:{
-        'circle-radius':['interpolate',['linear'],['zoom'],8,13,12,18,16,23,19,26],
-        'circle-color':'rgba(1,141,62,.12)',
-        'circle-stroke-color':'#018D3E',
-        'circle-stroke-opacity':.9,
-        'circle-stroke-width':['interpolate',['linear'],['zoom'],8,1.8,15,2.8,19,3.2]
-      }
-    });
+    // Sem círculo verde: a próxima parada continua controlada pela sequência,
+    // mas não recebe uma marcação adicional sobre o mapa.
     const layoutMarcadorV12 = {
       'icon-image':['get','iconV12'],
       'icon-anchor':'bottom',
@@ -498,17 +485,6 @@
     if(!mapa.getLayer(LAYER_STOPS_MULTI_ACTIVE)) mapa.addLayer({id:LAYER_STOPS_MULTI_ACTIVE,type:'symbol',source:SOURCE_STOPS_SELECTED,
       filter:['all',['>',['get','multi'],1],['==',['get','highlighted'],true]],
       layout:{...layoutMarcadorV12,'icon-allow-overlap':true,'icon-ignore-placement':true}});
-    // Identificação curta e exclusiva do próximo endereço, sem marcar como
-    // "próxima" a parada que foi aberta apenas para consulta.
-    if (mapa.getStyle()?.glyphs && !mapa.getLayer(LAYER_NEXT_LABEL)) mapa.addLayer({
-      id:LAYER_NEXT_LABEL,type:'symbol',source:SOURCE_STOPS_SELECTED,
-      filter:['==',['get','current'],true],
-      minzoom:12,
-      layout:{'text-field':'PRÓXIMA','text-size':10.5,'text-anchor':'bottom',
-        'text-offset':[0,-3.2],'text-allow-overlap':true,
-        'text-ignore-placement':true,'symbol-sort-key':1000001},
-      paint:{'text-color':'#006D32','text-halo-color':'#FFFFFF','text-halo-width':2.3}
-    });
 
   }
 
@@ -872,57 +848,40 @@
     const p = proxima();
     atualizarFonteMotoristaVisual();
     const ordenadas = paradasPorOrdem();
-    const grupos = new Map();
+    const ocupacao = new Map();
+    const idAtivo = String(p?.id || rota?.proximaParadaId || '');
+    const idConsultado = String(cartaoSelecionadoId || global.appState?.navegacao?.paradaExibidaId || '');
+    // Todos os pinos aparecem, inclusive os múltiplos do mesmo endereço.
+    // O deslocamento afeta só o desenho, nunca as coordenadas do GPS.
+    const features = [];
     ordenadas.forEach((stop, i) => {
       if (!coordenadaValida(stop.latitude, stop.longitude)) return;
-      const key = chaveFisicaMarcador(stop);
-      if (!grupos.has(key)) grupos.set(key, []);
-      grupos.get(key).push({ stop, order: i + 1 });
+      const lat=Number(stop.latitude), lon=Number(stop.longitude);
+      const chave=lat.toFixed(5)+':'+lon.toFixed(5);
+      const stackIndex=ocupacao.get(chave)||0;
+      ocupacao.set(chave,stackIndex+1);
+      const id=String(stop.id);
+      const current=id===idAtivo, selected=id===idConsultado;
+      features.push({
+        type:'Feature',
+        properties:{
+          id,ids:id,order:i+1,multi:quantidadePacotesDaParada(stop),
+          stackIndex,markerOffset:deslocamentoMarcador(stackIndex),
+          status:stop.statusEntrega||'pendente',current,selected,
+          highlighted:current||selected
+        },
+        geometry:{type:'Point',coordinates:[lon,lat]}
+      });
     });
-    const ocupacaoVisual = new Map();
-    const features = [];
-    grupos.forEach(grupo => {
-      grupo.sort((a,b) => a.order - b.order);
-      const ativos = grupo.filter(item => !['entregue','concluida','nao_entregue'].includes(String(item.stop?.statusEntrega || '')));
-      const grupoVisual = ativos.length ? ativos : grupo;
-      // V41: o verde pertence à continuidade da corrida, não ao card aberto.
-      // Ex.: se a 28 foi concluída, a 29 continua verde mesmo quando o motorista
-      // desliza e consulta a parada 5. Se ele concluir a 4 fora de ordem, a 2
-      // continua pendente/branca e a 5 passa a ser a continuação verde.
-      const idAtivo = String(p?.id || rota?.proximaParadaId || '');
-      const idConsultado = String(cartaoSelecionadoId || global.appState?.navegacao?.paradaExibidaId || '');
-      const consultada = grupo.find(item => String(item.stop?.id) === idConsultado);
-      const ativa = grupo.find(item => String(item.stop?.id) === idAtivo);
-      const principal = consultada || ativa || grupoVisual[0];
-      const stop = principal.stop;
-      const multi = global.PacoteEMatoMarcadores?.quantidadePacotesRegistradosDoGrupo?.(grupo.map(item => item.stop)) ?? 0;
-      const lat = Number(stop.latitude), lon = Number(stop.longitude);
-      // V40: sem deslocamento dinâmico. O balão fica ancorado na coordenada
-      // real da parada e não muda de posição ao selecionar, entregar ou recalcular.
-      const stackIndex = 0;
-      const ids = grupo.map(item => String(item.stop.id));
-      const {current,selected,highlighted} = destaquesNoMapa(ids, idAtivo, idConsultado);
-      // A próxima entrega e a consulta aparecem ao mesmo tempo quando são diferentes.
-      features.push({type:'Feature',properties:{id:String(stop.id),ids:ids.join(','),order:principal.order,multi,stackIndex,markerOffset:[0,0],status:stop.statusEntrega||'pendente',current,selected,highlighted},geometry:{type:'Point',coordinates:[lon,lat]}});
-    });
-    let featuresVisiveis = features;
-    if (navegacaoInternaAtiva()) {
-      const ordenadasPendentes = paradasPorOrdem().filter(stop => !paradaFinalizada(stop));
-      const indiceAtivo = ordenadasPendentes.findIndex(stop => String(stop.id) === String(p?.id || ''));
-      const proximaDepois = indiceAtivo >= 0 ? ordenadasPendentes[indiceAtivo + 1] : ordenadasPendentes[1];
-      const permitidos = new Set([p?.id, proximaDepois?.id, cartaoSelecionadoId].filter(Boolean).map(String));
-      featuresVisiveis = features.filter(feature => String(feature?.properties?.ids || feature?.properties?.id || '').split(',').some(id => permitidos.has(String(id))));
-    }
-    prepararIconesParadasV12(featuresVisiveis);
-    const assinatura = `${modoMapaNavegacao}|` + featuresVisiveis.map(f => {
-      const p = f.properties || {};
-      const c = f.geometry?.coordinates || [];
-      return `${p.id}:${p.order}:${p.multi}:${p.status||''}:${p.current?1:0}:${p.selected?1:0}:${p.highlighted?1:0}:${p.iconV12||''}:${c[0]}:${c[1]}`;
+    prepararIconesParadasV12(features);
+    const assinatura = `${modoMapaNavegacao}|` + features.map(f => {
+      const pr=f.properties||{}, c=f.geometry?.coordinates||[];
+      return `${pr.id}:${pr.order}:${pr.multi}:${pr.status}:${pr.current?1:0}:${pr.selected?1:0}:${pr.iconV12||''}:${pr.stackIndex}:${c[0]}:${c[1]}`;
     }).join('|');
-    if (assinatura !== assinaturaParadasV11) {
-      assinaturaParadasV11 = assinatura;
-      setSource(SOURCE_STOPS, fc(featuresVisiveis.filter(f => f.properties?.highlighted !== true)));
-      setSource(SOURCE_STOPS_SELECTED, fc(featuresVisiveis.filter(f => f.properties?.highlighted === true)));
+    if (assinatura!==assinaturaParadasV11) {
+      assinaturaParadasV11=assinatura;
+      setSource(SOURCE_STOPS,fc(features.filter(f=>!f.properties.highlighted)));
+      setSource(SOURCE_STOPS_SELECTED,fc(features.filter(f=>f.properties.highlighted)));
     }
   }
 
