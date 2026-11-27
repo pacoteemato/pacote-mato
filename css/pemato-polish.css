@@ -27,6 +27,29 @@
   padding-left: 2px !important;
 }
 
+/* ---------- Títulos das telas: fonte da identidade ---------- */
+h1, h2, h3 {
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif !important;
+}
+
+/* ---------- Histórico: filtros em grade organizada no celular ---------- */
+.routing-toolbar:has(#historyFilter) {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.routing-toolbar:has(#historyFilter) .pemato-field {
+  max-width: none !important;
+  width: 100%;
+  min-width: 0;
+}
+.routing-toolbar:has(#historyFilter) #historyFilter {
+  grid-column: 1 / -1;
+}
+.routing-toolbar:has(#historyFilter) .pemato-secondary {
+  width: 100%;
+}
+
 /* ---------- Login / acesso no celular ----------
    Um único nível de cartão: o wrapper externo não pode repetir a borda,
    a sombra e a margem do cartão interno. */
