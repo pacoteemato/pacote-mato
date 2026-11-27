@@ -265,6 +265,99 @@ html.pemato-boot-check #telaBloqueio {
   #splashScreenPs2::after { animation: none; }
 }
 
+/* ---------- Login: visual de entrada ----------
+   Escopo restrito ao cabeçalho e ao cartão de acesso. A área de planos e
+   pagamento (#areaPlanosRenovacao, .plan-item, #btnConfirmarPagamento e o
+   modal Pix) não recebe nenhuma regra desta seção. */
+#telaBloqueio {
+  background:
+    radial-gradient(900px 520px at 50% -12%, #DDF5E8 0%, rgba(221,245,232,0) 62%),
+    radial-gradient(640px 420px at 108% 104%, #E4F2EC 0%, rgba(228,242,236,0) 60%),
+    #F6FAF8 !important;
+}
+
+#telaBloqueio .auth-kicker {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(22, 139, 97, .08);
+  border: 1px solid rgba(22, 139, 97, .16);
+  color: #0F7351 !important;
+  font-weight: 800 !important;
+  letter-spacing: .12em !important;
+}
+
+#telaBloqueio .auth-access-card {
+  background: rgba(255, 255, 255, .92) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid rgba(22, 139, 97, .14) !important;
+  border-radius: 24px !important;
+  padding: 20px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 22px 44px rgba(20, 42, 32, .10),
+    0 2px 6px rgba(20, 42, 32, .05) !important;
+}
+
+#telaBloqueio .auth-section-heading h2 {
+  font-size: 1.35rem !important;
+  font-weight: 850 !important;
+  letter-spacing: -.01em;
+  color: #142A20 !important;
+}
+
+#telaBloqueio .auth-mode-tabs {
+  background: #EEF6F1 !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  padding: 4px !important;
+}
+#telaBloqueio .auth-mode-btn {
+  border-radius: 11px !important;
+  font-weight: 800 !important;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+#telaBloqueio .auth-mode-btn.active {
+  background: linear-gradient(135deg, #168B61, #25B782) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 16px rgba(22, 139, 97, .28) !important;
+}
+
+#telaBloqueio .input-auth {
+  border-radius: 14px !important;
+  border-color: #D6E6DC !important;
+  background: #FBFDFC !important;
+  transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+#telaBloqueio .input-auth:focus {
+  outline: none !important;
+  border-color: #168B61 !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 0 0 4px rgba(22, 139, 97, .14) !important;
+}
+
+#telaBloqueio .auth-main-button {
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #168B61 0%, #25B782 100%) !important;
+  box-shadow: 0 12px 24px rgba(22, 139, 97, .28) !important;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+#telaBloqueio .auth-main-button:active {
+  transform: translateY(1px) scale(.99);
+  box-shadow: 0 6px 14px rgba(22, 139, 97, .24) !important;
+}
+
+#telaBloqueio .auth-inline-link {
+  color: #168B61 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #telaBloqueio .auth-mode-btn,
+  #telaBloqueio .input-auth,
+  #telaBloqueio .auth-main-button { transition: none !important; }
+}
+
 /* ---------- Login / acesso no celular ----------
    Um único nível de cartão: o wrapper externo não pode repetir a borda,
    a sombra e a margem do cartão interno. */
