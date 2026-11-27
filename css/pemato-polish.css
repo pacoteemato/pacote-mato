@@ -1,0 +1,36 @@
+/* ==========================================================================
+   Pacote É Mato — camada final de acabamento
+   Carregada por último. Consolida o visual sem depender da ordem dos
+   arquivos antigos. Ao remover um override antigo, verifique aqui também.
+   ========================================================================== */
+
+/* ---------- Marca e selos (fundo claro) ----------
+   Regras antigas pensadas para fundo escuro deixavam texto claro sobre branco. */
+.brand-title-pro,
+.auth-title-premium {
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.auth-secure-badge {
+  color: #0F7351 !important;
+  background: #E9F8EF !important;
+  border-color: #BFE6D0 !important;
+}
+
+/* ---------- Login / acesso no celular ----------
+   Um único nível de cartão: o wrapper externo não pode repetir a borda,
+   a sombra e a margem do cartão interno. */
+@media (max-width: 600px) {
+  #telaBloqueio .auth-wrapper.auth-wrapper-premium {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 8px 16px 24px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+}
