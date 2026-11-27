@@ -179,6 +179,19 @@
     return map[p?.statusGeocodificacao] || 'Aguardando localização';
   }
 
+  // Dica de correção para paradas que o mapa não conseguiu localizar.
+  // Retorna '' quando a parada não precisa de correção (localizada ou aguardando).
+  function dicaGeocodificacao(p) {
+    const status = p?.statusGeocodificacao;
+    if (!['ambiguo', 'nao_encontrado', 'erro', 'nao_configurado'].includes(status)) return '';
+    if (status === 'nao_configurado') return 'Serviço de localização indisponível no momento.';
+    if (status === 'erro') return 'Falha ao localizar. Toque em Editar e tente novamente.';
+    const motivo = p?.motivoGeocodificacao;
+    if (motivo === 'numero_imovel_ausente') return 'Falta o número do imóvel. Toque em Editar e inclua o número.';
+    if (motivo === 'sem_correspondencia_exata') return 'Rua ou número não confere com o mapa. Confira e toque em Editar.';
+    return 'Endereço não encontrado. Confira a rua, o número e a cidade e toque em Editar.';
+  }
+
   function statusEntregaTexto(p) {
     if (p.statusEntrega === 'nao_entregue') return 'Não entregue';
     if (['entregue', 'concluida'].includes(p.statusEntrega)) return 'Entregue';
@@ -997,6 +1010,14 @@
       body.append(address);
       if (complement.textContent) body.append(complement);
       body.append(meta);
+      const dica = dicaGeocodificacao(p);
+      if (dica) {
+        const hint = document.createElement('div');
+        hint.className = 'routing-stop-hint';
+        hint.setAttribute('role', 'note');
+        hint.textContent = dica;
+        body.append(hint);
+      }
 
       const actions = document.createElement('div');
       actions.className = 'routing-stop-actions';
