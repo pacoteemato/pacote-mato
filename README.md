@@ -85,4 +85,4 @@ O projeto entregue não contém o wrapper Android nativo/Gradle/Manifest do app 
 
 ## Relatório
 
-`docs/RELATORIO-V81-HOTFIX-FINAL-8-ROTA-VOZ-ANDROID.md`
+`docs/historico/RELATORIO-V81-HOTFIX-FINAL-8-ROTA-VOZ-ANDROID.md`

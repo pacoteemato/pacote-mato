@@ -358,6 +358,30 @@ html.pemato-boot-check #telaBloqueio {
   #telaBloqueio .auth-main-button { transition: none !important; }
 }
 
+/* ---------- Bipagem ----------
+   Remove a marca repetida (o cabeçalho já mostra o nome), padroniza as abas,
+   corrige o contraste dos botões sobre a câmera e do card de rota anterior. */
+#bipagemScannerView > .hero-banner {
+  display: none !important;
+}
+.bipagem-tabs button > span:first-child {
+  display: none !important;
+}
+.cam-overlay-btn,
+.cam-overlay-btn span {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  opacity: 1 !important;
+  background: rgba(11, 18, 14, .85) !important;
+  border-color: rgba(52, 211, 153, .35) !important;
+}
+.card-retomar-rota #txtNomeRotaSalva {
+  color: #142A20 !important;
+}
+.card-retomar-rota [data-i18n="saved_route_found"] {
+  color: #0F7351 !important;
+}
+
 /* ---------- Login: cabeçalho compacto no celular ----------
    O formulário aparece mais acima, sem precisar rolar. */
 @media (max-width: 600px) {
