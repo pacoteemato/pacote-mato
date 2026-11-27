@@ -32,6 +32,18 @@ h1, h2, h3 {
   font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif !important;
 }
 
+/* ---------- Botões desabilitados com contraste legível ----------
+   Antes o botão principal desabilitado ficava verde-claro com texto branco. */
+.pemato-primary:disabled,
+.pemato-primary[disabled] {
+  background: #E3ECE6 !important;
+  color: #5B7366 !important;
+  border-color: #D5E3DA !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
 /* ---------- Histórico: filtros em grade organizada no celular ---------- */
 .routing-toolbar:has(#historyFilter) {
   display: grid !important;

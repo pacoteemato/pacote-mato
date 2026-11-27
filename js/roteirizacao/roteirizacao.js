@@ -924,7 +924,10 @@
     if (meta) {
       const paradaTexto = `${total} ${total === 1 ? 'parada' : 'paradas'}`;
       const distancia = formatarDistancia(rotaAtual.distanciaTotalMetros);
-      meta.textContent = distancia === '—' ? paradaTexto : `${paradaTexto} · ${distancia}`;
+      // Com rota calculada, inclui também a duração total do trajeto.
+      const duracao = calculada && rotaAtual.duracaoTotalSegundos ? formatarTempo(rotaAtual.duracaoTotalSegundos) : '';
+      const partes = [paradaTexto, distancia !== '—' ? distancia : '', duracao].filter(Boolean);
+      meta.textContent = partes.join(' · ');
     }
     renderizarPreferencias();
     atualizarDisponibilidadeAcoes();
