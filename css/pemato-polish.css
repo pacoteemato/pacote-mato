@@ -119,6 +119,39 @@ h1, h2, h3 {
   }
 }
 
+/* ---------- Modo de marcação no mapa ---------- */
+.routing-pin-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  top: max(12px, env(safe-area-inset-top));
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px 10px 14px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid #F59E0B;
+  box-shadow: 0 10px 26px rgba(20, 42, 32, .18);
+  color: #142A20;
+}
+.routing-pin-banner strong {
+  display: block;
+  font-size: .9rem;
+  font-weight: 850;
+}
+.routing-pin-banner span {
+  display: block;
+  margin-top: 2px;
+  font-size: .74rem;
+  color: #64717b;
+}
+.routing-pin-banner .route-list-action {
+  flex: 0 0 auto;
+}
+
 /* ---------- Dica de correção em paradas não localizadas ---------- */
 .routing-stop-hint {
   margin-top: 6px;
