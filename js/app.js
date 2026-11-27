@@ -7260,7 +7260,11 @@ try {
           for (const chave in (mapaRotas || {})) {
             const pacotesDaParada = Array.isArray(mapaRotas[chave]) ? mapaRotas[chave] : [];
             if (pacotesDaParada.includes(codigoAtual)) {
-              paradaMultipla = pacotesDaParada.length > 1 && !String(chave).startsWith('pacote_isolado_');
+              const entregasNoEndereco = typeof entregasOriginaisPorEndereco !== 'undefined'
+                && Array.isArray(entregasOriginaisPorEndereco[chave])
+                ? entregasOriginaisPorEndereco[chave].length : 0;
+              paradaMultipla = Math.max(pacotesDaParada.length, entregasNoEndereco) > 1
+                && !String(chave).startsWith('pacote_isolado_');
               break;
             }
           }
@@ -7391,3 +7395,4 @@ try {
 
       dispararAberturaPs2();
     });
+
