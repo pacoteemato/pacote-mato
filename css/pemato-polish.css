@@ -68,6 +68,46 @@ h1, h2, h3 {
   font-weight: 650 !important;
 }
 
+/* ---------- Controles do mapa agrupados (estilo Maps / Waze) ----------
+   Localização, aproximar e afastar ficam num único cartão, em vez de
+   três botões soltos com sombra própria. */
+.routing-map-controls {
+  gap: 0 !important;
+  background: #FFFFFF;
+  border: 1px solid #DCE8E1;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(20, 42, 32, .16);
+  overflow: hidden;
+}
+.routing-map-controls .routing-map-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #FFFFFF !important;
+  color: #142A20 !important;
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+}
+.routing-map-controls .routing-map-icon + .routing-map-icon {
+  border-top: 1px solid #E9F0EB !important;
+}
+/* No celular o grupo sobe para o canto superior direito, para não ficar
+   escondido pela folha de rota aberta. */
+@media (max-width: 600px) {
+  /* O grupo fica dentro de .routing-map-topbar, que já começa em 76 px. */
+  .routing-map-controls {
+    top: 0 !important;
+    right: 12px !important;
+    bottom: auto !important;
+  }
+  .routing-map-controls .routing-map-icon {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
 /* ---------- Botões desabilitados com contraste legível ----------
    Antes o botão principal desabilitado ficava verde-claro com texto branco. */
 .pemato-primary:disabled,
