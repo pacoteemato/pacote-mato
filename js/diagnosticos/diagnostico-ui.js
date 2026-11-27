@@ -1,4 +1,5 @@
-document.getElementById('btnDiagNovo').onclick=function(){
+const btnDiagNovo=document.getElementById('btnDiagNovo');
+if(btnDiagNovo) btnDiagNovo.onclick=function(){
  const box=document.getElementById('diagNovo');
  const out=document.getElementById('diagTexto');
  box.style.display='block';
