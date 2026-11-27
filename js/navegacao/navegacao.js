@@ -299,20 +299,26 @@
       saida_direita:'M33 78 V54 C33 39 42 31 55 31 H74 M61 18 L74 31 L61 44 M33 54 V20',
       rotatoria:'M31 29 C40 17 59 16 70 27 C82 39 81 57 68 68 C56 78 38 76 29 64 M20 36 L31 29 L34 42',
       rotatoria_saida:'M29 31 C39 17 59 17 70 28 C82 40 80 58 67 68 C58 75 45 76 36 70 M20 38 L29 31 L33 44 M61 49 L78 32 M65 31 H79 V45',
+      viaduto:'M10 50 H86 M22 50 C22 22 74 22 74 50 M34 50 V80 M62 50 V80',
       chegada:'M31 79 V18 M34 20 H72 L62 35 L72 50 H34 M45 26 V44 M36 35 H54'
     };
     const pathText=paths[tipo]; if(!pathText) return null;
     const path=new Path2D(pathText);
     c.clearRect(0,0,size,size);
-    c.save(); c.shadowColor='rgba(15,23,42,.38)'; c.shadowBlur=10; c.shadowOffsetY=2;
-    c.lineCap='round'; c.lineJoin='round'; c.strokeStyle='rgba(15,23,42,.72)'; c.lineWidth=14; c.stroke(path); c.restore();
-    c.lineCap='round'; c.lineJoin='round'; c.strokeStyle='#ffffff'; c.lineWidth=8; c.stroke(path);
+    // Badge azul com borda branca e seta branca no centro: legível em movimento,
+    // na mesma cor da linha da rota. A forma da manobra não muda.
+    c.save(); c.shadowColor='rgba(15,23,42,.38)'; c.shadowBlur=10; c.shadowOffsetY=3;
+    c.beginPath(); c.arc(48,48,42,0,Math.PI*2); c.fillStyle='#1761d1'; c.fill(); c.restore();
+    c.beginPath(); c.arc(48,48,42,0,Math.PI*2); c.lineWidth=5; c.strokeStyle='#ffffff'; c.stroke();
+    c.save(); c.translate(48,48); c.scale(0.68,0.68); c.translate(-48,-48);
+    c.lineCap='round'; c.lineJoin='round'; c.strokeStyle='#ffffff'; c.lineWidth=13; c.stroke(path);
+    c.restore();
     return c.getImageData(0,0,size,size);
   }
 
   function garantirImagensManobraMapa() {
     if(!mapa) return;
-    const tipos=['esquerda','direita','leve_esquerda','leve_direita','acentuada_esquerda','acentuada_direita','retorno_esquerda','retorno_direita','saida_esquerda','saida_direita','rotatoria','rotatoria_saida','chegada'];
+    const tipos=['esquerda','direita','leve_esquerda','leve_direita','acentuada_esquerda','acentuada_direita','retorno_esquerda','retorno_direita','saida_esquerda','saida_direita','rotatoria','rotatoria_saida','viaduto','chegada'];
     tipos.forEach(tipo=>{
       const id=`pemato-map-maneuver-${tipo}`;
       try {
@@ -405,13 +411,13 @@
     garantirImagemBalao();
     garantirImagensManobraMapa();
     const before = antesRotulos();
-    if (!mapa.getLayer(LAYER_ROUTE_CASE)) mapa.addLayer({ id:LAYER_ROUTE_CASE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#244c78','line-width':['interpolate',['linear'],['zoom'],10,6,13,9,16,15,18,21],'line-opacity':.95,'line-blur':0}}, before);
+    if (!mapa.getLayer(LAYER_ROUTE_CASE)) mapa.addLayer({ id:LAYER_ROUTE_CASE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#244c78','line-width':['interpolate',['linear'],['zoom'],10,4.2,13,6.2,16,10,18,14],'line-opacity':.95,'line-blur':0}}, before);
     if (!mapa.getLayer(LAYER_ROUTE_ROAD)) mapa.addLayer({
       id:LAYER_ROUTE_ROAD,type:'line',source:SOURCE_ROUTE,
       layout:{'line-cap':'round','line-join':'round'},
-      paint:{'line-color':'#f6f9fc','line-width':['interpolate',['linear'],['zoom'],10,4.5,13,7,16,12,18,17],'line-opacity':.98}
+      paint:{'line-color':'#f6f9fc','line-width':['interpolate',['linear'],['zoom'],10,3,13,4.6,16,8,18,11.5],'line-opacity':.98}
     }, before);
-    if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({ id:LAYER_ROUTE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#236bd7','line-width':['interpolate',['linear'],['zoom'],10,2.8,13,4.5,16,7.4,18,10],'line-opacity':.94,'line-blur':0}}, before);
+    if (!mapa.getLayer(LAYER_ROUTE)) mapa.addLayer({ id:LAYER_ROUTE,type:'line',source:SOURCE_ROUTE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#236bd7','line-width':['interpolate',['linear'],['zoom'],10,2,13,3.2,16,5.2,18,7.2],'line-opacity':.94,'line-blur':0}}, before);
     if (!mapa.getLayer(LAYER_ROUTE_STATUS_CASE)) mapa.addLayer({ id:LAYER_ROUTE_STATUS_CASE,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#fff','line-width':['interpolate',['linear'],['zoom'],10,4.4,13,5.9,16,8.5,18,9.5],'line-opacity':['match',['get','status'],'passado',0.04,'proxima',0.44,0.16]}}, before);
     if (!mapa.getLayer(LAYER_ROUTE_STATUS)) mapa.addLayer({ id:LAYER_ROUTE_STATUS,type:'line',source:SOURCE_ROUTE_STATUS,layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['match',['get','status'],'passado','#a4adb9','proxima','#1761d1','#2876e6'],'line-width':['interpolate',['linear'],['zoom'],10,2.4,13,3.7,16,5.8,18,6.6],'line-opacity':['match',['get','status'],'passado',0.06,'proxima',0.45,0.28]}}, before);
     // HOTFIX FINAL 7: a rota atrás vira histórico visual apagado. O source é
@@ -999,6 +1005,10 @@
       turnaroundright:'retorno_direita', turnaroundleft:'retorno_esquerda',
       destinationreached:'chegada', destinationreachedright:'chegada', destinationreachedleft:'chegada'
     };
+    // Viaduto/elevado: a instrução indica que o trajeto segue por cima de outra via.
+    // Não é uma direção; ganha um indicador próprio no mapa.
+    const textoElevado = String(inst?.texto || inst?.transition_instruction || inst?.instruction || inst?.text || '').toLocaleLowerCase('pt-BR');
+    if (tipo !== 'roundabout' && /viaduto|elevado|passagem superior|minhocão|minhocao/.test(textoElevado)) return 'viaduto';
     if (tipo === 'roundabout') return valorSaidaRotatoria(inst) ? 'rotatoria_saida' : 'rotatoria';
     if (mapaTipos[tipo]) return mapaTipos[tipo];
 
@@ -1149,7 +1159,7 @@
   }
 
   function manobraImportanteNoMapa(tipo) {
-    return ['esquerda','direita','leve_esquerda','leve_direita','acentuada_esquerda','acentuada_direita','retorno_esquerda','retorno_direita','saida_esquerda','saida_direita','rotatoria','rotatoria_saida'].includes(String(tipo||''));
+    return ['esquerda','direita','leve_esquerda','leve_direita','acentuada_esquerda','acentuada_direita','retorno_esquerda','retorno_direita','saida_esquerda','saida_direita','rotatoria','rotatoria_saida','viaduto'].includes(String(tipo||''));
   }
 
   function pontoAntesDaManobra(coords, indiceDestino, metrosAntes=18) {
@@ -1670,7 +1680,7 @@
       posicaoVisual.at=alvoVisual.at;
       headingVisual=interpolarAnguloCircular(headingVisual, alvoVisual.heading, 1-Math.exp(-dt/230));
       atualizarFonteMotoristaVisual();
-      if(seguirPosicao&&navegacaoInternaAtiva()&&mapa&&mapReady&&agoraFrame-ultimaAtualizacaoCameraFrame>=70){
+      if(seguirPosicao&&navegacaoInternaAtiva()&&mapa&&mapReady&&agoraFrame-ultimaAtualizacaoCameraFrame>=16){
         ultimaAtualizacaoCameraFrame=agoraFrame;
         acompanharCamera(0);
       }
