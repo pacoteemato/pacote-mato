@@ -142,7 +142,11 @@
     }
 
     if (!aceitos.length) {
-      return { status: resultados.length ? 'ambiguo' : 'nao_encontrado' };
+      // Motivo guardado para a tela explicar ao operador o que corrigir.
+      return {
+        status: resultados.length ? 'ambiguo' : 'nao_encontrado',
+        motivo: resultados.length ? 'sem_correspondencia_exata' : 'sem_resultado'
+      };
     }
 
     aceitos.sort((a, b) =>
@@ -194,11 +198,13 @@
       parada.precisaoGeocodificacao = 'logradouro_numero_validado';
       parada.enderecoGeocodificado = r.formatted;
       parada.geocodificacao = r;
+      parada.motivoGeocodificacao = null;
       return;
     }
 
     parada.latitude = null;
     parada.longitude = null;
+    parada.motivoGeocodificacao = validacao.motivo || null;
     parada.statusGeocodificacao = validacao.status;
     parada.confiabilidade = null;
     parada.confiabilidadeRua = null;
