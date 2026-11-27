@@ -183,6 +183,9 @@ input:focus, select:focus, textarea:focus, .pemato-field:focus,
 #splashScreenPs2 { background: var(--pemato-fundo) !important; }
 .ps2-title { color: var(--pemato-grafite) !important; text-shadow: none !important; }
 .ps2-subtitle { color: var(--pemato-cinza) !important; }
+/* Vence a regra antiga de contraste escuro (style.css), que forçava título branco sobre fundo claro. */
+#splashScreenPs2 .ps2-title { color: var(--pemato-grafite) !important; -webkit-text-fill-color: var(--pemato-grafite) !important; text-shadow: none !important; }
+#splashScreenPs2 .ps2-subtitle { color: var(--pemato-cinza) !important; -webkit-text-fill-color: var(--pemato-cinza) !important; }
 .ps2-cube-rotating { filter: drop-shadow(0 9px 18px rgba(22,139,97,.18)) !important; }
 
 
