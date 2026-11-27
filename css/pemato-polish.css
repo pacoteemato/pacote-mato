@@ -32,6 +32,54 @@ h1, h2, h3 {
   font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif !important;
 }
 
+/* ---------- Resumo da rota (Término) compacto ----------
+   O bloco tinha altura mínima de ~117 px e ficava com um quadrado branco
+   vazio abaixo do horário. Agora ocupa só o espaço do conteúdo. */
+#routingBottomSheet .routing-sheet-summary {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 10px 16px 14px !important;
+  align-items: center !important;
+  border-bottom: 0 !important;
+}
+#routingBottomSheet .routing-sheet-summary-main #routingSheetHeadline {
+  font-size: 1.02rem !important;
+  font-weight: 850 !important;
+  color: #142A20 !important;
+}
+#routingBottomSheet #routingSheetMeta {
+  font-size: .72rem !important;
+  color: #64717b !important;
+  margin-top: 4px !important;
+}
+
+/* ---------- Lista de paradas: cabeçalho legível ----------
+   A linha de contagem (paradas físicas, entregas, localizadas) estava com
+   fonte muito pequena (.56rem). */
+.routing-list-head strong {
+  font-size: .92rem !important;
+  font-weight: 850 !important;
+  color: #142A20 !important;
+}
+.routing-list-head span {
+  font-size: .72rem !important;
+  line-height: 1.35 !important;
+  color: #64717b !important;
+  font-weight: 650 !important;
+}
+
+/* ---------- Botões desabilitados com contraste legível ----------
+   Antes o botão principal desabilitado ficava verde-claro com texto branco. */
+.pemato-primary:disabled,
+.pemato-primary[disabled] {
+  background: #E3ECE6 !important;
+  color: #5B7366 !important;
+  border-color: #D5E3DA !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
 /* ---------- Histórico: filtros em grade organizada no celular ---------- */
 .routing-toolbar:has(#historyFilter) {
   display: grid !important;
@@ -48,6 +96,13 @@ h1, h2, h3 {
 }
 .routing-toolbar:has(#historyFilter) .pemato-secondary {
   width: 100%;
+}
+
+/* ---------- Verificação de acesso na abertura ----------
+   Enquanto o app confirma a assinatura, a tela de login fica oculta.
+   A trava é controlada por js/app.js (atualizarGateTelaAcesso). */
+html.pemato-boot-check #telaBloqueio {
+  display: none !important;
 }
 
 /* ---------- Abertura (splash) ----------
