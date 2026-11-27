@@ -2597,7 +2597,11 @@
     $('routingInvertBtn')?.addEventListener('click', () => { fecharMenuAcoes(); inverterRota(); });
     $('routingExportPdfBtn')?.addEventListener('click', () => { fecharMenuAcoes(); exportarPdf(); });
     $('routingStartNavBtn')?.addEventListener('click', () => { fecharMenuAcoes(); abrirNavegacao(); });
-    $('routingPackagesMenuBtn')?.addEventListener('click', abrirEscolhaPacotes);
+    // "Partilhar paradas": abre direto a geração de QR e link.
+    $('routingPackagesMenuBtn')?.addEventListener('click', () => {
+      fecharMenuAcoes();
+      global.PacoteEMatoPartilha?.abrir?.('enviar');
+    });
     $('routingPackagesChooserClose')?.addEventListener('click', fecharEscolhaPacotes);
     $('routingPackagesChooserBackdrop')?.addEventListener('click',event=>{if(event.target===$('routingPackagesChooserBackdrop'))fecharEscolhaPacotes();});
     $('routingAddPackagesBtn')?.addEventListener('click',()=>fecharEscolhaPacotes());

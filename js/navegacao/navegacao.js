@@ -2118,7 +2118,8 @@
     $('navActionImport')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>$('routingXlsxInput')?.click?.(),140);});
     $('navActionNewRoute')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.criarNovaRotaVazia?.(),140);});
     $('navActionAddStop')?.addEventListener('click',()=>{fecharAcoesRota();global.PacoteEMatoAppShell?.abrirModulo?.('roteirizacao');setTimeout(()=>global.PacoteEMatoRoteirizacao?.abrirEditor?.(null),140);});
-    $('navActionPackages')?.addEventListener('click', async ()=>{fecharAcoesRota();if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='flex';registrarRetornoInterno('nav_pacotes');});
+    // "Partilhar paradas": abre direto a geração de QR e link.
+    $('navActionPackages')?.addEventListener('click', ()=>{fecharAcoesRota();global.PacoteEMatoPartilha?.abrir?.('enviar');});
     $('navPackagesChooserClose')?.addEventListener('click',()=>{if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='none';});
     $('navPackagesChooserBackdrop')?.addEventListener('click',e=>{if(e.target===$('navPackagesChooserBackdrop'))e.currentTarget.style.display='none';});
     $('navAddPackagesBtn')?.addEventListener('click',()=>{if($('navPackagesChooserBackdrop'))$('navPackagesChooserBackdrop').style.display='none';global.PacoteEMatoOperacoesPacotes?.iniciar?.('adicionar');});
