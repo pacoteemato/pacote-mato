@@ -94,11 +94,18 @@ ctxVoice.ultimoCodigoBipado='BR-E';ctxVoice.falarParada(123,false,null);
 ok(spoken.pop()==='123. Atenção.','BR-E / entrega 123 fala exatamente "123. Atenção."');
 ctxVoice.mapaRotas={'travessa chicago|56':['BR-Z']};ctxVoice.ultimoCodigoBipado='BR-Z';ctxVoice.falarParada(118,false,null);
 ok(spoken.pop()==='118','pacote normal continua falando apenas o número original');
+ctxVoice.entregasOriginaisPorEndereco={'travessa chicago|56':[118,119]};
+ctxVoice.falarParada(118,false,null);
+ok(spoken.pop()==='118. Atenção.','voz acompanha o aviso visual quando há duas entregas no mesmo endereço');
+ctxVoice.mapaRotas={'pacote_isolado_1':['BR-Z','BR-X']};
+ctxVoice.falarParada(118,false,null);
+ok(spoken.pop()==='118','pacote isolado não recebe alerta de múltiplos');
 
 const voiceBlock=functionBlock(app,'falarParada');
 ok(!/Mesmo endereço da parada|Same address as stop|Misma dirección que la parada/.test(voiceBlock),'voz não lê outro número de entrega/parada');
 const frasesAdicionadas=(voiceBlock.match(/frase \+= [^;]+;/g)||[]).join(' ');
 ok(!/apartamento|bloco|quantidade|Mesmo endereço|same address|misma dirección/i.test(frasesAdicionadas),'voz não monta fala com apartamento, bloco, quantidade ou outros números');
-ok(/pacotesDaParada\.length > 1/.test(voiceBlock),'ATENÇÃO é determinada por pacotes.length > 1');
+ok(/Math\.max\(pacotesDaParada\.length, entregasNoEndereco\) > 1/.test(voiceBlock),'ATENÇÃO segue a contagem apresentada no aviso visual');
 
 console.log('\nNUMERAÇÃO + ALERTA DE MÚLTIPLOS — ACEITAÇÃO CONCLUÍDA.');
+
