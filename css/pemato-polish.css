@@ -108,6 +108,17 @@ h1, h2, h3 {
   }
 }
 
+/* ---------- Folha de rota recolhida: sem área vazia embaixo ----------
+   Com a folha recolhida, a altura passa a ser a do conteúdo (resumo + botões),
+   ancorada na parte de baixo. O estado expandido não muda. */
+@media (max-width: 820px) {
+  .routing-workspace:not(.sheet-expanded):not(.sheet-intermediate) #routingBottomSheet.routing-list-pane {
+    top: auto !important;
+    bottom: 0 !important;
+    height: auto !important;
+  }
+}
+
 /* ---------- Dica de correção em paradas não localizadas ---------- */
 .routing-stop-hint {
   margin-top: 6px;
