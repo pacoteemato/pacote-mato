@@ -50,6 +50,13 @@ h1, h2, h3 {
   width: 100%;
 }
 
+/* ---------- Verificação de acesso na abertura ----------
+   Enquanto o app confirma a assinatura, a tela de login fica oculta.
+   A trava é controlada por js/app.js (atualizarGateTelaAcesso). */
+html.pemato-boot-check #telaBloqueio {
+  display: none !important;
+}
+
 /* ---------- Abertura (splash) ----------
    Mesma identidade clara do app: verde da marca sobre fundo suave. */
 #splashScreenPs2 {

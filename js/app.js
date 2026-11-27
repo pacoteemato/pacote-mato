@@ -1473,11 +1473,36 @@ function tocarIntroPs2Audio() {
       }, esperaMs);
     }
 
+    // Trava a tela de login enquanto a sessão ainda está sendo verificada.
+    // Uma leitura transitória "expirada" nos primeiros 4 s do carregamento
+    // não deve piscar o login: só aparece se continuar expirada depois disso.
+    const INICIO_SESSAO_APP = Date.now();
+    const JANELA_VERIFICACAO_INICIAL_MS = 4000;
+    let timerGateTelaAcesso = null;
+    function atualizarGateTelaAcesso() {
+      const root = document.documentElement;
+      if (!root) return;
+      const decorrido = Date.now() - INICIO_SESSAO_APP;
+      const verificando = authAccessState === AUTH_ACCESS_STATES.BOOTING || authAccessState === AUTH_ACCESS_STATES.CHECKING;
+      const expiradoNaJanela = authAccessState === AUTH_ACCESS_STATES.EXPIRED && decorrido < JANELA_VERIFICACAO_INICIAL_MS;
+      // Limite de segurança: se a verificação travar, o login volta após 8 s.
+      const LIMITE_GATE_MS = 8000;
+      const segurar = (verificando || expiradoNaJanela) && decorrido < LIMITE_GATE_MS;
+      root.classList.toggle('pemato-boot-check', segurar);
+      if (timerGateTelaAcesso) clearTimeout(timerGateTelaAcesso);
+      timerGateTelaAcesso = null;
+      if (segurar) {
+        const proximoMs = expiradoNaJanela ? JANELA_VERIFICACAO_INICIAL_MS - decorrido + 50 : LIMITE_GATE_MS - decorrido + 50;
+        timerGateTelaAcesso = setTimeout(atualizarGateTelaAcesso, proximoMs);
+      }
+    }
+
     function definirEstadoAcesso(estado, detalhe = {}) {
       const validos = new Set(Object.values(AUTH_ACCESS_STATES));
       authAccessState = validos.has(estado) ? estado : AUTH_ACCESS_STATES.CHECKING;
       globalThis.authAccessState = authAccessState;
       document.body.dataset.pematoAccessState = authAccessState;
+      atualizarGateTelaAcesso();
       try { queueMicrotask(() => globalThis.dispatchEvent(new CustomEvent('pemato:acesso:estado', { detail: { estado: authAccessState } }))); } catch (_) {}
       if (authAccessState !== AUTH_ACCESS_STATES.EXPIRED) {
         if (timerRechecagemExpiracao) clearTimeout(timerRechecagemExpiracao);
