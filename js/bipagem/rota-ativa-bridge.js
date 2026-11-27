@@ -53,6 +53,7 @@
     if (!card) return;
     if (!rota) {
       card.style.display = 'none';
+      delete card.dataset.emUso;
       return;
     }
     card.style.display = 'block';
@@ -130,7 +131,11 @@
     if (typeof global.atualizarStats === 'function') global.atualizarStats();
     if (opcoes?.iniciarScanner !== false && typeof global.iniciarScanner === 'function') global.iniciarScanner();
 
-    atualizarCard(rota, `${Object.keys(mapa).length} paradas físicas · ${todos.size} pacotes · rota ativa pronta para bipagem`);
+    // Rota já carregada na bipagem: o card deixa de oferecer "Usar rota ativa"
+    // e passa a indicar que a conferência está em andamento.
+    atualizarCard(rota, `Em uso nesta bipagem · ${Object.keys(mapa).length} paradas físicas · ${todos.size} pacotes`);
+    const cardUso = $('activeRouteBipagemCard');
+    if (cardUso) cardUso.dataset.emUso = 'true';
     return { ok: true, rota };
   }
 
