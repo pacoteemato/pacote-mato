@@ -167,6 +167,7 @@
   }
 
   function statusGeoTexto(p) {
+    if (p?.precisaoGeocodificacao === 'marcacao_manual' && p?.statusGeocodificacao === 'ok') return 'Marcada no mapa';
     const map = {
       ok: 'Localizada',
       consultando: 'Localizando',
@@ -185,11 +186,11 @@
     const status = p?.statusGeocodificacao;
     if (!['ambiguo', 'nao_encontrado', 'erro', 'nao_configurado'].includes(status)) return '';
     if (status === 'nao_configurado') return 'Serviço de localização indisponível no momento.';
-    if (status === 'erro') return 'Falha ao localizar. Toque em Editar e tente novamente.';
+    if (status === 'erro') return 'Falha ao localizar. Toque em Marcar no mapa para indicar o ponto.';
     const motivo = p?.motivoGeocodificacao;
-    if (motivo === 'numero_imovel_ausente') return 'Falta o número do imóvel. Toque em Editar e inclua o número.';
-    if (motivo === 'sem_correspondencia_exata') return 'Rua ou número não confere com o mapa. Confira e toque em Editar.';
-    return 'Endereço não encontrado. Confira a rua, o número e a cidade e toque em Editar.';
+    if (motivo === 'numero_imovel_ausente') return 'Falta o número do imóvel. Toque em Marcar no mapa para indicar o ponto.';
+    if (motivo === 'sem_correspondencia_exata') return 'Rua ou número não confere com o mapa. Toque em Marcar no mapa.';
+    return 'Endereço não encontrado. Toque em Marcar no mapa e indique o ponto da entrega.';
   }
 
   function statusEntregaTexto(p) {
@@ -947,6 +948,70 @@
     atualizarAcaoPrincipal();
   }
 
+  // ---------- Marcar parada no mapa ----------
+  // O operador toca no ponto exato da entrega. A coordenada passa a valer para a
+  // parada, com precisão "marcacao_manual". O endereço escrito continua registrado.
+  let marcacaoParadaId = null;
+  let marcacaoHandler = null;
+
+  function iniciarMarcacaoMapa(id) {
+    const p = rotaAtual?.paradas?.find(item => String(item.id) === String(id));
+    const mapaRef = global.PacoteEMatoMapa?.getMapa?.();
+    if (!p || !mapaRef) { notificar('Mapa indisponível agora. Tente novamente.'); return; }
+    pararMarcacaoMapa();
+    marcacaoParadaId = String(p.id);
+    definirEstadoPainel('collapsed');
+    mostrarBannerMarcacao(p);
+    try { mapaRef.getCanvas().style.cursor = 'crosshair'; } catch (_) {}
+    marcacaoHandler = evento => confirmarMarcacaoMapa(evento.lngLat);
+    mapaRef.on('click', marcacaoHandler);
+  }
+
+  function pararMarcacaoMapa() {
+    const mapaRef = global.PacoteEMatoMapa?.getMapa?.();
+    if (mapaRef && marcacaoHandler) {
+      try { mapaRef.off('click', marcacaoHandler); mapaRef.getCanvas().style.cursor = ''; } catch (_) {}
+    }
+    marcacaoHandler = null;
+    marcacaoParadaId = null;
+    document.getElementById('routingPinBanner')?.remove();
+  }
+
+  function mostrarBannerMarcacao(p) {
+    document.getElementById('routingPinBanner')?.remove();
+    const box = document.createElement('div');
+    box.id = 'routingPinBanner';
+    box.className = 'routing-pin-banner';
+    box.setAttribute('role', 'status');
+    const texto = document.createElement('div');
+    const titulo = document.createElement('strong');
+    titulo.textContent = 'Toque no ponto exato da entrega';
+    const endereco = document.createElement('span');
+    endereco.textContent = enderecoExibicao(p) || 'Endereço da parada';
+    texto.append(titulo, endereco);
+    box.append(texto, criarBotao('Cancelar', 'route-list-action', pararMarcacaoMapa));
+    document.body.appendChild(box);
+  }
+
+  async function confirmarMarcacaoMapa(lngLat) {
+    const p = rotaAtual?.paradas?.find(item => String(item.id) === String(marcacaoParadaId));
+    if (!p || !lngLat) { pararMarcacaoMapa(); return; }
+    p.latitude = Number(lngLat.lat);
+    p.longitude = Number(lngLat.lng);
+    p.statusGeocodificacao = 'ok';
+    p.precisaoGeocodificacao = 'marcacao_manual';
+    p.fonteCoordenada = 'manual';
+    p.confiabilidade = null;
+    p.confiabilidadeRua = null;
+    p.motivoGeocodificacao = null;
+    p.enderecoGeocodificado = enderecoExibicao(p);
+    p.geocodificadoEm = Date.now();
+    pararMarcacaoMapa();
+    try { await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true }); } catch (_) {}
+    renderizarTudo({ fit: false });
+    notificar('Parada marcada no mapa. Se o ponto estiver errado, marque de novo.');
+  }
+
   function criarBotao(texto, classe, handler) {
     const b = document.createElement('button');
     b.type = 'button';
@@ -1022,7 +1087,10 @@
       const actions = document.createElement('div');
       actions.className = 'routing-stop-actions';
       actions.append(
-        criarBotao('Editar', 'route-list-action', () => iniciarEdicaoBusca(p.id)),
+        // Paradas que o mapa não localizou são corrigidas marcando o ponto no mapa.
+        ['ambiguo', 'nao_encontrado', 'erro', 'nao_configurado'].includes(p.statusGeocodificacao)
+          ? criarBotao('Marcar no mapa', 'route-list-action', () => iniciarMarcacaoMapa(p.id))
+          : criarBotao('Editar', 'route-list-action', () => iniciarEdicaoBusca(p.id)),
         criarBotao('Duplicar', 'route-list-action', () => duplicarParada(p.id)),
         criarBotao('Remover', 'route-list-action danger', () => removerParada(p.id))
       );
@@ -1053,6 +1121,11 @@
     if ($('routingSelectedStopMeta')) {
       const quantidadeFisica = global.PacoteEMatoOperacoesPacotes?.quantidadePacotesFisicos?.(rotaAtual, p) ?? (p.pacotes?.length || 0);
       $('routingSelectedStopMeta').textContent = `${quantidadeFisica} ${quantidadeFisica === 1 ? 'pacote' : 'pacotes'} · ${statusGeoTexto(p)} · ${statusEntregaTexto(p)}`;
+      const precisaMarcar = ['ambiguo', 'nao_encontrado', 'erro', 'nao_configurado'].includes(p.statusGeocodificacao);
+      if ($('routingSelectedStopEdit')) {
+        $('routingSelectedStopEdit').textContent = precisaMarcar ? 'Marcar no mapa' : 'Editar';
+        $('routingSelectedStopEdit').dataset.acao = precisaMarcar ? 'marcar' : 'editar';
+      }
     }
   }
 
@@ -2592,7 +2665,9 @@
 
     $('routingSelectedStopEdit')?.addEventListener('click', () => {
       const id = global.appState?.roteirizacao?.paradaSelecionadaId;
-      if (id) iniciarEdicaoBusca(id);
+      if (!id) return;
+      if ($('routingSelectedStopEdit')?.dataset.acao === 'marcar') iniciarMarcacaoMapa(id);
+      else iniciarEdicaoBusca(id);
     });
     $('routeStopEditorSave')?.addEventListener('click', salvarEditor);
     $('routeEdit_fullAddress')?.addEventListener('input', event => {
