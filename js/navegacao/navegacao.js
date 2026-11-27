@@ -260,24 +260,32 @@
     if (!mapa) return;
     try {
       if (!mapa.hasImage?.('pemato-driver-arrow')) {
-        const a = document.createElement('canvas'); a.width = 72; a.height = 72;
+        // Canvas 96 px: halo suave ao redor e o ponteiro no mesmo tamanho visível
+        // de antes (escala 0.75). Centro do ponteiro = centro do canvas, para a
+        // rotação pelo rumo não deslocar o desenho.
+        const a = document.createElement('canvas'); a.width = 96; a.height = 96;
         const c = a.getContext('2d');
         if (c) {
           // HOTFIX FINAL 7: ponteiro próprio de navegação premium. Não é gota,
           // triângulo puro nem asset de terceiros. A frente do ícone é o topo.
           const corpo = new Path2D('M36 7 C40 7 44 10 46 15 L58 43 C61 51 54 59 46 56 L36 51 L26 56 C18 59 11 51 14 43 L26 15 C28 10 32 7 36 7 Z');
           const interno = new Path2D('M36 15 C39 15 41 17 42 20 L49 39 C50 43 47 47 43 45 L36 42 L29 45 C25 47 22 43 23 39 L30 20 C31 17 33 15 36 15 Z');
-          c.clearRect(0,0,72,72);
+          c.clearRect(0,0,96,96);
+          // Halo: disco translúcido verde com anel fino, para destacar o ponteiro sobre o mapa.
+          c.beginPath(); c.arc(48,48,44,0,Math.PI*2); c.fillStyle='rgba(22,139,97,.14)'; c.fill();
+          c.beginPath(); c.arc(48,48,38,0,Math.PI*2); c.lineWidth=2; c.strokeStyle='rgba(22,139,97,.38)'; c.stroke();
           c.save();
-          c.shadowColor='rgba(15,23,42,.28)'; c.shadowBlur=9; c.shadowOffsetY=3;
+          c.translate(48,48); c.scale(0.75,0.75); c.translate(-36,-36);
+          c.shadowColor='rgba(15,23,42,.30)'; c.shadowBlur=10; c.shadowOffsetY=3;
           c.fillStyle='#168B61'; c.fill(corpo);
-          c.restore();
+          c.shadowColor='transparent';
           c.lineJoin='round'; c.lineCap='round';
-          c.strokeStyle='#ffffff'; c.lineWidth=3.5; c.stroke(corpo);
-          c.fillStyle='rgba(255,255,255,.16)'; c.fill(interno);
+          c.strokeStyle='#ffffff'; c.lineWidth=4.5; c.stroke(corpo);
+          c.fillStyle='rgba(255,255,255,.18)'; c.fill(interno);
           c.beginPath(); c.arc(36,35,4.4,0,Math.PI*2); c.fillStyle='#eff6ff'; c.fill();
           c.beginPath(); c.arc(36,35,2.1,0,Math.PI*2); c.fillStyle='#168B61'; c.fill();
-          mapa.addImage('pemato-driver-arrow', c.getImageData(0,0,72,72));
+          c.restore();
+          mapa.addImage('pemato-driver-arrow', c.getImageData(0,0,96,96));
         }
       }
     } catch(_){ }
@@ -437,7 +445,7 @@
     if (!mapa.getLayer(LAYER_MANEUVER_LABEL)) mapa.addLayer({id:LAYER_MANEUVER_LABEL,type:'symbol',source:SOURCE_MANEUVER,filter:['has','street'],layout:{'text-field':['get','street'],'text-size':['interpolate',['linear'],['zoom'],15,10.5,18,12.5,20,13.5],'text-offset':[0,3.15],'text-anchor':'top','text-allow-overlap':false,'text-optional':true,'symbol-sort-key':9997},paint:{'text-color':'#1f2937','text-halo-color':'rgba(255,255,255,.96)','text-halo-width':2.2,'text-halo-blur':.3}});
     if (!mapa.getLayer(LAYER_DRIVER_RING)) mapa.addLayer({ id:LAYER_DRIVER_RING,type:'circle',source:SOURCE_DRIVER,paint:{'circle-radius':['case',['==',['get','mode'],'internal'],14,11],'circle-color':['case',['==',['get','mode'],'internal'],'rgba(22,139,97,.10)','rgba(22,139,97,.16)'],'circle-stroke-color':['case',['==',['get','mode'],'internal'],'rgba(255,255,255,.95)','rgba(22,139,97,.35)'],'circle-stroke-width':['case',['==',['get','mode'],'internal'],1.4,1]} });
     if (!mapa.getLayer(LAYER_DRIVER_DOT)) mapa.addLayer({ id:LAYER_DRIVER_DOT,type:'circle',source:SOURCE_DRIVER,filter:['==',['get','mode'],'external'],paint:{'circle-radius':7,'circle-color':'#168B61','circle-stroke-color':'#ffffff','circle-stroke-width':3} });
-    if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id:LAYER_DRIVER,type:'symbol',source:SOURCE_DRIVER,filter:['==',['get','mode'],'internal'],layout:{'icon-image':'pemato-driver-arrow','icon-size':['interpolate',['linear'],['zoom'],12,0.52,15,0.58,18,0.64,20,0.68],'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-anchor':'center','icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','heading'],0]} });
+    if (!mapa.getLayer(LAYER_DRIVER)) mapa.addLayer({ id:LAYER_DRIVER,type:'symbol',source:SOURCE_DRIVER,filter:['==',['get','mode'],'internal'],layout:{'icon-image':'pemato-driver-arrow','icon-size':['interpolate',['linear'],['zoom'],12,0.39,15,0.435,18,0.48,20,0.51],'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-anchor':'center','icon-rotation-alignment':'map','icon-rotate':['coalesce',['get','heading'],0]} });
     // Sem círculo verde: a próxima parada continua controlada pela sequência,
     // mas não recebe uma marcação adicional sobre o mapa.
     const layoutMarcadorV12 = {
