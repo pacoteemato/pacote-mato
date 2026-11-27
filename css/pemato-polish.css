@@ -375,6 +375,26 @@ html.pemato-boot-check #telaBloqueio {
   background: rgba(11, 18, 14, .85) !important;
   border-color: rgba(52, 211, 153, .35) !important;
 }
+/* Rota já em uso na bipagem: some o botão "Usar rota ativa" e o cartão de PDF
+   vira secundário, para não competir com a conferência. */
+#activeRouteBipagemCard[data-em-uso="true"] #activeRouteBipagemUseBtn {
+  display: none !important;
+}
+#activeRouteBipagemCard[data-em-uso="true"] ~ #elSecaoUpload .btn-upload-trigger {
+  background: #FFFFFF !important;
+  color: #0F7351 !important;
+  border: 1px solid #BFE6D0 !important;
+  box-shadow: none !important;
+}
+/* Aviso de parada com vários pacotes: âmbar e texto escuro, para chamar atenção
+   sem depender de cor clara sobre fundo claro. */
+#boxAviso {
+  background: #FFF7E6 !important;
+  border: 1px solid #F59E0B !important;
+  color: #92400E !important;
+  border-radius: 12px !important;
+  letter-spacing: .02em;
+}
 .card-retomar-rota #txtNomeRotaSalva {
   color: #142A20 !important;
 }
