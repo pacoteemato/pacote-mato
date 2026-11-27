@@ -19,6 +19,14 @@
   border-color: #BFE6D0 !important;
 }
 
+/* ---------- Folha de rota: resumo sem corte na borda ----------
+   O botão de resumo tinha overflow:hidden e o título começava exatamente
+   na borda, cortando a primeira letra. */
+#routingBottomSheet .routing-sheet-summary-main {
+  overflow: visible !important;
+  padding-left: 2px !important;
+}
+
 /* ---------- Login / acesso no celular ----------
    Um único nível de cartão: o wrapper externo não pode repetir a borda,
    a sombra e a margem do cartão interno. */
